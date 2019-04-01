@@ -1,4 +1,5 @@
- Panasonic H Series Aquarea air-water protocol
+
+Panasonic H Series Aquarea air-water protocol
  
  CN-CNT  TTL UART 9600,8,E,1
  Pin-out (from top to bottom)
@@ -14,3 +15,7 @@
  Pre-made crimp leads 150 mm crimp-free end lead PA 2.0 can be used.
  
  Protocol information:
+ 
+ To get information from a heat pump, "magic" packet should be send to CN-CNT:
+ 
+71 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12
