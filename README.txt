@@ -11,6 +11,7 @@ Pin-out (from top to bottom)
 
 CN-CNT female connector PAP-05V-S - JST Female Connector Housing - PA, 2mm Pitch, 5 Way, 1 Row 
 Pre-made crimp leads 150 mm crimp-free end lead PA 2.0 can be used.
+The Panasonic CZ-TAW1 appears to use a JST B05B-XASK-1 male header.
 
 Protocol information:
 
