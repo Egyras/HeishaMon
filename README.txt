@@ -77,7 +77,7 @@ To get decimal values you must convert from hexadecimal and do some calulation d
 As example 43 bit value to get DHW tank water set temperature b1 (HEX) = 177(DEC) - 128 = 49 C 
 
 
-Panasonic query and aswer is using 8-bit Checksum (CRC-8) to verify serial data. Last number is checksum value.
+Panasonic query and aswer is using 8-bit Checksum (CRC-8) to verify serial data. Last bit is checksum value.
 
 
 
