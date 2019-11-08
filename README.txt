@@ -76,8 +76,8 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 To get decimal values you must convert from hexadecimal and do some calulation depending on value. Most of them need just -128(DEC).
 As example 43 bit value to get DHW tank water set temperature b1 (HEX) = 177(DEC) - 128 = 49 C 
 
-Panasonic query command checksum calculation in HEX 100 - 6c -01 - 10 = 12
-Panasonic command checksum checksum calculation in HEX (Quiet mode 1 example )200 - f1 - 6c - 01  - 10 - 10 = 82
+
+Panasonic query and aswer is using 8-bit Checksum (CRC-8) to verify serial data. Last number is checksum value.
 
 
 
