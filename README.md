@@ -16,7 +16,7 @@ The Panasonic CZ-TAW1 appears to use a JST B05B-XASK-1 male header.
 
 ## Protocol info packet:
 
-To get information from a heat pump, "magic" packet should be send to CN-CNT: \ 
+To get information from a heat pump, "magic" packet should be send to CN-CNT: 
 
 `71 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12`
 
