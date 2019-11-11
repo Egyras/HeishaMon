@@ -1,4 +1,4 @@
-﻿
+
 
 ## Panasonic H Series Aquarea air-water protocol
 
@@ -17,13 +17,11 @@ The Panasonic CZ-TAW1 appears to use a JST B05B-XASK-1 male header.
 ## Protocol info packet:
 
 To get information from a heat pump, "magic" packet should be send to CN-CNT:
-
 71 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12
 
 ## Protocol bit decrytp info:
 
-
-7 bit 62=2 52=1 Tank [1:Off, 2:On]
+ 7 bit 62=2 52=1 Tank [1:Off, 2:On]
 39 bit 80 (123-128) = -5C (-128)Zone1: (water shift/water/room/pool) set temperature for heat mode [°C]
 40 bit 8f -128 Zone1: (water shift/water/room) set temperature for cool mode [°C]
 41 bit 80 (-128) Zone2: (water shift/water/room/pool) set temperature for heat mode [°C]
