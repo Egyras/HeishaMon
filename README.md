@@ -20,7 +20,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 
 `71 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12`
 
-## Protocol bit decrytp info:
+## Protocol bit decrypt info:
 
  7 Bit 62=2 52=1 Tank [1:Off, 2:On] \
 39 Bit 80 (123-128) = -5c (-128)Zone1: (Water Shift/Water/Room/Pool) Set Temperature For Heat Mode [°C] \
