@@ -1,6 +1,6 @@
 
 
-# Panasonic H Series Aquarea air-water protocol
+# Panasonic H Series Aquarea air-water heat pump protocol
 
 
 
