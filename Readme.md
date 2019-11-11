@@ -3,9 +3,7 @@
 ## Panasonic H Series Aquarea air-water protocol
 
 CN-CNT TTL UART 9600,8,E,1
-
 Pin-out (from top to bottom)
-
 1 - +5V (250mV) 
 2 - 0-5V TX 
 3 - 0-5 RX 
