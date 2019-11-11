@@ -2,6 +2,9 @@
 
 # Panasonic H Series Aquarea air-water protocol
 
+
+
+## Connection details:
 CN-CNT TTL UART 9600,8,E,1  \
 Pin-out (from top to bottom) \
 1 - +5V (250mV)  \
@@ -13,6 +16,12 @@ Pin-out (from top to bottom) \
 CN-CNT female connector PAP-05V-S - JST Female Connector Housing - PA, 2mm Pitch, 5 Way, 1 Row - https://uk.rs-online.com/web/p/pcb-connector-housings/4766798/ \
 Pre-made crimp leads 150 mm crimp-free end lead PA 2.0 can be used - https://uk.rs-online.com/web/p/pre-crimped-leads/5128721/ \
 The Panasonic CZ-TAW1 appears to use a JST B05B-XASK-1 male header - https://uk.rs-online.com/web/p/pcb-headers/6027679/
+
+Schematic how to connect ESP8266 (wemos D1 mini as example):
+
+----To be added----
+
+
 
 ## Protocol info packet:
 
