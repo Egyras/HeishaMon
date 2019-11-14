@@ -33,7 +33,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 
 
 | Byte Number | Possible Value | Value decrypt | Value Description |
-| ---------  | ----- | ----- | -----:|
+| ----- | ---- | ----- | -----:|
 | 00 | 71 |   | Header  |
 | 01 | c8 |   |  Header |
 | 02 | 01|   | Header  |
@@ -72,11 +72,11 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 35 | 00 |   | ? |
 | 36 | 00 |   | ? |
 | 37 | 00 |   | ? |
-| 38 | 80 | Convert value to DEC 128-128 = 0  | Zone 1 water shift set Temperature For Heat Mode [°C] |
-| 39 | 8f | Convert value to DEC 143-128 = 15  | Zone 1 water shift set Temperature For Cool Mode [°C] |
-| 40 | 80 | Convert value to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
-| 41 | 8a | Convert value to DEC 138-128 = 10  | Zone 2 water shift set Temperature For Cool Mode [°C] |
-| 42 | b2 | Convert value to DEC 178-128 = 50  | Tank Water Set Temperature [°C] |
+| 38 | 80 | Convert to DEC 128-128 = 0  | Zone 1 water shift set Temperature For Heat Mode [°C] |
+| 39 | 8f | Convert to DEC 143-128 = 15  | Zone 1 water shift set Temperature For Cool Mode [°C] |
+| 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
+| 41 | 8a | Convert to DEC 138-128 = 10  | Zone 2 water shift set Temperature For Cool Mode [°C] |
+| 42 | b2 | Convert to DEC 178-128 = 50  | Tank Water Set Temperature [°C] |
 | 43 | 71 |   | ? |
 | 44 | 71 |   | ? |
 | 45 | 97 |   | ? |
@@ -92,22 +92,50 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 55 | 00 |   | ? |
 | 56 | 00 |   | ? |
 | 57 | 00 |   | ? |
-| 58 | 80|   | ? |
+| 58 | 80 |   | ? |
 | 59 | 85 |   | ? |
 | 60 | 15 |   | ? |
 | 61 | 8a |   | ? |
 | 62 | 85 |   | ? |
 | 63 | 85 |   | ? |
+| 64 | d0 |   | ? |
+| 65 | 7b |   | ? |
+| 66 | 78 |   | ? |
+| 67 | 1f |   | ? |
+| 68 | 7e |   | ? |
+| 69 | 1f |   | ? |
+| 71 | 79 |   | ? |
+| 72 | 79 |   | ? |
+| 73 | 8d |   | ? |
+| 74 | 8d |   | ? |
+| 75 | 9e | Convert to DEC 158-128 =30 | Heating Curve Outlet Water Temperature Highest Set [°C] |
+| 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
+| 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
+| 78 | 8f | Convert to DEC 143-128 =15  | Heating Curve Outside Temperature Highest Set °C] |
+| 79 | b7 |   | ? |
+| 80 | 85 |   | ? |
+| 81 | 85 |   | ? |
+| 82 | 85 |   | ? |
+| 83 | 85 |   | ? |
+| 84 | 85 |   | ? |
+| 85 | 85 |   | ? |
+| 86 | 85 |   | ? |
+| 87 | 85 |   | ? |
+| 88 | 85 |   | ? |
+| 89 | 85 |   | ? |
+| 90 | 85 |   | ? |
+| 91 | 85 |   | ? |
+| 92 | 85 |   | ? |
+| 93 | 85 |   | ? |
+| 94 | 85 |   | ? |
+| 95 | 85 |   | ? |
+| 96 | 85 |   | ? |
+| 97 | 85 |   | ? |
+| 98 | 85 |   | ? |
+| 99 | 85 |   | ? |
+| 100 | 85 |   | ? |
 
 
-
-
- 
-
-75 Bit 9e = 30 (158-130) Heating Curve Outlet Water Temperature Highest Set [°C] \
-76 Bit 96 = 22 (150-128) Heating Curve Outlet Water Temperature Lowest Set [°C] \
-77 Bit 71 = -15 (113-128) Heating Curve Outside Temperature Lowest Set [°C] \
-78 Bit 8f = 15 (143-128) Heating Curve Outside Temperature Highest Set °C] \
 111 Bit 56/55 56=Tank 55=Room 3-Way Valve [1:Room, 2:Tank] \
 139 Bit B0 (-128) Zone1: Actual (Water Outlet/Room/Pool) Temperature [°C] \
 140 Bit 00 -128 Zone2: Actual (Water Outlet/Room/Pool) Temperature [°C] \
