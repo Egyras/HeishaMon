@@ -17,9 +17,9 @@ CN-CNT female connector PAP-05V-S - JST Female Connector Housing - PA, 2mm Pitch
 Pre-made crimp leads 150 mm crimp-free end lead PA 2.0 can be used - https://uk.rs-online.com/web/p/pre-crimped-leads/5128721/ \
 The Panasonic CZ-TAW1 appears to use a JST B05B-XASK-1 male header - https://uk.rs-online.com/web/p/pcb-headers/6027679/
 
-Schematic how to connect ESP8266 (wemos D1 mini as example):
+Schematic how to connect ESP8266 (Tested with Adafruit HUZZAH ESP8266 as this example):
 
-----To be added----
+![](https://github.com/Egyras/Panasonic-H-Aquarea/blob/master/panasonic.jpg)
 
 
 
