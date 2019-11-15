@@ -40,8 +40,8 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 03 | 10 |   | Header   |
 | 04 | 56 |   | ? |
 | 05 | 55 |   | ? |
-| 06 | 62 | If 62 = ON If 52 = Off  | Tank status   |
-| 07 | 49 |   | ? |
+| 06 | 62 | If 62 Heat+DWH, If 52 Only Heat, If 61 only DWH, If 69 Auto+DWH, If 63 Cool+DWH, If 53 Cool,   | Mode status   |
+| 07 | 49 | 49 = Off, 51 = level 1, 59 = level 2, 61 - level 3  | Quiet Mode status |
 | 08 | 00 |   | ? |
 | 09 | 05 |   | ? |
 | 10 | 00 |   | ? |
