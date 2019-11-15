@@ -138,7 +138,7 @@ void get_heatpump_data() {
       sprintf(log_msg, "received temperature (HCurveOutsHighTemp): %.2f", HCurveOutsHighTemp); log_message(log_msg);
       sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutsHighTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutsHighTemp).c_str());               
 
-    int walve_state = (int)(data[110]);
+    int walve_state = (int)(data[111]);
     
     char* walve_state_string;
     if (walve_state == 85) {
