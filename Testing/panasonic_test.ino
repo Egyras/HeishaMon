@@ -81,7 +81,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
      
     if (strcmp(topic, mqtt_set_shift_temperature_topic) == 0)
      {
-  // Send to mqtt topic values from -5 to 5     
     String set_shift_temperature_string(msg);
     int shift_mode = set_shift_temperature_string.toInt() + 128; 
     int checksum = 512 - (241 + 108 + 1 + 16 + shift_mode);
@@ -109,6 +108,25 @@ void update_everything()
 void get_heatpump_data() {  
     byte command[] = {0x71, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12};
     send_command(command, sizeof(command));
+
+    int quiet_mode_state = (int)(data[7]);
+    
+    char* quiet_mode_state_string;
+    if (quiet_mode_state == 73) {
+      quiet_mode_state_string = "0";
+    } else if (quiet_mode_state == 81) {
+      quiet_mode_state_string = "1";
+    } else if (quiet_mode_state == 89) {
+      quiet_mode_state_string = "2";
+    } else if (quiet_mode_state == 97) {
+      quiet_mode_state_string = "3";
+    } else {
+      quiet_mode_state_string = "Unknown"; 
+    }
+    sprintf(log_msg, "received quiet mode state : %d (%s)", quiet_mode_state, quiet_mode_state_string); log_message(log_msg);
+    
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "quiet_mode_state"); mqtt_client.publish(mqtt_topic, quiet_mode_state_string);
+    
     
     float HeatShiftTemp = (float)data[38] - 128;
       sprintf(log_msg, "received temperature (HeatShiftTemp): %.2f", HeatShiftTemp); log_message(log_msg);
@@ -138,7 +156,7 @@ void get_heatpump_data() {
       sprintf(log_msg, "received temperature (HCurveOutsHighTemp): %.2f", HCurveOutsHighTemp); log_message(log_msg);
       sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutsHighTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutsHighTemp).c_str());               
 
-    int walve_state = (int)(data[110]);
+    int walve_state = (int)(data[111]);
     
     char* walve_state_string;
     if (walve_state == 85) {
@@ -172,9 +190,8 @@ void get_heatpump_data() {
       sprintf(log_msg, "received temperature (RoomTherTemp): %.2f", RoomTherTemp); log_message(log_msg);
       sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "RoomTherTemp"); mqtt_client.publish(mqtt_topic, String(RoomTherTemp).c_str());
 
-    //Need to figure out 169 bit value calulation
     int PumpFlow1 = (int)data[170];
-    float PumpFlow2 = ((float)data[169] - 1) / 100;
+    float PumpFlow2 = ((((float)data[169] - 1) / 5) * 2) / 100;
     float PumpFlow = PumpFlow1 + PumpFlow2;
 
       sprintf(log_msg, "received pump flow (PumpFlow): %.2f", PumpFlow); log_message(log_msg);
