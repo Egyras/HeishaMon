@@ -38,9 +38,9 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 01 | c8 |   |  Header |
 | 02 | 01|   | Header  |
 | 03 | 10 |   | Header   |
-| 04 | 56 |   | ? |
-| 05 | 55 |   | ? |
-| 06 | 62 | If 62 Heat+DWH, If 52 Only Heat, If 61 only DWH, If 69 Auto+DWH, If 63 Cool+DWH, If 53 Cool, If 59 Auto   | Mode status   |
+| 04 | 56 | Force DHW status 56=off,96=on | Force dhw status|
+| 05 | 55 |  Holiday mode status 55=off, 65=on | Holiday mode status |
+| 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
 | 07 | 49 | 49 = Off, 51 = level 1, 59 = level 2, 61 - level 3  | Quiet Mode status |
 | 08 | 00 |   | ? |
 | 09 | 05 |   | ? |
@@ -73,7 +73,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 36 | 00 |   | ? |
 | 37 | 00 |   | ? |
 | 38 | 80 | Convert to DEC 128-128 = 0  | Zone 1 water shift set Temperature For Heat Mode [°C] |
-| 39 | 8f | Convert to DEC 143-128 = 15  | Zone 1 water shift set Temperature For Cool Mode [°C] |
+| 39 | 8f | Convert to DEC 143-128 = 15 in direct mode set temp  | Zone 1 water shift set Temperature For Cool Mode [°C] |
 | 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
 | 41 | 8a | Convert to DEC 138-128 = 10  | Zone 2 water shift set Temperature For Cool Mode [°C] |
 | 42 | b2 | Convert to DEC 178-128 = 50  | Tank Water Set Temperature [°C] |
@@ -96,7 +96,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 59 | 85 |   | ? |
 | 60 | 15 |   | ? |
 | 61 | 8a |   | ? |
-| 62 | 85 |   | ? |
+| 62 | 85 |  Convert to DEC | ? |
 | 63 | 85 |   | ? |
 | 64 | d0 |   | ? |
 | 65 | 7b |   | ? |
@@ -111,13 +111,13 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 75 | 9e | Convert to DEC 158-128 =30 | Heating Curve Outlet Water Temperature Highest Set [°C] |
 | 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
 | 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
-| 78 | 8f | Convert to DEC 143-128 =15  | Heating Curve Outside Temperature Highest Set °C] |
+| 78 | 8f | Convert to DEC 143-128 =15  | Heating Curve Outside Temperature Highest Set [°C] |
 | 79 | b7 |   | ? |
 | 80 | 85 |   | ? |
 | 81 | 85 |   | ? |
 | 82 | 85 |   | ? |
 | 83 | 85 |   | ? |
-| 84 | 85 |   | ? |
+| 84 | 85 | Convert to DEC 133-128 =5  | Floor heating set delta [°C] |
 | 85 | 85 |   | ? |
 | 86 | 85 |   | ? |
 | 87 | 85 |   | ? |
@@ -127,12 +127,12 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 91 | 85 |   | ? |
 | 92 | 85 |   | ? |
 | 93 | 85 |   | ? |
-| 94 | 85 |   | ? |
+| 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
 | 95 | 85 |   | ? |
 | 96 | 85 |   | ? |
 | 97 | 85 |   | ? |
 | 98 | 85 |   | ? |
-| 99 | 85 |   | ? |
+| 99 | 78 | Convert to DEC 120-128=-8 | DHW delta for re-heat  [°C] |
 | 100 | 85 |   | ? |
 
 
