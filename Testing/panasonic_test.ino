@@ -111,7 +111,7 @@ void setupWifi() {
         configFile.readBytes(buf.get(), size);
         DynamicJsonBuffer jsonBuffer;
         JsonObject& json = jsonBuffer.parseObject(buf.get());
-        json.printTo(Serial);
+        json.printTo(Serial1);
         if (json.success()) {
           Serial1.println("\nparsed json");
 
@@ -190,7 +190,7 @@ void setupWifi() {
       Serial1.println("failed to open config file for writing");
     }
 
-    json.printTo(Serial);
+    json.printTo(Serial1);
     json.printTo(configFile);
     configFile.close();
     //end save
