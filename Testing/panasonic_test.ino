@@ -248,8 +248,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     sprintf(log_msg, "set shift temperature to %d", shift_mode - 128 ); log_message(log_msg);
     byte command[] = {0xf1, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, shift_mode, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, checksum};
     send_command(command, sizeof(command));
-<<<<<<< HEAD
-     }
+  }
 
    // set mode to force DHW by sending 1   
     if (strcmp(topic, mqtt_set_force_DHW_topic) == 0)
@@ -323,10 +322,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     send_command(command, sizeof(command));
      }  
      
-=======
-  }
-
->>>>>>> 95d28ee429ed28c65179a9d125804a131df6352d
   if (strcmp(topic, mqtt_topic_base) == 0)
   {
     log_message("Updating..");
@@ -362,7 +357,6 @@ void get_heatpump_data() {
   }
   sprintf(log_msg, "received quiet mode state : %d (%s)", quiet_mode_state, quiet_mode_state_string); log_message(log_msg);
 
-<<<<<<< HEAD
     int mode_state = (int)(data[6]);
     
     char* mode_state_string;
@@ -540,9 +534,6 @@ void get_heatpump_data() {
 
     
 }
-=======
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "quiet_mode_state"); mqtt_client.publish(mqtt_topic, quiet_mode_state_string);
->>>>>>> 95d28ee429ed28c65179a9d125804a131df6352d
 
 
   float HeatShiftTemp = (float)data[38] - 128;
@@ -680,16 +671,11 @@ void mqtt_reconnect()
       mqtt_client.subscribe(mqtt_set_quiet_mode_topic);
       mqtt_client.subscribe(mqtt_set_shift_temperature_topic);
       mqtt_client.subscribe(mqtt_set_mode_topic);
-<<<<<<< HEAD
       mqtt_client.subscribe(mqtt_set_force_DHW_topic);
       mqtt_client.subscribe(mqtt_set_holiday_topic);
       mqtt_client.subscribe(mqtt_set_powerfull_topic);
       mqtt_client.subscribe(mqtt_set_tank_temp_topic);
       mqtt_client.subscribe(mqtt_set_cool_temp_topic);
-                     
-=======
-
->>>>>>> 95d28ee429ed28c65179a9d125804a131df6352d
     }
     else
     {
@@ -717,8 +703,5 @@ void readSerial()
       Serial.read();
     }
   }
-<<<<<<< HEAD
-=======
   else data_length = 0;
->>>>>>> 95d28ee429ed28c65179a9d125804a131df6352d
 }
