@@ -24,11 +24,9 @@
 
 
 
-// Replace with your network credentials
-const char* wifi_hostname = "panasonic_heat_pump";
-const char* ota_password  = "panasonic";
-
-
+// Default settings if config does not exists
+char* wifi_hostname = "panasonic_heat_pump";
+char* ota_password  = "panasonic";
 char mqtt_server[40];
 char mqtt_port[6] = "1883";
 char mqtt_username[40];
@@ -91,54 +89,62 @@ void setupWifi() {
 
   if (drd.detect()) {
     Serial1.println("Double reset detected, clearing config.");
+    SPIFFS.begin();
     SPIFFS.format();
     wifiManager.resetSettings();
-  }
-
-
-  //read configuration from FS json
-  Serial1.println("mounting FS...");
-
-  if (SPIFFS.begin()) {
-    Serial1.println("mounted file system");
-    if (SPIFFS.exists("/config.json")) {
-      //file exists, reading and loading
-      Serial1.println("reading config file");
-      File configFile = SPIFFS.open("/config.json", "r");
-      if (configFile) {
-        Serial1.println("opened config file");
-        size_t size = configFile.size();
-        // Allocate a buffer to store contents of the file.
-        std::unique_ptr<char[]> buf(new char[size]);
-
-        configFile.readBytes(buf.get(), size);
-        DynamicJsonDocument jsonDoc(1024);
-        DeserializationError error = deserializeJson(jsonDoc, buf.get());
-        serializeJson(jsonDoc, Serial1);
-        if (!error) {
-          Serial1.println("\nparsed json");
-
-          strcpy(mqtt_server, jsonDoc["mqtt_server"]);
-          strcpy(mqtt_port, jsonDoc["mqtt_port"]);
-          strcpy(mqtt_username, jsonDoc["mqtt_username"]);
-          strcpy(mqtt_password, jsonDoc["mqtt_password"]);
-
-        } else {
-          Serial1.println("failed to load json config");
-        }
-        configFile.close();
-      }
-    }
+    Serial1.println("Config cleared. Please open the Wifi portal to configure this device...");
   } else {
-    Serial1.println("failed to mount FS");
+    //read configuration from FS json
+    Serial1.println("mounting FS...");
+
+    if (SPIFFS.begin()) {
+      Serial1.println("mounted file system");
+      if (SPIFFS.exists("/config.json")) {
+        //file exists, reading and loading
+        Serial1.println("reading config file");
+        File configFile = SPIFFS.open("/config.json", "r");
+        if (configFile) {
+          Serial1.println("opened config file");
+          size_t size = configFile.size();
+          // Allocate a buffer to store contents of the file.
+          std::unique_ptr<char[]> buf(new char[size]);
+
+          configFile.readBytes(buf.get(), size);
+          DynamicJsonDocument jsonDoc(1024);
+          DeserializationError error = deserializeJson(jsonDoc, buf.get());
+          serializeJson(jsonDoc, Serial1);
+          if (!error) {
+            Serial1.println("\nparsed json");
+            strcpy(wifi_hostname, jsonDoc["wifi_hostname"]);
+            strcpy(ota_password, jsonDoc["ota_password"]);        
+            strcpy(mqtt_server, jsonDoc["mqtt_server"]);
+            strcpy(mqtt_port, jsonDoc["mqtt_port"]);
+            strcpy(mqtt_username, jsonDoc["mqtt_username"]);
+            strcpy(mqtt_password, jsonDoc["mqtt_password"]);
+
+          } else {
+            Serial1.println("Failed to load json config, forcing config reset.");
+            wifiManager.resetSettings();s
+          }
+          configFile.close();
+        }
+      }
+      else {
+        Serial1.println("No config.json exists! Forcing a config reset.");
+      }
+    } else {
+      Serial1.println("failed to mount FS");
+    }
+    //end read
   }
-  //end read
-
-
 
   // The extra parameters to be configured (can be either global or just in the setup)
   // After connecting, parameter.getValue() will get you the configured value
   // id/name placeholder/prompt default length
+  WiFiManagerParameter custom_text1("<p>My hostname and OTA password</p>");
+  WiFiManagerParameter custom_wifi_hostname("wifi_hostname", "wifi hostname", wifi_hostname, 40);
+  WiFiManagerParameter custom_ota_password("ota_password", "ota password", ota_password, 40);
+  WiFiManagerParameter custom_text2("<p>Configure MQTT settings</p>");
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
   WiFiManagerParameter custom_mqtt_username("username", "mqtt username", mqtt_username, 40);
@@ -150,6 +156,10 @@ void setupWifi() {
 
 
   //add all your parameters here
+  wifiManager.addParameter(&custom_text1);
+  wifiManager.addParameter(&custom_wifi_hostname);
+  wifiManager.addParameter(&custom_ota_password);
+  wifiManager.addParameter(&custom_text2);
   wifiManager.addParameter(&custom_mqtt_server);
   wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_mqtt_username);
@@ -172,6 +182,8 @@ void setupWifi() {
   Serial1.println("Wifi connected...yeey :)");
 
   //read updated parameters
+  strcpy(wifi_hostname, custom_wifi_hostname.getValue());
+  strcpy(ota_password, custom_ota_password.getValue());
   strcpy(mqtt_server, custom_mqtt_server.getValue());
   strcpy(mqtt_port, custom_mqtt_port.getValue());
   strcpy(mqtt_username, custom_mqtt_username.getValue());
@@ -182,6 +194,8 @@ void setupWifi() {
   if (shouldSaveConfig) {
     Serial1.println("saving config");
     DynamicJsonDocument jsonDoc(1024);
+    jsonDoc["wifi_hostname"] = wifi_hostname;
+    jsonDoc["ota_password"] = ota_password;
     jsonDoc["mqtt_server"] = mqtt_server;
     jsonDoc["mqtt_port"] = mqtt_port;
     jsonDoc["mqtt_username"] = mqtt_username;
@@ -207,6 +221,7 @@ void mqtt_reconnect()
   // Loop until we're reconnected
   while (!mqtt_client.connected())
   {
+    Serial1.println("Connecting to mqtt server ...");
     if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password))
     {
       mqtt_client.subscribe(mqtt_set_quiet_mode_topic);
@@ -592,6 +607,7 @@ void setupOTA() {
 void setup() {
   //serial to cn-cnt
   Serial.begin(9600, SERIAL_8E1);
+  //Serial.swap();
   Serial.flush();
 
   setupWifi();
