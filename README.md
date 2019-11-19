@@ -480,7 +480,7 @@ set cool to 6C
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0c`
 
-From service cloud commands:
+
 
 cool + dhw
 
@@ -514,7 +514,7 @@ heat + dhw
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 90`
 
-
+From service cloud commands:
 
 Tank mode only
 
