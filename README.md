@@ -106,27 +106,27 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 69 | 1f |   | ? |
 | 71 | 79 |   | ? |
 | 72 | 79 |   | ? |
-| 73 | 8d |   | ? |
-| 74 | 8d |   | ? |
+| 73 | 8d |   =13| ? |
+| 74 | 8d |   =13| ? |
 | 75 | 9e | Convert to DEC 158-128 =30 | Heating Curve Outlet Water Temperature Highest Set [°C] |
 | 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
 | 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
 | 78 | 8f | Convert to DEC 143-128 =15  | Heating Curve Outside Temperature Highest Set [°C] |
 | 79 | b7 | Convert to DEC 183-128 =55  | ? Possible Direct Zone2 water Temperature set [°C] |
-| 80 | a3 |   | ? |
-| 81 | 7b |   | ? |
-| 82 | 8f |   | ? |
-| 83 | 8e |   | ? |
+| 80 | a3 |   =35| ? |
+| 81 | 7b |   =-5| ? |
+| 82 | 8f |   =15| ? |
+| 83 | 8e |   =14| ? |
 | 84 | 85 | Convert to DEC 133-128 =5  | Floor heating set delta [°C] |
 | 85 | 80 | Convert to DEC 128-128=0 | ? Possible Outdoor temperature for heater ON [°C]  |
-| 86 | 85 |   | ? |
-| 87 | 85 |   | ? |
-| 88 | 85 |   | ? |
-| 89 | 85 |   | ? |
-| 90 | 85 |   | ? |
-| 91 | 85 |   | ? |
-| 92 | 85 |   | ? |
-| 93 | 85 |   | ? |
+| 86 | 8f |   =15| ? Possible cooling curve |
+| 87 | 8a |   =10| ?  Possible cooling curve |
+| 88 | 94 |  =20 | ? Possible cooling curve |
+| 89 | 9e |  =30 | ? Possible cooling curve  |
+| 90 | 8a |  =10 | ? |
+| 91 | 8a |  =10| ? |
+| 92 | 94 |  =20 | ? |
+| 93 | 9e |  =30 | ? |
 | 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
 | 95 | 90 | Convert to DEC 144-128=16|  | ? Possible Outdoor temperature for (heat to cool)   [°C]  |
 | 96 | 8b |  Convert to DEC 139-128=11| ? Possible Outdoor temperature for (cool to heat) [°C] |
