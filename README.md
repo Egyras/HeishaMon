@@ -35,7 +35,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | Byte Number | Possible Value | Value decrypt | Value Description |
 | ----- | ---- | ----- | -----:|
 | 00 | 71 |   | Header  |
-| 01 | c8 |   |  Header |
+| 01 | c8 | Should be Data packet lenght  |  Header |
 | 02 | 01|   | Header  |
 | 03 | 10 |   | Header   |
 | 04 | 56 | Force DHW status 56=off,96=on | Force dhw status|
