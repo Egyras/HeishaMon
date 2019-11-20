@@ -77,8 +77,8 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
 | 41 | 8a | Convert to DEC 138-128 = 10  | Zone 2 water shift set Temperature For Cool Mode [°C] |
 | 42 | b2 | Convert to DEC 178-128 = 50  | Tank Water Set Temperature [°C] |
-| 43 | 71 |   | ? |
-| 44 | 71 |   | ? |
+| 43 | 71 |   | ? Possible Heat Shift for Holiday mode |
+| 44 | 71 |   | ? Possible Heat Shift for Tank mode  |
 | 45 | 97 |   | ? |
 | 46 | 99 |   | ? |
 | 47 | 00 |   | ? |
