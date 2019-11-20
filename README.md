@@ -112,13 +112,13 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
 | 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
 | 78 | 8f | Convert to DEC 143-128 =15  | Heating Curve Outside Temperature Highest Set [°C] |
-| 79 | b7 |   | ? |
-| 80 | 85 |   | ? |
-| 81 | 85 |   | ? |
-| 82 | 85 |   | ? |
-| 83 | 85 |   | ? |
+| 79 | b7 | Convert to DEC 183-128 =55  | ? Possible Direct Zone2 water Temperature set [°C] |
+| 80 | a3 |   | ? |
+| 81 | 7b |   | ? |
+| 82 | 8f |   | ? |
+| 83 | 8e |   | ? |
 | 84 | 85 | Convert to DEC 133-128 =5  | Floor heating set delta [°C] |
-| 85 | 85 |   | ? |
+| 85 | 80 | Convert to DEC 128-128=0 | ? Possible Outdoor temperature for heater ON [°C]  |
 | 86 | 85 |   | ? |
 | 87 | 85 |   | ? |
 | 88 | 85 |   | ? |
@@ -128,12 +128,13 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 92 | 85 |   | ? |
 | 93 | 85 |   | ? |
 | 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
-| 95 | 85 |   | ? |
-| 96 | 85 |   | ? |
-| 97 | 85 |   | ? |
-| 98 | 85 |   | ? |
+| 95 | 90 | Convert to DEC 144-128=16|  | ? Possible Outdoor temperature for (heat to cool)   [°C]  |
+| 96 | 8b |  Convert to DEC 139-128=11| ? Possible Outdoor temperature for (cool to heat) [°C] |
+| 97 | 05 |   | ? |
+| 98 | 65 | Convert to DEC 101-1=100   | ? Possible Tank heat up time (max) [min] |
 | 99 | 78 | Convert to DEC 120-128=-8 | DHW delta for re-heat  [°C] |
-| 100 | 85 |   | ? |
+| 100 | c1 |  Convert to DEC 193-128=65  | ? Possible Sterilization boiling temperature [°C] |
+| 101 | 0b |  Convert to DEC 11 - 1 = 10 | ? Possible Sterilization max operation time [min] |
 
 
 111 Bit 56/55 56=Tank 55=Room 3-Way Valve [1:Room, 2:Tank] \
