@@ -38,7 +38,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 01 | c8 | Should be Data packet lenght  |  Header |
 | 02 | 01|   | Header  |
 | 03 | 10 |   | Header   |
-| 04 | 56 | Force DHW status 56=off,96=on | Force dhw status|
+| 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off| Force dhw status + Heat pump on/off status|
 | 05 | 55 |  Holiday mode status 55=off, 65=on | Holiday mode status |
 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
 | 07 | 49 | 49 = Off, 51 = level 1, 59 = level 2, 61 - level 3 For Power mode 49= Off, 4a - power mode 30min, 4b -60min, 4c-90 min | Quiet Mode status + Powerfull mode status |
