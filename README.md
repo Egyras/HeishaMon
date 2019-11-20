@@ -77,8 +77,8 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
 | 41 | 8a | Convert to DEC 138-128 = 10  | Zone 2 water shift set Temperature For Cool Mode [°C] |
 | 42 | b2 | Convert to DEC 178-128 = 50  | Tank Water Set Temperature [°C] |
-| 43 | 71 |   | ? Possible Heat Shift for Holiday mode |
-| 44 | 71 |   | ? Possible Heat Shift for Tank mode  |
+| 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode |
+| 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for Tank mode  |
 | 45 | 97 |   | ? |
 | 46 | 99 |   | ? |
 | 47 | 00 |   | ? |
@@ -174,7 +174,10 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 172 Bit 51 X-1 - Pump Duty [Duty] \
 173 Bit 59 (X-1) X10  - Fan Motor Speed 1 [R/Min] \
 174 Bit 01  X-1  - Fan Motor Speed 2 [R/Min] \
-175 Bit 
+175 Bit
+180 bit + 179 bit = combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  (Number of operations)
+183 bit + 182 bit = combine both bytes (183) 0b  (182) 25 = 2853 - 1 = 2852 Operating time in h.
+185 bit 05 - 1 = 4h, will be Room Heater operation time in h.
 
 
 
