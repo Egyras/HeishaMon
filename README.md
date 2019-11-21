@@ -137,7 +137,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 101 | 0b |  Convert to DEC 11 - 1 = 10 | ? Possible Sterilization max operation time [min] |
 
 
-111 Bit 56/55 56=Tank 55=Room 3-Way Valve [1:Room, 2:Tank] \
+111 Bit 56/55 56=Tank 55=Room 3-Way Valve, if 5a = defrost mode [1:Room, 2:Tank] \
 139 Bit B0 (-128) Zone1: Actual (Water Outlet/Room/Pool) Temperature [°C] \
 140 Bit 00 -128 Zone2: Actual (Water Outlet/Room/Pool) Temperature [°C] \
 141 Bit Aa -128 Actual Tank Temperature [°C] \
