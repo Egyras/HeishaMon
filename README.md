@@ -135,41 +135,109 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 99 | 78 | Convert to DEC 120-128=-8 | DHW delta for re-heat  [°C] |
 | 100 | c1 |  Convert to DEC 193-128=65  | ? Possible Sterilization boiling temperature [°C] |
 | 101 | 0b |  Convert to DEC 11 - 1 = 10 | ? Possible Sterilization max operation time [min] |
+| 102 | 79 |   | ? |
+| 103 | 79 |   | ? |
+| 104 | 79 |   | ? |
+| 105 | 79 |   | ? |
+| 106 | 79 |   | ? |
+| 107 | 79 |   | ? |
+| 108 | 79 |   | ? |
+| 109 | 79 |   | ? |
+| 110 | 79 |   | ? |
+| 111 | 56 |  56=Tank 55=Room 3-Way Valve, if 5a = defrost mode | 3 way valve + Defrost status |
+| 112 | 79 |   | ? |
+| 113 | 79 |   | ? |
+| 114 | 79 |   | ? |
+| 115 | 79 |   | ? |
+| 116 | 79 |   | ? |
+| 117 | 79 |   | ? |
+| 118 | 79 |   | ? |
+| 119 | 79 |   | ? |
+| 120 | 79 |   | ? |
+| 121 | 79 |   | ? |
+| 122 | 79 |   | ? |
+| 123 | 79 |   | ? |
+| 124 | 79 |   | ? |
+| 125 | 79 |   | ? |
+to DEC-128| 126 | 79 |   | ? |
+| 127 | 79 |   | ? |
+| 128 | 79 |   | ? |
+| 129 | 79 |   | ? |
+| 130 | 79 |   | ? |
+| 131 | 79 |   | ? |
+| 132 | 79 |   | ? |
+| 133 | 79 |   | ? |
+| 134 | 79 |   | ? |
+| 135 | 79 |   | ? |
+| 136 | 79 |   | ? |
+| 137 | 79 |   | ? |
+| 138 | 79 |   | ? |
+to DEC-128| 139 | 79 |  to DEC-128 | Zone1: Actual (Water Outlet/Room/Pool) Temperature [°C] |
+| 140 | 79 |  to DEC-128 |  Zone2: Actual (Water Outlet/Room/Pool) Temperature [°C] |
+| 141 | 79 |  to DEC-128 | Actual Tank Temperature [°C] \ |
+| 142 | 79 |  to DEC-128 | Actual Outdoor Temperature [°C] |
+| 143 | 79 |  to DEC-128 | Inlet Water Temperature [°C] |
+| 144 | 79 |  to DEC-128 | Outlet Water Temperature [°C] |
+| 145 | 79 |  to DEC-128 | Zone1: Water Temperature [°C] |
+| 146 | 79 |  to DEC-128 | Zone2: Water Temperature [°C] |
+| 147 | 79 |  to DEC-128 |Zone1: Water Temperature (Target) [°C] |
+| 148 | 79 |  to DEC-128 | Zone2: Water Temperature (Target) [°C]  |
+| 149 | 79 |  to DEC-128 | Buffer Tank: Water Temperature [°C] |
+| 150 | 79 |  to DEC-128 | Solar: Water Temperature [°C]  |
+| 151 | 79 |  to DEC-128| Pool: Water Temperature [°C] |
+| 152 | 80 |   | ? |
+| 153 | 79 |  to DEC-128 | Outlet Water Temperature (Target) [°C] |
+| 154 | 79 |  to DEC-128 | Outlet 2 Temperature [°C] |
+| 155 | 79 |  to DEC-128 | Discharge Temperature [°C] |
+| 156 | 79 |  to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
+| 157 | 79 |  to DEC-128 | Indoor Piping Temperature [°C] |
+| 158 | 79 |  to DEC-128 | Outdoor Piping Temperature [°C] |
+| 159 | 79 |  to DEC-128 | Defrost Temperature [°C] |
+| 160 | 79 |  to DEC-128 | Eva Outlet Temperature [°C] |
+| 161 | 79 |  to DEC-128 | Bypass Outlet Temperature [°C] |
+| 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
+| 163 | 79 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
+| 164 | 79 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
+| 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] |
+| 166 | 79 | to DEC x-1  | Compressor Frequency [Hz] |
+| 167 | 79 |   | ? |
+| 168 | 79 |   | ? |
+| 169 | 79 | to DEC (X -1)/5 X 2 | 2nd Value for Pump Flow Rate [L/Min]  |
+| 170 | 79 | to DEC | 1st Value for Pump Flow Rate [L/Min] |
+| 171 | 79 | to DEC (X-1) X 100 /2  | Pump Speed [R/Min] |
+| 172 | 79 | to DEC X-1   | Pump Duty [Duty] |
+| 173 | 79 |   | Fan Motor Speed 1 [R/Min |
+| 174 | 79 |   | ? |
+| 175 | 79 |   | ? |
+| 176 | 79 |   | ? |
+| 177 | 79 |   | ? |
+| 178 | 79 |   | ? |
+| 179 | 79 |   | ? |
+| 180 | 79 |   | ? |
+| 181 | 79 |   | ? |
+| 182 | 79 |   | ? |
+| 183 | 79 |   | ? |
+| 184 | 79 |   | ? |
+| 185 | 79 |   | ? |
+| 186 | 79 |   | ? |
+| 187 | 79 |   | ? |
+| 188 | 79 |   | ? |
+| 189 | 79 |   | ? |
+| 190 | 79 |   | ? |
+| 191 | 79 |   | ? |
+| 192 | 79 |   | ? |
+| 193 | 79 |   | ? |
+| 194 | 79 |   | ? |
+| 195 | 79 |   | ? |
+| 196 | 79 |   | ? |
+| 197 | 79 |   | ? |
+| 198 | 79 |   | ? |
+| 199 | 79 |   | ? |
+| 200 | 79 |   | ? |
+| 201 | 79 |   | ? |
+| 202 | 79 |  CRC-8  2S |  |
 
 
-111 Bit 56/55 56=Tank 55=Room 3-Way Valve, if 5a = defrost mode [1:Room, 2:Tank] \
-139 Bit B0 (-128) Zone1: Actual (Water Outlet/Room/Pool) Temperature [°C] \
-140 Bit 00 -128 Zone2: Actual (Water Outlet/Room/Pool) Temperature [°C] \
-141 Bit Aa -128 Actual Tank Temperature [°C] \
-142 Bit 7c -128 Actual Outdoor Temperature [°C] \
-143 Bit Ab -128 Inlet Water Temperature [°C] \
-144 Bit B0 -128 Outlet Water Temperature [°C] \
-145 Bit 32 -128 Zone1: Water Temperature [°C] \
-146 Bit 32 -128 Zone2: Water Temperature [°C] \
-147 Bit 9c -128 Zone1: Water Temperature (Target) [°C] \
-148 Bit B6 -128 Zone2: Water Temperature (Target) [°C] \
-149 Bit 32 -128 Buffer Tank: Water Temperature [°C] \
-150 Bit 32 -128 Solar: Water Temperature [°C] \
-151 Bit 32 -128 Pool: Water Temperature [°C] \
-152 Bit 80 ? \
-153 Bit B7 -128 Outlet Water Temperature (Target) [°C] \
-154 Bit Af -128 Outlet 2 Temperature [°C] \
-155 Bit Cd -128 Discharge Temperature [°C] \
-156 Bit 9a -128 Room Thermostat Internal Sensor Temperature [°C] \
-157 Bit Ac -128 Indoor Piping Temperature [°C] \
-158 Bit 79 -128 Outdoor Piping Temperature [°C] \
-159 Bit 80 -128 Defrost Temperature [°C] \
-160 Bit 77 -128 Eva Outlet Temperature [°C] \
-161 Bit 80 -128 Bypass Outlet Temperature [°C] \
-162 Bit Ff -128 Ipm Temperature [°C] \
-163 Bit 91 (145-1)/5 High Pressure [Kgf/Cm2] \
-164 Bit 1 -1 Low Pressure [Kgf/Cm2] \
-165 Bit 29 (X-1)/5 Outdoor Current [A] \
-166 Bit 59 X-1 Compressor Frequency [Hz] \
-167 Bit 00 - ? \
-168 Bit 00- ? Releated To Pump Flow \
-169 Bit 2nd Value , = (X -1)/5 X 2 = ,08 Pump Flow Rate [L/Min] \
-170 Bit 1st Value Pump Flow Rate [L/Min] \
 171 Bit 1c (X-1) X 100 /2 - Pump Speed [R/Min] \
 172 Bit 51 X-1 - Pump Duty [Duty] \
 173 Bit 59 (X-1) X10  - Fan Motor Speed 1 [R/Min] \
