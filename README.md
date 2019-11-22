@@ -159,7 +159,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 123 | 79 |   | ? |
 | 124 | 79 |   | ? |
 | 125 | 79 |   | ? |
-to DEC-128| 126 | 79 |   | ? |
+| 126 | 79 |   | ? |
 | 127 | 79 |   | ? |
 | 128 | 79 |   | ? |
 | 129 | 79 |   | ? |
@@ -172,7 +172,7 @@ to DEC-128| 126 | 79 |   | ? |
 | 136 | 79 |   | ? |
 | 137 | 79 |   | ? |
 | 138 | 79 |   | ? |
-to DEC-128| 139 | 79 |  to DEC-128 | Zone1: Actual (Water Outlet/Room/Pool) Temperature [°C] |
+| 139 | 79 |  to DEC-128 | Zone1: Actual (Water Outlet/Room/Pool) Temperature [°C] |
 | 140 | 79 |  to DEC-128 |  Zone2: Actual (Water Outlet/Room/Pool) Temperature [°C] |
 | 141 | 79 |  to DEC-128 | Actual Tank Temperature [°C] \ |
 | 142 | 79 |  to DEC-128 | Actual Outdoor Temperature [°C] |
