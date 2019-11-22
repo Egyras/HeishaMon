@@ -198,7 +198,7 @@ to DEC-128| 139 | 79 |  to DEC-128 | Zone1: Actual (Water Outlet/Room/Pool) Temp
 | 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
 | 163 | 79 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
 | 164 | 79 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
-| 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] |
+| 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] Operating time in h
 | 166 | 79 | to DEC x-1  | Compressor Frequency [Hz] |
 | 167 | 79 |   | ? |
 | 168 | 79 |   | ? |
@@ -206,19 +206,19 @@ to DEC-128| 139 | 79 |  to DEC-128 | Zone1: Actual (Water Outlet/Room/Pool) Temp
 | 170 | 79 | to DEC | 1st Value for Pump Flow Rate [L/Min] |
 | 171 | 79 | to DEC (X-1) X 100 /2  | Pump Speed [R/Min] |
 | 172 | 79 | to DEC X-1   | Pump Duty [Duty] |
-| 173 | 79 |   | Fan Motor Speed 1 [R/Min |
-| 174 | 79 |   | ? |
+| 173 | 79 | to DEC (X-1) X10  | Fan Motor Speed 1 [R/Min |
+| 174 | 79 | to DEX x-1  | Fan Motor Speed 2 [R/Min] |
 | 175 | 79 |   | ? |
 | 176 | 79 |   | ? |
 | 177 | 79 |   | ? |
 | 178 | 79 |   | ? |
-| 179 | 79 |   | ? |
-| 180 | 79 |   | ? |
+| 179 | be | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
+| 180 | 08 |  look at 179 | number of operations |
 | 181 | 79 |   | ? |
-| 182 | 79 |   | ? |
-| 183 | 79 |   | ? |
+| 182 | 25 | combine both bytes (183) 0b  (182) 25 = 2853 - 1 = 2852  | Operating time in h |
+| 183 | 0b | look at 182  | Operating time in h |
 | 184 | 79 |   | ? |
-| 185 | 79 |   | ? |
+| 185 | 79 | to DEC X-1  | Room Heater operation time in h |
 | 186 | 79 |   | ? |
 | 187 | 79 |   | ? |
 | 188 | 79 |   | ? |
@@ -237,15 +237,6 @@ to DEC-128| 139 | 79 |  to DEC-128 | Zone1: Actual (Water Outlet/Room/Pool) Temp
 | 201 | 79 |   | ? |
 | 202 | 79 |  CRC-8  2S |  |
 
-
-171 Bit 1c (X-1) X 100 /2 - Pump Speed [R/Min] \
-172 Bit 51 X-1 - Pump Duty [Duty] \
-173 Bit 59 (X-1) X10  - Fan Motor Speed 1 [R/Min] \
-174 Bit 01  X-1  - Fan Motor Speed 2 [R/Min] \
-175 Bit
-180 bit + 179 bit = combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  (Number of operations)
-183 bit + 182 bit = combine both bytes (183) 0b  (182) 25 = 2853 - 1 = 2852 Operating time in h.
-185 bit 05 - 1 = 4h, will be Room Heater operation time in h.
 
 
 
