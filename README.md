@@ -7,10 +7,10 @@
 ## Connection details:
 CN-CNT TTL UART 9600,8,E,1  \
 Pin-out (from top to bottom) \
-1 - +5V (250mV)  \
+1 - +5V (250mA)  \
 2 - 0-5V TX  \
 3 - 0-5 RX  \
-4 - +12V (250mV) \
+4 - +12V (250mA) \
 5 - GND
 
 CN-CNT female connector PAP-05V-S - JST Female Connector Housing - PA, 2mm Pitch, 5 Way, 1 Row - https://uk.rs-online.com/web/p/pcb-connector-housings/4766798/ \
