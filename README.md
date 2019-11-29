@@ -56,7 +56,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 19 | 00 |   | ? |
 | 20 | 19 |   | ? |
 | 21 | 15 |   | ? |
-| 22 | 11 |   | ? |
+| 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer | 
 | 23 | 55 |   | ? |
 | 24 | 16 |   | ? |
 | 25 | 5e |   | ? |
@@ -96,7 +96,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 59 | 85 |   | ? |
 | 60 | 15 |   | ? |
 | 61 | 8a |   | ? |
-| 62 | 85 |  Convert to DEC | ? |
+| 62 | 85 |  Convert to DEC | ? | 
 | 63 | 85 |   | ? |
 | 64 | d0 |   | ? |
 | 65 | 7b |   | ? |
