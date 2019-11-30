@@ -128,8 +128,8 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 92 | 94 |  =20 | ? |
 | 93 | 9e |  =30 | ? |
 | 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
-| 95 | 90 | Convert to DEC 144-128=16|  | ? Possible Outdoor temperature for (heat to cool)   [°C]  |
-| 96 | 8b |  Convert to DEC 139-128=11| ? Possible Outdoor temperature for (cool to heat) [°C] |
+| 95 | 90 | Convert to DEC 144-128=16|  | Outdoor temperature for (heat to cool)   [°C]  |
+| 96 | 8b |  Convert to DEC 139-128=11|  Possible Outdoor temperature for (cool to heat) [°C] |
 | 97 | 05 |   | ? |
 | 98 | 65 | Convert to DEC 101-1=100   | ? Possible Tank heat up time (max) [min] |
 | 99 | 78 | Convert to DEC 120-128=-8 | DHW delta for re-heat  [°C] |
