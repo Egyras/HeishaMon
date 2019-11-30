@@ -62,7 +62,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 25 | 5e |   | ? |
 | 26 | 55 |   | ? |
 | 27 | 05 |   | ? |
-| 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool | Operation Setup -Installer -water temperature heating on status and cooling |
+| 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
 | 29 | 00 |   | ? |
 | 30 | 00 |   | ? |
 | 31 | 00 |   | ? |
