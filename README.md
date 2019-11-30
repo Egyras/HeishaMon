@@ -119,7 +119,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 83 | 8e |   =14| ? |
 | 84 | 85 | Convert to DEC 133-128 =5  | Floor heating set delta [°C] |
 | 85 | 80 | Convert to DEC 128-128=0 | ? Possible Outdoor temperature for heater ON [°C]  |
-| 86 | 8f |   =15| ? Possible cooling curve |
+| 86 | 8f | Convert to DEC 143-128 =15 | Set temperature for Cooling direct mode [°C] |
 | 87 | 8a |   =10| ?  Possible cooling curve |
 | 88 | 94 |  =20 | ? Possible cooling curve |
 | 89 | 9e |  =30 | ? Possible cooling curve  |
