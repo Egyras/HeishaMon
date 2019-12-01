@@ -574,7 +574,13 @@ void get_heatpump_data() {
   sprintf(log_msg, "received temperature (TankHeatDelta): %.2f", TankHeatDelta); log_message(log_msg);
   sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "TankHeatDelta"); mqtt_client.publish(mqtt_topic, String(TankHeatDelta).c_str());
 
+  int OperatingTime  = word(data[183], data[182]) - 1;
+  sprintf(log_msg, "received (OperatingTime): %.2f", OperatingTime); log_message(log_msg);
+  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperatingTime"); mqtt_client.publish(mqtt_topic, String(OperatingTime).c_str());
 
+  int OperationsNumber  = word(data[180], data[179]) - 1;
+  sprintf(log_msg, "received (OperationsNumber): %.2f", OperatingTime); log_message(log_msg);
+  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperationsNumber"); mqtt_client.publish(mqtt_topic, String(OperationsNumber).c_str());    
 
 }
 
