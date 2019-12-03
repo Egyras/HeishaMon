@@ -29,13 +29,13 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 
 `71 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12`
 
-## Protocol bit decrypt info:
+## Protocol byte decrypt info:
 
 
 | Byte Number | Possible Value | Value decrypt | Value Description |
 | ----- | ---- | ----- | -----:|
 | 00 | 71 |   | Header  |
-| 01 | c8 | Should be Data packet lenght  |  Header |
+| 01 | c8 | Data length ( Packet length = Data length + 3 )  |  Header |
 | 02 | 01|   | Header  |
 | 03 | 10 |   | Header   |
 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
@@ -56,7 +56,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 19 | 00 |   | ? |
 | 20 | 19 |   | ? |
 | 21 | 15 |   | ? |
-| 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer | 
+| 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 | 23 | 55 |   | ? |
 | 24 | 16 |   | ? |
 | 25 | 5e |   | ? |
@@ -235,14 +235,14 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 199 | 79 |   | ? |
 | 200 | 79 |   | ? |
 | 201 | 79 |   | ? |
-| 202 | 79 |  CRC-8  2S |  |
+| 202 | 79 |  CHECKSUM |  |
 
 
 
 
 To get decimal values you must convert from hexadecimal and do some calulation depending on value. Most of them need just -128(DEC). \
-As example 43 bit value to get DHW tank water set temperature b1 (HEX) = 177(DEC) - 128 = 49 C  \
-Panasonic query, answer and commands are using 8-bit Checksum (CRC-8) to verify serial data. Last bit is checksum value.
+As example 43 byte value to get DHW tank water set temperature b1 (HEX) = 177(DEC) - 128 = 49 C  \
+Panasonic query, answer and commands are using 8-bit Checksum to verify serial data ( sum(all bytes) & 0xFF == 0 ). Last byte is checksum value.
 
 
 ## Query Examples:
@@ -971,7 +971,6 @@ Tank settings
 
 Room Operation time maximum 90 min
 
-
 `f1 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 09 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -990,7 +989,6 @@ tank heat up tank maximum 105 min
 00 00 00 8a 85 80 8a 8a 94 9e 8f 00 00 00 83 95
 8c 05 6a 78 c1 0b 00 00 00 00 00 00 00 00 9a`
 
-
 sterilization boiling temp set 66C
 
 `f1 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00
@@ -1001,7 +999,7 @@ sterilization boiling temp set 66C
 00 00 00 8a 85 80 8a 8a 94 9e 8f 00 00 00 83 95
 8c 05 6a 78 c2 0b 00 00 00 00 00 00 00 00 99`
 
-set streilization time 15 min
+set sterilization time 15 min
 
 `f1 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 09 00 00 00
