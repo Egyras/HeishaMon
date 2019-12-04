@@ -22,6 +22,11 @@ Schematic how to connect ESP8266 (Tested with Adafruit HUZZAH ESP8266 as this ex
 ![](https://github.com/Egyras/Panasonic-H-Aquarea/blob/master/panasonic.jpg)
 
 
+For Wemos D1 Mini use "stronger" pull-up with resistors:
+
+![](https://user-images.githubusercontent.com/36902688/69032381-ff619480-09e4-11ea-8dec-8ea54788737f.png)
+
+
 
 ## Protocol info packet:
 
