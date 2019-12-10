@@ -120,7 +120,7 @@ void setupWifi() {
 
           } else {
             Serial1.println("Failed to load json config, forcing config reset.");
-            wifiManager.resetSettings();s
+            wifiManager.resetSettings();
           }
           configFile.close();
         }
