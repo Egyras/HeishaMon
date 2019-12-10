@@ -78,10 +78,6 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 
 
 void setupWifi() {
-  // put your setup code here, to run once:
-  Serial1.begin(115200);
-  Serial1.println();
-
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
@@ -253,7 +249,6 @@ void readSerial()
 {
   if (Serial.available() > 0) {
     data_length = Serial.readBytes(data, 203);
-    Serial1.println(String(data));
     while (Serial.available()) {
       delay(2);
       Serial.read();
@@ -611,10 +606,18 @@ void setupOTA() {
 }
 
 void setup() {
+  //debug line on serial1 (D4, GPIO2)
+  Serial1.begin(115200);
+
   //serial to cn-cnt
   Serial.begin(9600, SERIAL_8E1);
-  //Serial.swap();
   Serial.flush();
+  //swap to gpio13 (D7) and gpio15 (D8)
+  Serial.swap();
+
+  //enable gpio15 after boot using gpio5 (D1)
+  pinMode(5, OUTPUT);
+  digitalWrite(5, HIGH);  
 
   setupWifi();
   setupOTA();
