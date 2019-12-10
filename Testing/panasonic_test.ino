@@ -13,6 +13,9 @@
 #include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
 #include <DoubleResetDetect.h>    //https://github.com/jenscski/DoubleResetDetect
 
+#include "commands.h"
+
+
 // maximum number of seconds between resets that
 // counts as a double reset
 #define DRD_TIMEOUT 0.1
@@ -32,16 +35,7 @@ char mqtt_port[6] = "1883";
 char mqtt_username[40];
 char mqtt_password[40];
 
-const char* mqtt_topic_base = "panasonic_heat_pump/sdc";
-const char* mqtt_logtopic = "panasonic_heat_pump/sdc/log";
-const char* mqtt_set_quiet_mode_topic = "panasonic_heat_pump/SetQuietMode";
-const char* mqtt_set_shift_temperature_topic = "panasonic_heat_pump/SetShiftTemperature";
-const char* mqtt_set_mode_topic = "panasonic_heat_pump/SetMode";
-const char* mqtt_set_force_DHW_topic = "panasonic_heat_pump/SetForceDHW";
-const char* mqtt_set_holiday_topic = "panasonic_heat_pump/SetHoliday";
-const char* mqtt_set_powerfull_topic = "panasonic_heat_pump/SetPowerfull";
-const char* mqtt_set_tank_temp_topic = "panasonic_heat_pump/SetTankTemp";
-const char* mqtt_set_cool_temp_topic = "panasonic_heat_pump/SetCoolTemp";
+
 byte inCheck = 0;
 
 
@@ -120,7 +114,7 @@ void setupWifi() {
 
           } else {
             Serial1.println("Failed to load json config, forcing config reset.");
-            wifiManager.resetSettings();s
+            wifiManager.resetSettings();
           }
           configFile.close();
         }
@@ -391,56 +385,69 @@ void update_everything()
 }
 
 void get_heatpump_data() {
-  byte command[] = {0x71, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12};
-  send_command(command, sizeof(command));
+  send_command(panasonicQuery, sizeof(panasonicQuery));
 
   int mode_state = (int)(data[6]);
-
   char* mode_state_string;
-  if (mode_state == 98) {
-    mode_state_string = "Heat+DHW";
-  } else if (mode_state == 82) {
-    mode_state_string = "Heat";
-  } else if (mode_state == 97) {
-    mode_state_string = "DHW";
-  } else if (mode_state == 105) {
-    mode_state_string = "Auto+DHW";
-  } else if (mode_state == 99) {
-    mode_state_string = "Cool+DHW";
-  } else if (mode_state == 83) {
-    mode_state_string = "Cool";
-  } else if (mode_state == 89) {
-    mode_state_string = "Auto";
-  } else {
-    mode_state_string = "Unknown";
+  switch (mode_state) {
+    case 98:
+      mode_state_string = "Heat+DHW";
+      break;
+    case 82:
+      mode_state_string = "Heat";
+      break;
+    case 97:
+      mode_state_string = "DHW";
+      break;
+    case 105:
+      mode_state_string = "Auto+DHW";
+      break;
+    case 99:
+      mode_state_string = "Cool+DHW";
+      break;
+    case 83:
+      mode_state_string = "Cool+DHW";
+      break;
+    case 89:
+      mode_state_string = "Auto";
+      break;
+    default:
+      mode_state_string = "Unknown";
+      break;   
   }
   sprintf(log_msg, "received heat pump mode state : %d (%s)", mode_state, mode_state_string); log_message(log_msg);
-
   sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "mode_state"); mqtt_client.publish(mqtt_topic, mode_state_string);
 
 
   int quiet_mode_state = (int)(data[7]);
-
-
   char* powerfull_mode_state_string;
   char* quiet_mode_state_string;
-  if (quiet_mode_state == 73) {
-    quiet_mode_state_string = "0";
-    powerfull_mode_state_string = "0";
-  } else if (quiet_mode_state == 81) {
-    quiet_mode_state_string = "1";
-  } else if (quiet_mode_state == 89) {
-    quiet_mode_state_string = "2";
-  } else if (quiet_mode_state == 97) {
-    quiet_mode_state_string = "3";
-  } else if (quiet_mode_state == 74) {
-    powerfull_mode_state_string = "30";
-  } else if (quiet_mode_state == 75) {
-    powerfull_mode_state_string = "60";
-  } else if (quiet_mode_state == 76) {
-    powerfull_mode_state_string = "90";
-  } else {
-    quiet_mode_state_string = "Unknown";
+  switch (quiet_mode_state) {
+    case 73:
+      quiet_mode_state_string = "0";
+      powerfull_mode_state_string = "0";
+      break;
+    case 81:
+      quiet_mode_state_string = "10";
+      break;
+    case 89:
+      quiet_mode_state_string = "20";
+      break;
+    case 97:
+      quiet_mode_state_string = "30";
+      break;
+    case 74:
+      powerfull_mode_state_string = "30";
+      break;
+    case 75:
+      powerfull_mode_state_string = "60";
+      break;
+    case 76:
+      powerfull_mode_state_string = "90";
+      break;
+    default:
+      quiet_mode_state_string = "Unknown";
+      break;
   }
   sprintf(log_msg, "received quiet mode state : %d (%s)", quiet_mode_state, quiet_mode_state_string); log_message(log_msg);
 
@@ -476,19 +483,21 @@ void get_heatpump_data() {
   sprintf(log_msg, "received temperature (HCurveOutsHighTemp): %.2f", HCurveOutsHighTemp); log_message(log_msg);
   sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutsHighTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutsHighTemp).c_str());
 
-  int walve_state = (int)(data[111]);
-
-  char* walve_state_string;
-  if (walve_state == 85) {
-    walve_state_string = "Room";
-  } else if (walve_state == 86) {
-    walve_state_string = "Tank";
-  } else {
-    walve_state_string = "Unknown";
+  int valve_state = (int)(data[111]);
+  char* valve_state_string;
+  switch (valve_state) {
+    case 85:
+      valve_state_string = "Room";
+      break;
+    case 86:
+      valve_state_string = "Tank";
+      break;
+    default:
+      valve_state_string = "Unknown";
+      break;    
   }
-  sprintf(log_msg, "received filter state : %d (%s)", walve_state, walve_state_string); log_message(log_msg);
-
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "walve_state"); mqtt_client.publish(mqtt_topic, walve_state_string);
+  sprintf(log_msg, "received filter state : %d (%s)", valve_state, valve_state_string); log_message(log_msg);
+  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "valve_state"); mqtt_client.publish(mqtt_topic, valve_state_string);
 
   float ActWatOutTemp = (float)data[139] - 128;
   sprintf(log_msg, "received temperature (ActWatOutTemp): %.2f", ActWatOutTemp); log_message(log_msg);
@@ -528,32 +537,36 @@ void get_heatpump_data() {
 
 
   int ForceDHW_status = (int)(data[4]);
-
   char* ForceDHW_status_string;
-  if (ForceDHW_status == 86) {
-    ForceDHW_status_string = "0";
-  } else if (ForceDHW_status == 150) {
-    ForceDHW_status_string = "1";
-  } else {
-    ForceDHW_status_string = "Unknown";
+  switch (ForceDHW_status) {
+    case 86:
+      ForceDHW_status_string = "0";
+      break;
+    case 150:
+      ForceDHW_status_string = "1";
+      break;
+    default:
+      ForceDHW_status_string = "Unknown";
+      break;
   }
   sprintf(log_msg, "received force DHW status : %d (%s)", ForceDHW_status, ForceDHW_status_string); log_message(log_msg);
-
   sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ForceDHW"); mqtt_client.publish(mqtt_topic, ForceDHW_status_string);
 
 
   int Holiday_mode_status = (int)(data[5]);
-
   char* Holiday_mode_status_string;
-  if (Holiday_mode_status == 85) {
-    Holiday_mode_status_string = "84";
-  } else if (Holiday_mode_status == 101) {
-    Holiday_mode_status_string = "100";
-  } else {
-    Holiday_mode_status_string = "Unknown";
+  switch (Holiday_mode_status) {
+    case 85:
+      Holiday_mode_status_string = "84";
+      break;
+    case 101:
+      Holiday_mode_status_string = "100";
+      break;
+    default:
+      Holiday_mode_status_string = "Unknown";
+      break;
   }
   sprintf(log_msg, "received Holiday status : %d (%s)", Holiday_mode_status, Holiday_mode_status_string); log_message(log_msg);
-
   sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Holiday"); mqtt_client.publish(mqtt_topic, Holiday_mode_status_string);
 
 
