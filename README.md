@@ -149,7 +149,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 108 | 79 |   | ? |
 | 109 | 79 |   | ? |
 | 110 | 79 |   | ? |
-| 111 | 56 |  56=Tank 55=Room 3-Way Valve, if 5a = defrost mode (need to check) | 3 way valve + Defrost status |
+| 111 | 56 |  56=Tank 55=Room 3-Way Valve, if 59 = defrost mode | 3 way valve + Defrost status |
 | 112 | 79 |   | ? |
 | 113 | 79 |   | ? |
 | 114 | 79 |   | ? |
@@ -231,8 +231,8 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 190 | 79 |   | ? |
 | 191 | 79 |   | ? |
 | 192 | 79 |   | ? |
-| 193 | 79 |   | ? |
-| 194 | 79 |   | ? |
+| 193 | 01 | to DEX (x-1) / 5   | Energy Consumption in [kw]  |
+| 194 | 07 | to DEX (x-1) / 5   | Energy Generation in [kw] |
 | 195 | 79 |   | ? |
 | 196 | 79 |   | ? |
 | 197 | 79 |   | ? |
