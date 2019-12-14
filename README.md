@@ -24,7 +24,7 @@ Schematic how to connect ESP8266 (Tested with Adafruit HUZZAH ESP8266 as this ex
 
 For Wemos D1 Mini use @IgorYbema provided schematic with serial.swap in the sketch: 
 
-![](https://user-images.githubusercontent.com/20365971/70476825-cf834980-1ad7-11ea-89d1-ed7b1f84eaf7.png)
+![](https://github.com/IgorYbema/Panasonic-H-Aquarea/blob/master/Wemos%20Panasonic%20Aquarea%20CN-CNT%20shield%20through%20whole.png)
 
 
 
