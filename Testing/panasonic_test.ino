@@ -5,6 +5,7 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include <PubSubClient.h>
+#include <ESP8266WebServer.h>
 
 //needed for managent port
 #include <DNSServer.h>
@@ -25,7 +26,9 @@
 // of the address block
 #define DRD_ADDRESS 0x00
 
+#define WAITTIME 5000
 
+ESP8266WebServer httpServer(80);
 
 // Default settings if config does not exists
 char* wifi_hostname = "panasonic_heat_pump";
@@ -35,6 +38,7 @@ char mqtt_port[6] = "1883";
 char mqtt_username[40];
 char mqtt_password[40];
 
+int nexttime = 0;
 
 byte inCheck = 0;
 
@@ -106,7 +110,7 @@ void setupWifi() {
           if (!error) {
             Serial1.println("\nparsed json");
             strcpy(wifi_hostname, jsonDoc["wifi_hostname"]);
-            strcpy(ota_password, jsonDoc["ota_password"]);        
+            strcpy(ota_password, jsonDoc["ota_password"]);
             strcpy(mqtt_server, jsonDoc["mqtt_server"]);
             strcpy(mqtt_port, jsonDoc["mqtt_port"]);
             strcpy(mqtt_username, jsonDoc["mqtt_username"]);
@@ -413,7 +417,7 @@ void get_heatpump_data() {
       break;
     default:
       mode_state_string = "Unknown";
-      break;   
+      break;
   }
   sprintf(log_msg, "received heat pump mode state : %d (%s)", mode_state, mode_state_string); log_message(log_msg);
   sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "mode_state"); mqtt_client.publish(mqtt_topic, mode_state_string);
@@ -494,7 +498,7 @@ void get_heatpump_data() {
       break;
     default:
       valve_state_string = "Unknown";
-      break;    
+      break;
   }
   sprintf(log_msg, "received filter state : %d (%s)", valve_state, valve_state_string); log_message(log_msg);
   sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "valve_state"); mqtt_client.publish(mqtt_topic, valve_state_string);
@@ -588,11 +592,18 @@ void get_heatpump_data() {
 
   int OperationsNumber  = word(data[180], data[179]) - 1;
   sprintf(log_msg, "received (OperationsNumber): %.2f", OperatingTime); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperationsNumber"); mqtt_client.publish(mqtt_topic, String(OperationsNumber).c_str());    
+  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperationsNumber"); mqtt_client.publish(mqtt_topic, String(OperationsNumber).c_str());
 
 }
 
 
+void handleRoot() {
+  String httptext = "Panasonic Aquarea status reader\n";
+  httptext = httptext + "======================\n";
+  httptext = httptext + "Last received data:\n";
+  httptext = httptext + data;
+  httpServer.send(200, "text/plain", httptext);
+}
 
 
 void setupOTA() {
@@ -618,7 +629,12 @@ void setupOTA() {
   ArduinoOTA.begin();
 }
 
-void setup() {
+void setupHttp() {
+  httpServer.on("/", handleRoot);
+  httpServer.begin();
+}
+
+void setupSerial() {
   //debug line on serial1 (D4, GPIO2)
   Serial1.begin(115200);
 
@@ -630,25 +646,37 @@ void setup() {
 
   //enable gpio15 after boot using gpio5 (D1)
   pinMode(5, OUTPUT);
-  digitalWrite(5, HIGH);  
+  digitalWrite(5, HIGH);
+}
 
-  setupWifi();
-  setupOTA();
-
+void setupMqtt() {
   mqtt_client.setServer(mqtt_server, atoi(mqtt_port));
   mqtt_client.setCallback(mqtt_callback);
+}
+
+void setup() {
+  setupSerial();
+  setupWifi();
+  setupOTA();
+  setupMqtt();
+  setupHttp();
 }
 
 void loop() {
   // Handle OTA first.
   ArduinoOTA.handle();
+  // then handle HTTP
+  httpServer.handleClient();
+  // run the main program only each WAITTIME
+  if (millis() > nexttime) {
+    nexttime = millis() + WAITTIME;
+    if (!mqtt_client.connected())
+    {
+      mqtt_reconnect();
+    }
+    mqtt_client.loop();
 
-  if (!mqtt_client.connected())
-  {
-    mqtt_reconnect();
+    update_everything();
   }
-  mqtt_client.loop();
-
-  update_everything();
-  delay(5000);
+  yield();
 }
