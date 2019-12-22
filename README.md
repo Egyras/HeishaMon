@@ -34,7 +34,7 @@ Serial 1 (GPIO2) can be used to connect another serial line (GND and TX from the
 
 ## libs for building the test arduino image
 boards: \
-esp8266 by esp8266 community version 2.6.3 https://github.com/esp8266/Arduino/releases/tag/2.6.3 \
+esp8266 by esp8266 community version 2.6.3 https://github.com/esp8266/Arduino/releases/tag/2.6.3
 
 libs: \
 wifimanager by tzapu version 0.15.0-beta https://github.com/tzapu/WiFiManager/releases/tag/0.15.0-beta \
