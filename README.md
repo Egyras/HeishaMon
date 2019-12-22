@@ -30,7 +30,7 @@ You need to build this image with support for a filesystem on the esp8266 so sel
 When starting for the first time a open-wifi-hotspot will be visible allowing you to config your wifi network and your mqtt server. \
 If you ever want to factory reset, just double reset the esp8266 within 0.1 second. It will then format the filesystem and remove the wifi setting and start the wifi hotspot again. \
 After configuring and booting the image will be able to read and talk to your heatpump. The GPIO13/GPIO15 connection will be used for communications so you can keep your computer/uploader connected to the board if you want. \
-Serial 1 (GPIO2) can be used to connect another serial line (GND and TX from the board only) to read some debugging data. \
+Serial 1 (GPIO2) can be used to connect another serial line (GND and TX from the board only) to read some debugging data.
 
 ## libs for building the test arduino image
 boards: \
@@ -40,7 +40,7 @@ libs: \
 wifimanager by tzapu version 0.15.0-beta https://github.com/tzapu/WiFiManager/releases/tag/0.15.0-beta \
 pubsubclient by nick o'leary version 2.7.0 https://github.com/knolleary/pubsubclient/releases/tag/v2.7 \
 doubleresetdetect by jens-christian skibakk version 1.0.0 https://github.com/jenscski/DoubleResetDetect/releases/tag/1.0.0 \
-arduinojson by benoit blanchon version 6.13.0 https://github.com/bblanchon/ArduinoJson/releases/tag/v6.13.0 \
+arduinojson by benoit blanchon version 6.13.0 https://github.com/bblanchon/ArduinoJson/releases/tag/v6.13.0
 
 ## Protocol info packet:
 
