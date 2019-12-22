@@ -535,6 +535,9 @@ void decode_heatpump_data() {
     case 86:
       valve_state_string = "Tank";
       break;
+    case 89:
+      valve_state_string = "Defrost";
+      break;
     default:
       valve_state_string = "Unknown";
       break;
@@ -630,7 +633,7 @@ void decode_heatpump_data() {
   sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperatingTime"); mqtt_client.publish(mqtt_topic, String(OperatingTime).c_str());
 
   int OperationsNumber  = word(data[180], data[179]) - 1;
-  sprintf(log_msg, "received (OperationsNumber): %.2f", OperatingTime); log_message(log_msg);
+  sprintf(log_msg, "received (OperationsNumber): %.2f", OperationsNumber); log_message(log_msg);
   sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperationsNumber"); mqtt_client.publish(mqtt_topic, String(OperationsNumber).c_str());
 
 }
