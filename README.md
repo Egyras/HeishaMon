@@ -33,7 +33,7 @@ And add some 24 AWG shielded 4-conductors cable.
 
 Currently the PCB's are in (beta) production. We suggest to wait a while for them to be tested. Soon you will be cable to order one of the PCB design directly from the project owners but ofcourse we will share the schematics also. For now these are some schematics we are testing or have tested.
 
-PCB design based on through whole soldering, Wemos shield type. With basic components (resitors and transistors). https://easyeda.com/igor_6537/panasonic-cn-cnt-to-wemos-through-hole
+PCB design based on through hole soldering, Wemos shield type. With basic components (resitors and transistors). https://easyeda.com/igor_6537/panasonic-cn-cnt-to-wemos-through-hole
 
 PCB design based on SMD soldering, Wemos shield type. With SMD components (mosfet instead of transistors) https://easyeda.com/igor_6537/panasonic-cn-cnt-to-wemos
 
