@@ -21,7 +21,7 @@ For Conrad orders:
 
 | JST Type | Conrad article number | Description |
 | ----- | ---- | ----- |
-|B05B-XASK-1| 741366 | Header matching CZ-TAW1, for soldering on PCB |
+|B05B-XASK-1| 741366 | Header matching CZ-TAW1, for soldering on PCB. S05B-XASK-1 (not orderable at conrad) is the side-ways version	|
 |XAP-05V-1| 741233 | Cable connector on CZ-TAW1/PCB side |
 |PAP-05V-1| 1426227 | Cable connector on CN-CNT side | 
 |BXA-01T-P0.6| 741295 |Connector pins on CZ-TAW1/PCB side|
