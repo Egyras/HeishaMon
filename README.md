@@ -16,6 +16,7 @@ Pre-made crimp leads 150 mm crimp-free end lead PA 2.0 can be used - https://uk.
 The Panasonic CZ-TAW1 appears to use a JST B05B-XASK-1 male header - https://uk.rs-online.com/web/p/pcb-headers/6027679/
 
 For Conrad orders:
+
 | JST Type | Conrad article number | Description |
 | ----- | ---- | ----- |
 |B05B-XASK-1| 741366 | Header matching CZ-TAW1, for PCB |
