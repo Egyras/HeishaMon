@@ -1,3 +1,6 @@
+[![Jion the Slack chat room](https://img.shields.io/badge/Slack-Join%20the%20chat%20room-orange)](https://panasonichaqu-0mz3627.slack.com/archives/CS0K5CLLE)
+
+
 # Panasonic H Series Aquarea air-water heat pump protocol
 
 
