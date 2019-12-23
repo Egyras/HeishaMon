@@ -22,8 +22,8 @@ For Conrad orders:
 |B05B-XASK-1| 741366 | Header matching CZ-TAW1, for PCB |
 |XAP-05V-1| 741233 | Cable connector on CN-CNT side |
 |PAP-05V-1| 1426227 | Cable connector on CZ-TAW1/PCB side | 
-|pins for XAP| 741295 | Connector pins on CN-CNT side |
-|pins for PAP| 1426240 | Connector pins on CZ-TAW1/PCB side |
+|BXA-01T-P0.6| 741295 | Connector pins on CN-CNT side |
+|SPHD-002T-P0.5| 1426240 | Connector pins on CZ-TAW1/PCB side |
 
 
 
