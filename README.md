@@ -31,6 +31,8 @@ And add some 24 AWG shielded 4-conductors cable.
 
 ## How to connect
 
+Currently the PCB's are in (beta) production. We suggest to wait a while for them to be tested. Soon you will be cable to order one of the PCB design directly from the project owners but ofcourse we will share the schematics also. For now these are some schematics we are testing or have tested.
+
 Schematic how to connect ESP8266 (Tested with Adafruit HUZZAH ESP8266 as this example):
 
 ![](https://github.com/Egyras/Panasonic-H-Aquarea/blob/master/panasonic.jpg)
