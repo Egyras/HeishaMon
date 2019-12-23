@@ -11,6 +11,8 @@ Pin-out (from top to bottom) \
 4 - +12V (250mA) \
 5 - GND
 
+## Where to get connectors
+
 CN-CNT female connector PAP-05V-S - JST Female Connector Housing - PA, 2mm Pitch, 5 Way, 1 Row - https://uk.rs-online.com/web/p/pcb-connector-housings/4766798/ \
 Pre-made crimp leads 150 mm crimp-free end lead PA 2.0 can be used - https://uk.rs-online.com/web/p/pre-crimped-leads/5128721/ \
 The Panasonic CZ-TAW1 appears to use a JST B05B-XASK-1 male header - https://uk.rs-online.com/web/p/pcb-headers/6027679/
@@ -19,13 +21,15 @@ For Conrad orders:
 
 | JST Type | Conrad article number | Description |
 | ----- | ---- | ----- |
-|B05B-XASK-1| 741366 | Header matching CZ-TAW1, for PCB |
+|B05B-XASK-1| 741366 | Header matching CZ-TAW1, for soldering on PCB |
 |XAP-05V-1| 741233 | Cable connector on CZ-TAW1/PCB side |
 |PAP-05V-1| 1426227 | Cable connector on CN-CNT side | 
 |BXA-01T-P0.6| 741295 |Connector pins on CZ-TAW1/PCB side|
 |SPHD-002T-P0.5| 1426240 | Connector pins on CN-CNT side |
 
+And add some 24 AWG shielded 4-conductors cable.
 
+## How to connect
 
 Schematic how to connect ESP8266 (Tested with Adafruit HUZZAH ESP8266 as this example):
 
