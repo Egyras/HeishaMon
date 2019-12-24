@@ -36,14 +36,11 @@ And add some 24 AWG shielded 4-conductors cable.
 
 Currently the PCB's are in (beta) production. We suggest to wait a while for them to be tested. Soon you will be cable to order one of the PCB design directly from the project owners but ofcourse we will share the schematics also. For now these are some schematics we are testing or have tested.
 
-Schematic how to connect ESP8266 (Tested with Adafruit HUZZAH ESP8266 as this example):
+PCB design based on through hole soldering, Wemos shield type. With basic components (resitors and transistors). https://easyeda.com/igor_6537/panasonic-cn-cnt-to-wemos-through-hole
 
-![](https://github.com/Egyras/Panasonic-H-Aquarea/blob/master/panasonic.jpg)
+PCB design based on SMD soldering, Wemos shield type. With SMD components (mosfet instead of transistors) https://easyeda.com/igor_6537/panasonic-cn-cnt-to-wemos
 
-
-For Wemos D1 Mini use @IgorYbema provided schematic with serial.swap in the sketch: 
-
-![](https://github.com/IgorYbema/Panasonic-H-Aquarea/blob/master/Wemos%20Panasonic%20Aquarea%20CN-CNT%20shield%20through%20whole.png)
+PCB design based on SMD soldering, ESP-12f type.  https://easyeda.com/kompiuteriu/new-cn-cnt
 
 ## using the test arduino image
 The current arduino test image is able to read from the Panasonic Aquarea H-series CN-CNT connector. \

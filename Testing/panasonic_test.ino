@@ -7,15 +7,11 @@
 #include <PubSubClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
-
-//needed for managent port
 #include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
-#include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
-#include <DoubleResetDetect.h>    //https://github.com/jenscski/DoubleResetDetect
+
 
 #include "commands.h"
+#include "webfunctions.h"
 
 
 // maximum number of seconds between resets that
@@ -33,10 +29,10 @@ ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 const char* update_path = "/firmware";
 const char* update_username = "admin";
-const char* update_password = "panasonic";
+const char* update_password = "heisha";
 
 // Default settings if config does not exists
-char* wifi_hostname = "panasonic_heat_pump";
+char* wifi_hostname = "HeishaMon";
 char* ota_password  = "panasonic";
 char mqtt_server[40];
 char mqtt_port[6] = "1883";
@@ -64,14 +60,6 @@ char log_msg[256];
 // mqtt topic to sprintf and then publish to
 char mqtt_topic[256];
 
-//flag for saving data
-bool shouldSaveConfig = false;
-
-//callback notifying us of the need to save config
-void saveConfigCallback () {
-  Serial1.println("Should save config");
-  shouldSaveConfig = true;
-}
 
 //doule reset detection
 DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
@@ -81,163 +69,19 @@ WiFiClient mqtt_wifi_client;
 PubSubClient mqtt_client(mqtt_wifi_client);
 
 
-void setupWifi() {
-  //WiFiManager
-  //Local intialization. Once its business is done, there is no need to keep it around
-  WiFiManager wifiManager;
-  wifiManager.setDebugOutput(false);
-
-  if (drd.detect()) {
-    Serial1.println("Double reset detected, clearing config.");
-    SPIFFS.begin();
-    SPIFFS.format();
-    wifiManager.resetSettings();
-    Serial1.println("Config cleared. Please open the Wifi portal to configure this device...");
-  } else {
-    //read configuration from FS json
-    Serial1.println("mounting FS...");
-
-    if (SPIFFS.begin()) {
-      Serial1.println("mounted file system");
-      if (SPIFFS.exists("/config.json")) {
-        //file exists, reading and loading
-        Serial1.println("reading config file");
-        File configFile = SPIFFS.open("/config.json", "r");
-        if (configFile) {
-          Serial1.println("opened config file");
-          size_t size = configFile.size();
-          // Allocate a buffer to store contents of the file.
-          std::unique_ptr<char[]> buf(new char[size]);
-
-          configFile.readBytes(buf.get(), size);
-          DynamicJsonDocument jsonDoc(1024);
-          DeserializationError error = deserializeJson(jsonDoc, buf.get());
-          serializeJson(jsonDoc, Serial1);
-          if (!error) {
-            Serial1.println("\nparsed json");
-            strcpy(wifi_hostname, jsonDoc["wifi_hostname"]);
-            strcpy(ota_password, jsonDoc["ota_password"]);
-            strcpy(mqtt_server, jsonDoc["mqtt_server"]);
-            strcpy(mqtt_port, jsonDoc["mqtt_port"]);
-            strcpy(mqtt_username, jsonDoc["mqtt_username"]);
-            strcpy(mqtt_password, jsonDoc["mqtt_password"]);
-
-          } else {
-            Serial1.println("Failed to load json config, forcing config reset.");
-            wifiManager.resetSettings();
-          }
-          configFile.close();
-        }
-      }
-      else {
-        Serial1.println("No config.json exists! Forcing a config reset.");
-      }
-    } else {
-      Serial1.println("failed to mount FS");
-    }
-    //end read
-  }
-
-  // The extra parameters to be configured (can be either global or just in the setup)
-  // After connecting, parameter.getValue() will get you the configured value
-  // id/name placeholder/prompt default length
-  WiFiManagerParameter custom_text1("<p>My hostname and OTA password</p>");
-  WiFiManagerParameter custom_wifi_hostname("wifi_hostname", "wifi hostname", wifi_hostname, 40);
-  WiFiManagerParameter custom_ota_password("ota_password", "ota password", ota_password, 40);
-  WiFiManagerParameter custom_text2("<p>Configure MQTT settings</p>");
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
-  WiFiManagerParameter custom_mqtt_username("username", "mqtt username", mqtt_username, 40);
-  WiFiManagerParameter custom_mqtt_password("password", "mqtt password", mqtt_password, 40);
-
-
-  //set config save notify callback
-  wifiManager.setSaveConfigCallback(saveConfigCallback);
-
-
-  //add all your parameters here
-  wifiManager.addParameter(&custom_text1);
-  wifiManager.addParameter(&custom_wifi_hostname);
-  wifiManager.addParameter(&custom_ota_password);
-  wifiManager.addParameter(&custom_text2);
-  wifiManager.addParameter(&custom_mqtt_server);
-  wifiManager.addParameter(&custom_mqtt_port);
-  wifiManager.addParameter(&custom_mqtt_username);
-  wifiManager.addParameter(&custom_mqtt_password);
-
-
-  //fetches ssid and pass and tries to connect
-  //if it does not connect it starts an access point with the specified name
-  //here  "AutoConnectAP"
-  //and goes into a blocking loop awaiting configuration
-  if (!wifiManager.autoConnect("PanaMon-Setup")) {
-    Serial1.println("failed to connect and hit timeout");
-    delay(3000);
-    //reset and try again, or maybe put it to deep sleep
-    ESP.reset();
-    delay(5000);
-  }
-
-  //if you get here you have connected to the WiFi
-  Serial1.println("Wifi connected...yeey :)");
-
-  //read updated parameters
-  strcpy(wifi_hostname, custom_wifi_hostname.getValue());
-  strcpy(ota_password, custom_ota_password.getValue());
-  strcpy(mqtt_server, custom_mqtt_server.getValue());
-  strcpy(mqtt_port, custom_mqtt_port.getValue());
-  strcpy(mqtt_username, custom_mqtt_username.getValue());
-  strcpy(mqtt_password, custom_mqtt_password.getValue());
-
-
-  //save the custom parameters to FS
-  if (shouldSaveConfig) {
-    Serial1.println("saving config");
-    DynamicJsonDocument jsonDoc(1024);
-    jsonDoc["wifi_hostname"] = wifi_hostname;
-    jsonDoc["ota_password"] = ota_password;
-    jsonDoc["mqtt_server"] = mqtt_server;
-    jsonDoc["mqtt_port"] = mqtt_port;
-    jsonDoc["mqtt_username"] = mqtt_username;
-    jsonDoc["mqtt_password"] = mqtt_password;
-
-    File configFile = SPIFFS.open("/config.json", "w");
-    if (!configFile) {
-      Serial1.println("failed to open config file for writing");
-    }
-
-    serializeJson(jsonDoc, Serial1);
-    serializeJson(jsonDoc, configFile);
-    configFile.close();
-    //end save
-  }
-
-  Serial1.println("local ip");
-  Serial1.println(WiFi.localIP());
-}
-
 void mqtt_reconnect()
 {
-  // Loop until we're reconnected
-  while (!mqtt_client.connected())
+  Serial1.println("Reconnecting to mqtt server ...");
+  if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password))
   {
-    Serial1.println("Connecting to mqtt server ...");
-    if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password))
-    {
-      mqtt_client.subscribe(mqtt_set_quiet_mode_topic);
-      mqtt_client.subscribe(mqtt_set_shift_temperature_topic);
-      mqtt_client.subscribe(mqtt_set_mode_topic);
-      mqtt_client.subscribe(mqtt_set_force_DHW_topic);
-      mqtt_client.subscribe(mqtt_set_holiday_topic);
-      mqtt_client.subscribe(mqtt_set_powerfull_topic);
-      mqtt_client.subscribe(mqtt_set_tank_temp_topic);
-      mqtt_client.subscribe(mqtt_set_cool_temp_topic);
-    }
-    else
-    {
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
+    mqtt_client.subscribe(mqtt_set_quiet_mode_topic);
+    mqtt_client.subscribe(mqtt_set_shift_temperature_topic);
+    mqtt_client.subscribe(mqtt_set_mode_topic);
+    mqtt_client.subscribe(mqtt_set_force_DHW_topic);
+    mqtt_client.subscribe(mqtt_set_holiday_topic);
+    mqtt_client.subscribe(mqtt_set_powerfull_topic);
+    mqtt_client.subscribe(mqtt_set_tank_temp_topic);
+    mqtt_client.subscribe(mqtt_set_cool_temp_topic);
   }
 }
 void log_message(char* string)
@@ -639,13 +483,7 @@ void decode_heatpump_data() {
 }
 
 
-void handleRoot() {
-  String httptext = "Panasonic Aquarea status reader\n";
-  httptext = httptext + "======================\n";
-  httptext = httptext + "Last received data:\n";
-  httptext = httptext + data;
-  httpServer.send(200, "text/plain", httptext);
-}
+
 
 
 void setupOTA() {
@@ -673,7 +511,12 @@ void setupOTA() {
 
 void setupHttp() {
   httpUpdater.setup(&httpServer, update_path, update_username, update_password);
-  httpServer.on("/", handleRoot);
+  httpServer.on("/", []{
+    handleRoot(&httpServer);
+  });
+  httpServer.on("/factoryreset", []{
+    handleFactoryReset(&httpServer);
+  });  
   httpServer.begin();
 }
 
@@ -699,7 +542,7 @@ void setupMqtt() {
 
 void setup() {
   setupSerial();
-  setupWifi();
+  setupWifi(drd, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password);
   setupOTA();
   setupMqtt();
   setupHttp();
