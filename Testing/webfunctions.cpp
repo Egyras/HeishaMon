@@ -171,6 +171,7 @@ void handleRoot(ESP8266WebServer *httpServer) {
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<p>Use this page to config your Heisha monitor device</p>";
   httptext = httptext + "<form action=\"/factoryreset\" method=\"get\"><button class=\"w3-btn w3-white w3-border w3-border-red w3-round-large\" type=\"submit\">Factory reset</button></form>";
+  httptext = httptext + "<form action=\"/firmware\" method=\"get\"><button class=\"w3-btn w3-white w3-border w3-border-red w3-round-large\" type=\"submit\">Load new firmware</button></form>";
   httptext = httptext + "</div>";
   httptext = httptext + "</body>";
   httptext = httptext + "</html>";

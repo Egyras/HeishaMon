@@ -9,6 +9,7 @@
 #include <ESP8266HTTPUpdateServer.h>
 #include <DNSServer.h>
 
+#include <ArduinoJson.h>   
 
 #include "commands.h"
 #include "webfunctions.h"
@@ -24,6 +25,7 @@
 #define DRD_ADDRESS 0x00
 
 #define WAITTIME 5000
+#define UPDATEALLTIME 300000 // how often all data is cleared and so resend to mqtt
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
@@ -40,7 +42,8 @@ char mqtt_username[40];
 char mqtt_password[40];
 
 bool sending = false;
-int nexttime = 0;
+unsigned long nexttime = 0;
+unsigned long nextalldatatime = 0;
 
 byte inCheck = 0;
 
@@ -53,6 +56,9 @@ const bool outputMqttLog = true;
 #define MAXDATASIZE 256
 char data[MAXDATASIZE];
 int data_length = 0;
+
+// store actual data in a json doc
+StaticJsonDocument<1024> actData;
 
 // log message to sprintf to
 char log_msg[256];
@@ -267,11 +273,17 @@ void send_panasonic_query()
     return;
   }
   else {
+    log_message("Requesting new panasonic data...");
     decode_heatpump_data();
   }
 }
 
 void decode_heatpump_data() {
+  if (millis() > nextalldatatime) {
+    actData.clear(); // clearing all actual data so everything will be updated and sent to mqtt
+    nextalldatatime = millis() + UPDATEALLTIME;
+  }
+  
   int mode_state = (int)(data[6]);
   char* mode_state_string;
   switch (mode_state) {
@@ -300,8 +312,11 @@ void decode_heatpump_data() {
       mode_state_string = "Unknown";
       break;
   }
-  sprintf(log_msg, "received heat pump mode state : %d (%s)", mode_state, mode_state_string); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "mode_state"); mqtt_client.publish(mqtt_topic, mode_state_string);
+  if ( actData["mode_state_string"] != mode_state_string ) {
+    actData["mode_state_string"] = mode_state_string;
+    sprintf(log_msg, "received heat pump mode state : %d (%s)", mode_state, mode_state_string); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "mode_state"); mqtt_client.publish(mqtt_topic, mode_state_string);
+  }
 
 
   int quiet_mode_state = (int)(data[7]);
@@ -336,10 +351,16 @@ void decode_heatpump_data() {
     default:
       break;
   }
-  sprintf(log_msg, "received quiet mode state : %d (%s)", quiet_mode_state, quiet_mode_state_string); log_message(log_msg);
-
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "quiet_mode_state"); mqtt_client.publish(mqtt_topic, quiet_mode_state_string);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "powerfull_mode_state"); mqtt_client.publish(mqtt_topic, powerfull_mode_state_string);
+  if ( actData["quiet_mode_state_string"] != quiet_mode_state_string ) {
+    actData["quiet_mode_state_string"] = quiet_mode_state_string;
+    sprintf(log_msg, "received quiet mode state : %d (%s)", quiet_mode_state, quiet_mode_state_string); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "quiet_mode_state"); mqtt_client.publish(mqtt_topic, quiet_mode_state_string);
+  }
+  if ( actData["powerfull_mode_state_string"] != powerfull_mode_state_string ) {
+    actData["powerfull_mode_state_string"] = powerfull_mode_state_string;
+    sprintf(log_msg, "received powerfull mode state : %d (%s)", quiet_mode_state, powerfull_mode_state_string); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "powerfull_mode_state"); mqtt_client.publish(mqtt_topic, powerfull_mode_state_string);
+  }
 
 
   int valve_state = (int)(data[111]);
@@ -358,73 +379,118 @@ void decode_heatpump_data() {
       valve_state_string = "Unknown";
       break;
   }
-  sprintf(log_msg, "received 3-way valve state : %d (%s)", valve_state, valve_state_string); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "valve_state"); mqtt_client.publish(mqtt_topic, valve_state_string);
-
+  if ( actData["valve_state_string"] != valve_state_string ) {
+    actData["valve_state_string"] = valve_state_string;
+    sprintf(log_msg, "received 3-way valve state : %d (%s)", valve_state, valve_state_string); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "valve_state"); mqtt_client.publish(mqtt_topic, valve_state_string);
+  }
+  
   float WatOutTarTemp = (float)data[153] - 128;
-  sprintf(log_msg, "received temperature (WatOutTarTemp): %.2f", WatOutTarTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "WatOutTarTemp"); mqtt_client.publish(mqtt_topic, String(WatOutTarTemp).c_str());
+  if ( actData["WatOutTarTemp"] != WatOutTarTemp ) {
+    actData["WatOutTarTemp"] = WatOutTarTemp;
+    sprintf(log_msg, "received temperature (WatOutTarTemp): %.2f", WatOutTarTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "WatOutTarTemp"); mqtt_client.publish(mqtt_topic, String(WatOutTarTemp).c_str());
+  }
   
   float ActWatOutTemp = (float)data[139] - 128;
-  sprintf(log_msg, "received temperature (ActWatOutTemp): %.2f", ActWatOutTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ActWatOutTemp"); mqtt_client.publish(mqtt_topic, String(ActWatOutTemp).c_str());
+  if ( actData["ActWatOutTemp"] != ActWatOutTemp ) {
+    actData["ActWatOutTemp"] = ActWatOutTemp;
+    sprintf(log_msg, "received temperature (ActWatOutTemp): %.2f", ActWatOutTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ActWatOutTemp"); mqtt_client.publish(mqtt_topic, String(ActWatOutTemp).c_str());
+  }
 
   float InletTemp = (float)data[143] - 128;
-  sprintf(log_msg, "received temperature (InletTemp): %.2f", InletTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "InletTemp"); mqtt_client.publish(mqtt_topic, String(InletTemp).c_str());
-
+  if ( actData["InletTemp"] != InletTemp ) {
+    actData["InletTemp"] = InletTemp;
+    sprintf(log_msg, "received temperature (InletTemp): %.2f", InletTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "InletTemp"); mqtt_client.publish(mqtt_topic, String(InletTemp).c_str());
+  }
+  
   float TankSetTemp = (float)data[42] - 128;
-  sprintf(log_msg, "received temperature (TankSetTemp): %.2f", TankSetTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "TankSetTemp"); mqtt_client.publish(mqtt_topic, String(TankSetTemp).c_str());
+  if ( actData["TankSetTemp"] != TankSetTemp ) {
+    actData["TankSetTemp"] = TankSetTemp;
+    sprintf(log_msg, "received temperature (TankSetTemp): %.2f", TankSetTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "TankSetTemp"); mqtt_client.publish(mqtt_topic, String(TankSetTemp).c_str());
+  }
   
   float ActTankTemp = (float)data[141] - 128;
-  sprintf(log_msg, "received temperature (ActTankTemp): %.2f", ActTankTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ActTankTemp"); mqtt_client.publish(mqtt_topic, String(ActTankTemp).c_str());
-
+  if ( actData["ActTankTemp"] != ActTankTemp ) {
+    actData["ActTankTemp"] = ActTankTemp;
+    sprintf(log_msg, "received temperature (ActTankTemp): %.2f", ActTankTemp); log_message(log_msg);  
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ActTankTemp"); mqtt_client.publish(mqtt_topic, String(ActTankTemp).c_str());
+  }
+  
   float ActOutTemp = (float)data[142] - 128;
-  sprintf(log_msg, "received temperature (ActOutTemp): %.2f", ActOutTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ActOutTemp"); mqtt_client.publish(mqtt_topic, String(ActOutTemp).c_str());
-
+  if ( actData["ActOutTemp"] != ActOutTemp ) {
+    actData["ActOutTemp"] = ActOutTemp;
+    sprintf(log_msg, "received temperature (ActOutTemp): %.2f", ActOutTemp); log_message(log_msg);  
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ActOutTemp"); mqtt_client.publish(mqtt_topic, String(ActOutTemp).c_str());
+  }
+  
   float RoomTherTemp = (float)data[156] - 128;
-  sprintf(log_msg, "received temperature (RoomTherTemp): %.2f", RoomTherTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "RoomTherTemp"); mqtt_client.publish(mqtt_topic, String(RoomTherTemp).c_str());
-
+  if ( actData["RoomTherTemp"] != RoomTherTemp ) {
+    actData["RoomTherTemp"] = RoomTherTemp;
+    sprintf(log_msg, "received temperature (RoomTherTemp): %.2f", RoomTherTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "RoomTherTemp"); mqtt_client.publish(mqtt_topic, String(RoomTherTemp).c_str());
+  }
+  
   int PumpFlow1 = (int)data[170];
   float PumpFlow2 = ((((float)data[169] - 1) / 5) * 2) / 100;
   float PumpFlow = PumpFlow1 + PumpFlow2;
-
-  sprintf(log_msg, "received pump flow (PumpFlow): %.2f", PumpFlow); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "PumpFlow"); mqtt_client.publish(mqtt_topic, String(PumpFlow).c_str());
-
+  if ( actData["PumpFlow"] != PumpFlow ) {
+    actData["PumpFlow"] = PumpFlow;
+    sprintf(log_msg, "received pump flow (PumpFlow): %.2f", PumpFlow); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "PumpFlow"); mqtt_client.publish(mqtt_topic, String(PumpFlow).c_str());
+  }
+  
   float CompFreq = (float)data[166] - 1;
-  sprintf(log_msg, "received compressor frequency (CompFreq): %.2f", CompFreq); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "CompFreq"); mqtt_client.publish(mqtt_topic, String(CompFreq).c_str());
-
+  if ( actData["CompFreq"] != CompFreq ) {
+    actData["CompFreq"] = CompFreq;
+    sprintf(log_msg, "received compressor frequency (CompFreq): %.2f", CompFreq); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "CompFreq"); mqtt_client.publish(mqtt_topic, String(CompFreq).c_str());
+  }
 
   float HeatShiftTemp = (float)data[38] - 128;
-  sprintf(log_msg, "received temperature (HeatShiftTemp): %.2f", HeatShiftTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HeatShiftTemp"); mqtt_client.publish(mqtt_topic, String(HeatShiftTemp).c_str());
-
+  if ( actData["HeatShiftTemp"] != HeatShiftTemp ) {
+    actData["HeatShiftTemp"] = HeatShiftTemp;
+    sprintf(log_msg, "received temperature (HeatShiftTemp): %.2f", HeatShiftTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HeatShiftTemp"); mqtt_client.publish(mqtt_topic, String(HeatShiftTemp).c_str());
+  }
+  
   float CoolShiftTemp = (float)data[39] - 128;
-  sprintf(log_msg, "received temperature (CoolShiftTemp): %.2f", CoolShiftTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "CoolShiftTemp"); mqtt_client.publish(mqtt_topic, String(CoolShiftTemp).c_str());
-
+  if ( actData["CoolShiftTemp"] != CoolShiftTemp ) {
+    actData["CoolShiftTemp"] = CoolShiftTemp;
+    sprintf(log_msg, "received temperature (CoolShiftTemp): %.2f", CoolShiftTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "CoolShiftTemp"); mqtt_client.publish(mqtt_topic, String(CoolShiftTemp).c_str());
+  }
+  
   float HCurveOutHighTemp = (float)data[75] - 128;
-  sprintf(log_msg, "received temperature (HCurveOutHighTemp): %.2f", HCurveOutHighTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutHighTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutHighTemp).c_str());
-
+  if ( actData["HCurveOutHighTemp"] != HCurveOutHighTemp ) {
+    actData["HCurveOutHighTemp"] = HCurveOutHighTemp;
+    sprintf(log_msg, "received temperature (HCurveOutHighTemp): %.2f", HCurveOutHighTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutHighTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutHighTemp).c_str());
+  }
+  
   float HCurveOutLowTemp = (float)data[76] - 128;
-  sprintf(log_msg, "received temperature (HCurveOutLowTemp): %.2f", HCurveOutLowTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutLowTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutLowTemp).c_str());
-
+  if ( actData["HCurveOutLowTemp"] != HCurveOutLowTemp ) {
+    actData["HCurveOutLowTemp"] = HCurveOutLowTemp;
+    sprintf(log_msg, "received temperature (HCurveOutLowTemp): %.2f", HCurveOutLowTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutLowTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutLowTemp).c_str());
+  }
+  
   float HCurveOutsLowTemp = (float)data[77] - 128;
-  sprintf(log_msg, "received temperature (HCurveOutsLowTemp): %.2f", HCurveOutsLowTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutsLowTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutsLowTemp).c_str());
-
+  if ( actData["HCurveOutsLowTemp"] != HCurveOutsLowTemp ) {
+    actData["HCurveOutsLowTemp"] = HCurveOutsLowTemp;
+    sprintf(log_msg, "received temperature (HCurveOutsLowTemp): %.2f", HCurveOutsLowTemp); log_message(log_msg);
+   sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutsLowTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutsLowTemp).c_str());
+  }
+  
   float HCurveOutsHighTemp = (float)data[78] - 128;
-  sprintf(log_msg, "received temperature (HCurveOutsHighTemp): %.2f", HCurveOutsHighTemp); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutsHighTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutsHighTemp).c_str());
-
+  if ( actData["HCurveOutsHighTemp"] != HCurveOutsHighTemp ) {
+    actData["HCurveOutsHighTemp"] = HCurveOutsHighTemp;
+    sprintf(log_msg, "received temperature (HCurveOutsHighTemp): %.2f", HCurveOutsHighTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "HCurveOutsHighTemp"); mqtt_client.publish(mqtt_topic, String(HCurveOutsHighTemp).c_str());
+  }
 
   int ForceDHW_status = (int)(data[4]);
   char* ForceDHW_status_string;
@@ -439,9 +505,11 @@ void decode_heatpump_data() {
       ForceDHW_status_string = "Unknown";
       break;
   }
-  sprintf(log_msg, "received force DHW status : %d (%s)", ForceDHW_status, ForceDHW_status_string); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ForceDHW"); mqtt_client.publish(mqtt_topic, ForceDHW_status_string);
-
+  if ( actData["ForceDHW_status_string"] != ForceDHW_status_string ) {
+    actData["ForceDHW_status_string"] = ForceDHW_status_string;
+    sprintf(log_msg, "received force DHW status : %d (%s)", ForceDHW_status, ForceDHW_status_string); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ForceDHW"); mqtt_client.publish(mqtt_topic, ForceDHW_status_string);
+  }
 
   int Holiday_mode_status = (int)(data[5]);
   char* Holiday_mode_status_string;
@@ -456,38 +524,60 @@ void decode_heatpump_data() {
       Holiday_mode_status_string = "Unknown";
       break;
   }
-  sprintf(log_msg, "received Holiday status : %d (%s)", Holiday_mode_status, Holiday_mode_status_string); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Holiday"); mqtt_client.publish(mqtt_topic, Holiday_mode_status_string);
-
+  if ( actData["Holiday_mode_status_string"] != Holiday_mode_status_string ) {
+    actData["Holiday_mode_status_string"] = Holiday_mode_status_string;
+    sprintf(log_msg, "received Holiday status : %d (%s)", Holiday_mode_status, Holiday_mode_status_string); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Holiday"); mqtt_client.publish(mqtt_topic, Holiday_mode_status_string);
+  }
 
   float FloorHeatDelta = (float)data[84] - 128;
-  sprintf(log_msg, "received temperature (FloorHeatDelta): %.2f", FloorHeatDelta); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "FloorHeatDelta"); mqtt_client.publish(mqtt_topic, String(FloorHeatDelta).c_str());
-
+  if ( actData["FloorHeatDelta"] != FloorHeatDelta ) {
+    actData["FloorHeatDelta"] = FloorHeatDelta;
+    sprintf(log_msg, "received temperature (FloorHeatDelta): %.2f", FloorHeatDelta); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "FloorHeatDelta"); mqtt_client.publish(mqtt_topic, String(FloorHeatDelta).c_str());
+  }
+  
   float FloorCoolDelta = (float)data[94] - 128;
-  sprintf(log_msg, "received temperature (FloorCoolDelta): %.2f", FloorCoolDelta); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "FloorCoolDelta"); mqtt_client.publish(mqtt_topic, String(FloorCoolDelta).c_str());
+  if ( actData["FloorCoolDelta"] != FloorCoolDelta ) {
+    actData["FloorCoolDelta"] = FloorCoolDelta;
+    sprintf(log_msg, "received temperature (FloorCoolDelta): %.2f", FloorCoolDelta); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "FloorCoolDelta"); mqtt_client.publish(mqtt_topic, String(FloorCoolDelta).c_str());
+  }
 
   float TankHeatDelta = (float)data[99] - 128;
-  sprintf(log_msg, "received temperature (TankHeatDelta): %.2f", TankHeatDelta); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "TankHeatDelta"); mqtt_client.publish(mqtt_topic, String(TankHeatDelta).c_str());
-
+  if ( actData["TankHeatDelta"] != TankHeatDelta ) {
+    actData["TankHeatDelta"] = TankHeatDelta;
+    sprintf(log_msg, "received temperature (TankHeatDelta): %.2f", TankHeatDelta); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "TankHeatDelta"); mqtt_client.publish(mqtt_topic, String(TankHeatDelta).c_str());
+  }
+  
   float Econsum = ((float)data[193] - 1.0) * 200;
-  sprintf(log_msg, "received Watt (Elec consume): %.2f", Econsum); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Econsum"); mqtt_client.publish(mqtt_topic, String(Econsum).c_str());
+  if ( actData["Econsum"] != Econsum ) {
+    actData["Econsum"] = Econsum;
+    sprintf(log_msg, "received Watt (Elec consume): %.2f", Econsum); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Econsum"); mqtt_client.publish(mqtt_topic, String(Econsum).c_str());
+  }
 
   float Eproduce = ((float)data[194] - 1.0) * 200;
-  sprintf(log_msg, "received Watt (Elec produced): %.2f", Eproduce); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Eproduce"); mqtt_client.publish(mqtt_topic, String(Eproduce).c_str());
-
+  if ( actData["Eproduce"] != Eproduce ) {
+    actData["Eproduce"] = Eproduce;
+    sprintf(log_msg, "received Watt (Elec produced): %.2f", Eproduce); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Eproduce"); mqtt_client.publish(mqtt_topic, String(Eproduce).c_str());
+  }
+  
   int OperatingTime  = word(data[183], data[182]) - 1;
-  sprintf(log_msg, "received (OperatingTime): %.2f", OperatingTime); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperatingTime"); mqtt_client.publish(mqtt_topic, String(OperatingTime).c_str());
-
+  if ( actData["OperatingTime"] != OperatingTime ) {
+    actData["OperatingTime"] = OperatingTime;
+    sprintf(log_msg, "received (OperatingTime): %.2f", OperatingTime); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperatingTime"); mqtt_client.publish(mqtt_topic, String(OperatingTime).c_str());
+  }
+  
   int OperationsNumber  = word(data[180], data[179]) - 1;
-  sprintf(log_msg, "received (OperationsNumber): %.2f", OperationsNumber); log_message(log_msg);
-  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperationsNumber"); mqtt_client.publish(mqtt_topic, String(OperationsNumber).c_str());
-
+  if ( actData["OperationsNumber"] != OperationsNumber ) {
+    actData["OperationsNumber"] = OperationsNumber;
+    sprintf(log_msg, "received (OperationsNumber): %.2f", OperationsNumber); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperationsNumber"); mqtt_client.publish(mqtt_topic, String(OperationsNumber).c_str());
+  }
 }
 
 
@@ -554,6 +644,7 @@ void setup() {
   setupOTA();
   setupMqtt();
   setupHttp();
+  //switchSerial();
 }
 
 void loop() {
@@ -571,7 +662,6 @@ void loop() {
   // run the main program only each WAITTIME
   if (millis() > nexttime) {
     nexttime = millis() + WAITTIME;
-
     send_panasonic_query();
   }
   yield();
