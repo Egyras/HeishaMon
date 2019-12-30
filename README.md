@@ -263,10 +263,10 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 190 | 79 |   | ? |
 | 191 | 79 |   | ? |
 | 192 | 79 |   | ? |
-| 193 | 01 | to DEX (x-1) / 5   | Energy Consumption in [kw]  |
-| 194 | 07 | to DEX (x-1) / 5   | Energy Generation in [kw] |
-| 195 | 79 |   | ? |
-| 196 | 79 |   | ? |
+| 193 | 01 | to DEX (x-1) / 5   | Energy Consumption for Heat in [kw]  |
+| 194 | 07 | to DEX (x-1) / 5   | Energy Generation for Heat in [kw] |
+| 195 | 79 | to DEX (x-1) / 5   | Energy Consumption for DHW in [kw] |
+| 196 | 79 | to DEX (x-1) / 5   | Energy Generation for DHW in [kw] |
 | 197 | 79 |   | ? |
 | 198 | 79 |   | ? |
 | 199 | 79 |   | ? |
