@@ -81,7 +81,7 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 void mqtt_reconnect()
 {
   Serial1.println("Reconnecting to mqtt server ...");
-  if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password, mqtt_willtopic, 1, false, "Offline"))
+  if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password, mqtt_willtopic, 1, true, "Offline"))
   {
     mqtt_client.subscribe(mqtt_set_quiet_mode_topic);
     mqtt_client.subscribe(mqtt_set_shift_temperature_topic);
