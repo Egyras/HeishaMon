@@ -32,7 +32,7 @@ const char* update_username = "admin";
 const char* update_password = "heisha";
 
 // Default settings if config does not exists
-char* wifi_hostname = "Aquarea";
+char* wifi_hostname = "HeishaMon";
 char* ota_password  = "panasonic";
 char mqtt_server[40];
 char mqtt_port[6] = "1883";
