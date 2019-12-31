@@ -17,7 +17,7 @@
 
 // maximum number of seconds between resets that
 // counts as a double reset
-#define DRD_TIMEOUT 0.1
+#define DRD_TIMEOUT 1.0
 
 // address to the block in the RTC user memory
 // change it if it collides with another usage
@@ -342,6 +342,7 @@ void decode_heatpump_data() {
       mode_state_string = "Unknown";
       break;
   }
+
   if ( actData["mode_state_string"] != mode_state_string ) {
     actData["mode_state_string"] = mode_state_string;
     sprintf(log_msg, "received heat pump mode state : %d (%s)", mode_state, mode_state_string); log_message(log_msg);
@@ -358,24 +359,31 @@ void decode_heatpump_data() {
       powerfull_mode_state_string = "0";
       break;
     case 81:
-      quiet_mode_state_string = "10";
+      quiet_mode_state_string = "1";
+      powerfull_mode_state_string = "0";
       break;
     case 89:
-      quiet_mode_state_string = "20";
+      quiet_mode_state_string = "2";
+      powerfull_mode_state_string = "0";
       break;
     case 97:
-      quiet_mode_state_string = "30";
+      quiet_mode_state_string = "3";
+      powerfull_mode_state_string = "0";
       break;
     case 137:
       quiet_mode_state_string = "scheduled";
+      powerfull_mode_state_string = "0";
       break;
     case 74:
+      quiet_mode_state_string = "0";
       powerfull_mode_state_string = "30";
       break;
     case 75:
+      quiet_mode_state_string = "0";
       powerfull_mode_state_string = "60";
       break;
     case 76:
+      quiet_mode_state_string = "0";
       powerfull_mode_state_string = "90";
       break;
     default:
@@ -391,7 +399,6 @@ void decode_heatpump_data() {
     sprintf(log_msg, "received powerfull mode state : %d (%s)", quiet_mode_state, powerfull_mode_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "powerfull_mode_state"); mqtt_client.publish(mqtt_topic, powerfull_mode_state_string, MQTT_RETAIN_VALUES);
   }
-
 
   int valve_state = (int)(data[111]);
   char* valve_state_string;
@@ -409,6 +416,7 @@ void decode_heatpump_data() {
       valve_state_string = "Unknown";
       break;
   }
+
   if ( actData["valve_state_string"] != valve_state_string ) {
     actData["valve_state_string"] = valve_state_string;
     sprintf(log_msg, "received 3-way valve state : %d (%s)", valve_state, valve_state_string); log_message(log_msg);
@@ -535,6 +543,7 @@ void decode_heatpump_data() {
       ForceDHW_status_string = "Unknown";
       break;
   }
+
   if ( actData["ForceDHW_status_string"] != ForceDHW_status_string ) {
     actData["ForceDHW_status_string"] = ForceDHW_status_string;
     sprintf(log_msg, "received force DHW status : %d (%s)", ForceDHW_status, ForceDHW_status_string); log_message(log_msg);
@@ -554,6 +563,7 @@ void decode_heatpump_data() {
       Holiday_mode_status_string = "Unknown";
       break;
   }
+
   if ( actData["Holiday_mode_status_string"] != Holiday_mode_status_string ) {
     actData["Holiday_mode_status_string"] = Holiday_mode_status_string;
     sprintf(log_msg, "received Holiday status : %d (%s)", Holiday_mode_status, Holiday_mode_status_string); log_message(log_msg);

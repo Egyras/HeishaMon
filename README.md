@@ -60,6 +60,9 @@ pubsubclient by nick o'leary version 2.7.0 https://github.com/knolleary/pubsubcl
 doubleresetdetect by jens-christian skibakk version 1.0.0 https://github.com/jenscski/DoubleResetDetect/releases/tag/1.0.0 \
 arduinojson by benoit blanchon version 6.13.0 https://github.com/bblanchon/ArduinoJson/releases/tag/v6.13.0
 
+## MQTT topics
+[Current list of documented MQTT topics can be found here](MQTT-Topics.md)
+
 ## Protocol info packet:
 
 To get information from a heat pump, "magic" packet should be send to CN-CNT: 
@@ -263,10 +266,17 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 190 | 79 |   | ? |
 | 191 | 79 |   | ? |
 | 192 | 79 |   | ? |
+<<<<<<< HEAD
 | 193 | 01 | to DEX (x-1) / 5   | Energy Consumption in [kw]  |
 | 194 | 07 | to DEX (x-1) / 5   | Energy Generation in [kw] |
 | 195 | 01 | to DEX (x-1) / 5   | DHW Energy Consumption in [kw]  |
 | 196 | 07 | to DEX (x-1) / 5   | DHW Energy Generation in [kw] |
+=======
+| 193 | 01 | to DEX (x-1) / 5   | Energy Consumption for Heat in [kw]  |
+| 194 | 07 | to DEX (x-1) / 5   | Energy Generation for Heat in [kw] |
+| 195 | 79 | to DEX (x-1) / 5   | Energy Consumption for DHW in [kw] |
+| 196 | 79 | to DEX (x-1) / 5   | Energy Generation for DHW in [kw] |
+>>>>>>> 76938397ab85a8f281ccf1109d945f352b755548
 | 197 | 79 |   | ? |
 | 198 | 79 |   | ? |
 | 199 | 79 |   | ? |
@@ -1092,3 +1102,23 @@ quiet 3
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 cd`
+
+Force defrost request
+
+`f1 6c 01 10 42 54 22 49 02 05 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 80 94 00 00 b1 71 71 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 e3`
+
+Sterilization request
+
+`f1 6c 01 10 42 54 22 49 04 05 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 80 94 00 00 b1 71 71 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 e1`
