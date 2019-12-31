@@ -1,5 +1,4 @@
-#include <FS.h>
-
+#include <FS.h>                   //this needs to be first, or it all crashes and burns...
 #include "webfunctions.h"
 
 #include <ESP8266WiFi.h>
@@ -155,11 +154,12 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   Serial1.println(WiFi.localIP());
 }
   
-void handleRoot(ESP8266WebServer *httpServer) {
+void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   String httptext = "<!DOCTYPE html>\n";
   httptext = httptext + "<html>";
   httptext = httptext + "<title>Heisha monitor</title>";
   httptext = httptext + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
+  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
   httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">";
   httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">";
   httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
@@ -173,7 +173,23 @@ void handleRoot(ESP8266WebServer *httpServer) {
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<p>Use this page to config your Heisha monitor device</p>";
   httptext = httptext + "<form action=\"/factoryreset\" method=\"get\"><button class=\"w3-btn w3-white w3-border w3-border-red w3-round-large\" type=\"submit\">Factory reset</button></form>";
+  httptext = httptext + "<form action=\"/firmware\" method=\"get\"><button class=\"w3-btn w3-white w3-border w3-border-red w3-round-large\" type=\"submit\">Load new firmware</button></form>";
   httptext = httptext + "</div>";
+  httptext = httptext + "<div class=\"w3-container w3-center\">";
+  httptext = httptext + "<h2>Current heatpump values</h2>";
+  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Value</th></tr></thead>";
+  JsonObject root = actData->as<JsonObject>();
+  for (JsonPair kv : root) {
+    httptext = httptext + "<tr>";
+    httptext = httptext + "<td>";
+    httptext = httptext + "panasonic_heat_pump/sdc/" + kv.key().c_str();
+    httptext = httptext + "</td>";
+    httptext = httptext + "<td>";
+    httptext = httptext + kv.value().as<String>();
+    httptext = httptext + "</td>";
+    httptext = httptext + "</tr>";
+  }  
+  httptext = httptext + "</table>";
   httptext = httptext + "</body>";
   httptext = httptext + "</html>";
   httpServer->send(200, "text/html", httptext);
@@ -184,6 +200,7 @@ void handleFactoryReset(ESP8266WebServer *httpServer) {
   httptext = httptext + "<html>";
   httptext = httptext + "<title>Heisha monitor</title>";
   httptext = httptext + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
+  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
   httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">";
   httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">";
   httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
