@@ -61,7 +61,7 @@ char data[MAXDATASIZE];
 int data_length = 0;
 
 // store actual data in a json doc
-StaticJsonDocument<1024> actData;
+DynamicJsonDocument actData(1024);
 
 // log message to sprintf to
 char log_msg[256];
@@ -638,7 +638,7 @@ void setupOTA() {
 void setupHttp() {
   httpUpdater.setup(&httpServer, update_path, update_username, update_password);
   httpServer.on("/", []{
-    handleRoot(&httpServer);
+    handleRoot(&httpServer, &actData);
   });
   httpServer.on("/factoryreset", []{
     handleFactoryReset(&httpServer);
