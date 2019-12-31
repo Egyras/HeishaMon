@@ -81,7 +81,7 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 void mqtt_reconnect()
 {
   Serial1.println("Reconnecting to mqtt server ...");
-  if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password))
+  if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password, mqtt_willtopic, 0, false, "Offline"))
   {
     mqtt_client.subscribe(mqtt_set_quiet_mode_topic);
     mqtt_client.subscribe(mqtt_set_shift_temperature_topic);
@@ -93,6 +93,8 @@ void mqtt_reconnect()
     mqtt_client.subscribe(mqtt_set_powerfull_topic);
     mqtt_client.subscribe(mqtt_set_tank_temp_topic);
     mqtt_client.subscribe(mqtt_set_cool_temp_topic);
+
+	mqtt_client.publish(mqtt_willtopic, "Online");
   }
 }
 void log_message(char* string)
