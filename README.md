@@ -60,6 +60,9 @@ pubsubclient by nick o'leary version 2.7.0 https://github.com/knolleary/pubsubcl
 doubleresetdetect by jens-christian skibakk version 1.0.0 https://github.com/jenscski/DoubleResetDetect/releases/tag/1.0.0 \
 arduinojson by benoit blanchon version 6.13.0 https://github.com/bblanchon/ArduinoJson/releases/tag/v6.13.0
 
+## MQTT topics
+[Current list of documented MQTT topics can be found here](MQTT-Topics.md)
+
 ## Protocol info packet:
 
 To get information from a heat pump, "magic" packet should be send to CN-CNT: 
