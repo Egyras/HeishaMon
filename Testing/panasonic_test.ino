@@ -17,7 +17,7 @@
 
 // maximum number of seconds between resets that
 // counts as a double reset
-#define DRD_TIMEOUT 1.0
+#define DRD_TIMEOUT 0.1
 
 // address to the block in the RTC user memory
 // change it if it collides with another usage
