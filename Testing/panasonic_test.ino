@@ -81,7 +81,7 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 void mqtt_reconnect()
 {
   Serial1.println("Reconnecting to mqtt server ...");
-  if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password))
+  if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password, mqtt_willtopic, 1, true, "Offline"))
   {
     mqtt_client.subscribe(mqtt_set_quiet_mode_topic);
     mqtt_client.subscribe(mqtt_set_shift_temperature_topic);
@@ -93,6 +93,8 @@ void mqtt_reconnect()
     mqtt_client.subscribe(mqtt_set_powerfull_topic);
     mqtt_client.subscribe(mqtt_set_tank_temp_topic);
     mqtt_client.subscribe(mqtt_set_cool_temp_topic);
+
+	mqtt_client.publish(mqtt_willtopic, "Online");
   }
 }
 void log_message(char* string)
@@ -333,7 +335,7 @@ void decode_heatpump_data() {
       mode_state_string = "Cool+DHW";
       break;
     case 83:
-      mode_state_string = "Cool+DHW";
+      mode_state_string = "Cool";
       break;
     case 89:
       mode_state_string = "Auto";
@@ -617,9 +619,15 @@ void decode_heatpump_data() {
     sprintf(log_msg, "received (OperationsNumber): %.2f", OperationsNumber); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperationsNumber"); mqtt_client.publish(mqtt_topic, String(OperationsNumber).c_str(), MQTT_RETAIN_VALUES);
   }
-}
 
 
+  float OutPipeTemp = (float)data[158] - 128;
+  if ( actData["OutPipeTemp"] != OutPipeTemp ) {
+    actData["OutPipeTemp"] = OutPipeTemp;
+    sprintf(log_msg, "received temperature (OutPipeTemp): %.2f", OutPipeTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OutPipeTemp"); mqtt_client.publish(mqtt_topic, String(OutPipeTemp).c_str(), MQTT_RETAIN_VALUES);
+  }
+}  
 
 
 
