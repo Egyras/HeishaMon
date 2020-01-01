@@ -622,7 +622,13 @@ void decode_heatpump_data() {
   }
 }
 
-
+  float OutPipeTemp = (float)data[158] - 128;
+  if ( actData["OutPipeTemp"] != OutPipeTemp ) {
+    actData["OutPipeTemp"] = OutPipeTemp;
+    sprintf(log_msg, "received temperature (OutPipeTemp): %.2f", OutPipeTemp); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OutPipeTemp"); mqtt_client.publish(mqtt_topic, String(OutPipeTemp).c_str(), MQTT_RETAIN_VALUES);
+  }
+  
 
 
 
