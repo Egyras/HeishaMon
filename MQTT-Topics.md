@@ -9,7 +9,7 @@ Topic | Response
 --- | ---
 panasonic_heat_pump/log | Log of responses from pump
 panasonic_heat_pump/sdc/PumpFlow | Water pump flow, measured in L/min
-panasonic_heat_pump/sdc/mode_state | Current operating mode, valid responses are Heat, DHW, Heat+DHW, Auto+DHW, Cool+DHW
+panasonic_heat_pump/sdc/mode_state | Current operating mode, valid responses are Heat, DHW, Cool, Auto, Heat+DHW, Auto+DHW, Cool+DHW
 panasonic_heat_pump/sdc/InletTemp | Inlet water temperature in °C
 panasonic_heat_pump/sdc/ActWatOutTemp | Outlet water temperature in °C
 panasonic_heat_pump/sdc/WatOutTarTemp | Outlet water target temperature in °C
@@ -23,7 +23,7 @@ panasonic_heat_pump/sdc/ActOutTemp | Outside ambient temperature measured by com
 panasonic_heat_pump/sdc/Eproduce | Heat power produced in Watts
 panasonic_heat_pump/sdc/Econsum | Power consume by compressor in Watts
 panasonic_heat_pump/sdc/powerfull_mode_state | Powerfull state in minutes, valid responses are 0, 30, 60 or 90
-panasonic_heat_pump/sdc/quiet_mode_state | Quiet mode state, valid responses are 0-3
+panasonic_heat_pump/sdc/quiet_mode_state | Quiet mode state, valid responses are 0, 1, 2, 3
 panasonic_heat_pump/sdc/Holiday | Holiday mode, valid responses are 84=Off and 100=On
 panasonic_heat_pump/sdc/valve_state | 3-way valve mode, valid responses are Room, Tank or Defrost
 panasonic_heat_pump/sdc/OutPipeTemp | Outdoor pipe temperature used for defrost
