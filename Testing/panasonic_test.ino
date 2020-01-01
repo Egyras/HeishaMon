@@ -345,8 +345,8 @@ void decode_heatpump_data() {
       break;
   }
 
-  if ( actData["mode_state_string"] != mode_state_string ) {
-    actData["mode_state_string"] = mode_state_string;
+  if ( actData["mode_state"] != mode_state_string ) {
+    actData["mode_state"] = mode_state_string;
     sprintf(log_msg, "received heat pump mode state : %d (%s)", mode_state, mode_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "mode_state"); mqtt_client.publish(mqtt_topic, mode_state_string, MQTT_RETAIN_VALUES);
   }
@@ -390,13 +390,13 @@ void decode_heatpump_data() {
     default:
       break;
   }
-  if ( actData["quiet_mode_state_string"] != quiet_mode_state_string ) {
-    actData["quiet_mode_state_string"] = quiet_mode_state_string;
+  if ( actData["quiet_mode_state"] != quiet_mode_state_string ) {
+    actData["quiet_mode_state"] = quiet_mode_state_string;
     sprintf(log_msg, "received quiet mode state : %d (%s)", quietpower_mode_state, quiet_mode_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "quiet_mode_state"); mqtt_client.publish(mqtt_topic, quiet_mode_state_string, MQTT_RETAIN_VALUES);
   }
-  if ( actData["powerfull_mode_state_string"] != powerfull_mode_state_string ) {
-    actData["powerfull_mode_state_string"] = powerfull_mode_state_string;
+  if ( actData["powerfull_mode_state"] != powerfull_mode_state_string ) {
+    actData["powerfull_mode_state"] = powerfull_mode_state_string;
     sprintf(log_msg, "received powerfull mode state : %d (%s)", quietpower_mode_state, powerfull_mode_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "powerfull_mode_state"); mqtt_client.publish(mqtt_topic, powerfull_mode_state_string, MQTT_RETAIN_VALUES);
   }
@@ -415,8 +415,8 @@ void decode_heatpump_data() {
       break;
   }
 
-  if ( actData["valve_state_string"] != valve_state_string ) {
-    actData["valve_state_string"] = valve_state_string;
+  if ( actData["valve_state"] != valve_state_string ) {
+    actData["valve_state"] = valve_state_string;
     sprintf(log_msg, "received 3-way valve state : %d (%s)", valve_defrost_state, valve_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "valve_state"); mqtt_client.publish(mqtt_topic, valve_state_string, MQTT_RETAIN_VALUES);
   }
@@ -434,8 +434,8 @@ void decode_heatpump_data() {
       break;
   }
 
-  if ( actData["defrost_state_string"] != defrosting_state_string ) {
-    actData["defrost_state_string"] = defrosting_state_string;
+  if ( actData["defrosting_state"] != defrosting_state_string ) {
+    actData["defrosting_state"] = defrosting_state_string;
     sprintf(log_msg, "received defrosting state : %d (%s)", valve_defrost_state, defrosting_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "defrosting_state"); mqtt_client.publish(mqtt_topic, defrosting_state_string, MQTT_RETAIN_VALUES);
   }
@@ -561,8 +561,8 @@ void decode_heatpump_data() {
       break;
   }
 
-  if ( actData["ForceDHW_status_string"] != ForceDHW_status_string ) {
-    actData["ForceDHW_status_string"] = ForceDHW_status_string;
+  if ( actData["ForceDHW_status"] != ForceDHW_status_string ) {
+    actData["ForceDHW_status"] = ForceDHW_status_string;
     sprintf(log_msg, "received force DHW status : %d (%s)", ForceDHW_status, ForceDHW_status_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ForceDHW"); mqtt_client.publish(mqtt_topic, ForceDHW_status_string, MQTT_RETAIN_VALUES);
   }
@@ -581,8 +581,8 @@ void decode_heatpump_data() {
       break;
   }
 
-  if ( actData["Holiday_mode_status_string"] != Holiday_mode_status_string ) {
-    actData["Holiday_mode_status_string"] = Holiday_mode_status_string;
+  if ( actData["Holiday_mode_status"] != Holiday_mode_status_string ) {
+    actData["Holiday_mode_status"] = Holiday_mode_status_string;
     sprintf(log_msg, "received Holiday status : %d (%s)", Holiday_mode_status, Holiday_mode_status_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Holiday"); mqtt_client.publish(mqtt_topic, Holiday_mode_status_string, MQTT_RETAIN_VALUES);
   }
@@ -635,7 +635,6 @@ void decode_heatpump_data() {
     sprintf(log_msg, "received (OperationsNumber): %.2f", OperationsNumber); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OperationsNumber"); mqtt_client.publish(mqtt_topic, String(OperationsNumber).c_str(), MQTT_RETAIN_VALUES);
   }
-
 
   float OutPipeTemp = (float)data[158] - 128;
   if ( actData["OutPipeTemp"] != OutPipeTemp ) {
