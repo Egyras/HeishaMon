@@ -104,10 +104,8 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   wifiManager.addParameter(&custom_mqtt_password);
 
 
-  //fetches ssid and pass and tries to connect
-  //if it does not connect it starts an access point with the specified name
-  //here  "AutoConnectAP"
-  //and goes into a blocking loop awaiting configuration
+  wifiManager.setConfigPortalTimeout(180);
+  wifiManager.setConnectTimeout(60);
   if (!wifiManager.autoConnect("HeishaMon-Setup")) {
     Serial1.println("failed to connect and hit timeout");
     delay(3000);
