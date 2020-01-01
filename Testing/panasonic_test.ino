@@ -401,17 +401,14 @@ void decode_heatpump_data() {
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "powerfull_mode_state"); mqtt_client.publish(mqtt_topic, powerfull_mode_state_string, MQTT_RETAIN_VALUES);
   }
 
-  int valve_state = (int)(data[111]);
+  int valve_defrost_state = (int)(data[111]);
   char* valve_state_string;
-  switch (valve_state&0x0F) { //bitwise AND with 0x0F because we are only interested in laste 4 bits of the byte.
-    case 5:
+  switch (valve_defrost_state & 0b11) { //bitwise AND with 0b11 because we are only interested in last 2 bits of the byte.
+    case 0b01:
       valve_state_string = "Room";
       break;
-    case 6:
+    case 0b10:
       valve_state_string = "Tank";
-      break;
-    case 9:
-      valve_state_string = "Defrost";
       break;
     default:
       valve_state_string = "Unknown";
@@ -420,8 +417,27 @@ void decode_heatpump_data() {
 
   if ( actData["valve_state_string"] != valve_state_string ) {
     actData["valve_state_string"] = valve_state_string;
-    sprintf(log_msg, "received 3-way valve state : %d (%s)", valve_state, valve_state_string); log_message(log_msg);
+    sprintf(log_msg, "received 3-way valve state : %d (%s)", valve_defrost_state, valve_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "valve_state"); mqtt_client.publish(mqtt_topic, valve_state_string, MQTT_RETAIN_VALUES);
+  }
+
+  char* defrosting_state_string;
+  switch (valve_defrost_state & 0b1100) { //bitwise AND with 0b1100 because we are only interested in these two bits
+    case 0b0100:
+      defrosting_state_string = "Not active";
+      break;
+    case 0b1000:
+      defrosting_state_string = "Active";
+      break;
+    default:
+      defrosting_state_string = "Unknown";
+      break;
+  }
+
+  if ( actData["defrost_state_string"] != defrosting_state_string ) {
+    actData["defrost_state_string"] = defrosting_state_string;
+    sprintf(log_msg, "received defrosting state : %d (%s)", valve_defrost_state, defrosting_state_string); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "defrosting_state"); mqtt_client.publish(mqtt_topic, defrosting_state_string, MQTT_RETAIN_VALUES);
   }
   
   float WatOutTarTemp = (float)data[153] - 128;
