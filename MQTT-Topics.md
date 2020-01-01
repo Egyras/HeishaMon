@@ -1,5 +1,8 @@
 # MQTT Topics for Panasonic Aquarea firmware
 
+## Availability topic
+panasonic_heat_pump/LWT will return Online when ESP is online, otherwise it will automatically return Offline
+
 ## Sensors:
 
 Topic | Response
@@ -22,6 +25,7 @@ panasonic_heat_pump/sdc/Econsum | Power consume by compressor in Watts
 panasonic_heat_pump/sdc/powerfull_mode_state | Powerfull state in minutes, valid responses are 0, 30, 60 or 90
 panasonic_heat_pump/sdc/quiet_mode_state | Quiet mode state, valid responses are 0-3
 panasonic_heat_pump/sdc/Holiday | Holiday mode, valid responses are 84=Off and 100=On
+panasonic_heat_pump/sdc/valve_state | 3-way valve mode, valid responses are Room, Tank or Defrost
 
 ## Commands:
 Topic | Description | Values
@@ -34,3 +38,5 @@ panasonic_heat_pump/SetMode | Sets operating mode | Heat, Heat+DHW, Auto+DHW or 
 panasonic_heat_pump/SetForceDHW | Forces DHW mode only | 1
 panasonic_heat_pump/SetTankTemp | Set tank target temperature | 40 - 75
 panasonic_heat_pump/SetCoolTemp | Set cooldown temperature | 5 - 20
+panasonic_heat_pump/SetForceDefrost | Forces defrost routine | 1
+panasonic_heat_pump/SetForceSterilization | Forces tank sterilization routine | 1
