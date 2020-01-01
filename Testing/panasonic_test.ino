@@ -402,14 +402,14 @@ void decode_heatpump_data() {
 
   int valve_state = (int)(data[111]);
   char* valve_state_string;
-  switch (valve_state) {
-    case 85:
+  switch (valve_state&0x0F) { //bitwise AND with 0x0F because we are only interested in laste 4 bits of the byte.
+    case 5:
       valve_state_string = "Room";
       break;
-    case 86:
+    case 6:
       valve_state_string = "Tank";
       break;
-    case 89:
+    case 9:
       valve_state_string = "Defrost";
       break;
     default:
