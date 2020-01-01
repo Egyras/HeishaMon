@@ -1,7 +1,9 @@
 For every state: -1 = unknown 
 
 | Topic | State | Description |
-| ----- | ---- | ----- 
+| ----- | ---- | ----- |
+|panasonic_heat_pump/sdc/power_state | 0 | Heatpump disabled |
+| | 1 | Heatpump enabled |
 |panasonic_heat_pump/sdc/mode_state | 0 | Heat mode |
 |	| 1 | Cool mode |
 |	| 2 | Auto mode |
