@@ -352,66 +352,65 @@ void decode_heatpump_data() {
   }
 
 
-  int quiet_mode_state = (int)(data[7]);
+  int quietpower_mode_state = (int)(data[7]);
   char* powerfull_mode_state_string = "Unknown";
   char* quiet_mode_state_string = "Unknown";
-  switch (quiet_mode_state) {
-    case 73:
-      quiet_mode_state_string = "0";
-      powerfull_mode_state_string = "0";
-      break;
-    case 81:
-      quiet_mode_state_string = "1";
-      powerfull_mode_state_string = "0";
-      break;
-    case 89:
-      quiet_mode_state_string = "2";
-      powerfull_mode_state_string = "0";
-      break;
-    case 97:
-      quiet_mode_state_string = "3";
-      powerfull_mode_state_string = "0";
-      break;
-    case 137:
+  switch (quietpower_mode_state & 0b11111000) { // only interested in left most 5 bits for quiet state
+    case 0b10001000:
       quiet_mode_state_string = "scheduled";
-      powerfull_mode_state_string = "0";
       break;
-    case 74:
-      quiet_mode_state_string = "0";
-      powerfull_mode_state_string = "30";
+    case 0b01001000:
+      quiet_mode_state_string = "0ff";
       break;
-    case 75:
-      quiet_mode_state_string = "0";
-      powerfull_mode_state_string = "60";
+    case 0b01010000:
+      quiet_mode_state_string = "1";
       break;
-    case 76:
-      quiet_mode_state_string = "0";
-      powerfull_mode_state_string = "90";
+    case 0b01011000:
+      quiet_mode_state_string = "2";
+      break;
+    case 0b01100000:
+      quiet_mode_state_string = "3";
+      break;
+    default:
+      break;
+  }  
+  switch (quietpower_mode_state & 0b111) { // only interested in last 3 bits for powerfull state
+    case 0b001:
+      powerfull_mode_state_string = "off";
+      break;
+    case 0b010:
+      powerfull_mode_state_string = "30m";
+      break;
+    case 0b011:
+      powerfull_mode_state_string = "60m";
+      break;
+    case 0b100:
+      powerfull_mode_state_string = "90m";
       break;
     default:
       break;
   }
   if ( actData["quiet_mode_state_string"] != quiet_mode_state_string ) {
     actData["quiet_mode_state_string"] = quiet_mode_state_string;
-    sprintf(log_msg, "received quiet mode state : %d (%s)", quiet_mode_state, quiet_mode_state_string); log_message(log_msg);
+    sprintf(log_msg, "received quiet mode state : %d (%s)", quietpower_mode_state, quiet_mode_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "quiet_mode_state"); mqtt_client.publish(mqtt_topic, quiet_mode_state_string, MQTT_RETAIN_VALUES);
   }
   if ( actData["powerfull_mode_state_string"] != powerfull_mode_state_string ) {
     actData["powerfull_mode_state_string"] = powerfull_mode_state_string;
-    sprintf(log_msg, "received powerfull mode state : %d (%s)", quiet_mode_state, powerfull_mode_state_string); log_message(log_msg);
+    sprintf(log_msg, "received powerfull mode state : %d (%s)", quietpower_mode_state, powerfull_mode_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "powerfull_mode_state"); mqtt_client.publish(mqtt_topic, powerfull_mode_state_string, MQTT_RETAIN_VALUES);
   }
 
   int valve_state = (int)(data[111]);
   char* valve_state_string;
-  switch (valve_state) {
-    case 85:
+  switch (valve_state&0x0F) { //bitwise AND with 0x0F because we are only interested in laste 4 bits of the byte.
+    case 5:
       valve_state_string = "Room";
       break;
-    case 86:
+    case 6:
       valve_state_string = "Tank";
       break;
-    case 89:
+    case 9:
       valve_state_string = "Defrost";
       break;
     default:
@@ -534,12 +533,12 @@ void decode_heatpump_data() {
 
   int ForceDHW_status = (int)(data[4]);
   char* ForceDHW_status_string;
-  switch (ForceDHW_status) {
-    case 86:
-      ForceDHW_status_string = "0";
+  switch (ForceDHW_status & 0b11000000) { //probably only first two bits for force dhw status
+    case 0b01000000:
+      ForceDHW_status_string = "off";
       break;
-    case 150:
-      ForceDHW_status_string = "1";
+    case 0b10000000:
+      ForceDHW_status_string = "on";
       break;
     default:
       ForceDHW_status_string = "Unknown";
@@ -554,12 +553,12 @@ void decode_heatpump_data() {
 
   int Holiday_mode_status = (int)(data[5]);
   char* Holiday_mode_status_string;
-  switch (Holiday_mode_status) {
-    case 85:
-      Holiday_mode_status_string = "84";
+  switch (Holiday_mode_status & 0b00110000) { //probably only these two bits determine holiday state
+    case 0b00010000:
+      Holiday_mode_status_string = "off";
       break;
-    case 101:
-      Holiday_mode_status_string = "100";
+    case 0b00100000:
+      Holiday_mode_status_string = "on";
       break;
     default:
       Holiday_mode_status_string = "Unknown";
@@ -663,6 +662,10 @@ void setupHttp() {
   httpServer.on("/factoryreset", []{
     handleFactoryReset(&httpServer);
   });  
+  httpServer.on("/reboot", []{
+    handleReboot(&httpServer);
+  });  
+  
   httpServer.begin();
 }
 

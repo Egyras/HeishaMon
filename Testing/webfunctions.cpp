@@ -172,6 +172,7 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   httptext = httptext + "</header>";
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<p>Use this page to config your Heisha monitor device</p>";
+  httptext = httptext + "<form action=\"/reboot\" method=\"get\"><button class=\"w3-btn w3-white w3-border w3-border-red w3-round-large\" type=\"submit\">Reboot heisha monitor</button></form>";
   httptext = httptext + "<form action=\"/factoryreset\" method=\"get\"><button class=\"w3-btn w3-white w3-border w3-border-red w3-round-large\" type=\"submit\">Factory reset</button></form>";
   httptext = httptext + "<form action=\"/firmware\" method=\"get\"><button class=\"w3-btn w3-white w3-border w3-border-red w3-round-large\" type=\"submit\">Load new firmware</button></form>";
   httptext = httptext + "</div>";
@@ -219,6 +220,33 @@ void handleFactoryReset(ESP8266WebServer *httpServer) {
   httpServer->send(200, "text/html", httptext);
   delay(1000);
   WiFi.disconnect(true);
+  delay(1000);
+  resetFunc();
+}
+
+void handleReboot(ESP8266WebServer *httpServer) {
+  String httptext = "<!DOCTYPE html>\n";
+  httptext = httptext + "<html>";
+  httptext = httptext + "<title>Heisha monitor</title>";
+  httptext = httptext + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
+  httptext = httptext + "<meta http-equiv=\"refresh\" content=\"5; url=/\" />";
+  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
+  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">";
+  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">";
+  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
+  httptext = httptext + "<style>";
+  httptext = httptext + ".w3-btn {margin-bottom:10px;}";
+  httptext = httptext + "</style>";
+  httptext = httptext + "<body>";
+  httptext = httptext + "<header class=\"w3-container w3-card w3-theme\">";
+  httptext = httptext + "<h1>Heisha monitor configuration</h1>";
+  httptext = httptext + "</header>";
+  httptext = httptext + "<div class=\"w3-container w3-center\">";
+  httptext = httptext + "<p>Rebooting</p>";
+  httptext = httptext + "</div>";
+  httptext = httptext + "</body>";
+  httptext = httptext + "</html>";
+  httpServer->send(200, "text/html", httptext);
   delay(1000);
   resetFunc();
 }

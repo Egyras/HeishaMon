@@ -25,6 +25,7 @@ For Conrad orders:
 | JST Type | Conrad article number | Description |
 | ----- | ---- | ----- |
 |B05B-XASK-1| 741366 | Header matching CZ-TAW1, for soldering on PCB. S05B-XASK-1 (not orderable at conrad) is the side-ways version	|
+|B05B-PASK-1| 1426194 | Header matching CN-CNT (that what is on the heatpump itself). Only need this if you want to build a proxy-forward PCB|
 |XAP-05V-1| 741233 | Cable connector on CZ-TAW1/PCB side |
 |PAP-05V-1| 1426227 | Cable connector on CN-CNT side | 
 |BXA-01T-P0.6| 741295 |Connector pins on CZ-TAW1/PCB side|
@@ -81,7 +82,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
 | 05 | 55 |  Holiday mode status 55=off, 65=on | Holiday mode status |
 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
-| 07 | 49 | 49 = Off, 51 = level 1, 59 = level 2, 61 - level 3 For Power mode 49= Off, 4a - power mode 30min, 4b -60min, 4c-90 min | Quiet Mode status + Powerfull mode status |
+| 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerfull mode status |
 | 08 | 00 |   | ? |
 | 09 | 05 |   | ? |
 | 10 | 00 |   | ? |
@@ -184,7 +185,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 108 | 79 |   | ? |
 | 109 | 79 |   | ? |
 | 110 | 79 |   | ? |
-| 111 | 56 |  56=Tank 55=Room 3-Way Valve, if 59 = defrost mode | 3 way valve + Defrost status |
+| 111 | 56 |  right 4 bits: 6=Tank 5=Room 3-Way Valve, if 9 = defrost mode | 3 way valve + Defrost status |
 | 112 | 79 |   | ? |
 | 113 | 79 |   | ? |
 | 114 | 79 |   | ? |
