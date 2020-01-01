@@ -335,7 +335,7 @@ void decode_heatpump_data() {
       mode_state_string = "Cool+DHW";
       break;
     case 83:
-      mode_state_string = "Cool+DHW";
+      mode_state_string = "Cool";
       break;
     case 89:
       mode_state_string = "Auto";
