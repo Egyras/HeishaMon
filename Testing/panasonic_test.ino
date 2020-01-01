@@ -531,12 +531,12 @@ void decode_heatpump_data() {
 
   int ForceDHW_status = (int)(data[4]);
   char* ForceDHW_status_string;
-  switch (ForceDHW_status) {
-    case 86:
-      ForceDHW_status_string = "0";
+  switch (ForceDHW_status & 0b11000000) { //probably only first two bits for force dhw status
+    case 0b01000000:
+      ForceDHW_status_string = "off";
       break;
-    case 150:
-      ForceDHW_status_string = "1";
+    case 0b10000000:
+      ForceDHW_status_string = "on";
       break;
     default:
       ForceDHW_status_string = "Unknown";
@@ -551,12 +551,12 @@ void decode_heatpump_data() {
 
   int Holiday_mode_status = (int)(data[5]);
   char* Holiday_mode_status_string;
-  switch (Holiday_mode_status) {
-    case 85:
-      Holiday_mode_status_string = "84";
+  switch (Holiday_mode_status & 0b00110000) { //probably only these two bits determine holiday state
+    case 0b00010000:
+      Holiday_mode_status_string = "off";
       break;
-    case 101:
-      Holiday_mode_status_string = "100";
+    case 0b00100000:
+      Holiday_mode_status_string = "on";
       break;
     default:
       Holiday_mode_status_string = "Unknown";
