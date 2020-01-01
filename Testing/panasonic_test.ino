@@ -350,53 +350,52 @@ void decode_heatpump_data() {
   }
 
 
-  int quiet_mode_state = (int)(data[7]);
+  int quietpower_mode_state = (int)(data[7]);
   char* powerfull_mode_state_string = "Unknown";
   char* quiet_mode_state_string = "Unknown";
-  switch (quiet_mode_state) {
-    case 73:
-      quiet_mode_state_string = "0";
-      powerfull_mode_state_string = "0";
-      break;
-    case 81:
-      quiet_mode_state_string = "1";
-      powerfull_mode_state_string = "0";
-      break;
-    case 89:
-      quiet_mode_state_string = "2";
-      powerfull_mode_state_string = "0";
-      break;
-    case 97:
-      quiet_mode_state_string = "3";
-      powerfull_mode_state_string = "0";
-      break;
-    case 137:
+  switch (quietpower_mode_state & 0b11111000) { // only interested in left most 5 bits for quiet state
+    case 0b10001000:
       quiet_mode_state_string = "scheduled";
-      powerfull_mode_state_string = "0";
       break;
-    case 74:
-      quiet_mode_state_string = "0";
-      powerfull_mode_state_string = "30";
+    case 0b01001000:
+      quiet_mode_state_string = "0ff";
       break;
-    case 75:
-      quiet_mode_state_string = "0";
-      powerfull_mode_state_string = "60";
+    case 0b01010000:
+      quiet_mode_state_string = "1";
       break;
-    case 76:
-      quiet_mode_state_string = "0";
-      powerfull_mode_state_string = "90";
+    case 0b01011000:
+      quiet_mode_state_string = "2";
+      break;
+    case 0b01100000:
+      quiet_mode_state_string = "3";
+      break;
+    default:
+      break;
+  }  
+  switch (quietpower_mode_state & 0b111) { // only interested in last 3 bits for powerfull state
+    case 0b001:
+      powerfull_mode_state_string = "off";
+      break;
+    case 0b010:
+      powerfull_mode_state_string = "30m";
+      break;
+    case 0b011:
+      powerfull_mode_state_string = "60m";
+      break;
+    case 0b100:
+      powerfull_mode_state_string = "90m";
       break;
     default:
       break;
   }
   if ( actData["quiet_mode_state_string"] != quiet_mode_state_string ) {
     actData["quiet_mode_state_string"] = quiet_mode_state_string;
-    sprintf(log_msg, "received quiet mode state : %d (%s)", quiet_mode_state, quiet_mode_state_string); log_message(log_msg);
+    sprintf(log_msg, "received quiet mode state : %d (%s)", quietpower_mode_state, quiet_mode_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "quiet_mode_state"); mqtt_client.publish(mqtt_topic, quiet_mode_state_string, MQTT_RETAIN_VALUES);
   }
   if ( actData["powerfull_mode_state_string"] != powerfull_mode_state_string ) {
     actData["powerfull_mode_state_string"] = powerfull_mode_state_string;
-    sprintf(log_msg, "received powerfull mode state : %d (%s)", quiet_mode_state, powerfull_mode_state_string); log_message(log_msg);
+    sprintf(log_msg, "received powerfull mode state : %d (%s)", quietpower_mode_state, powerfull_mode_state_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "powerfull_mode_state"); mqtt_client.publish(mqtt_topic, powerfull_mode_state_string, MQTT_RETAIN_VALUES);
   }
 
