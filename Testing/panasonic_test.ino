@@ -662,6 +662,10 @@ void setupHttp() {
   httpServer.on("/factoryreset", []{
     handleFactoryReset(&httpServer);
   });  
+  httpServer.on("/reboot", []{
+    handleReboot(&httpServer);
+  });  
+  
   httpServer.begin();
 }
 
