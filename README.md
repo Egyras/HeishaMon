@@ -185,7 +185,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 108 | 79 |   | ? |
 | 109 | 79 |   | ? |
 | 110 | 79 |   | ? |
-| 111 | 56 |  right 4 bits: 6=Tank 5=Room 3-Way Valve, if 9 = defrost mode | 3 way valve + Defrost status |
+| 111 | 56 |  right 2 bits: 0b10=Tank 0b01=Room 3-Way Valve. Next 2 bits (from right) is defrosting state (0b01 = defrosting not active, 0b10 = defrosting active) | 3 way valve + Defrost status |
 | 112 | 79 |   | ? |
 | 113 | 79 |   | ? |
 | 114 | 79 |   | ? |
