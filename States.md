@@ -2,14 +2,13 @@ For every state: -1 = unknown
 
 | Topic | State | Description |
 | ----- | ---- | ----- 
-|panasonic_heat_pump/sdc/mode_state | 0 | Heatpump off |
-| | 1 | Heat mode |
-|	| 2 | Cool mode |
-|	| 3 | Auto mode |
-| | 4 | DHW mode |
-|	| 5 | Heat+DHW mode |
-|	| 6 | Cool+DHW mode |
-|	| 7 | Auto+DHW mode |
+|panasonic_heat_pump/sdc/mode_state | 0 | Heat mode |
+|	| 1 | Cool mode |
+|	| 2 | Auto mode |
+| | 3 | DHW mode |
+|	| 4 | Heat+DHW mode |
+|	| 5 | Cool+DHW mode |
+|	| 6 | Auto+DHW mode |
 |panasonic_heat_pump/sdc/quiet_mode_state	| 0 | Quiet mode off |
 |	| 1 | Quiet mode 1 |
 |	| 2 | Quiet mode 2 |
