@@ -498,7 +498,7 @@ void decode_heatpump_data() {
 
   float Tank_Target_Temp = (float)data[42] - 128;
   if ( actData["Tank_Target_Temp"] != Tank_Target_Temp ) {
-    actData["TankSetTemp"] = Tank_Target_Temp;
+    actData["Tank_Target_Temp"] = Tank_Target_Temp;
     sprintf(log_msg, "received temperature (Tank_Target_Temp): %.2f", Tank_Target_Temp); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Tank_Target_Temp"); mqtt_client.publish(mqtt_topic, String(Tank_Target_Temp).c_str(), MQTT_RETAIN_VALUES);
   }
