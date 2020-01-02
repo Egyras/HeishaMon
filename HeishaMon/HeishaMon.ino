@@ -661,7 +661,7 @@ void decode_heatpump_data() {
   if ( actData["Energy_Production"] != Energy_Production ) {
     actData["Energy_Production"] = Energy_Production;
     sprintf(log_msg, "received Watt (Energy_Production): %.2f", Energy_Production); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Energy_Productions"); mqtt_client.publish(mqtt_topic, String(Energy_Production).c_str(), MQTT_RETAIN_VALUES);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Energy_Production"); mqtt_client.publish(mqtt_topic, String(Energy_Production).c_str(), MQTT_RETAIN_VALUES);
   }
 
   int Operations_Hours  = word(data[183], data[182]) - 1;
