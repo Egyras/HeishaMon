@@ -696,7 +696,7 @@ auto + dhw
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 df`
 
 
-holliday mode ON
+holiday mode ON
 
 `f1 6c 01 10 42 64 22 49 00 05 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -707,7 +707,7 @@ holliday mode ON
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 d5`
 
 
-holyday mode OFF
+holiday mode OFF
 
 `f1 6c 01 10 42 54 22 49 00 05 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -898,7 +898,7 @@ d0 7b 78 1f 7e 1f 1f 79 79 8d 8d 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 46`
 
-Operation Setup --> Istaller
+Operation Setup --> Installer
 
 Water temperature for heating on Compensationio Curve
 
