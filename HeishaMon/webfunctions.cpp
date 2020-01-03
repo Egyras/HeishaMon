@@ -11,6 +11,11 @@
 //flag for saving data
 bool shouldSaveConfig = false;
 
+const String webHeader = "<!DOCTYPE html><html><title>Heisha monitor</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta http-equiv=\"refresh\" content=\"5; url=/\" /><link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\"><style>.w3-btn {margin-bottom:10px;}</style><body><button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button><header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor configuration</h1></header>";
+const String webFooter = "</body></html>";
+const String menuJS = "<script>function openLeftMenu() {document.getElementById(\"leftMenu\").style.display = \"block\";}function closeLeftMenu() {document.getElementById(\"leftMenu\").style.display = \"none\";}</script>";
+
+
 void(* resetFunc) (void) = 0;
 
 //callback notifying us of the need to save config
@@ -153,27 +158,17 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
 }
   
 void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
-  String httptext = "<!DOCTYPE html>\n";
-  httptext = httptext + "<html>";
-  httptext = httptext + "<title>Heisha monitor</title>";
-  httptext = httptext + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
-  httptext = httptext + "<style>";
-  httptext = httptext + ".w3-btn {margin-bottom:10px;}";
-  httptext = httptext + "</style>";
-  httptext = httptext + "<body>";
-  httptext = httptext + "<header class=\"w3-container w3-card w3-theme\">";
-  httptext = httptext + "<h1>Heisha monitor configuration</h1>";
-  httptext = httptext + "</header>";
-  httptext = httptext + "<div class=\"w3-container w3-center\">";
-  httptext = httptext + "<p>Use this page to config your Heisha monitor device</p>";
-  httptext = httptext + "<form action=\"/reboot\" method=\"get\"><button class=\"w3-btn w3-white w3-border w3-border-red w3-round-large\" type=\"submit\">Reboot heisha monitor</button></form>";
-  httptext = httptext + "<form action=\"/factoryreset\" method=\"get\"><button class=\"w3-btn w3-white w3-border w3-border-red w3-round-large\" type=\"submit\">Factory reset</button></form>";
-  httptext = httptext + "<form action=\"/firmware\" method=\"get\"><button class=\"w3-btn w3-white w3-border w3-border-red w3-round-large\" type=\"submit\">Load new firmware</button></form>";
-  httptext = httptext + "</div>";
+  String httptext = webHeader;
+  httptext = httptext + "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">";
+  httptext = httptext + "<button onclick=\"closeLeftMenu()\" class=\"w3-bar-item w3-button w3-large\">Close &times;</button>";
+
+  httptext = httptext + "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot heisha monitor</a>";
+  httptext = httptext + "<a href=\"/factoryreset\" class=\"w3-bar-item w3-button\">Factory reset</a>";
+  httptext = httptext + "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>";
+  httptext = httptext + "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>";
+  httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
+  httptext = httptext + "</div>";  
+
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
   httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Value</th></tr></thead>";
@@ -189,32 +184,17 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
     httptext = httptext + "</tr>";
   }  
   httptext = httptext + "</table>";
-  httptext = httptext + "</body>";
-  httptext = httptext + "</html>";
+  httptext = httptext + menuJS;
+  httptext = httptext + webFooter;
   httpServer->send(200, "text/html", httptext);
 }
 
 void handleFactoryReset(ESP8266WebServer *httpServer) {
-  String httptext = "<!DOCTYPE html>\n";
-  httptext = httptext + "<html>";
-  httptext = httptext + "<title>Heisha monitor</title>";
-  httptext = httptext + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
-  httptext = httptext + "<style>";
-  httptext = httptext + ".w3-btn {margin-bottom:10px;}";
-  httptext = httptext + "</style>";
-  httptext = httptext + "<body>";
-  httptext = httptext + "<header class=\"w3-container w3-card w3-theme\">";
-  httptext = httptext + "<h1>Heisha monitor configuration</h1>";
-  httptext = httptext + "</header>";
+  String httptext = webHeader;
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<p>Removing configuration. To reconfigure please connect to WiFi hotspot after reset.</p>";
   httptext = httptext + "</div>";
-  httptext = httptext + "</body>";
-  httptext = httptext + "</html>";
+  httptext = httptext + webFooter;
   httpServer->send(200, "text/html", httptext);
   delay(1000);
   WiFi.disconnect(true);
@@ -223,27 +203,11 @@ void handleFactoryReset(ESP8266WebServer *httpServer) {
 }
 
 void handleReboot(ESP8266WebServer *httpServer) {
-  String httptext = "<!DOCTYPE html>\n";
-  httptext = httptext + "<html>";
-  httptext = httptext + "<title>Heisha monitor</title>";
-  httptext = httptext + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
-  httptext = httptext + "<meta http-equiv=\"refresh\" content=\"5; url=/\" />";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">";
-  httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
-  httptext = httptext + "<style>";
-  httptext = httptext + ".w3-btn {margin-bottom:10px;}";
-  httptext = httptext + "</style>";
-  httptext = httptext + "<body>";
-  httptext = httptext + "<header class=\"w3-container w3-card w3-theme\">";
-  httptext = httptext + "<h1>Heisha monitor configuration</h1>";
-  httptext = httptext + "</header>";
+  String httptext = webHeader;
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<p>Rebooting</p>";
   httptext = httptext + "</div>";
-  httptext = httptext + "</body>";
-  httptext = httptext + "</html>";
+  httptext = httptext + webFooter;
   httpServer->send(200, "text/html", httptext);
   delay(1000);
   resetFunc();
