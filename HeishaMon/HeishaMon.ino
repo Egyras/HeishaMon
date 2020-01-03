@@ -49,7 +49,9 @@ byte inCheck = 0;
 
 
 //useful for debugging, outputs info to a separate mqtt topic
-const bool outputMqttLog = true;
+bool outputMqttLog = true;
+//toggle to dump received hex data in log
+bool outputHexDump = false;
 
 //retain mqtt values for subscriber to receive on first connect
 const bool MQTT_RETAIN_VALUES = true;
@@ -108,15 +110,16 @@ void log_message(char* string)
 }
 
 void logHex(char *hex, int hex_len) {
-  char buffer [48];
-  buffer[47] = 0;
-  for (int i = 0; i < hex_len; i += 16) {
-    for (int j = 0; ((j < 16) && ((i + j) < hex_len)); j++) {
-      sprintf(&buffer[3 * j], "%02X ", hex[i + j]);
+  if (outputHexDump) {
+    char buffer [48];
+    buffer[47] = 0;
+    for (int i = 0; i < hex_len; i += 16) {
+      for (int j = 0; ((j < 16) && ((i + j) < hex_len)); j++) {
+        sprintf(&buffer[3 * j], "%02X ", hex[i + j]);
+      }
+      sprintf(log_msg, "data: %s", buffer ); log_message(log_msg);
     }
-    sprintf(log_msg, "data: %s", buffer ); log_message(log_msg);
   }
-
 }
 
 byte calcChecksum(byte* command, int length) {
@@ -693,7 +696,16 @@ void setupHttp() {
   httpServer.on("/reboot", [] {
     handleReboot(&httpServer);
   });
-
+  httpServer.on("/togglelog", [] {
+    log_message("Toggled mqtt log flag");
+    outputMqttLog ^= true;
+    handleRoot(&httpServer, &actData);
+  });
+  httpServer.on("/togglehexdump", [] {
+    log_message("Toggled hexdump log flag");
+    outputHexDump ^= true;
+    handleRoot(&httpServer, &actData);
+  });
   httpServer.begin();
 }
 
