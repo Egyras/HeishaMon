@@ -694,11 +694,11 @@ void decode_heatpump_data() {
   }
 
   // TOP16 //
-  float Energy_Consumtion = ((float)data[193] - 1.0) * 200;
-  if ( actData["Heat_Energy_Consumtion"] != Energy_Consumtion ) {
-    actData["Heat_Energy_Consumtion"] = Energy_Consumtion;
-    sprintf(log_msg, "received Watt (Heat_Energy_Consumtion): %.2f", Energy_Consumtion); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Heat_Energy_Consumtion"); mqtt_client.publish(mqtt_topic, String(Energy_Consumtion).c_str(), MQTT_RETAIN_VALUES);
+  float Energy_Consumption = ((float)data[193] - 1.0) * 200;
+  if ( actData["Heat_Energy_Consumption"] != Energy_Consumption ) {
+    actData["Heat_Energy_Consumption"] = Energy_Consumption;
+    sprintf(log_msg, "received Watt (Heat_Energy_Consumption): %.2f", Energy_Consumption); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Heat_Energy_Consumption"); mqtt_client.publish(mqtt_topic, String(Energy_Consumption).c_str(), MQTT_RETAIN_VALUES);
   }
 
   // TOP15 //
