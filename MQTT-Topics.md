@@ -9,7 +9,7 @@ ID | Topic | Response
 --- | --- | ---
 LOG1 | panasonic_heat_pump/log | Log of responses from pump
 TOP1 | panasonic_heat_pump/sdc/Pump_Flow | Water pump flow, measured in L/min
-*TOP2* | panasonic_heat_pump/sdc/Pump_Speed | Water pump speed, measured in 1/min (needs to find the bit to decode)
+TOP2 | panasonic_heat_pump/sdc/ForceDHW_State | DWW status (off - on - unknown)
 TOP3 | panasonic_heat_pump/sdc/Power_State | Current Power state (off - on)
 TOP4 | panasonic_heat_pump/sdc/OpMode_State | Current operating mode, valid responses are Heat, DHW, Cool, Auto, Heat+DHW, Auto+DHW, Cool+DHW
 TOP5 | panasonic_heat_pump/sdc/Flow_Inlet_Temp | Inlet water temperature in °C
@@ -40,14 +40,14 @@ TOP29 | panasonic_heat_pump/sdc/HCurve_OutHighTemp | Target temperatur °C at lo
 TOP30 | panasonic_heat_pump/sdc/HCurve_OutLowTemp | Target temperatur °C at highest point of the heating curve (eg. 24)
 TOP31 | panasonic_heat_pump/sdc/HCurve_OutsHighTemp | Lowest outsite temperatur of the heating curve (eg. -12)
 TOP32 | panasonic_heat_pump/sdc/HCurve_OutsLowTemp | Highest temperatur of the heating curve (eg. 15)
-*TOP33* | panasonic_heat_pump/sdc/Heatinggas_Temp | to decode
-*TOP34* | panasonic_heat_pump/sdc/Evaporator_out_Temp | to decode
-*TOP35* | panasonic_heat_pump/sdc/Pump_operating_Point | to decode
-*TOP36* | panasonic_heat_pump/sdc/Fan_Speed | fan speed in 1/min
-*TOP37* | panasonic_heat_pump/sdc/Cool_Energy_Production | Thermal cool power produced in Watt
-*TOP38* | panasonic_heat_pump/sdc/Cool_Energy_Consumtion | Elektrical power consume at cool mode in Watt (steps of 200)
-*TOP39* | panasonic_heat_pump/sdc/DHW_Energy_Production | Thermal DHW power produced in Watt
-*TOP40* | panasonic_heat_pump/sdc/DHW_Energy_Consumtion | Elektrical power consume at DHW mode in Watt (steps of 200)
+TOP33 | panasonic_heat_pump/sdc/Roomthermostat_Temp | Remote control thermostat temp
+*TOPxx* | panasonic_heat_pump/sdc/Evaporator_out_Temp | to decode
+*TOPxx* | panasonic_heat_pump/sdc/Pump_operating_Point | to decode
+*TOPxx* | panasonic_heat_pump/sdc/Fan_Speed | fan speed in 1/min
+*TOPxx* | panasonic_heat_pump/sdc/Cool_Energy_Production | Thermal cool power produced in Watt
+*TOPxx* | panasonic_heat_pump/sdc/Cool_Energy_Consumtion | Elektrical power consume at cool mode in Watt (steps of 200)
+*TOPxx* | panasonic_heat_pump/sdc/DHW_Energy_Production | Thermal DHW power produced in Watt
+*TOPxx* | panasonic_heat_pump/sdc/DHW_Energy_Consumtion | Elektrical power consume at DHW mode in Watt (steps of 200)
 
 *not all topics changed in the source code for now. Maybe we should have a numbering for the topics and write this number in the source as a comment. In addition, a unique ID could be used for the device (eg. panasonic_heat_pump_ID_OF_HEATPUMP) to manage more then one device. Please check, this will change al our work behind mqtt.* 
 
