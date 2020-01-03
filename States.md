@@ -15,6 +15,7 @@ For every state: -1 = unknown
 |	| 1 | Quiet mode 1 |
 |	| 2 | Quiet mode 2 |
 |	| 3 | Quiet mode 3 |
+|	| 4 | Quiet mode scheduled |
 |panasonic_heat_pump/sdc/Powerfull_mode_state	| 0 | Powerfull mode off |
 |	| 1 | Powerfull mode 30 min |
 |	| 2 | Powerfull mode 60 min |

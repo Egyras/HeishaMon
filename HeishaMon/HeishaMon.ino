@@ -239,35 +239,47 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   }
 
 
-  // set Holiday mode by sending 100, off will be 84
+  // set Holiday mode by sending 1, off will be 0
   if (strcmp(topic, mqtt_set_holiday_topic) == 0)
   {
     String set_holiday_string(msg);
-    int set_holiday = set_holiday_string.toInt();
+
+    int set_holiday = 84; //hex 0x54
+    if ( set_holiday_string.toInt() == 1 ) {
+      set_holiday = 100; //hex 0x64
+    }
 
     sprintf(log_msg, "set holiday mode to %d", set_holiday); log_message(log_msg);
     byte command[] = {0xf1, 0x6c, 0x01, 0x10, 0x00, set_holiday, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     send_command(command, sizeof(command));
   }
 
-  // set Powerfull mode by sending 0 = off, 30 for 30min, 60 for 60min, 90 for 90 min
+  // set Powerfull mode by sending 0 = off, 1 for 30min, 2 for 60min, 3 for 90 min
   if (strcmp(topic, mqtt_set_powerfull_topic) == 0)
   {
     String set_powerfull_string(msg);
-    int set_powerfull = (set_powerfull_string.toInt() / 30) + 73;
+    int set_powerfull = (set_powerfull_string.toInt() ) + 73;
 
-
-    sprintf(log_msg, "set powerfull mode to %d", (set_powerfull - 73) * 30); log_message(log_msg);
+    sprintf(log_msg, "set powerfull mode to %d", (set_powerfull - 73) ); log_message(log_msg);
     byte command[] = {0xf1, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, set_powerfull, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     send_command(command, sizeof(command));
   }
 
-  // set Heat pump mode  33 = tank only, 82 = heat only, 83 = cool only, 88 = Auto, 98 = Heat+DHW, 99 = Cool+DHW, 104 = Auto + DHW
+  // set Heat pump mode  3 = tank only, 0 = heat only, 1 = cool only, 2 = Auto, 4 = Heat+DHW, 5 = Cool+DHW, 6 = Auto + DHW
   if (strcmp(topic, mqtt_set_mode_topic) == 0)
   {
     String set_mode_string(msg);
-    int set_mode = set_mode_string.toInt();
-
+    int set_mode;
+    switch (set_mode_string.toInt()) {
+      case 0: set_mode = 33; break;
+      case 1: set_mode = 82; break;
+      case 2: set_mode = 83; break;
+      case 3: set_mode = 88; break;
+      case 4: set_mode = 98; break;
+      case 5: set_mode = 99; break;
+      case 6: set_mode = 104; break;
+      default: set_mode = 0; break;
+    }
 
     sprintf(log_msg, "set heat pump mode to %d", set_mode); log_message(log_msg);
     byte command[] = {0xf1, 0x6c, 0x01, 0x10, 0x02, 0x00, set_mode, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -315,13 +327,13 @@ void decode_heatpump_data() {
   char* Power_State_string;
   switch (Power_State & 0b11) { //probably only last two bits for Power dhw state
     case 0b01:
-      Power_State_string = "off";
+      Power_State_string = "0";
       break;
     case 0b10:
-      Power_State_string = "on";
+      Power_State_string = "1";
       break;
     default:
-      Power_State_string = "Unknown";
+      Power_State_string = "-1";
       break;
   }
 
@@ -335,29 +347,29 @@ void decode_heatpump_data() {
   int Mode_State = (int)(data[6]);
   char* Mode_State_string;
   switch (Mode_State) {
-    case 98:
-      Mode_State_string = "Heat+DHW";
-      break;
     case 82:
-      Mode_State_string = "Heat";
-      break;
-    case 97:
-      Mode_State_string = "DHW";
-      break;
-    case 105:
-      Mode_State_string = "Auto+DHW";
-      break;
-    case 99:
-      Mode_State_string = "Cool+DHW";
+      Mode_State_string = "0";
       break;
     case 83:
-      Mode_State_string = "Cool";
+      Mode_State_string = "1";
       break;
     case 89:
-      Mode_State_string = "Auto";
+      Mode_State_string = "2";
+      break;
+    case 97:
+      Mode_State_string = "3";
+      break;
+    case 98:
+      Mode_State_string = "4";
+      break;
+    case 99:
+      Mode_State_string = "5";
+      break;
+    case 105:
+      Mode_State_string = "6";
       break;
     default:
-      Mode_State_string = "Unknown";
+      Mode_State_string = "-1";
       break;
   }
 
@@ -370,11 +382,11 @@ void decode_heatpump_data() {
 
 
   int quietpower_Mode_State = (int)(data[7]);
-  char* Powerfull_Mode_State_string = "Unknown";
-  char* Quiet_Mode_State_string = "Unknown";
+  char* Powerfull_Mode_State_string = "-1";
+  char* Quiet_Mode_State_string = "-1";
   switch (quietpower_Mode_State & 0b11111000) { // only interested in left most 5 bits for quiet state
     case 0b10001000:
-      Quiet_Mode_State_string = "scheduled";
+      Quiet_Mode_State_string = "4";
       break;
     case 0b01001000:
       Quiet_Mode_State_string = "0";
@@ -396,13 +408,13 @@ void decode_heatpump_data() {
       Powerfull_Mode_State_string = "0";
       break;
     case 0b010:
-      Powerfull_Mode_State_string = "30";
+      Powerfull_Mode_State_string = "1";
       break;
     case 0b011:
-      Powerfull_Mode_State_string = "60";
+      Powerfull_Mode_State_string = "2";
       break;
     case 0b100:
-      Powerfull_Mode_State_string = "90";
+      Powerfull_Mode_State_string = "3";
       break;
     default:
       break;
@@ -424,13 +436,13 @@ void decode_heatpump_data() {
   char* Valve_State_string;
   switch (valve_defrost_State & 0b11) { //bitwise AND with 0b11 because we are only interested in last 2 bits of the byte.
     case 0b01:
-      Valve_State_string = "Room";
+      Valve_State_string = "0";
       break;
     case 0b10:
-      Valve_State_string = "Tank";
+      Valve_State_string = "1";
       break;
     default:
-      Valve_State_string = "Unknown";
+      Valve_State_string = "-1";
       break;
   }
 
@@ -444,13 +456,13 @@ void decode_heatpump_data() {
   char* Defrosting_State_string;
   switch (valve_defrost_State & 0b1100) { //bitwise AND with 0b1100 because we are only interested in these two bits
     case 0b0100:
-      Defrosting_State_string = "Not active";
+      Defrosting_State_string = "0";
       break;
     case 0b1000:
-      Defrosting_State_string = "Active";
+      Defrosting_State_string = "1";
       break;
     default:
-      Defrosting_State_string = "Unknown";
+      Defrosting_State_string = "-1";
       break;
   }
 
@@ -538,7 +550,7 @@ void decode_heatpump_data() {
   // TOP8 //
   float CompFreq = (float)data[166] - 1;
   if ( actData["Compressor_Freq"] != CompFreq ) {
-    actData["Comppressor_Freq"] = CompFreq;
+    actData["Compressor_Freq"] = CompFreq;
     sprintf(log_msg, "received compressor frequency (Compressor_Freq): %.2f", CompFreq); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Compressor_Freq"); mqtt_client.publish(mqtt_topic, String(CompFreq).c_str(), MQTT_RETAIN_VALUES);
   }
@@ -595,13 +607,13 @@ void decode_heatpump_data() {
   char* ForceDHW_State_string;
   switch (ForceDHW_State & 0b11000000) { //probably only first two bits for force dhw state
     case 0b01000000:
-      ForceDHW_State_string = "off";
+      ForceDHW_State_string = "0";
       break;
     case 0b10000000:
-      ForceDHW_State_string = "on";
+      ForceDHW_State_string = "1";
       break;
     default:
-      ForceDHW_State_string = "Unknown";
+      ForceDHW_State_string = "-1";
       break;
   }
 
@@ -616,13 +628,13 @@ void decode_heatpump_data() {
   char* Holiday_Mode_State_string;
   switch (Holiday_Mode_State & 0b00110000) { //probably only these two bits determine holiday state
     case 0b00010000:
-      Holiday_Mode_State_string = "off";
+      Holiday_Mode_State_string = "0";
       break;
     case 0b00100000:
-      Holiday_Mode_State_string = "on";
+      Holiday_Mode_State_string = "1";
       break;
     default:
-      Holiday_Mode_State_string = "Unknown";
+      Holiday_Mode_State_string = "-1";
       break;
   }
 
