@@ -157,6 +157,7 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   httptext = httptext + "<html>";
   httptext = httptext + "<title>Heisha monitor</title>";
   httptext = httptext + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">";
+  httptext = httptext + "<meta http-equiv=\"refresh\" content=\"5; url=/\" />";
   httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">";
   httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">";
   httptext = httptext + "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">";

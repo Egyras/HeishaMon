@@ -97,6 +97,7 @@ void mqtt_reconnect()
     mqtt_client.publish(mqtt_willtopic, "Online");
   }
 }
+
 void log_message(char* string)
 {
   Serial1.println(string);
@@ -129,30 +130,22 @@ byte calcChecksum(byte* command, int length) {
 
 bool readSerial()
 {
-  if (Serial.available() > 0) {
-    data_length = Serial.readBytes(data, 203);
-    while (Serial.available()) {
-      delay(2);
-      Serial.read();
-    }
-    
-   sprintf(log_msg, "received size : %d", data_length); log_message(log_msg);
-   logHex(data, data_length);
-
-    byte chk = 0;
-    for ( int i = 0; i < sizeof(data); i++)  {
-      chk += data[i];
-    }
-    if ( chk == 0 ) {
-      log_message("Checksum received ok!");
-      return true;
-    }
-    else {
-      log_message("Checksum received false!");
-      return false;
-    }
+  //heatpump data is always 203 bytes
+  data_length = Serial.readBytes(data, 203);
+  sprintf(log_msg, "received size : %d", data_length); log_message(log_msg);
+  logHex(data, data_length);
+  byte chk = 0;
+  for ( int i = 0; i < sizeof(data); i++)  {
+    chk += data[i];
   }
-  else data_length = 0;
+  if ( chk == 0 ) {
+    log_message("Checksum received ok!");
+    return true;
+  }
+  else {
+    log_message("Checksum received false!");
+    return false;
+  }
 }
 
 
@@ -167,19 +160,11 @@ bool send_command(byte* command, int length)
   byte chk = calcChecksum(command, length);
   int bytesSent = Serial.write(command, length);
   bytesSent += Serial.write(chk);
-  
+
   sprintf(log_msg, "sent bytes: %d with checksum: %d ", bytesSent, int(chk)); log_message(log_msg);
   logHex((char*)command, length);
-  
-  // wait until the serial buffer is filled with the replies
-  delay(1000);
-
-  // read the serial
-  bool result = readSerial();
   sending = false;
-  
-  if ( result ) decode_heatpump_data();
-  return result;
+  return true;
 }
 
 // Callback function that is called when a message has been pushed to one of your topics.
@@ -314,14 +299,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     log_message("Updating..");
 
     send_panasonic_query();
-  }
-}
-
-void send_panasonic_query()
-{
-  log_message("Requesting new panasonic data...");
-  if ( ! send_command(panasonicQuery, sizeof(panasonicQuery)) ) {
-    log_message("Failed to get panasonic data!");
   }
 }
 
@@ -749,6 +726,18 @@ void setup() {
   //switchSerial();
 }
 
+void send_panasonic_query() {
+  log_message("Requesting new panasonic data...");
+  send_command(panasonicQuery, sizeof(panasonicQuery));
+}
+
+void read_panasonic_data() {
+  if (Serial.available() > 0) {
+    // read the serial
+    if ( readSerial() ) decode_heatpump_data();
+  }
+}
+
 void loop() {
   // Handle OTA first.
   ArduinoOTA.handle();
@@ -761,10 +750,11 @@ void loop() {
   }
   mqtt_client.loop();
 
-  // run the main program only each WAITTIME
+  read_panasonic_data();
+
+  // run the data query only each WAITTIME
   if (millis() > nexttime) {
     nexttime = millis() + WAITTIME;
     send_panasonic_query();
   }
-  yield();
 }
