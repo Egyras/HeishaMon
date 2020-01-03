@@ -633,6 +633,9 @@ void decode_heatpump_data() {
     case 0b00100000:
       Holiday_Mode_State_string = "1";
       break;
+    case 0b00110000:
+      Holiday_Mode_State_string = "2";
+      break;      
     default:
       Holiday_Mode_State_string = "-1";
       break;
@@ -644,6 +647,27 @@ void decode_heatpump_data() {
     sprintf(log_msg, "received Holidaymode state : %d (%s)", Holiday_Mode_State, Holiday_Mode_State_string.c_str()); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Holidaymode_State"); mqtt_client.publish(mqtt_topic, Holiday_Mode_State_string.c_str(), MQTT_RETAIN_VALUES);
   }
+  
+  int MainSchedule_State = (int)(data[5]);
+  String MainSchedule_State_string;
+  switch (MainSchedule_State & 0b11000000) { //these two bits determine main schedule state
+    case 0b01000000:
+      MainSchedule_State_string = "0";
+      break;
+    case 0b10000000:
+      MainSchedule_State_string = "1";
+      break;
+    default:
+      MainSchedule_State_string = "-1";
+      break;
+  }
+
+  // TOP?? //
+  if ( actData["MainSchedule_State"] != MainSchedule_State_string ) {
+    actData["MainSchedule_State"] = MainSchedule_State_string;
+    sprintf(log_msg, "received MainSchedule_State state : %d (%s)", MainSchedule_State, MainSchedule_State_string.c_str()); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "MainSchedule_State"); mqtt_client.publish(mqtt_topic, MainSchedule_State_string.c_str(), MQTT_RETAIN_VALUES);
+  }  
 
   // TOP23 //
   float Heat_Delta = (float)data[84] - 128;
