@@ -49,7 +49,7 @@ TOP33 | panasonic_heat_pump/sdc/Roomthermostat_Temp | Remote control thermostat 
 *TOPxx* | panasonic_heat_pump/sdc/DHW_Energy_Production | Thermal DHW power produced in Watt
 *TOPxx* | panasonic_heat_pump/sdc/DHW_Energy_Consumtion | Elektrical power consume at DHW mode in Watt (steps of 200)
 
-*not all topics changed in the source code for now. Maybe we should have a numbering for the topics and write this number in the source as a comment. In addition, a unique ID could be used for the device (eg. panasonic_heat_pump_ID_OF_HEATPUMP) to manage more then one device. Please check, this will change al our work behind mqtt.* 
+*In addition, a unique ID could be used for the device (eg. panasonic_heat_pump_ID_OF_HEATPUMP) to manage more then one device. Please check, this will change al our work behind mqtt.* 
 
 ## Commands:
 Topic | Description | Values
