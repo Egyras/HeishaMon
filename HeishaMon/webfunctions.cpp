@@ -13,7 +13,7 @@ bool shouldSaveConfig = false;
 
 const String webHeader = "<!DOCTYPE html><html><title>Heisha monitor</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta http-equiv=\"refresh\" content=\"5; url=/\" /><link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\"><style>.w3-btn {margin-bottom:10px;}</style><body><button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button><header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor configuration</h1></header>";
 const String webFooter = "</body></html>";
-const String menuJS = "<script>function openLeftMenu() {document.getElementById(\"leftMenu\").style.display = \"block\";}function closeLeftMenu() {document.getElementById(\"leftMenu\").style.display = \"none\";}</script>";
+const String menuJS = "<script>function openLeftMenu() {var x = document.getElementById(\"leftMenu\");if (x.style.display === \"none\") {x.style.display = \"block\";} else {x.style.display = \"none\";} }</script>";
 
 
 void(* resetFunc) (void) = 0;
@@ -160,8 +160,6 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
 void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   String httptext = webHeader;
   httptext = httptext + "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">";
-  httptext = httptext + "<button onclick=\"closeLeftMenu()\" class=\"w3-bar-item w3-button w3-large\">Close &times;</button>";
-
   httptext = httptext + "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot heisha monitor</a>";
   httptext = httptext + "<a href=\"/factoryreset\" class=\"w3-bar-item w3-button\">Factory reset</a>";
   httptext = httptext + "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>";
