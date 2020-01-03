@@ -84,7 +84,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerfull mode status |
 | 08 | 00 |   | ? |
-| 09 | 05 | HEX values Floor heater off + Tank heater off=55, Floor heater on + Tanks heater off=56, Floor Heater off + Tank heater on=59, Floor heater on + Tank heater on=5A | heaters status|
+| 09 | 05 | HEX values - should be Low Byte (2nd value)Floor heater off + Tank heater off=55, Floor heater on + Tanks heater off=56, Floor Heater off + Tank heater on=59, Floor heater on + Tank heater on=5A | heaters status|
 | 10 | 00 |   | ? |
 | 11 | 00 |   | ? |
 | 12 | 00 |   | ? |
