@@ -34,8 +34,8 @@ const char* update_username = "admin";
 const char* update_password = "heisha";
 
 // Default settings if config does not exists
-char* wifi_hostname = "HeishaMon";
-char* ota_password  = "panasonic";
+char* wifi_hostname = strdup("HeishaMon");
+char* ota_password  = strdup("panasonic");
 char mqtt_server[40];
 char mqtt_port[6] = "1883";
 char mqtt_username[40];
@@ -142,11 +142,11 @@ bool readSerial()
     chk += data[i];
   }
   if ( chk == 0 ) {
-    log_message("Checksum received ok!");
+    log_message(strdup("Checksum received ok!"));
     return true;
   }
   else {
-    log_message("Checksum received false!");
+    log_message(strdup("Checksum received false!"));
     return false;
   }
 }
@@ -155,7 +155,7 @@ bool readSerial()
 bool send_command(byte* command, int length)
 {
   if ( sending ) {
-    log_message("Already sending data. Aborting this send request");
+    log_message(strdup("Already sending data. Aborting this send request"));
     return false;
   }
   sending = true;
@@ -181,7 +181,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (strcmp(topic, mqtt_set_quiet_mode_topic) == 0)
   {
     String set_quiet_mode_string(msg);
-    int quiet_mode = (set_quiet_mode_string.toInt() + 1) * 8;
+    byte quiet_mode = (set_quiet_mode_string.toInt() + 1) * 8;
 
     sprintf(log_msg, "set Quiet mode to %d", quiet_mode / 8 - 1); log_message(log_msg);
     byte command[] = {0xf1, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, quiet_mode, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -191,7 +191,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (strcmp(topic, mqtt_set_shift_temperature_topic) == 0)
   {
     String set_shift_temperature_string(msg);
-    int shift_mode = set_shift_temperature_string.toInt() + 128;
+    byte shift_mode = set_shift_temperature_string.toInt() + 128;
 
 
     sprintf(log_msg, "set shift temperature to %d", shift_mode - 128 ); log_message(log_msg);
@@ -203,7 +203,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (strcmp(topic, mqtt_set_force_DHW_topic) == 0)
   {
     String set_force_DHW_string(msg);
-    int force_DHW_mode = 66; //hex 0x42
+    byte force_DHW_mode = 66; //hex 0x42
     if ( set_force_DHW_string.toInt() == 1 ) {
       force_DHW_mode = 130; //hex 0x82
     }
@@ -216,7 +216,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (strcmp(topic, mqtt_set_force_defrost_topic) == 0)
   {
     String set_force_defrost_string(msg);
-    int force_defrost_mode = 0;
+    byte force_defrost_mode = 0;
     if ( set_force_defrost_string.toInt() == 1 ) {
       force_defrost_mode = 2; //hex 0x02
     }
@@ -229,7 +229,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (strcmp(topic, mqtt_set_force_sterilization_topic) == 0)
   {
     String set_force_sterilization_string(msg);
-    int force_sterilization_mode = 0;
+    byte force_sterilization_mode = 0;
     if ( set_force_sterilization_string.toInt() == 1 ) {
       force_sterilization_mode = 4; //hex 0x04
     }
@@ -244,7 +244,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   {
     String set_holiday_string(msg);
 
-    int set_holiday = 84; //hex 0x54
+    byte set_holiday = 84; //hex 0x54
     if ( set_holiday_string.toInt() == 1 ) {
       set_holiday = 100; //hex 0x64
     }
@@ -258,7 +258,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (strcmp(topic, mqtt_set_powerfull_topic) == 0)
   {
     String set_powerfull_string(msg);
-    int set_powerfull = (set_powerfull_string.toInt() ) + 73;
+    byte set_powerfull = (set_powerfull_string.toInt() ) + 73;
 
     sprintf(log_msg, "set powerfull mode to %d", (set_powerfull - 73) ); log_message(log_msg);
     byte command[] = {0xf1, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, set_powerfull, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -269,7 +269,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (strcmp(topic, mqtt_set_mode_topic) == 0)
   {
     String set_mode_string(msg);
-    int set_mode;
+    byte set_mode;
     switch (set_mode_string.toInt()) {
       case 0: set_mode = 33; break;
       case 1: set_mode = 82; break;
@@ -290,7 +290,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (strcmp(topic, mqtt_set_tank_temp_topic) == 0)
   {
     String set_tank_temp_string(msg);
-    int set_tank_temp = set_tank_temp_string.toInt() + 128;
+    byte set_tank_temp = set_tank_temp_string.toInt() + 128;
 
     sprintf(log_msg, "set Tank temperature to %d", set_tank_temp - 128); log_message(log_msg);
     byte command[] = {0xf1, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, set_tank_temp, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -301,7 +301,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   if (strcmp(topic, mqtt_set_cool_temp_topic) == 0)
   {
     String set_cool_temp_string(msg);
-    int set_cool_temp = set_cool_temp_string.toInt() + 128;
+    byte set_cool_temp = set_cool_temp_string.toInt() + 128;
 
 
     sprintf(log_msg, "set Cool temperature to %d", set_cool_temp - 128); log_message(log_msg);
@@ -311,7 +311,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 
   if (strcmp(topic, mqtt_topic_base) == 0)
   {
-    log_message("Updating..");
+    log_message(strdup("Updating.."));
 
     send_panasonic_query();
   }
@@ -324,7 +324,7 @@ void decode_heatpump_data() {
   }
 
   int Power_State = (int)(data[4]);
-  char* Power_State_string;
+  String Power_State_string;
   switch (Power_State & 0b11) { //probably only last two bits for Power dhw state
     case 0b01:
       Power_State_string = "0";
@@ -340,12 +340,12 @@ void decode_heatpump_data() {
   // TOP3 //
   if ( actData["Power_State"] != Power_State_string ) {
     actData["Power_State"] = Power_State_string;
-    sprintf(log_msg, "received Power state : %d (%s)", Power_State, Power_State_string); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Power_State"); mqtt_client.publish(mqtt_topic, Power_State_string, MQTT_RETAIN_VALUES);
+    sprintf(log_msg, "received Power state : %d (%s)", Power_State, Power_State_string.c_str()); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Power_State"); mqtt_client.publish(mqtt_topic, Power_State_string.c_str(), MQTT_RETAIN_VALUES);
   }
 
   int Mode_State = (int)(data[6]);
-  char* Mode_State_string;
+  String Mode_State_string;
   switch (Mode_State) {
     case 82:
       Mode_State_string = "0";
@@ -376,14 +376,14 @@ void decode_heatpump_data() {
   // TOP4 //
   if ( actData["OpMode_State"] != Mode_State_string ) {
     actData["OpMode_State"] = Mode_State_string;
-    sprintf(log_msg, "received OpMode state : %d (%s)", Mode_State, Mode_State_string); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OpMode_State"); mqtt_client.publish(mqtt_topic, Mode_State_string, MQTT_RETAIN_VALUES);
+    sprintf(log_msg, "received OpMode state : %d (%s)", Mode_State, Mode_State_string.c_str()); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OpMode_State"); mqtt_client.publish(mqtt_topic, Mode_State_string.c_str(), MQTT_RETAIN_VALUES);
   }
 
 
   int quietpower_Mode_State = (int)(data[7]);
-  char* Powerfull_Mode_State_string = "-1";
-  char* Quiet_Mode_State_string = "-1";
+  String Powerfull_Mode_State_string = "-1";
+  String Quiet_Mode_State_string = "-1";
   switch (quietpower_Mode_State & 0b11111000) { // only interested in left most 5 bits for quiet state
     case 0b10001000:
       Quiet_Mode_State_string = "4";
@@ -422,18 +422,18 @@ void decode_heatpump_data() {
   // TOP18 //
   if ( actData["Quietmode_Level"] != Quiet_Mode_State_string ) {
     actData["Quietmode_Level"] = Quiet_Mode_State_string;
-    sprintf(log_msg, "received quietmode level : %d (%s)", quietpower_Mode_State, Quiet_Mode_State_string); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Quietmode_Level"); mqtt_client.publish(mqtt_topic, Quiet_Mode_State_string, MQTT_RETAIN_VALUES);
+    sprintf(log_msg, "received quietmode level : %d (%s)", quietpower_Mode_State, Quiet_Mode_State_string.c_str()); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Quietmode_Level"); mqtt_client.publish(mqtt_topic, Quiet_Mode_State_string.c_str(), MQTT_RETAIN_VALUES);
   }
   // TOP17 //
   if ( actData["Powerfullmode_State"] != Powerfull_Mode_State_string ) {
     actData["Powerfullmode_State"] = Powerfull_Mode_State_string;
-    sprintf(log_msg, "received powerfullmode state : %d (%s)", quietpower_Mode_State, Powerfull_Mode_State_string); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Powerfullmode_State"); mqtt_client.publish(mqtt_topic, Powerfull_Mode_State_string, MQTT_RETAIN_VALUES);
+    sprintf(log_msg, "received powerfullmode state : %d (%s)", quietpower_Mode_State, Powerfull_Mode_State_string.c_str()); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Powerfullmode_State"); mqtt_client.publish(mqtt_topic, Powerfull_Mode_State_string.c_str(), MQTT_RETAIN_VALUES);
   }
 
   int valve_defrost_State = (int)(data[111]);
-  char* Valve_State_string;
+  String Valve_State_string;
   switch (valve_defrost_State & 0b11) { //bitwise AND with 0b11 because we are only interested in last 2 bits of the byte.
     case 0b01:
       Valve_State_string = "0";
@@ -449,11 +449,11 @@ void decode_heatpump_data() {
   // TOP20//
   if ( actData["Valve_State"] != Valve_State_string ) {
     actData["Valve_State"] = Valve_State_string;
-    sprintf(log_msg, "received 3-way valve state : %d (%s)", valve_defrost_State, Valve_State_string); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Valve_State"); mqtt_client.publish(mqtt_topic, Valve_State_string, MQTT_RETAIN_VALUES);
+    sprintf(log_msg, "received 3-way valve state : %d (%s)", valve_defrost_State, Valve_State_string.c_str()); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Valve_State"); mqtt_client.publish(mqtt_topic, Valve_State_string.c_str(), MQTT_RETAIN_VALUES);
   }
 
-  char* Defrosting_State_string;
+  String Defrosting_State_string;
   switch (valve_defrost_State & 0b1100) { //bitwise AND with 0b1100 because we are only interested in these two bits
     case 0b0100:
       Defrosting_State_string = "0";
@@ -469,8 +469,8 @@ void decode_heatpump_data() {
   // TOP26 //
   if ( actData["Defrosting_State"] != Defrosting_State_string ) {
     actData["Defrosting_State"] = Defrosting_State_string;
-    sprintf(log_msg, "received defrosting state : %d (%s)", valve_defrost_State, Defrosting_State_string); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Defrosting_State"); mqtt_client.publish(mqtt_topic, Defrosting_State_string, MQTT_RETAIN_VALUES);
+    sprintf(log_msg, "received defrosting state : %d (%s)", valve_defrost_State, Defrosting_State_string.c_str()); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Defrosting_State"); mqtt_client.publish(mqtt_topic, Defrosting_State_string.c_str(), MQTT_RETAIN_VALUES);
   }
 
   // TOP7 //
@@ -604,7 +604,7 @@ void decode_heatpump_data() {
   }
 
   int ForceDHW_State = (int)(data[4]);
-  char* ForceDHW_State_string;
+  String ForceDHW_State_string;
   switch (ForceDHW_State & 0b11000000) { //probably only first two bits for force dhw state
     case 0b01000000:
       ForceDHW_State_string = "0";
@@ -620,12 +620,12 @@ void decode_heatpump_data() {
   // TOP2 //
   if ( actData["ForceDHW_State"] != ForceDHW_State_string ) {
     actData["ForceDHW_State"] = ForceDHW_State_string;
-    sprintf(log_msg, "received force DHW state : %d (%s)", ForceDHW_State, ForceDHW_State_string); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ForceDHW"); mqtt_client.publish(mqtt_topic, ForceDHW_State_string, MQTT_RETAIN_VALUES);
+    sprintf(log_msg, "received force DHW state : %d (%s)", ForceDHW_State, ForceDHW_State_string.c_str()); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "ForceDHW"); mqtt_client.publish(mqtt_topic, ForceDHW_State_string.c_str(), MQTT_RETAIN_VALUES);
   }
 
   int Holiday_Mode_State = (int)(data[5]);
-  char* Holiday_Mode_State_string;
+  String Holiday_Mode_State_string;
   switch (Holiday_Mode_State & 0b00110000) { //probably only these two bits determine holiday state
     case 0b00010000:
       Holiday_Mode_State_string = "0";
@@ -641,8 +641,8 @@ void decode_heatpump_data() {
   // TOP19 //
   if ( actData["Holidaymode_State"] != Holiday_Mode_State_string ) {
     actData["Holidaymode_State"] = Holiday_Mode_State_string;
-    sprintf(log_msg, "received Holidaymode state : %d (%s)", Holiday_Mode_State, Holiday_Mode_State_string); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Holidaymode_State"); mqtt_client.publish(mqtt_topic, Holiday_Mode_State_string, MQTT_RETAIN_VALUES);
+    sprintf(log_msg, "received Holidaymode state : %d (%s)", Holiday_Mode_State, Holiday_Mode_State_string.c_str()); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Holidaymode_State"); mqtt_client.publish(mqtt_topic, Holiday_Mode_State_string.c_str(), MQTT_RETAIN_VALUES);
   }
 
   // TOP23 //
@@ -740,12 +740,12 @@ void setupHttp() {
     handleReboot(&httpServer);
   });
   httpServer.on("/togglelog", [] {
-    log_message("Toggled mqtt log flag");
+    log_message(strdup("Toggled mqtt log flag"));
     outputMqttLog ^= true;
     handleRoot(&httpServer, &actData);
   });
   httpServer.on("/togglehexdump", [] {
-    log_message("Toggled hexdump log flag");
+    log_message(strdup("Toggled hexdump log flag"));
     outputHexDump ^= true;
     handleRoot(&httpServer, &actData);
   });
@@ -782,7 +782,7 @@ void setup() {
 }
 
 void send_panasonic_query() {
-  log_message("Requesting new panasonic data...");
+  log_message(strdup("Requesting new panasonic data..."));
   send_command(panasonicQuery, sizeof(panasonicQuery));
 }
 
