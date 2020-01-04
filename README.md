@@ -95,10 +95,10 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 17 | 00 |   | ? |
 | 18 | 00 |   | ? |
 | 19 | 00 |   | ? |
-| 20 | 19 | Hex values, Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes t0 9| Anti freezing |
+| 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 | Anti freezing |
 | 21 | 15 |   | ? |
 | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
-| 23 | 55 |   | ? |
+| 23 | 55 | (hex) Off=55, On=56  | External Switch |
 | 24 | 16 | (hex) Tank connected=16, not connected=15 | Tank Connection status |
 | 25 | 5e | (hex) Tank Heater internal and 3kW=95, Tank Heater external and 3kW=96, Tank Heater internal and 6kW=99, Tank Heater external and 6kW=9A, Tank Heater internal and 9kW=9D, Tank Heater External and 9KW -9E, Tank Heater external and 9KW + Heater pad Type A on=AE, Tank Heater external and 9KW + Heater pad Type B on=BE  | Power of internal heater + tank heater Internal/External + Heater for external pad |
 | 26 | 55 |   | ? |
@@ -157,8 +157,8 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 80 | a3 |   =35| ? |
 | 81 | 7b |   =-5| ? |
 | 82 | 8f |   =15| ? |
-| 83 | 8e |   =14| ? |
-| 84 | 85 | Convert to DEC 133-128 =5  | Floor heating set delta [°C] |
+| 83 | 8e |   To DEC-128 t to DEC 133-128 =5  | Floor heating set delta [°C] |
+| 84 | 80 | ? | ? |
 | 85 | 80 | Convert to DEC 128-128=0 | ? Possible Outdoor temperature for heater ON [°C]  |
 | 86 | 8f | Convert to DEC 143-128 =15 | Set temperature for Cooling direct mode [°C] |
 | 87 | 8a |   =10| ?  Possible cooling curve |
@@ -262,7 +262,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 185 | 79 | to DEC X-1  | Room Heater operation time in h |
 | 186 | 79 |   | ? |
 | 187 | 79 |   | ? |
-| 188 | 79 |   | ? |
+| 188 | 79 | to DEC X-1   | Tank Heater operation time in h  |
 | 189 | 79 |   | ? |
 | 190 | 79 |   | ? |
 | 191 | 79 |   | ? |
