@@ -101,7 +101,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 23 | 55 | (hex) Off=55, On=56  | External Switch |
 | 24 | 16 | (hex) Tank connected=16, not connected=15 | Tank Connection status |
 | 25 | 5e | (hex) Tank Heater internal and 3kW=95, Tank Heater external and 3kW=96, Tank Heater internal and 6kW=99, Tank Heater external and 6kW=9A, Tank Heater internal and 9kW=9D, Tank Heater External and 9KW -9E, Tank Heater external and 9KW + Heater pad Type A on=AE, Tank Heater external and 9KW + Heater pad Type B on=BE  | Power of internal heater + tank heater Internal/External + Heater for external pad |
-| 26 | 55 |   | ? |
+| 26 | 55 | (hex) Biwalent Off=55, Biwalent alternative =56, Biwalent parallel=5A | Biwalent settings |
 | 27 | 05 |   | ? |
 | 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
 | 29 | 00 |   | ? |
@@ -140,7 +140,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 62 | 85 |  Convert to DEC | ? | 
 | 63 | 85 |   | ? |
 | 64 | d0 |   | ? |
-| 65 | 7b |   | ? |
+| 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Biwalent device -15-35[°C]|
 | 66 | 78 |   | ? |
 | 67 | 1f |   | ? |
 | 68 | 7e |   | ? |
@@ -157,8 +157,8 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 80 | a3 |   =35| ? |
 | 81 | 7b |   =-5| ? |
 | 82 | 8f |   =15| ? |
-| 83 | 8e |   To DEC-128 t to DEC 133-128 =5  | Floor heating set delta [°C] |
-| 84 | 80 | ? | ? |
+| 83 | 8e | Convert to DEC-128  | Outdoor Temperature to stop heating 5-35 [°C] |
+| 84 | 80 | Convert to DEC 133-128 =5  | Floor heating set delta [°C] |
 | 85 | 80 | Convert to DEC 128-128=0 | ? Possible Outdoor temperature for heater ON [°C]  |
 | 86 | 8f | Convert to DEC 143-128 =15 | Set temperature for Cooling direct mode [°C] |
 | 87 | 8a |   =10| ?  Possible cooling curve |
