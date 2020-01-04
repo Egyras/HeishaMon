@@ -4,19 +4,19 @@ For every state: -1 = unknown
 | ----- | ---- | ----- |
 |panasonic_heat_pump/sdc/Power_state | 0 | Heatpump disabled |
 | | 1 | Heatpump enabled |
-|panasonic_heat_pump/sdc/Mode_state | 0 | Heat mode |
+|panasonic_heat_pump/sdc/OpMode_state | 0 | Heat mode |
 |	| 1 | Cool mode |
 |	| 2 | Auto mode |
 | | 3 | DHW mode |
 |	| 4 | Heat+DHW mode |
 |	| 5 | Cool+DHW mode |
 |	| 6 | Auto+DHW mode |
-|panasonic_heat_pump/sdc/Quiet_mode_state	| 0 | Quiet mode off |
+|panasonic_heat_pump/sdc/Quietmode_state	| 0 | Quiet mode off |
 |	| 1 | Quiet mode 1 |
 |	| 2 | Quiet mode 2 |
 |	| 3 | Quiet mode 3 |
 |	| 4 | Quiet mode scheduled |
-|panasonic_heat_pump/sdc/Powerfull_mode_state	| 0 | Powerfull mode off |
+|panasonic_heat_pump/sdc/Powerfullmode_state	| 0 | Powerfull mode off |
 |	| 1 | Powerfull mode 30 min |
 |	| 2 | Powerfull mode 60 min |
 |	| 3 | Powerfull mode 90 min |
@@ -26,5 +26,9 @@ For every state: -1 = unknown
 | | 1 | Defrosting active |
 |panasonic_heat_pump/sdc/ForceDHW_state | 0 | Force DHW disabled |
 | | 1 | Force DHW enabled |
-|panasonic_heat_pump/sdc/Holiday_mode_state | 0 | Holiday mode disabled |
-| | 1 | Holiday mode enabled |
+|panasonic_heat_pump/sdc/Holidaymode_state | 0 | Holiday mode disabled |
+| | 1 | Holiday mode set |
+| | 2 | Holiday mode active |
+|panasonic_heat_pump/sdc/MainSchedule_state | 0 | Main schedule disabled |
+| | 1 | Main schedule active |
+|
