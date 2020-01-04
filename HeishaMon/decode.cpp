@@ -207,7 +207,7 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
   // *placeholder* byte 146 Z2_Water_Temp
 
   // TOP42 //
-  // *placeholder* byte 147 Z1_Water_Traget_Temp
+  // *placeholder* byte 147 Z1_Water_Target_Temp
 
   // TOP43 //
   // *placeholder* byte 148 Z2_Water_Target_Temp
