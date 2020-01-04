@@ -12,15 +12,14 @@ TOP1 | panasonic_heat_pump/sdc/Pump_Flow | Water pump flow, measured in L/min
 TOP2 | panasonic_heat_pump/sdc/ForceDHW_State | DWW status (off - on - unknown)
 TOP3 | panasonic_heat_pump/sdc/Power_State | Current Power state (off - on)
 TOP4 | panasonic_heat_pump/sdc/OpMode_State | Current operating mode, valid responses are Heat, DHW, Cool, Auto, Heat+DHW, Auto+DHW, Cool+DHW
-TOP5 | panasonic_heat_pump/sdc/Flow_Inlet_Temp | Inlet water temperature in °C
-TOP6 | panasonic_heat_pump/sdc/Flow_Outlet_Temp | Outlet water temperature in °C
-TOP7 | panasonic_heat_pump/sdc/Flow_Target_Temp | Outlet water target temperature in °C
+TOP5 | panasonic_heat_pump/sdc/Z1_Flow_Inlet_Temp | Zone 1 Inlet water temperature in °C
+TOP6 | panasonic_heat_pump/sdc/Z1_Flow_Outlet_Temp | Zone 1 Outlet water temperature in °C
+TOP7 | panasonic_heat_pump/sdc/Z1_Flow_Target_Temp | Zone 1 Outlet water target temperature in °C
 TOP8 | panasonic_heat_pump/sdc/Compressor_Freq | Current compressor frequency
 TOP9 | panasonic_heat_pump/sdc/Tank_Target_Temp | Tank temperature setpoint in °C
 TOP10 | panasonic_heat_pump/sdc/Tank_Temp | Actual Tank temperature in °C
 TOP11 | panasonic_heat_pump/sdc/Operations_Hours | Pump operating time in Hours
 TOP12 | panasonic_heat_pump/sdc/Operations_Counter | Pump start/stop counter
-TOP13 | panasonic_heat_pump/sdc/HeatShift_Temp | Heatshift (-5 to 5) or direct heat (20 to 50) temperature in °C
 TOP14 | panasonic_heat_pump/sdc/Outside_Temp | Outside ambient temperature measured by compressor in °C
 TOP15 | panasonic_heat_pump/sdc/Heat_Energy_Production | Thermal heat power produced in Watt
 TOP16 | panasonic_heat_pump/sdc/Heat_Energy_Consumtion | Elektrical power consume at heat mode in Watt (steps of 200)
@@ -34,24 +33,27 @@ TOP23 | panasonic_heat_pump/sdc/Heat_Delta | Heat delta K
 TOP24 | panasonic_heat_pump/sdc/Cool_Delta | Cool delta K
 TOP25 | panasonic_heat_pump/sdc/Quietmode_State | Current silent mode state ( ???? )
 TOP26 | panasonic_heat_pump/sdc/Defrosting_State | Current defrost state ( ???? )
-TOP27 | panasonic_heat_pump/sdc/Heat_Shift_Temp | Temperatur shift (-5 to 5) or direct heat temperatur (20 to 50)
-TOP28 | panasonic_heat_pump/sdc/Cool_Shift_Temp | Temperatur shift (-5 to 5) or direct cool temperatur (?? to ??)
+TOP27 | panasonic_heat_pump/sdc/Z1_HeatShift_Temp | Zone 1 Heatshift (-5 to 5) or direct heat temperatur (20 to 55)
+TOP28 | panasonic_heat_pump/sdc/Z1_CoolShift_Temp | Zone 1 Coolshift (-5 to 5) or direct cool temperatur (?? to ??)
 TOP29 | panasonic_heat_pump/sdc/HCurve_OutHighTemp | Target temperatur °C at lowest point of the heating curve (eg. 34)
 TOP30 | panasonic_heat_pump/sdc/HCurve_OutLowTemp | Target temperatur °C at highest point of the heating curve (eg. 24)
 TOP31 | panasonic_heat_pump/sdc/HCurve_OutsHighTemp | Lowest outsite temperatur of the heating curve (eg. -12)
 TOP32 | panasonic_heat_pump/sdc/HCurve_OutsLowTemp | Highest temperatur of the heating curve (eg. 15)
 TOP33 | panasonic_heat_pump/sdc/Roomthermostat_Temp | Remote control thermostat temp
-*TOPxx* | panasonic_heat_pump/sdc/Evaporator_out_Temp | to decode
-*TOPxx* | panasonic_heat_pump/sdc/Pump_operating_Point | to decode
-*TOPxx* | panasonic_heat_pump/sdc/Fan_Speed | fan speed in 1/min
-*TOPxx* | panasonic_heat_pump/sdc/Cool_Energy_Production | Thermal cool power produced in Watt
-*TOPxx* | panasonic_heat_pump/sdc/Cool_Energy_Consumtion | Elektrical power consume at cool mode in Watt (steps of 200)
-*TOPxx* | panasonic_heat_pump/sdc/DHW_Energy_Production | Thermal DHW power produced in Watt
-*TOPxx* | panasonic_heat_pump/sdc/DHW_Energy_Consumtion | Elektrical power consume at DHW mode in Watt (steps of 200)
+TOP34 | panasonic_heat_pump/sdc/Z2_HeatShift_Temp | Zone 2 Heatshift (-5 to 5) or direct heat temperatur (20 to 55)
+TOP35 | panasonic_heat_pump/sdc/Z2_CoolShift_Temp | Zone 2 Coolshift (-5 to 5) or direct cool temperatur (?? to ??)
+TOP36 | panasonic_heat_pump/sdc/Z1_Water_Temp | Zone 1 Actual (Water Outlet/Room/Pool) Temperature [°C]
+TOP37 | panasonic_heat_pump/sdc/Z2_Water_Temp | Zone 2 Actual (Water Outlet/Room/Pool) Temperature [°C]
+TOP38 | panasonic_heat_pump/sdc/Cool_Energy_Production | Thermal cool power produced in Watt
+TOP39 | panasonic_heat_pump/sdc/Cool_Energy_Consumtion | Elektrical power consume at cool mode in Watt (steps of 200)
+TOP40 | panasonic_heat_pump/sdc/DHW_Energy_Production | Thermal DHW power produced in Watt
+TOP41 | panasonic_heat_pump/sdc/DHW_Energy_Consumtion | Elektrical power consume at DHW mode in Watt (steps of 200)
+TOP42 | panasonic_heat_pump/sdc/Z1_Water_Traget_Temp | Zone 1 water target temperature 
+TOP43 | panasonic_heat_pump/sdc/Z2_Water_Traget_Temp | Zone 2 water target temperature 
 
-*In addition, a unique ID could be used for the device (eg. panasonic_heat_pump_ID_OF_HEATPUMP) to manage more then one device. Please check, this will change al our work behind mqtt.* 
 
 ## Commands:
+
 Topic | Description | Values
 --- | --- | ---
 panasonic_heat_pump/SetHoliday | Set holiday mode on or off | 84 = Off, 100 = On
