@@ -271,10 +271,10 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     String set_mode_string(msg);
     byte set_mode;
     switch (set_mode_string.toInt()) {
-      case 0: set_mode = 33; break;
-      case 1: set_mode = 82; break;
-      case 2: set_mode = 83; break;
-      case 3: set_mode = 88; break;
+      case 0: set_mode = 82; break;
+      case 1: set_mode = 83; break;
+      case 2: set_mode = 89; break;
+      case 3: set_mode = 33; break;
       case 4: set_mode = 98; break;
       case 5: set_mode = 99; break;
       case 6: set_mode = 104; break;
