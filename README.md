@@ -95,7 +95,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 17 | 00 |   | ? |
 | 18 | 00 |   | ? |
 | 19 | 00 |   | ? |
-| 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 | Anti freezing |
+| 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Anti freezing |
 | 21 | 15 |   | ? |
 | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 | 23 | 55 | (hex) Off=55, On=56  | External Switch |
