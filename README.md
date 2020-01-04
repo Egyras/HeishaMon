@@ -80,7 +80,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 02 | 01|   | Header  |
 | 03 | 10 |   | Header   |
 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
-| 05 | 55 |  Holiday mode status 55=off, 65=on | Holiday mode status |
+| 05 | 55 | (hex) Holiday mode off and weekly shedule off =55, Holiday mode off and weekly shedule on =95, Holiday mode on and weekly shedule off = 65, Holiday mode on and active and weekly shedule off =75, Holiday mode on and weekly shedule on =B5, Holiday mode off and weekly shedule off + pump works on heater =59 | Holiday mode and Sheduler status |
 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerfull mode status |
 | 08 | 00 |   | ? |
@@ -95,12 +95,12 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 17 | 00 |   | ? |
 | 18 | 00 |   | ? |
 | 19 | 00 |   | ? |
-| 20 | 19 |   | ? |
+| 20 | 19 | Hex values, Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes t0 9| Anti freezing |
 | 21 | 15 |   | ? |
 | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 | 23 | 55 |   | ? |
-| 24 | 16 |   | ? |
-| 25 | 5e |   | ? |
+| 24 | 16 | (hex) Tank connected=16, not connected=15 | Tank Connection status |
+| 25 | 5e | (hex) Tank Heater internal and 3kW=95, Tank Heater external and 3kW=96, Tank Heater internal and 6kW=99, Tank Heater external and 6kW=9A, Tank Heater internal and 9kW=9D, Tank Heater External and 9KW -9E, Tank Heater external and 9KW + Heater pad Type A on=AE, Tank Heater external and 9KW + Heater pad Type B on=BE  | Power of internal heater + tank heater Internal/External + Heater for external pad |
 | 26 | 55 |   | ? |
 | 27 | 05 |   | ? |
 | 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
