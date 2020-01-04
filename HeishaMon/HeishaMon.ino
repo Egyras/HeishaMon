@@ -45,6 +45,7 @@ bool sending = false;
 unsigned long nexttime = 0;
 unsigned long nextalldatatime = 0;
 
+// not in use
 byte inCheck = 0;
 
 
@@ -52,6 +53,9 @@ byte inCheck = 0;
 bool outputMqttLog = true;
 //toggle to dump received hex data in log
 bool outputHexDump = false;
+// toggle to dump  extralog to serial1
+// *needs implementation in this code and in the webpage*
+bool outputSerial1 = true;
 
 //retain mqtt values for subscriber to receive on first connect
 const bool MQTT_RETAIN_VALUES = true;
@@ -317,12 +321,14 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   }
 }
 
+// Decode ////////////////////////////////////////////////////////////////////////////
 void decode_heatpump_data() {
   if (millis() > nextalldatatime) {
     actData.clear(); // clearing all actual data so everything will be updated and sent to mqtt
     nextalldatatime = millis() + UPDATEALLTIME;
   }
 
+  // TOP3 //  
   int Power_State = (int)(data[4]);
   char* Power_State_string;
   switch (Power_State & 0b11) { //probably only last two bits for Power dhw state
@@ -336,14 +342,13 @@ void decode_heatpump_data() {
       Power_State_string = "-1";
       break;
   }
-
-  // TOP3 //
   if ( actData["Power_State"] != Power_State_string ) {
     actData["Power_State"] = Power_State_string;
     sprintf(log_msg, "received Power state : %d (%s)", Power_State, Power_State_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Power_State"); mqtt_client.publish(mqtt_topic, Power_State_string, MQTT_RETAIN_VALUES);
   }
 
+  // TOP4 //
   int Mode_State = (int)(data[6]);
   char* Mode_State_string;
   switch (Mode_State) {
@@ -372,15 +377,13 @@ void decode_heatpump_data() {
       Mode_State_string = "-1";
       break;
   }
-
-  // TOP4 //
   if ( actData["OpMode_State"] != Mode_State_string ) {
     actData["OpMode_State"] = Mode_State_string;
     sprintf(log_msg, "received OpMode state : %d (%s)", Mode_State, Mode_State_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "OpMode_State"); mqtt_client.publish(mqtt_topic, Mode_State_string, MQTT_RETAIN_VALUES);
   }
 
-
+  // TOP18 //
   int quietpower_Mode_State = (int)(data[7]);
   char* Powerfull_Mode_State_string = "-1";
   char* Quiet_Mode_State_string = "-1";
@@ -419,12 +422,12 @@ void decode_heatpump_data() {
     default:
       break;
   }
-  // TOP18 //
   if ( actData["Quietmode_Level"] != Quiet_Mode_State_string ) {
     actData["Quietmode_Level"] = Quiet_Mode_State_string;
     sprintf(log_msg, "received quietmode level : %d (%s)", quietpower_Mode_State, Quiet_Mode_State_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Quietmode_Level"); mqtt_client.publish(mqtt_topic, Quiet_Mode_State_string, MQTT_RETAIN_VALUES);
   }
+
   // TOP17 //
   if ( actData["Powerfullmode_State"] != Powerfull_Mode_State_string ) {
     actData["Powerfullmode_State"] = Powerfull_Mode_State_string;
@@ -432,6 +435,7 @@ void decode_heatpump_data() {
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Powerfullmode_State"); mqtt_client.publish(mqtt_topic, Powerfull_Mode_State_string, MQTT_RETAIN_VALUES);
   }
 
+  // TOP20//
   int valve_defrost_State = (int)(data[111]);
   char* Valve_State_string;
   switch (valve_defrost_State & 0b11) { //bitwise AND with 0b11 because we are only interested in last 2 bits of the byte.
@@ -445,14 +449,13 @@ void decode_heatpump_data() {
       Valve_State_string = "-1";
       break;
   }
-
-  // TOP20//
   if ( actData["Valve_State"] != Valve_State_string ) {
     actData["Valve_State"] = Valve_State_string;
     sprintf(log_msg, "received 3-way valve state : %d (%s)", valve_defrost_State, Valve_State_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Valve_State"); mqtt_client.publish(mqtt_topic, Valve_State_string, MQTT_RETAIN_VALUES);
   }
 
+  // TOP26 //  
   char* Defrosting_State_string;
   switch (valve_defrost_State & 0b1100) { //bitwise AND with 0b1100 because we are only interested in these two bits
     case 0b0100:
@@ -465,8 +468,6 @@ void decode_heatpump_data() {
       Defrosting_State_string = "-1";
       break;
   }
-
-  // TOP26 //
   if ( actData["Defrosting_State"] != Defrosting_State_string ) {
     actData["Defrosting_State"] = Defrosting_State_string;
     sprintf(log_msg, "received defrosting state : %d (%s)", valve_defrost_State, Defrosting_State_string); log_message(log_msg);
@@ -489,10 +490,7 @@ void decode_heatpump_data() {
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Z1_Flow_Outlet_Temp"); mqtt_client.publish(mqtt_topic, String(Flow_Outlet_Temp).c_str(), MQTT_RETAIN_VALUES);
   }
 
-  // TOP36 //
-  // *placeholder* byte 140 Zone2: Actual (Water Outlet/Room/Pool) Temperature [°C] //
-
-   // TOP10 //
+  // TOP10 //
   float Tank_Temp = (float)data[141] - 128;
   if ( actData["Tank_Temp"] != Tank_Temp ) {
     actData["Tank_Temp"] = Tank_Temp;
@@ -500,7 +498,7 @@ void decode_heatpump_data() {
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Tank_Temp"); mqtt_client.publish(mqtt_topic, String(Tank_Temp).c_str(), MQTT_RETAIN_VALUES);
   }
 
-// TOP14 //
+  // TOP14 //
   float Outside_Temp = (float)data[142] - 128;
   if ( actData["Outside_Temp"] != Outside_Temp ) {
     actData["Outside_Temp"] = Outside_Temp;
@@ -516,20 +514,20 @@ void decode_heatpump_data() {
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Z1_Flow_Inlet_Temp"); mqtt_client.publish(mqtt_topic, String(Flow_Inlet_Temp).c_str(), MQTT_RETAIN_VALUES);
   }
 
-// TOP36 //
-// *placeholder* byte 145 Z1_Water_Temp
+  // TOP36 //
+  // *placeholder* byte 145 Z1_Water_Temp
 
-// TOP37 //
-// *placeholder* byte 146 Z2_Water_Temp
+  // TOP37 //
+  // *placeholder* byte 146 Z2_Water_Temp
 
-// TOP42 //
-// *placeholder* byte 147 Z1_Water_Traget_Temp
+  // TOP42 //
+  // *placeholder* byte 147 Z1_Water_Traget_Temp
 
-// TOP43 //
-// *placeholder* byte 148 Z2_Water_Target_Temp
+  // TOP43 //
+  // *placeholder* byte 148 Z2_Water_Target_Temp
 
 
- // TOP7 //
+  // TOP7 //
   float Flow_Target_Temp = (float)data[153] - 128;
   if ( actData["Z1_Flow_Target_Temp"] != Flow_Target_Temp ) {
     actData["Z1_Flow_Target_Temp"] = Flow_Target_Temp;
@@ -587,11 +585,11 @@ void decode_heatpump_data() {
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Cool_Shift_Temp"); mqtt_client.publish(mqtt_topic, String(Cool_Shift_Temp).c_str(), MQTT_RETAIN_VALUES);
   }
 
-  //TOP34 // Z2_HeatShift_Temp
-  // *placeholder* byte 40
+  //TOP34 // 
+  // *placeholder* byte 40 Z2_HeatShift_Temp
 
-  //TOP35 // Z2_CoolShift_Temp
-  // *placeholder* byte 41
+  //TOP35 //
+  // *placeholder* byte 41 Z2_CoolShift_Temp
 
   // TOP29 //
   float HCurveOutHighTemp = (float)data[75] - 128;
@@ -722,16 +720,16 @@ void decode_heatpump_data() {
   }
 
   // TOP38
-  // byte 195 Cool_Energy_Production
+  // *placeholder* byte 195 Cool_Energy_Production
 
   // TOP39
-  // byte 196 Cool_Energy_Consumtion
+  // *placeholder* byte 196 Cool_Energy_Consumtion
 
   // TOP40
-  // byte 197 DHW_Energy_Production
+  // *placeholder* byte 197 DHW_Energy_Production
 
   // TOP41
-  // byte 198 DHW_Energy_Consumtion
+  // *placeholder* byte 198 DHW_Energy_Consumtion
 
 
 }

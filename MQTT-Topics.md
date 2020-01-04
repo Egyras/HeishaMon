@@ -51,7 +51,9 @@ TOP41 | panasonic_heat_pump/sdc/DHW_Energy_Consumtion | Elektrical power consume
 TOP42 | panasonic_heat_pump/sdc/Z1_Water_Traget_Temp | Zone 1 water target temperature 
 TOP43 | panasonic_heat_pump/sdc/Z2_Water_Traget_Temp | Zone 2 water target temperature 
 
+
 ## Commands:
+
 Topic | Description | Values
 --- | --- | ---
 panasonic_heat_pump/SetHoliday | Set holiday mode on or off | 84 = Off, 100 = On
