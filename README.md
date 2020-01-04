@@ -186,7 +186,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 | 109 | 79 |   | ? |
 | 110 | 79 |   | ? |
 | 111 | 56 |  right 2 bits: 0b10=Tank 0b01=Room 3-Way Valve. Next 2 bits (from right) is defrosting state (0b01 = defrosting not active, 0b10 = defrosting active) | 3 way valve + Defrost status |
-| 112 | 79 |  Hex 59 - external active, 55 - external not active, 56 - internal tank active | Heater status |
+| 112 | 79 |  Hex 59 - external active, 55 - external not active, 56 - internal active (room or tank) | Heater status |
 | 113 | 31 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
 | 114 | 56 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 | 115 | 79 |   | ? |
