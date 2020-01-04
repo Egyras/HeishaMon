@@ -23,7 +23,7 @@ TOP12 | panasonic_heat_pump/sdc/Operations_Counter | Pump start/stop counter
 TOP14 | panasonic_heat_pump/sdc/Outside_Temp | Outside ambient temperature measured by compressor in °C
 TOP15 | panasonic_heat_pump/sdc/Heat_Energy_Production | Thermal heat power produced in Watt
 TOP16 | panasonic_heat_pump/sdc/Heat_Energy_Consumption | Elektrical power consume at heat mode in Watt (steps of 200)
-TOP17 | panasonic_heat_pump/sdc/Powerfullmode_Time | Powerfull state in minutes, valid responses are 0, 30, 60 or 90
+TOP17 | panasonic_heat_pump/sdc/Powerfullmode_Time | Powerfull state in minutes, valid responses are 0, 1, 2 or 3
 TOP18 | panasonic_heat_pump/sdc/Quietmode_Level | Quiet mode state, valid responses are 0, 1, 2, 3
 TOP19 | panasonic_heat_pump/sdc/Holidaymode_State | Holiday mode, valid responses are 84=Off and 100=On
 TOP20 | panasonic_heat_pump/sdc/Valve_State | 3-way valve mode, valid responses are Room, Tank or Defrost
@@ -48,8 +48,8 @@ TOP38 | panasonic_heat_pump/sdc/Cool_Energy_Production | Thermal cool power prod
 TOP39 | panasonic_heat_pump/sdc/Cool_Energy_Consumtion | Elektrical power consume at cool mode in Watt (steps of 200)
 TOP40 | panasonic_heat_pump/sdc/DHW_Energy_Production | Thermal DHW power produced in Watt
 TOP41 | panasonic_heat_pump/sdc/DHW_Energy_Consumtion | Elektrical power consume at DHW mode in Watt (steps of 200)
-TOP42 | panasonic_heat_pump/sdc/Z1_Water_Traget_Temp | Zone 1 water target temperature 
-TOP43 | panasonic_heat_pump/sdc/Z2_Water_Traget_Temp | Zone 2 water target temperature 
+TOP42 | panasonic_heat_pump/sdc/Z1_Water_Target_Temp | Zone 1 water target temperature 
+TOP43 | panasonic_heat_pump/sdc/Z2_Water_Target_Temp | Zone 2 water target temperature 
 
 
 ## Commands:
@@ -58,7 +58,7 @@ Topic | Description | Values
 --- | --- | ---
 panasonic_heat_pump/SetHoliday | Set holiday mode on or off | 84 = Off, 100 = On
 panasonic_heat_pump/SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
-panasonic_heat_pump/SetPowerfull | Set powerfull mode run time in minutes | 0, 30, 60 or 90
+panasonic_heat_pump/SetPowerfull | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
 panasonic_heat_pump/SetShiftTemperature | Set heatshift or direct heat temperature | -5 to 5 or 20 to 50
 panasonic_heat_pump/SetOpMode | Sets operating mode | Heat, Cool, DHW, AUto, Heat+DHW, Auto+DHW or Cool+DHW
 panasonic_heat_pump/SetForceDHW | Forces DHW mode only | 1

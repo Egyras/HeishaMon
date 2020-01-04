@@ -183,7 +183,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   send_heatpump_command(topic,msg,send_command,log_message);
 }
 
-
 void setupOTA() {
   // Port defaults to 8266
   ArduinoOTA.setPort(8266);
