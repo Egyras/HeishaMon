@@ -1,68 +1,76 @@
-# MQTT Topics for Panasonic Aquarea firmware
+# MQTT Topics for HeishaMon
 
-## Availability topic
-panasonic_heat_pump/LWT will return Online when ESP is online, otherwise it will automatically return Offline
-
-## Sensors:
+## Availability topic:
 
 ID | Topic | Response
 --- | --- | ---
-LOG1 | panasonic_heat_pump/log | Log of responses from pump
-TOP1 | panasonic_heat_pump/sdc/Pump_Flow | Water pump flow, measured in L/min
-TOP2 | panasonic_heat_pump/sdc/ForceDHW_State | DWW status (off - on - unknown)
-TOP3 | panasonic_heat_pump/sdc/Power_State | Current Power state (off - on)
-TOP4 | panasonic_heat_pump/sdc/OpMode_State | Current operating mode, valid responses are Heat, DHW, Cool, Auto, Heat+DHW, Auto+DHW, Cool+DHW
-TOP5 | panasonic_heat_pump/sdc/Z1_Flow_Inlet_Temp | Zone 1 Inlet water temperature in °C
-TOP6 | panasonic_heat_pump/sdc/Z1_Flow_Outlet_Temp | Zone 1 Outlet water temperature in °C
-TOP7 | panasonic_heat_pump/sdc/Z1_Flow_Target_Temp | Zone 1 Outlet water target temperature in °C
-TOP8 | panasonic_heat_pump/sdc/Compressor_Freq | Current compressor frequency
-TOP9 | panasonic_heat_pump/sdc/Tank_Target_Temp | Tank temperature setpoint in °C
-TOP10 | panasonic_heat_pump/sdc/Tank_Temp | Actual Tank temperature in °C
-TOP11 | panasonic_heat_pump/sdc/Operations_Hours | Pump operating time in Hours
-TOP12 | panasonic_heat_pump/sdc/Operations_Counter | Pump start/stop counter
-TOP14 | panasonic_heat_pump/sdc/Outside_Temp | Outside ambient temperature measured by compressor in °C
-TOP15 | panasonic_heat_pump/sdc/Heat_Energy_Production | Thermal heat power produced in Watt
-TOP16 | panasonic_heat_pump/sdc/Heat_Energy_Consumption | Elektrical power consume at heat mode in Watt (steps of 200)
-TOP17 | panasonic_heat_pump/sdc/Powerfullmode_Time | Powerfull state in minutes, valid responses are 0, 1, 2 or 3
-TOP18 | panasonic_heat_pump/sdc/Quietmode_Level | Quiet mode state, valid responses are 0, 1, 2, 3
-TOP19 | panasonic_heat_pump/sdc/Holidaymode_State | Holiday mode, valid responses are 84=Off and 100=On
-TOP20 | panasonic_heat_pump/sdc/Valve_State | 3-way valve mode, valid responses are Room, Tank or Defrost
-TOP21 | panasonic_heat_pump/sdc/Outside_Pipe_Temp | Outdoor pipe temperature used for defrost
-TOP22 | panasonic_heat_pump/sdc/Tank_Heat_Delta | Tank delta K
-TOP23 | panasonic_heat_pump/sdc/Heat_Delta | Heat delta K
-TOP24 | panasonic_heat_pump/sdc/Cool_Delta | Cool delta K
-TOP25 | panasonic_heat_pump/sdc/Quietmode_State | Current silent mode state ( ???? )
-TOP26 | panasonic_heat_pump/sdc/Defrosting_State | Current defrost state ( ???? )
-TOP27 | panasonic_heat_pump/sdc/Z1_HeatShift_Temp | Zone 1 Heatshift (-5 to 5) or direct heat temperatur (20 to 55)
-TOP28 | panasonic_heat_pump/sdc/Z1_CoolShift_Temp | Zone 1 Coolshift (-5 to 5) or direct cool temperatur (?? to ??)
-TOP29 | panasonic_heat_pump/sdc/HCurve_OutHighTemp | Target temperatur °C at lowest point of the heating curve (eg. 34)
-TOP30 | panasonic_heat_pump/sdc/HCurve_OutLowTemp | Target temperatur °C at highest point of the heating curve (eg. 24)
-TOP31 | panasonic_heat_pump/sdc/HCurve_OutsHighTemp | Lowest outsite temperatur of the heating curve (eg. -12)
-TOP32 | panasonic_heat_pump/sdc/HCurve_OutsLowTemp | Highest temperatur of the heating curve (eg. 15)
-TOP33 | panasonic_heat_pump/sdc/Roomthermostat_Temp | Remote control thermostat temp
-TOP34 | panasonic_heat_pump/sdc/Z2_HeatShift_Temp | Zone 2 Heatshift (-5 to 5) or direct heat temperatur (20 to 55)
-TOP35 | panasonic_heat_pump/sdc/Z2_CoolShift_Temp | Zone 2 Coolshift (-5 to 5) or direct cool temperatur (?? to ??)
-TOP36 | panasonic_heat_pump/sdc/Z1_Water_Temp | Zone 1 Actual (Water Outlet/Room/Pool) Temperature [°C]
-TOP37 | panasonic_heat_pump/sdc/Z2_Water_Temp | Zone 2 Actual (Water Outlet/Room/Pool) Temperature [°C]
-TOP38 | panasonic_heat_pump/sdc/Cool_Energy_Production | Thermal cool power produced in Watt
-TOP39 | panasonic_heat_pump/sdc/Cool_Energy_Consumtion | Elektrical power consume at cool mode in Watt (steps of 200)
-TOP40 | panasonic_heat_pump/sdc/DHW_Energy_Production | Thermal DHW power produced in Watt
-TOP41 | panasonic_heat_pump/sdc/DHW_Energy_Consumtion | Elektrical power consume at DHW mode in Watt (steps of 200)
-TOP42 | panasonic_heat_pump/sdc/Z1_Water_Target_Temp | Zone 1 water target temperature 
-TOP43 | panasonic_heat_pump/sdc/Z2_Water_Target_Temp | Zone 2 water target temperature 
+|| LWT | Online/Offline (automatically returns to Offline if connection with the HeishaMon lost)
+
+## Log topic:
+
+ID | Topic | Response
+--- | --- | ---
+LOG1 | log | Log of responses from pump
+
+## Sensors Topics:
+
+ID | Topic | Response
+--- | --- | ---
+TOP1 | sdc/Pump_Flow | Pump flow (l/min)
+TOP2 | sdc/ForceDHW_State | DHW status (0=off, 1=on -1=unknown)
+TOP3 | sdc/Power_State | Power state (0=off, 1=on)
+TOP4 | sdc/OpMode_State | Operating mode (0=Heat only, 1=Cool only, 2=Auto, 3=Tank only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW)
+TOP5 | sdc/Z1_Flow_Inlet_Temp | Zone 1 Inlet water temperature (°C)
+TOP6 | sdc/Z1_Flow_Outlet_Temp | Zone 1 Outlet water temperature (°C)
+TOP7 | sdc/Z1_Flow_Target_Temp | Zone 1 Outlet water target temperature (°C)
+TOP8 | sdc/Compressor_Freq | Compressor frequency (Hz)
+TOP9 | sdc/Tank_Target_Temp | Tank target temperature (°C)
+TOP10 | sdc/Tank_Temp | Actual Tank temperature (°C)
+TOP11 | sdc/Operations_Hours | Heatpump operating time (Hour)
+TOP12 | sdc/Operations_Counter | Heatpump starts (counter)
+TOP14 | sdc/Outside_Temp | Outside ambient temperature (°C)
+TOP15 | sdc/Heat_Energy_Production | Thermal heat power production (Watt)
+TOP16 | sdc/Heat_Energy_Consumption | Elektrical heat power consumption at heat mode (Watt)
+TOP17 | sdc/Powerfullmode_Time | Powerfull state in minutes (0, 1, 2 or 3 x 30min)
+TOP18 | sdc/Quietmode_Level | Quiet mode level (0, 1, 2, 3)
+TOP19 | sdc/Holidaymode_State | Holiday mode (84=off, 100=on)
+TOP20 | sdc/Valve_State | 3-way valve mode (0=Room, 1=DHW)
+TOP21 | sdc/Outside_Pipe_Temp | Outside pipe temperature (°C)
+TOP22 | sdc/Tank_Heat_Delta | Tank delta (K)
+TOP23 | sdc/Heat_Delta | Heat delta (K)
+TOP24 | sdc/Cool_Delta | Cool delta (K)
+TOP25 | sdc/Quietmode_State | Silent mode state (0=off, 1=Mode1, 2=Mode2, 3=Mode3) 
+TOP26 | sdc/Defrosting_State | Defrost state (0=off, 1=on)
+TOP27 | sdc/Z1_HeatShift_Temp | Zone 1 Heat Shift/Targettemp (-5 to 5) or direct heat temperatur (20 to 55)
+TOP28 | sdc/Z1_CoolShift_Temp | Zone 1 Cool Shift/Targettemp (-5 to 5) or direct cool temperatur (?? to ??)
+TOP29 | sdc/HCurve_OutHighTemp | Target temperatur at lowest point on the heating curve (eg. 34 °C)
+TOP30 | sdc/HCurve_OutLowTemp | Target temperatur at highest point on the heating curve (eg. 24°C)
+TOP31 | sdc/HCurve_OutsHighTemp | Lowest outside temperatur on the heating curve (eg. -12°C)
+TOP32 | sdc/HCurve_OutsLowTemp | Highest outside temperatur on the heating curve (eg. 15°C)
+TOP33 | sdc/Roomthermostat_Temp | Remote control thermostat temp (°C)
+TOP34 | sdc/Z2_HeatShift_Temp | Zone 2 Heatshift (-5 to 5) or direct heat temperatur (20 to 55)
+TOP35 | sdc/Z2_CoolShift_Temp | Zone 2 Coolshift (-5 to 5) or direct cool temperatur (?? to ??)
+TOP36 | sdc/Z1_Water_Temp | Zone 1 Room/Pool outlet temperature (°C)
+TOP37 | sdc/Z2_Water_Temp | Zone 2 Room/Pool outlet temperature (°C)
+TOP38 | sdc/Cool_Energy_Production | Thermal cooling power production (Watt)
+TOP39 | sdc/Cool_Energy_Consumtion | Elektrical cooling power consumption (Watt)
+TOP40 | sdc/DHW_Energy_Production | Thermal DHW power production (Watt)
+TOP41 | sdc/DHW_Energy_Consumtion | Elektrical DHW power consumtion (Watt)
+TOP42 | sdc/Z1_Water_Target_Temp | Zone 1 water target temperature (°C)
+TOP43 | sdc/Z2_Water_Target_Temp | Zone 2 water target temperature (°C)
 
 
-## Commands:
+## Command Topics:
 
 Topic | Description | Values
 --- | --- | ---
-panasonic_heat_pump/SetHoliday | Set holiday mode on or off | 84 = Off, 100 = On
-panasonic_heat_pump/SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
-panasonic_heat_pump/SetPowerfull | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
-panasonic_heat_pump/SetShiftTemperature | Set heatshift or direct heat temperature | -5 to 5 or 20 to 50
-panasonic_heat_pump/SetOpMode | Sets operating mode | Heat, Cool, DHW, AUto, Heat+DHW, Auto+DHW or Cool+DHW
-panasonic_heat_pump/SetForceDHW | Forces DHW mode only | 1
-panasonic_heat_pump/SetTankTemp | Set tank target temperature | 40 - 75
-panasonic_heat_pump/SetCoolTemp | Set cooldown temperature | 5 - 20
-panasonic_heat_pump/SetForceDefrost | Forces defrost routine | 1
-panasonic_heat_pump/SetForceSterilization | Forces tank sterilization routine | 1
+SetHoliday | Set holiday mode on or off | 84=off, 100=on
+SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
+SetPowerfull | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
+SetShiftTemperature | Set heatshift or direct heat temperature | -5 to 5 or 20 to 50
+SetOpMode | Sets operating mode | 0=Heat only, 1=Cool only, 2=Auto, 3=Tank only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW
+SetForceDHW | Forces DHW mode only | 1
+SetTankTemp | Set tank target temperature | 40 - 75
+SetCoolTemp | Set cooldown temperature | 5 - 20
+SetForceDefrost | Forces defrost routine | 1
+SetForceSterilization | Forces tank sterilization routine | 1
