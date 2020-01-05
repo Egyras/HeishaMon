@@ -1,16 +1,21 @@
-//removed checksum from default query, is calculated in send_command
-byte panasonicQuery[] = {0x71, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+#include <ESP8266WiFi.h>
 
-const char* mqtt_topic_base = "panasonic_heat_pump/sdc";
-const char* mqtt_logtopic = "panasonic_heat_pump/log";
-const char* mqtt_willtopic = "panasonic_heat_pump/LWT";
-const char* mqtt_set_quiet_mode_topic = "panasonic_heat_pump/SetQuietMode";
-const char* mqtt_set_shift_temperature_topic = "panasonic_heat_pump/SetShiftTemperature";
-const char* mqtt_set_mode_topic = "panasonic_heat_pump/SetMode";
-const char* mqtt_set_force_DHW_topic = "panasonic_heat_pump/SetForceDHW";
-const char* mqtt_set_force_defrost_topic = "panasonic_heat_pump/SetForceDefrost";
-const char* mqtt_set_force_sterilization_topic = "panasonic_heat_pump/SetForceSterilization";
-const char* mqtt_set_holiday_topic = "panasonic_heat_pump/SetHoliday";
-const char* mqtt_set_powerfull_topic = "panasonic_heat_pump/SetPowerfull";
-const char* mqtt_set_tank_temp_topic = "panasonic_heat_pump/SetTankTemp";
-const char* mqtt_set_cool_temp_topic = "panasonic_heat_pump/SetCoolTemp";
+
+#define PANASONICQUERYSIZE 110
+extern byte panasonicQuery[PANASONICQUERYSIZE];
+
+extern const char* mqtt_topic_base;
+extern const char* mqtt_logtopic;
+extern const char* mqtt_willtopic;
+extern const char* mqtt_set_quiet_mode_topic;
+extern const char* mqtt_set_shift_temperature_topic;
+extern const char* mqtt_set_mode_topic;
+extern const char* mqtt_set_force_DHW_topic;
+extern const char* mqtt_set_force_defrost_topic;
+extern const char* mqtt_set_force_sterilization_topic;
+extern const char* mqtt_set_holiday_topic;
+extern const char* mqtt_set_powerfull_topic;
+extern const char* mqtt_set_tank_temp_topic;
+extern const char* mqtt_set_cool_temp_topic;
+
+void send_heatpump_command(char* topic, char msg[],bool (*send_command)(byte*, int),void (*log_message)(char*));
