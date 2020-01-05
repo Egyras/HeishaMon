@@ -46,9 +46,9 @@ TOP35 | panasonic_heat_pump/sdc/Z2_CoolShift_Temp | Zone 2 Coolshift (-5 to 5) o
 TOP36 | panasonic_heat_pump/sdc/Z1_Water_Temp | Zone 1 Actual (Water Outlet/Room/Pool) Temperature [°C]
 TOP37 | panasonic_heat_pump/sdc/Z2_Water_Temp | Zone 2 Actual (Water Outlet/Room/Pool) Temperature [°C]
 TOP38 | panasonic_heat_pump/sdc/Cool_Energy_Production | Thermal cool power produced in Watt
-TOP39 | panasonic_heat_pump/sdc/Cool_Energy_Consumtion | Elektrical power consume at cool mode in Watt (steps of 200)
+TOP39 | panasonic_heat_pump/sdc/Cool_Energy_Consumption | Elektrical power consume at cool mode in Watt (steps of 200)
 TOP40 | panasonic_heat_pump/sdc/DHW_Energy_Production | Thermal DHW power produced in Watt
-TOP41 | panasonic_heat_pump/sdc/DHW_Energy_Consumtion | Elektrical power consume at DHW mode in Watt (steps of 200)
+TOP41 | panasonic_heat_pump/sdc/DHW_Energy_Consumption | Elektrical power consume at DHW mode in Watt (steps of 200)
 TOP42 | panasonic_heat_pump/sdc/Z1_Water_Target_Temp | Zone 1 water target temperature 
 TOP43 | panasonic_heat_pump/sdc/Z2_Water_Target_Temp | Zone 2 water target temperature 
 
