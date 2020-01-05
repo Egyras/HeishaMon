@@ -21,6 +21,7 @@ TOP9 | panasonic_heat_pump/sdc/Tank_Target_Temp | Tank temperature setpoint in �
 TOP10 | panasonic_heat_pump/sdc/Tank_Temp | Actual Tank temperature in °C
 TOP11 | panasonic_heat_pump/sdc/Operations_Hours | Pump operating time in Hours
 TOP12 | panasonic_heat_pump/sdc/Operations_Counter | Pump start/stop counter
+TOP13 | panasonic_heat_pump/sdc/MainSchedule_State | Main thermostat schedule state (inactive - active)
 TOP14 | panasonic_heat_pump/sdc/Outside_Temp | Outside ambient temperature measured by compressor in °C
 TOP15 | panasonic_heat_pump/sdc/Heat_Energy_Production | Thermal heat power produced in Watt
 TOP16 | panasonic_heat_pump/sdc/Heat_Energy_Consumption | Elektrical power consume at heat mode in Watt (steps of 200)

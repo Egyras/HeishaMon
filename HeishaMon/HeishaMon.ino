@@ -66,7 +66,7 @@ char data[MAXDATASIZE];
 int data_length = 0;
 
 // store actual data in a json doc
-DynamicJsonDocument actData(1024);
+DynamicJsonDocument actData(2048);
 
 // log message to sprintf to
 char log_msg[256];
