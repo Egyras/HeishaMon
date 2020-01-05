@@ -413,34 +413,53 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Operations_Hours"); mqtt_client.publish(mqtt_topic, String(Operations_Hours).c_str(), MQTT_RETAIN_VALUES);
   }
 
-  // TOP16 //
-  float Energy_Consumption = ((float)data[193] - 1.0) * 200;
-  if ( actData["Heat_Energy_Consumption"] != Energy_Consumption ) {
-    actData["Heat_Energy_Consumption"] = Energy_Consumption;
-    sprintf(log_msg, "received Watt (Heat_Energy_Consumption): %.2f", Energy_Consumption); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Heat_Energy_Consumption"); mqtt_client.publish(mqtt_topic, String(Energy_Consumption).c_str(), MQTT_RETAIN_VALUES);
-  }
 
   // TOP15 //
-  float Energy_Production = ((float)data[194] - 1.0) * 200;
-  if ( actData["Heat_Energy_Production"] != Energy_Production ) {
-    actData["Heat_Energy_Production"] = Energy_Production;
-    sprintf(log_msg, "received Watt (Heat_Energy_Production): %.2f", Energy_Production); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Heat_Energy_Production"); mqtt_client.publish(mqtt_topic, String(Energy_Production).c_str(), MQTT_RETAIN_VALUES);
+  float Heat_Energy_Production = ((float)data[194] - 1.0) * 200;
+  if ( actData["Heat_Energy_Production"] != Heat_Energy_Production ) {
+    actData["Heat_Energy_Production"] = Heat_Energy_Production;
+    sprintf(log_msg, "received Watt (Heat_Energy_Production): %.2f", Heat_Energy_Production); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Heat_Energy_Production"); mqtt_client.publish(mqtt_topic, String(Heat_Energy_Production).c_str(), MQTT_RETAIN_VALUES);
+  }
+
+  // TOP16 //
+  float Heat_Energy_Consumption = ((float)data[193] - 1.0) * 200;
+  if ( actData["Heat_Energy_Consumption"] != Heat_Energy_Consumption ) {
+    actData["Heat_Energy_Consumption"] = Heat_Energy_Consumption;
+    sprintf(log_msg, "received Watt (Heat_Energy_Consumption): %.2f", Heat_Energy_Consumption); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Heat_Energy_Consumption"); mqtt_client.publish(mqtt_topic, String(Heat_Energy_Consumption).c_str(), MQTT_RETAIN_VALUES);
   }
 
   // TOP38
-  // *placeholder* byte 195 Cool_Energy_Production
-
+  float Cool_Energy_Production = ((float)data[196] - 1.0) * 200;
+  if ( actData["Cool_Energy_Production"] != Cool_Energy_Production ) {
+    actData["Cool_Energy_Production"] = Cool_Energy_Production;
+    sprintf(log_msg, "received Watt (Cool_Energy_Production): %.2f", Cool_Energy_Production); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Cool_Energy_Production"); mqtt_client.publish(mqtt_topic, String(Cool_Energy_Production).c_str(), MQTT_RETAIN_VALUES);
+  }
+  
   // TOP39
-  // *placeholder* byte 196 Cool_Energy_Consumtion
-
+  float Cool_Energy_Consumption = ((float)data[195] - 1.0) * 200;
+  if ( actData["Cool_Energy_Consumption"] != Cool_Energy_Consumption ) {
+    actData["Cool_Energy_Consumption"] = Cool_Energy_Consumption;
+    sprintf(log_msg, "received Watt (Cool_Energy_Consumption): %.2f", Cool_Energy_Consumption); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Cool_Energy_Consumption"); mqtt_client.publish(mqtt_topic, String(Cool_Energy_Consumption).c_str(), MQTT_RETAIN_VALUES);
+  }
+  
   // TOP40
-  // *placeholder* byte 197 DHW_Energy_Production
-
+  float DHW_Energy_Production = ((float)data[198] - 1.0) * 200;
+  if ( actData["DHW_Energy_Production"] != DHW_Energy_Production ) {
+    actData["DHW_Energy_Production"] = DHW_Energy_Production;
+    sprintf(log_msg, "received Watt (DHW_Energy_Production): %.2f", DHW_Energy_Production); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "DHW_Energy_Production"); mqtt_client.publish(mqtt_topic, String(DHW_Energy_Production).c_str(), MQTT_RETAIN_VALUES);
+  }
+  
   // TOP41
-  // *placeholder* byte 198 DHW_Energy_Consumtion
-
-
+  float DHW_Energy_Consumption = ((float)data[197] - 1.0) * 200;
+  if ( actData["DHW_Energy_Consumption"] != DHW_Energy_Consumption ) {
+    actData["DHW_Energy_Consumption"] = DHW_Energy_Consumption;
+    sprintf(log_msg, "received Watt (DHW_Energy_Consumption): %.2f", DHW_Energy_Consumption); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "DHW_Energy_Consumption"); mqtt_client.publish(mqtt_topic, String(DHW_Energy_Consumption).c_str(), MQTT_RETAIN_VALUES);
+  }
 }
 //////////////////////////////////////////////////////////////////////////////////////////
