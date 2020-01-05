@@ -8,7 +8,7 @@ const char* mqtt_logtopic = "panasonic_heat_pump/log";
 const char* mqtt_willtopic = "panasonic_heat_pump/LWT";
 const char* mqtt_set_quiet_mode_topic = "panasonic_heat_pump/SetQuietMode";
 const char* mqtt_set_shift_temperature_topic = "panasonic_heat_pump/SetShiftTemperature";
-const char* mqtt_set_mode_topic = "panasonic_heat_pump/SetMode";
+const char* mqtt_set_mode_topic = "panasonic_heat_pump/SetOpMode";
 const char* mqtt_set_force_DHW_topic = "panasonic_heat_pump/SetForceDHW";
 const char* mqtt_set_force_defrost_topic = "panasonic_heat_pump/SetForceDefrost";
 const char* mqtt_set_force_sterilization_topic = "panasonic_heat_pump/SetForceSterilization";
@@ -108,7 +108,7 @@ void send_heatpump_command(char* topic, char msg[],bool (*send_command)(byte*, i
     send_command(command, sizeof(command));
   }
 
-  // set Heat pump mode  3 = tank only, 0 = heat only, 1 = cool only, 2 = Auto, 4 = Heat+DHW, 5 = Cool+DHW, 6 = Auto + DHW
+  // set Heat pump operation mode  3 = tank only, 0 = heat only, 1 = cool only, 2 = Auto, 4 = Heat+DHW, 5 = Cool+DHW, 6 = Auto + DHW
   if (strcmp(topic, mqtt_set_mode_topic) == 0)
   {
     String set_mode_string(msg);
