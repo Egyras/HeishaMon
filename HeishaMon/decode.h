@@ -106,8 +106,8 @@ static const unsigned int topicBytes[] = {0, //TOP0
                                 195, //TOP39
                                 198, //TOP40
                                 197, //TOP41
-                                0, //TOP42
-                                0, //TOP43
+                                147, //TOP42
+                                148, //TOP43
                                 };                                
 
 typedef String (*topicFP)(byte);
@@ -154,6 +154,6 @@ static const topicFP topicFunctions[] = {unknown, //TOP0
                                 getEnergy, //TOP39
                                 getEnergy, //TOP40
                                 getEnergy, //TOP41
-                                unknown, //TOP42
-                                unknown //TOP43
+                                getIntMinus128, //TOP42
+                                getIntMinus128 //TOP43
                                 }; 
