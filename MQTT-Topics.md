@@ -4,12 +4,13 @@
 panasonic_heat_pump/LWT will return Online when ESP is online, otherwise it will automatically return Offline
 
 ## Sensors:
+Check [states description](States.md) to understand the value in State topics.
 
 ID | Topic | Response
 --- | --- | ---
 LOG1 | panasonic_heat_pump/log | Log of responses from pump
 TOP1 | panasonic_heat_pump/sdc/Pump_Flow | Water pump flow, measured in L/min
-TOP2 | panasonic_heat_pump/sdc/ForceDHW_State | DWW status (off - on - unknown)
+TOP2 | panasonic_heat_pump/sdc/ForceDHW_State | Forced DHW status (off - on)
 TOP3 | panasonic_heat_pump/sdc/Power_State | Current Power state (off - on)
 TOP4 | panasonic_heat_pump/sdc/OpMode_State | Current operating mode, valid responses are Heat, DHW, Cool, Auto, Heat+DHW, Auto+DHW, Cool+DHW
 TOP5 | panasonic_heat_pump/sdc/Z1_Flow_Inlet_Temp | Zone 1 Inlet water temperature in °C
@@ -53,16 +54,15 @@ TOP43 | panasonic_heat_pump/sdc/Z2_Water_Target_Temp | Zone 2 water target tempe
 
 
 ## Commands:
-
 Topic | Description | Values
 --- | --- | ---
-panasonic_heat_pump/SetHoliday | Set holiday mode on or off | 84 = Off, 100 = On
-panasonic_heat_pump/SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
-panasonic_heat_pump/SetPowerfull | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
+panasonic_heat_pump/SetHoliday | Set holiday mode on or off | [Check states description](States.md)
+panasonic_heat_pump/SetQuietMode | Set quiet mode level |[Check states description](States.md)
+panasonic_heat_pump/SetPowerfull | Set powerfull mode run time in minutes | [Check states description](States.md)
 panasonic_heat_pump/SetShiftTemperature | Set heatshift or direct heat temperature | -5 to 5 or 20 to 50
-panasonic_heat_pump/SetOpMode | Sets operating mode | Heat, Cool, DHW, AUto, Heat+DHW, Auto+DHW or Cool+DHW
-panasonic_heat_pump/SetForceDHW | Forces DHW mode only | 1
+panasonic_heat_pump/SetOpMode | Sets operating mode | [Check states description](States.md)
+panasonic_heat_pump/SetForceDHW | Set Force DHW mode | [Check states description](States.md)
 panasonic_heat_pump/SetTankTemp | Set tank target temperature | 40 - 75
 panasonic_heat_pump/SetCoolTemp | Set cooldown temperature | 5 - 20
-panasonic_heat_pump/SetForceDefrost | Forces defrost routine | 1
-panasonic_heat_pump/SetForceSterilization | Forces tank sterilization routine | 1
+panasonic_heat_pump/SetForceDefrost | Forces defrost routine | [Check states description](States.md)
+panasonic_heat_pump/SetForceSterilization | Forces tank sterilization routine | [Check states description](States.md)
