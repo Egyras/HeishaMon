@@ -238,7 +238,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
 |  TOP | 163 | 79 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
 |  TOP | 164 | 79 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
-|  TOP | 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] Operating time in h
+|  TOP | 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] |
 |  TOP8 | 166 | 79 | to DEC x-1  | Compressor Frequency [Hz] |
 |  TOP | 167 | 79 |   | ? |
 |  TOP | 168 | 79 |   | ? |
