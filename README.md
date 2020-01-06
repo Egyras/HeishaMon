@@ -72,211 +72,210 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 
 ## Protocol byte decrypt info:
 
-
-| Byte Number | Possible Value | Value decrypt | Value Description |
-| ----- | ---- | ----- | -----:|
-| 00 | 71 |   | Header  |
-| 01 | c8 | Data length ( Packet length = Data length + 3 )  |  Header |
-| 02 | 01|   | Header  |
-| 03 | 10 |   | Header   |
-| 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
-| 05 | 55 | (hex) Holiday mode off and weekly shedule off =55, Holiday mode off and weekly shedule on =95, Holiday mode on and weekly shedule off = 65, Holiday mode on and active and weekly shedule off =75, Holiday mode on and weekly shedule on =B5, Holiday mode off and weekly shedule off + pump works on heater =59 | Holiday mode and Sheduler status |
-| 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
-| 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerfull mode status |
-| 08 | 00 |   | ? |
-| 09 | 05 | HEX values - should be Low Byte (2nd value)Floor heater off + Tank heater off=55, Floor heater on + Tanks heater off=56, Floor Heater off + Tank heater on=59, Floor heater on + Tank heater on=5A | heaters status|
-| 10 | 00 |   | ? |
-| 11 | 00 |   | ? |
-| 12 | 00 |   | ? |
-| 13 | 00 |   | ? |
-| 14 | 00 |   | ? |
-| 15 | 00 |   | ? |
-| 16 | 00 |   | ? |
-| 17 | 00 |   | ? |
-| 18 | 00 |   | ? |
-| 19 | 00 |   | ? |
-| 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Anti freezing |
-| 21 | 15 |   | ? |
-| 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
-| 23 | 55 | (hex) Off=55, On=56  | External Switch |
-| 24 | 16 | (hex) Tank connected=16, not connected=15 | Tank Connection status |
-| 25 | 5e | (hex) Tank Heater internal and 3kW=95, Tank Heater external and 3kW=96, Tank Heater internal and 6kW=99, Tank Heater external and 6kW=9A, Tank Heater internal and 9kW=9D, Tank Heater External and 9KW -9E, Tank Heater external and 9KW + Heater pad Type A on=AE, Tank Heater external and 9KW + Heater pad Type B on=BE  | Power of internal heater + tank heater Internal/External + Heater for external pad |
-| 26 | 55 | (hex) Biwalent Off=55, Biwalent alternative =56, Biwalent parallel=5A | Biwalent settings |
-| 27 | 05 |   | ? |
-| 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
-| 29 | 00 |   | ? |
-| 30 | 00 |   | ? |
-| 31 | 00 |   | ? |
-| 32 | 00 |   | ? |
-| 33 | 00 |   | ? |
-| 34 | 00 |   | ? |
-| 35 | 00 |   | ? |
-| 36 | 00 |   | ? |
-| 37 | 00 |   | ? |
-| 38 | 80 | Convert to DEC 128-128 = 0  | Zone 1 water shift set or direct mode value Temperature For Heat Mode [°C] |
-| 39 | 8f | Convert to DEC 143-128 = 15 in direct mode set temp or shift value  | Zone 1 water shift set Temperature For Cool Mode [°C] |
-| 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
-| 41 | 8a | Convert to DEC 138-128 = 10  | Zone 2 water shift set Temperature For Cool Mode [°C] |
-| 42 | b2 | Convert to DEC 178-128 = 50  | Tank Water Set Temperature [°C] |
-| 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode |
-| 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for Tank mode  |
-| 45 | 97 |   | ? |
-| 46 | 99 |   | ? |
-| 47 | 00 |   | ? |
-| 48 | 00 |   | ? |
-| 49 | 00 |   | ? |
-| 50 | 00 |   | ? |
-| 51 | 00 |   | ? |
-| 52 | 00 |   | ? |
-| 53 | 00 |   | ? |
-| 54 | 00 |   | ? |
-| 55 | 00 |   | ? |
-| 56 | 00 |   | ? |
-| 57 | 00 |   | ? |
-| 58 | 80 |   | ? |
-| 59 | 85 |   | ? |
-| 60 | 15 | Convert to DEC X-1   | Time set for external heaters 20min-3h, step 5min. |
-| 61 | 8a |   | ? |
-| 62 | 85 |  Convert to DEC | ? | 
-| 63 | 85 |   | ? |
-| 64 | d0 |   | ? |
-| 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Biwalent device -15-35[°C]|
-| 66 | 78 |   | ? |
-| 67 | 1f |   | ? |
-| 68 | 7e |   | ? |
-| 69 | 1f |   | ? |
-| 71 | 79 |   | ? |
-| 72 | 79 |   | ? |
-| 73 | 8d |   =13| ? |
-| 74 | 8d |   =13| ? |
-| 75 | 9e | Convert to DEC 158-128 =30 | Heating Curve Outlet Water Temperature Highest Set [°C] |
-| 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
-| 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
-| 78 | 8f | Convert to DEC 143-128 =15  | Heating Curve Outside Temperature Highest Set [°C] |
-| 79 | b7 | Convert to DEC 183-128 =55  | ? Possible Direct Zone2 water Temperature set [°C] |
-| 80 | a3 |   =35| ? |
-| 81 | 7b |   =-5| ? |
-| 82 | 8f |   =15| ? |
-| 83 | 8e | Convert to DEC-128  | Outdoor Temperature to stop heating 5-35 [°C] |
-| 84 | 80 | Convert to DEC 133-128 =5  | Floor heating set delta [°C] |
-| 85 | 80 | Convert to DEC 128-128=0 | ? Possible Outdoor temperature for heater ON [°C]  |
-| 86 | 8f | Convert to DEC 143-128 =15 | Set temperature for Cooling direct mode [°C] |
-| 87 | 8a |   =10| ?  Possible cooling curve |
-| 88 | 94 |  =20 | ? Possible cooling curve |
-| 89 | 9e |  =30 | ? Possible cooling curve  |
-| 90 | 8a |  =10 | ? |
-| 91 | 8a |  =10| ? |
-| 92 | 94 |  =20 | ? |
-| 93 | 9e |  =30 | ? |
-| 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
-| 95 | 90 | Convert to DEC 144-128=16|  | Outdoor temperature for (heat to cool)   [°C]  |
-| 96 | 8b |  Convert to DEC 139-128=11|  Outdoor temperature for (cool to heat) [°C] |
-| 97 | 05 | Donvert to DEC (X-1) x 30   | Tank settings - Room operation max time [min] |
-| 98 | 65 | Convert to DEC 101-1=100   | Tank heat up time (max) [min] |
-| 99 | 78 | Convert to DEC 120-128=-8 | DHW delta for re-heat  [°C] |
-| 100 | c1 |  Convert to DEC 193-128=65  | Sterilization boiling temperature [°C] |
-| 101 | 0b |  Convert to DEC 11 - 1 = 10 | Sterilization max operation time [min] |
-| 102 | 79 |   | ? |
-| 103 | 79 |   | ? |
-| 104 | 79 |   | ? |
-| 105 | 79 |   | ? |
-| 106 | 79 |   | ? |
-| 107 | 79 |   | ? |
-| 108 | 79 |   | ? |
-| 109 | 79 |   | ? |
-| 110 | 79 |   | ? |
-| 111 | 56 |  right 2 bits: 0b10=Tank 0b01=Room 3-Way Valve. Next 2 bits (from right) is defrosting state (0b01 = defrosting not active, 0b10 = defrosting active) | 3 way valve + Defrost status |
-| 112 | 79 |  Hex 59 - external active, 55 - external and internal not active, 56 - internal active (room or tank) | Heater status |
-| 113 | 31 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
-| 114 | 56 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
-| 115 | 79 |   | ? |
-| 116 | 79 |   | ? |
-| 117 | 79 |   | ? |
-| 118 | 79 |   | ? |
-| 119 | 79 |   | ? |
-| 120 | 79 |   | ? |
-| 121 | 79 |   | ? |
-| 122 | 79 |   | ? |
-| 123 | 79 |   | ? |
-| 124 | 79 |   | ? |
-| 125 | 79 |   | ? |
-| 126 | 79 |   | ? |
-| 127 | 79 |   | ? |
-| 128 | 79 |   | ? |
-| 129 | 79 |   | ? |
-| 130 | 79 |   | ? |
-| 131 | 79 |   | ? |
-| 132 | 79 |   | ? |
-| 133 | 79 |   | ? |
-| 134 | 79 |   | ? |
-| 135 | 79 |   | ? |
-| 136 | 79 |   | ? |
-| 137 | 79 |   | ? |
-| 138 | 79 |   | ? |
-| 139 | 79 |  to DEC-128 | Zone1: Actual (Water Outlet/Room/Pool) Temperature [°C] |
-| 140 | 79 |  to DEC-128 |  Zone2: Actual (Water Outlet/Room/Pool) Temperature [°C] |
-| 141 | 79 |  to DEC-128 | Actual Tank Temperature [°C] \ |
-| 142 | 79 |  to DEC-128 | Actual Outdoor Temperature [°C] |
-| 143 | 79 |  to DEC-128 | Inlet Water Temperature [°C] |
-| 144 | 79 |  to DEC-128 | Outlet Water Temperature [°C] |
-| 145 | 79 |  to DEC-128 | Zone1: Water Temperature [°C] |
-| 146 | 79 |  to DEC-128 | Zone2: Water Temperature [°C] |
-| 147 | 79 |  to DEC-128 |Zone1: Water Temperature (Target) [°C] |
-| 148 | 79 |  to DEC-128 | Zone2: Water Temperature (Target) [°C]  |
-| 149 | 79 |  to DEC-128 | Buffer Tank: Water Temperature [°C] |
-| 150 | 79 |  to DEC-128 | Solar: Water Temperature [°C]  |
-| 151 | 79 |  to DEC-128| Pool: Water Temperature [°C] |
-| 152 | 80 |   | ? |
-| 153 | 79 |  to DEC-128 | Outlet Water Temperature (Target) [°C] |
-| 154 | 79 |  to DEC-128 | Outlet 2 Temperature [°C] |
-| 155 | 79 |  to DEC-128 | Discharge Temperature [°C] |
-| 156 | 79 |  to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
-| 157 | 79 |  to DEC-128 | Indoor Piping Temperature [°C] |
-| 158 | 79 |  to DEC-128 | Outdoor Piping Temperature [°C] |
-| 159 | 79 |  to DEC-128 | Defrost Temperature [°C] |
-| 160 | 79 |  to DEC-128 | Eva Outlet Temperature [°C] |
-| 161 | 79 |  to DEC-128 | Bypass Outlet Temperature [°C] |
-| 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
-| 163 | 79 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
-| 164 | 79 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
-| 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] Operating time in h
-| 166 | 79 | to DEC x-1  | Compressor Frequency [Hz] |
-| 167 | 79 |   | ? |
-| 168 | 79 |   | ? |
-| 169 | 79 | to DEC (X -1)/5 X 2 | 2nd Value for Pump Flow Rate [L/Min]  |
-| 170 | 79 | to DEC | 1st Value for Pump Flow Rate [L/Min] |
-| 171 | 79 | to DEC (X-1) X 100 /2  | Pump Speed [R/Min] |
-| 172 | 79 | to DEC X-1   | Pump Duty [Duty] |
-| 173 | 79 | to DEC (X-1) X10  | Fan Motor Speed 1 [R/Min |
-| 174 | 79 | to DEX x-1  | Fan Motor Speed 2 [R/Min] |
-| 175 | 79 |   | ? |
-| 176 | 79 |   | ? |
-| 177 | 79 |   | ? |
-| 178 | 79 |   | ? |
-| 179 | be | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
-| 180 | 08 |  look at 179 | number of operations |
-| 181 | 79 |   | ? |
-| 182 | 25 | combine both bytes (183) 0b  (182) 25 = 2853 - 1 = 2852  | Operating time in h |
-| 183 | 0b | look at 182  | Operating time in h |
-| 184 | 79 |   | ? |
-| 185 | 79 | to DEC X-1  | Room Heater operation time in h |
-| 186 | 79 |   | ? |
-| 187 | 79 |   | ? |
-| 188 | 79 | to DEC X-1   | Tank Heater operation time in h  |
-| 189 | 79 |   | ? |
-| 190 | 79 |   | ? |
-| 191 | 79 |   | ? |
-| 192 | 79 |   | ? |
-| 193 | 01 | to DEX (x-1) / 5   | Energy Consumption for Heat in [kw]  |
-| 194 | 07 | to DEX (x-1) / 5   | Energy Generation for Heat in [kw] |
-| 195 | 79 | to DEX (x-1) / 5   | Energy Consumption for Cool in [kw] |
-| 196 | 79 | to DEX (x-1) / 5   | Energy Generation for Cool in [kw] |
-| 197 | 79 | to DEX (x-1) / 5   | Energy Consumption for DHW in [kw] |
-| 198 | 79 | to DEX (x-1) / 5   | Energy Generation for DHW in [kw] |
-| 199 | 79 |   | ? |
-| 200 | 79 |   | ? |
-| 201 | 79 |   | ? |
-| 202 | 79 |  CHECKSUM |  |
+|  Topic# | Byte# | Possible Value | Value decrypt | Value Description |
+| ----: | ---- | ---- | ----- | ----:|
+|  TOP | 00 | 71 |   | Header  |
+|  TOP | 01 | c8 | Data length ( Packet length = Data length + 3 )  |  Header |
+|  TOP | 02 | 01|   | Header  |
+|  TOP | 03 | 10 |   | Header   |
+|  TOP3+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
+|  TOP19+TOP13 | 05 | 55 | (hex) Holiday mode off and weekly shedule off =55, Holiday mode off and weekly shedule on =95, Holiday mode on and weekly shedule off = 65, Holiday mode on and active and weekly shedule off =75, Holiday mode on and weekly shedule on =B5, Holiday mode off and weekly shedule off + pump works on heater =59 | Holiday mode and Sheduler status |
+|  TOP4 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
+|  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerfull mode status |
+|  TOP | 08 | 00 |   | ? |
+|  TOP | 09 | 05 | HEX values - should be Low Byte (2nd value)Floor heater off + Tank heater off=55, Floor heater on + Tanks heater off=56, Floor Heater off + Tank heater on=59, Floor heater on + Tank heater on=5A | heaters status|
+|  TOP | 10 | 00 |   | ? |
+|  TOP | 11 | 00 |   | ? |
+|  TOP | 12 | 00 |   | ? |
+|  TOP | 13 | 00 |   | ? |
+|  TOP | 14 | 00 |   | ? |
+|  TOP | 15 | 00 |   | ? |
+|  TOP | 16 | 00 |   | ? |
+|  TOP | 17 | 00 |   | ? |
+|  TOP | 18 | 00 |   | ? |
+|  TOP | 19 | 00 |   | ? |
+|  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Anti freezing |
+|  TOP | 21 | 15 |   | ? |
+|  TOP | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
+|  TOP | 23 | 55 | (hex) Off=55, On=56  | External Switch |
+|  TOP | 24 | 16 | (hex) Tank connected=16, not connected=15 | Tank Connection status |
+|  TOP | 25 | 5e | (hex) Tank Heater internal and 3kW=95, Tank Heater external and 3kW=96, Tank Heater internal and 6kW=99, Tank Heater external and 6kW=9A, Tank Heater internal and 9kW=9D, Tank Heater External and 9KW -9E, Tank Heater external and 9KW + Heater pad Type A on=AE, Tank Heater external and 9KW + Heater pad Type B on=BE  | Power of internal heater + tank heater Internal/External + Heater for external pad |
+|  TOP | 26 | 55 | (hex) Biwalent Off=55, Biwalent alternative =56, Biwalent parallel=5A | Biwalent settings |
+|  TOP | 27 | 05 |   | ? |
+|  TOP | 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
+|  TOP | 29 | 00 |   | ? |
+|  TOP | 30 | 00 |   | ? |
+|  TOP | 31 | 00 |   | ? |
+|  TOP | 32 | 00 |   | ? |
+|  TOP | 33 | 00 |   | ? |
+|  TOP | 34 | 00 |   | ? |
+|  TOP | 35 | 00 |   | ? |
+|  TOP | 36 | 00 |   | ? |
+|  TOP | 37 | 00 |   | ? |
+|  TOP27 | 38 | 80 | Convert to DEC 128-128 = 0  | Zone 1 water shift set or direct mode value Temperature For Heat Mode [°C] |
+|  TOP28 | 39 | 8f | Convert to DEC 143-128 = 15 in direct mode set temp or shift value  | Zone 1 water shift set Temperature For Cool Mode [°C] |
+|  TOP34 | 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
+|  TOP35 | 41 | 8a | Convert to DEC 138-128 = 10  | Zone 2 water shift set Temperature For Cool Mode [°C] |
+|  TOP9 | 42 | b2 | Convert to DEC 178-128 = 50  | Tank Target Temperature [°C] |
+|  TOP | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode |
+|  TOP | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for Tank mode  |
+|  TOP | 45 | 97 |   | ? |
+|  TOP | 46 | 99 |   | ? |
+|  TOP | 47 | 00 |   | ? |
+|  TOP | 48 | 00 |   | ? |
+|  TOP | 49 | 00 |   | ? |
+|  TOP | 50 | 00 |   | ? |
+|  TOP | 51 | 00 |   | ? |
+|  TOP | 52 | 00 |   | ? |
+|  TOP | 53 | 00 |   | ? |
+|  TOP | 54 | 00 |   | ? |
+|  TOP | 55 | 00 |   | ? |
+|  TOP | 56 | 00 |   | ? |
+|  TOP | 57 | 00 |   | ? |
+|  TOP | 58 | 80 |   | ? |
+|  TOP | 59 | 85 |   | ? |
+|  TOP | 60 | 15 | Convert to DEC X-1   | Time set for external heaters 20min-3h, step 5min. |
+|  TOP | 61 | 8a |   | ? |
+|  TOP | 62 | 85 |  Convert to DEC | ? | 
+|  TOP | 63 | 85 |   | ? |
+|  TOP | 64 | d0 |   | ? |
+|  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Biwalent device -15-35[°C]|
+|  TOP | 66 | 78 |   | ? |
+|  TOP | 67 | 1f |   | ? |
+|  TOP | 68 | 7e |   | ? |
+|  TOP | 69 | 1f |   | ? |
+|  TOP | 71 | 79 |   | ? |
+|  TOP | 72 | 79 |   | ? |
+|  TOP | 73 | 8d |   =13| ? |
+|  TOP | 74 | 8d |   =13| ? |
+|  TOP29 | 75 | 9e | Convert to DEC 158-128 =30 | Heating Curve Outlet Water Temperature Highest Set [°C] |
+|  TOP30 | 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
+|  TOP32 | 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
+|  TOP31 | 78 | 8f | Convert to DEC 143-128 =15  | Heating Curve Outside Temperature Highest Set [°C] |
+|  TOP | 79 | b7 | Convert to DEC 183-128 =55  | ? Possible Direct Zone2 water Temperature set [°C] |
+|  TOP | 80 | a3 |   =35| ? |
+|  TOP | 81 | 7b |   =-5| ? |
+|  TOP | 82 | 8f |   =15| ? |
+|  TOP | 83 | 8e | Convert to DEC-128  | Outdoor Temperature to stop heating 5-35 [°C] |
+|  TOP23 | 84 | 80 | Convert to DEC 133-128 =5  | Floor heating set delta [°C] |
+|  TOP | 85 | 80 | Convert to DEC 128-128=0 | ? Possible Outdoor temperature for heater ON [°C]  |
+|  TOP | 86 | 8f | Convert to DEC 143-128 =15 | Set temperature for Cooling direct mode [°C] |
+|  TOP | 87 | 8a |   =10| ?  Possible cooling curve |
+|  TOP | 88 | 94 |  =20 | ? Possible cooling curve |
+|  TOP | 89 | 9e |  =30 | ? Possible cooling curve  |
+|  TOP | 90 | 8a |  =10 | ? |
+|  TOP | 91 | 8a |  =10| ? |
+|  TOP | 92 | 94 |  =20 | ? |
+|  TOP | 93 | 9e |  =30 | ? |
+|  TOP24 | 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
+|  TOP | 95 | 90 | Convert to DEC 144-128=16|  | Outdoor temperature for (heat to cool)   [°C]  |
+|  TOP | 96 | 8b |  Convert to DEC 139-128=11|  Outdoor temperature for (cool to heat) [°C] |
+|  TOP | 97 | 05 | Donvert to DEC (X-1) x 30   | Tank settings - Room operation max time [min] |
+|  TOP | 98 | 65 | Convert to DEC 101-1=100   | Tank heat up time (max) [min] |
+|  TOP22 | 99 | 78 | Convert to DEC 120-128=-8 | DHW delta for re-heat  [°C] |
+|  TOP | 100 | c1 |  Convert to DEC 193-128=65  | Sterilization boiling temperature [°C] |
+|  TOP | 101 | 0b |  Convert to DEC 11 - 1 = 10 | Sterilization max operation time [min] |
+|  TOP | 102 | 79 |   | ? |
+|  TOP | 103 | 79 |   | ? |
+|  TOP | 104 | 79 |   | ? |
+|  TOP | 105 | 79 |   | ? |
+|  TOP | 106 | 79 |   | ? |
+|  TOP | 107 | 79 |   | ? |
+|  TOP | 108 | 79 |   | ? |
+|  TOP | 109 | 79 |   | ? |
+|  TOP | 110 | 79 |   | ? |
+|  TOP20+TOP26 | 111 | 56 |  right 2 bits: 0b10=Tank 0b01=Room 3-Way Valve. Next 2 bits (from right) is defrosting state (0b01 = defrosting not active, 0b10 = defrosting active) | 3 way valve + Defrost status |
+|  TOP | 112 | 79 |  Hex 59 - external active, 55 - external and internal not active, 56 - internal active (room or tank) | Heater status |
+|  TOP | 113 | 31 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
+|  TOP | 114 | 56 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
+|  TOP | 115 | 79 |   | ? |
+|  TOP | 116 | 79 |   | ? |
+|  TOP | 117 | 79 |   | ? |
+|  TOP | 118 | 79 |   | ? |
+|  TOP | 119 | 79 |   | ? |
+|  TOP | 120 | 79 |   | ? |
+|  TOP | 121 | 79 |   | ? |
+|  TOP | 122 | 79 |   | ? |
+|  TOP | 123 | 79 |   | ? |
+|  TOP | 124 | 79 |   | ? |
+|  TOP | 125 | 79 |   | ? |
+|  TOP | 126 | 79 |   | ? |
+|  TOP | 127 | 79 |   | ? |
+|  TOP | 128 | 79 |   | ? |
+|  TOP | 129 | 79 |   | ? |
+|  TOP | 130 | 79 |   | ? |
+|  TOP | 131 | 79 |   | ? |
+|  TOP | 132 | 79 |   | ? |
+|  TOP | 133 | 79 |   | ? |
+|  TOP | 134 | 79 |   | ? |
+|  TOP | 135 | 79 |   | ? |
+|  TOP | 136 | 79 |   | ? |
+|  TOP | 137 | 79 |   | ? |
+|  TOP | 138 | 79 |   | ? |
+|  TOP6 | 139 | 79 |  to DEC-128 | Zone1: Actual (Water Outlet/Room/Pool) Temperature [°C] |
+|  TOP | 140 | 79 |  to DEC-128 |  Zone2: Actual (Water Outlet/Room/Pool) Temperature [°C] |
+|  TOP10 | 141 | 79 |  to DEC-128 | Actual Tank Temperature [°C] \ |
+|  TOP14 | 142 | 79 |  to DEC-128 | Actual Outdoor Temperature [°C] |
+|  TOP5 | 143 | 79 |  to DEC-128 | Zone1: Inlet Water Temperature [°C] |
+|  TOP | 144 | 79 |  to DEC-128 | Zone1: Outlet Water Temperature [°C] |
+|  TOP36 | 145 | 79 |  to DEC-128 | Zone1: Water Temperature [°C] |
+|  TOP37 | 146 | 79 |  to DEC-128 | Zone2: Water Temperature [°C] |
+|  TOP42 | 147 | 79 |  to DEC-128 | Zone1: Water Temperature (Target) [°C] |
+|  TOP43 | 148 | 79 |  to DEC-128 | Zone2: Water Temperature (Target) [°C]  |
+|  TOP | 149 | 79 |  to DEC-128 | Buffer Tank: Water Temperature [°C] |
+|  TOP | 150 | 79 |  to DEC-128 | Solar: Water Temperature [°C]  |
+|  TOP | 151 | 79 |  to DEC-128| Pool: Water Temperature [°C] |
+|  TOP | 152 | 80 |   | ? |
+|  TOP7 | 153 | 79 |  to DEC-128 | Zone1: Outlet Water Temperature (Target) [°C] |
+|  TOP | 154 | 79 |  to DEC-128 | Zone2: Outlet Temperature [°C] |
+|  TOP | 155 | 79 |  to DEC-128 | Discharge Temperature [°C] |
+|  TOP33 | 156 | 79 |  to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
+|  TOP | 157 | 79 |  to DEC-128 | Indoor Piping Temperature [°C] |
+|  TOP21 | 158 | 79 |  to DEC-128 | Outdoor Piping Temperature [°C] |
+|  TOP | 159 | 79 |  to DEC-128 | Defrost Temperature [°C] |
+|  TOP | 160 | 79 |  to DEC-128 | Eva Outlet Temperature [°C] |
+|  TOP | 161 | 79 |  to DEC-128 | Bypass Outlet Temperature [°C] |
+|  TOP | 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
+|  TOP | 163 | 79 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
+|  TOP | 164 | 79 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
+|  TOP | 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] Operating time in h
+|  TOP8 | 166 | 79 | to DEC x-1  | Compressor Frequency [Hz] |
+|  TOP | 167 | 79 |   | ? |
+|  TOP | 168 | 79 |   | ? |
+|  TOP1 | 169 | 79 | to DEC (X -1)/5 X 2 | 2nd Value for Pump Flow Rate [L/Min]  |
+|  TOP1 | 170 | 79 | to DEC | 1st Value for Pump Flow Rate [L/Min] |
+|  TOP | 171 | 79 | to DEC (X-1) X 100 /2  | Pump Speed [R/Min] |
+|  TOP | 172 | 79 | to DEC X-1   | Pump Duty [Duty] |
+|  TOP | 173 | 79 | to DEC (X-1) X10  | Fan Motor Speed 1 [R/Min |
+|  TOP | 174 | 79 | to DEX x-1  | Fan Motor Speed 2 [R/Min] |
+|  TOP | 175 | 79 |   | ? |
+|  TOP | 176 | 79 |   | ? |
+|  TOP | 177 | 79 |   | ? |
+|  TOP | 178 | 79 |   | ? |
+|  TOP12 | 179 | be | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
+|  TOP12 | 180 | 08 |  look at 179 | number of operations |
+|  TOP | 181 | 79 |   | ? |
+|  TOP11 | 182 | 25 | combine both bytes (183) 0b  (182) 25 = 2853 - 1 = 2852  | Operating time in h |
+|  TOP11 | 183 | 0b | look at 182  | Operating time in h |
+|  TOP | 184 | 79 |   | ? |
+|  TOP | 185 | 79 | to DEC X-1  | Room Heater operation time in h |
+|  TOP | 186 | 79 |   | ? |
+|  TOP | 187 | 79 |   | ? |
+|  TOP | 188 | 79 | to DEC X-1   | Tank Heater operation time in h  |
+|  TOP | 189 | 79 |   | ? |
+|  TOP | 190 | 79 |   | ? |
+|  TOP | 191 | 79 |   | ? |
+|  TOP | 192 | 79 |   | ? |
+|  TOP16 | 193 | 01 | to DEX (x-1) / 5   | Energy Consumption for Heat in [kw]  |
+|  TOP15 | 194 | 07 | to DEX (x-1) / 5   | Energy Generation for Heat in [kw] |
+|  TOP38 | 195 | 79 | to DEX (x-1) / 5   | Energy Consumption for Cool in [kw] |
+|  TOP39 | 196 | 79 | to DEX (x-1) / 5   | Energy Generation for Cool in [kw] |
+|  TOP40 | 197 | 79 | to DEX (x-1) / 5   | Energy Consumption for DHW in [kw] |
+|  TOP41 | 198 | 79 | to DEX (x-1) / 5   | Energy Generation for DHW in [kw] |
+|  TOP | 199 | 79 |   | ? |
+|  TOP | 200 | 79 |   | ? |
+|  TOP | 201 | 79 |   | ? |
+|  TOP | 202 | 79 |  CHECKSUM |  |
 
 
 
