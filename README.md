@@ -119,7 +119,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP9 | 42 | b2 | Convert to DEC 178-128 = 50  | Tank Target Temperature [°C] |
 |  TOP | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode |
 |  TOP | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for Tank mode  |
-|  TOP | 45 | 97 |   | ? |
+|  TOP | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
 |  TOP | 46 | 99 |   | ? |
 |  TOP | 47 | 00 |   | ? |
 |  TOP | 48 | 00 |   | ? |
