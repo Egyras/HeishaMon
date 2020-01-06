@@ -177,27 +177,27 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
   }
 
   // TOP44 //
-  int Error_type = (int)(data[113]);
-  int Error_number = (int)(data[114]) - 17;
-  char* Error_type_string;
-  char* Error_string;
-  switch (Error_type) {
-    case 177:                  //B1=F type error
-      Error_type_string = "F";
-      sprintf(Error_string, "%s%X", Error_type_string, Error_number);
-      break;
-    case 161:                  //A1=H type error
-      Error_type_string = "H";
-      sprintf(Error_string, "%s%X", Error_type_string, Error_number);
-      break;
-    default:
-      Error_string = "No error";
-  }
-  if ( actData["Error"] != Error_string ) {
-    actData["Error"] = Error_string;
-    sprintf(log_msg, "Last error: %d (%s)", Error_string); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Error"); mqtt_client.publish(mqtt_topic, Error_string, MQTT_RETAIN_VALUES);
-  }
+  //int Error_type = (int)(data[113]);
+  //int Error_number = (int)(data[114]) - 17;
+  //char* Error_type_string;
+  //char* Error_string;
+  //switch (Error_type) {
+  //  case 177:                  //B1=F type error
+  //    Error_type_string = "F";
+  //    sprintf(Error_string, "%s%X", Error_type_string, Error_number);
+  //    break;
+  //  case 161:                  //A1=H type error
+  //    Error_type_string = "H";
+  //    sprintf(Error_string, "%s%X", Error_type_string, Error_number);
+  //    break;
+  //  default:
+  //    Error_string = "No error";
+  //}
+  //if ( actData["Error"] != Error_string ) {
+  //  actData["Error"] = Error_string;
+  //  sprintf(log_msg, "Last error: %d (%s)", Error_string); log_message(log_msg);
+  //  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Error"); mqtt_client.publish(mqtt_topic, Error_string, MQTT_RETAIN_VALUES);
+  //}
 
 
 }
