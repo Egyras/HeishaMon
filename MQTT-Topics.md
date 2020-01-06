@@ -60,7 +60,7 @@ TOP41 | sdc/DHW_Energy_Consumtion | Elektrical DHW power consumtion (Watt)
 TOP42 | sdc/Z1_Water_Target_Temp | Zone 1 water target temperature (°C)
 TOP43 | sdc/Z2_Water_Target_Temp | Zone 2 water target temperature (°C)
 TOP44 | sdc/Error | Last active Error from Heat Pump
-TOP45 | sdc/ShiftHolyday_Temp | Shift holyday temperatur (-5 to 5)
+TOP45 | sdc/ShiftHoliday_Temp | Shift holyday temperatur (-5 to 5)
 
 ## Command Topics:
 

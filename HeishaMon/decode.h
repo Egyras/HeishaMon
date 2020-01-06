@@ -63,6 +63,7 @@ static const String topics[] = {"TOP0", //TOP0
                                 "DHW_Energy_Consumption", //TOP41
                                 "Z1_Water_Target_Temp", //TOP42
                                 "Z2_Water_Target_Temp", //TOP43
+                                "TOP44", //TOP44
                                 "ShiftHolyday_Temp" //TOP45
                                 };
 static const unsigned int topicBytes[] = {0, //TOP0
@@ -109,6 +110,7 @@ static const unsigned int topicBytes[] = {0, //TOP0
                                 197, //TOP41
                                 147, //TOP42
                                 148, //TOP43
+                                0, //TOP44
                                 43 //TOP45
                                 };                                
 
@@ -158,5 +160,6 @@ static const topicFP topicFunctions[] = {unknown, //TOP0
                                 getEnergy, //TOP41
                                 getIntMinus128, //TOP42
                                 getIntMinus128, //TOP43
+                                unknown, //TOP44
                                 getIntMinus128 //TO45
                                 }; 
