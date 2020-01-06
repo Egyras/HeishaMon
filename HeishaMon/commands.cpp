@@ -155,9 +155,9 @@ void send_heatpump_command(char* topic, char msg[],bool (*send_command)(byte*, i
   //not required anymore
   //if (strcmp(topic, mqtt_topic_base) == 0)
   //{
-  //  log_message(strdup("Updating.."));
+ //  log_message(strdup("Updating.."));
 
 //    send_panasonic_query();
-  }
+//  }
   
 }
