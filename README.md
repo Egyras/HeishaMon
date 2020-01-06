@@ -117,7 +117,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP34 | 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
 |  TOP35 | 41 | 8a | Convert to DEC 138-128 = 10  | Zone 2 water shift set Temperature For Cool Mode [°C] |
 |  TOP9 | 42 | b2 | Convert to DEC 178-128 = 50  | Tank Target Temperature [°C] |
-|  TOP | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode |
+|  TOP45 | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode |
 |  TOP | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for Tank mode  |
 |  TOP | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
 |  TOP | 46 | 99 |   | ? |
@@ -186,8 +186,8 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 110 | 79 |   | ? |
 |  TOP20+TOP26 | 111 | 56 |  right 2 bits: 0b10=Tank 0b01=Room 3-Way Valve. Next 2 bits (from right) is defrosting state (0b01 = defrosting not active, 0b10 = defrosting active) | 3 way valve + Defrost status |
 |  TOP | 112 | 79 |  Hex 59 - external active, 55 - external and internal not active, 56 - internal active (room or tank) | Heater status |
-|  TOP | 113 | 31 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
-|  TOP | 114 | 56 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
+|  TOP44 | 113 | 31 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
+|  TOP44 | 114 | 56 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 |  TOP | 115 | 79 |   | ? |
 |  TOP | 116 | 79 |   | ? |
 |  TOP | 117 | 79 |   | ? |
