@@ -352,6 +352,7 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Holidaymode_State"); mqtt_client.publish(mqtt_topic, Holiday_Mode_State_string.c_str(), MQTT_RETAIN_VALUES);
   }
   
+  // TOP13
   int MainSchedule_State = (int)(data[5]);
   String MainSchedule_State_string;
   switch (MainSchedule_State & 0b11000000) { //these two bits determine main schedule state
@@ -365,8 +366,6 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
       MainSchedule_State_string = "-1";
       break;
   }
-
-  // TOP?? //
   if ( actData["MainSchedule_State"] != MainSchedule_State_string ) {
     actData["MainSchedule_State"] = MainSchedule_State_string;
     sprintf(log_msg, "received MainSchedule_State state : %d (%s)", MainSchedule_State, MainSchedule_State_string.c_str()); log_message(log_msg);
