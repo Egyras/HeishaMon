@@ -176,6 +176,34 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Operations_Hours"); mqtt_client.publish(mqtt_topic, String(Operations_Hours).c_str(), MQTT_RETAIN_VALUES);
   }
 
+  // TOP44 //
+
+int Error_type = (int)(data[113]);
+int Error_number = (int)(data[114]) - 17;
+if ( actData["Error_type"] != Error_type ) {
+    actData["Error_type"] = Error_type;
+
+  char* Error_type_string;
+  char* Error_number_string;
+  char* Error_string;
+  switch (Error_type) {
+    case 177:                  //B1=F type error
+      Error_type_string = "F";
+      Error_number_string = (Error_number,HEX);
+      break;
+    case 161:                  //A1=H type error
+      Error_type_string = "H";
+      Error_number_string = (Error_number,HEX);
+      break;
+    default:
+      Error_type_string = "No";
+      Error_number_string = "error";  
+    }
+    Error_string =  Error_type_string + Error_number_string; 
+    
+    sprintf(log_msg, "Last error: %d (%s)", Error_string); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Error"); mqtt_client.publish(mqtt_topic, String(Error_string).c_str(), MQTT_RETAIN_VALUES);
+  }
 
 
 }
