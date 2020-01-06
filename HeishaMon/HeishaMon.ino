@@ -38,8 +38,8 @@ const char* update_username = "admin";
 const char* update_password = "heisha";
 
 // Default settings if config does not exists
-char* wifi_hostname = strdup("default_hostname");
-char* ota_password  = strdup("update_password");
+char* wifi_hostname = strdup(default_hostname);
+char* ota_password  = strdup(update_password);
 char mqtt_server[40];
 char mqtt_port[6] = "1883";
 char mqtt_username[40];

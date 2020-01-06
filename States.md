@@ -7,7 +7,7 @@ For every state: -1 = unknown
 |panasonic_heat_pump/sdc/OpMode_state | 0 | Heat mode |
 |	| 1 | Cool mode |
 |	| 2 | Auto mode |
-| | 3 | DHW mode |
+|	| 3 | DHW mode |
 |	| 4 | Heat+DHW mode |
 |	| 5 | Cool+DHW mode |
 |	| 6 | Auto+DHW mode |
@@ -15,7 +15,7 @@ For every state: -1 = unknown
 |	| 1 | Quiet mode 1 |
 |	| 2 | Quiet mode 2 |
 |	| 3 | Quiet mode 3 |
-|	| 4 | Quiet mode scheduled |
+|	| 16 | Quiet mode scheduled |
 |panasonic_heat_pump/sdc/Powerfullmode_state	| 0 | Powerfull mode off |
 |	| 1 | Powerfull mode 30 min |
 |	| 2 | Powerfull mode 60 min |
