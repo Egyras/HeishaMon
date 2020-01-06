@@ -31,4 +31,3 @@ For every state: -1 = unknown
 | | 2 | Holiday mode active |
 |panasonic_heat_pump/sdc/MainSchedule_state | 0 | Main schedule disabled |
 | | 1 | Main schedule active |
-|
