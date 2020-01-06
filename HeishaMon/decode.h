@@ -64,7 +64,7 @@ static const String topics[] = {"TOP0", //TOP0
                                 "Z1_Water_Target_Temp", //TOP42
                                 "Z2_Water_Target_Temp", //TOP43
                                 "TOP44", //TOP44
-                                "ShiftHolyday_Temp" //TOP45
+                                "ShiftHoliday_Temp" //TOP45
                                 };
 static const unsigned int topicBytes[] = {0, //TOP0
                                 0, //TOP1
