@@ -175,30 +175,27 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
     sprintf(log_msg, "received (Operations_Hours): %.2f", Operations_Hours); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Operations_Hours"); mqtt_client.publish(mqtt_topic, String(Operations_Hours).c_str(), MQTT_RETAIN_VALUES);
   }
-
+  
   // TOP44 //
-  //int Error_type = (int)(data[113]);
-  //int Error_number = (int)(data[114]) - 17;
-  //char* Error_type_string;
-  //char* Error_string;
-  //switch (Error_type) {
-  //  case 177:                  //B1=F type error
-  //    Error_type_string = "F";
-  //    sprintf(Error_string, "%s%X", Error_type_string, Error_number);
-  //    break;
-  //  case 161:                  //A1=H type error
-  //    Error_type_string = "H";
-  //    sprintf(Error_string, "%s%X", Error_type_string, Error_number);
-  //    break;
-  //  default:
-  //    Error_string = "No error";
-  //}
-  //if ( actData["Error"] != Error_string ) {
-  //  actData["Error"] = Error_string;
-  //  sprintf(log_msg, "Last error: %d (%s)", Error_string); log_message(log_msg);
-  //  sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Error"); mqtt_client.publish(mqtt_topic, Error_string, MQTT_RETAIN_VALUES);
-  //}
-
+  int Error_type = (int)(data[113]);
+  int Error_number = ((int)(data[114])) - 17;
+  char Error_string[10];
+  switch (Error_type) {
+    case 177:                  //B1=F type error
+      sprintf(Error_string, "F%02X", Error_number);
+      break;
+    case 161:                  //A1=H type error
+      sprintf(Error_string, "H%02X", Error_number);
+      break;
+    default:
+      sprintf(Error_string,"No error");
+      break;
+  }
+  if ( actData["Error"] != Error_string ) {
+    actData["Error"] = Error_string;
+    sprintf(log_msg, "received (Error): %s", Error_string); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Error"); mqtt_client.publish(mqtt_topic, Error_string, MQTT_RETAIN_VALUES);
+  }
 
 }
 
