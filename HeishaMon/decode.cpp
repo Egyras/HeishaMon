@@ -5,77 +5,27 @@ unsigned long nextalldatatime = 0;
 
 
 String getBit1and2(byte input) {
-  switch (input & 0b11000000) {
-    case 0b01000000:
-      return "0"; break;
-    case 0b10000000:
-      return "1"; break;
-    default:
-      return "-1"; break;
-  }
+  return String((input  >> 6)-1);
 }
 
 String getBit3and4(byte input) {
-  switch (input & 0b110000) {
-    case 0b010000:
-      return "0"; break;
-    case 0b100000:
-      return "1"; break;
-    default:
-      return "-1"; break;
-  }
+  return String(((input >> 4) & 0b11)-1);
 }
 
 String getBit5and6(byte input) {
-  switch (input & 0b1100) {
-    case 0b0100:
-      return "0"; break;
-    case 0b1000:
-      return "1"; break;
-    default:
-      return "-1"; break;
-  }
+  return String(((input >> 2) & 0b11)-1);
 }
 
 String getBit7and8(byte input) {
-  switch (input & 0b11) {
-    case 0b01:
-      return "0"; break;
-    case 0b10:
-      return "1"; break;
-    default:
-      return "-1"; break;
-  }
+  return String((input & 0b11)-1);
 }
 
 String getLeft5bits(byte input) {
-  switch (input & 0b11111000) {
-    case 0b10001000:
-      return "4";      break;
-    case 0b01001000:
-      return "0";      break;
-    case 0b01010000:
-      return "1";      break;
-    case 0b01011000:
-      return "2";      break;
-    case 0b01100000:
-      return "3";      break;
-    default:      break;
-  }
+  return String((input >> 3)-1);
 }
 
 String getRight3bits(byte input) {
-  switch (input & 0b111) {
-    case 0b001:
-      return "0";      break;
-    case 0b010:
-      return "1";      break;
-    case 0b011:
-      return "2";      break;
-    case 0b100:
-      return "3";      break;
-    default:      break;
-  }
+  return String((input & 0b111)-1);
 }
 
 String getIntMinus1(byte input) {
@@ -164,7 +114,7 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
   int Operations_Counter  = word(data[180], data[179]) - 1;
   if ( actData["Operations_Counter"] != Operations_Counter ) {
     actData["Operations_Counter"] = Operations_Counter;
-    sprintf(log_msg, "received (Operations_Counter): %.2f", Operations_Counter); log_message(log_msg);
+    sprintf(log_msg, "received Operations_Counter: %.2f", Operations_Counter); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Operations_Counter"); mqtt_client.publish(mqtt_topic, String(Operations_Counter).c_str(), MQTT_RETAIN_VALUES);
   }
 
@@ -172,7 +122,7 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
   int Operations_Hours  = word(data[183], data[182]) - 1;
   if ( actData["Operations_Hours"] != Operations_Hours ) {
     actData["Operations_Hours"] = Operations_Hours;
-    sprintf(log_msg, "received (Operations_Hours): %.2f", Operations_Hours); log_message(log_msg);
+    sprintf(log_msg, "received Operations_Hours: %.2f", Operations_Hours); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Operations_Hours"); mqtt_client.publish(mqtt_topic, String(Operations_Hours).c_str(), MQTT_RETAIN_VALUES);
   }
   
@@ -193,7 +143,7 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
   }
   if ( actData["Error"] != Error_string ) {
     actData["Error"] = Error_string;
-    sprintf(log_msg, "received (Error): %s", Error_string); log_message(log_msg);
+    sprintf(log_msg, "received Error: %s", Error_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Error"); mqtt_client.publish(mqtt_topic, Error_string, MQTT_RETAIN_VALUES);
   }
 
