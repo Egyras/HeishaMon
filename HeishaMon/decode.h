@@ -62,7 +62,8 @@ static const String topics[] = {"TOP0", //TOP0
                                 "DHW_Energy_Production", //TOP40
                                 "DHW_Energy_Consumption", //TOP41
                                 "Z1_Water_Target_Temp", //TOP42
-                                "Z2_Water_Target_Temp" //TOP43
+                                "Z2_Water_Target_Temp", //TOP43
+                                "ShiftHolyday_Temp" //TOP45
                                 };
 static const unsigned int topicBytes[] = {0, //TOP0
                                 0, //TOP1
@@ -108,6 +109,7 @@ static const unsigned int topicBytes[] = {0, //TOP0
                                 197, //TOP41
                                 147, //TOP42
                                 148, //TOP43
+                                43 //TOP45
                                 };                                
 
 typedef String (*topicFP)(byte);
@@ -155,5 +157,6 @@ static const topicFP topicFunctions[] = {unknown, //TOP0
                                 getEnergy, //TOP40
                                 getEnergy, //TOP41
                                 getIntMinus128, //TOP42
-                                getIntMinus128 //TOP43
+                                getIntMinus128, //TOP43
+                                getIntMinus128 //TO45
                                 }; 
