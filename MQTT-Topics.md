@@ -20,7 +20,7 @@ TOP1 | sdc/Pump_Flow | Pump flow (l/min)
 TOP2 | sdc/ForceDHW_State | DHW status (0=off, 1=on -1=unknown)
 TOP3 | sdc/Power_State | Power state (0=off, 1=on)
 TOP4 | sdc/OpMode_State | Operating mode (0=Heat only, 1=Cool only, 2=Auto, 3=Tank only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW)
-TOP5 | sdc/Z1_Flow_Inlet_Temp | Zone 1 Inlet water temperature (°C)
+TOP5 | sdc/Flow_Inlet_Temp | Zone 1 Inlet water temperature (°C)
 TOP6 | sdc/Z1_Flow_Outlet_Temp | Zone 1 Outlet water temperature (°C)
 TOP7 | sdc/Z1_Flow_Target_Temp | Zone 1 Outlet water target temperature (°C)
 TOP8 | sdc/Compressor_Freq | Compressor frequency (Hz)
@@ -59,6 +59,7 @@ TOP40 | sdc/DHW_Energy_Production | Thermal DHW power production (Watt)
 TOP41 | sdc/DHW_Energy_Consumtion | Elektrical DHW power consumtion (Watt)
 TOP42 | sdc/Z1_Water_Target_Temp | Zone 1 water target temperature (°C)
 TOP43 | sdc/Z2_Water_Target_Temp | Zone 2 water target temperature (°C)
+TOP44 | sdc/Error | Last active Error from Heat Pump
 
 
 ## Command Topics:

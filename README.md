@@ -119,7 +119,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP9 | 42 | b2 | Convert to DEC 178-128 = 50  | Tank Target Temperature [°C] |
 |  TOP | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode |
 |  TOP | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for Tank mode  |
-|  TOP | 45 | 97 |   | ? |
+|  TOP | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
 |  TOP | 46 | 99 |   | ? |
 |  TOP | 47 | 00 |   | ? |
 |  TOP | 48 | 00 |   | ? |
@@ -238,7 +238,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
 |  TOP | 163 | 79 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
 |  TOP | 164 | 79 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
-|  TOP | 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] Operating time in h
+|  TOP | 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] |
 |  TOP8 | 166 | 79 | to DEC x-1  | Compressor Frequency [Hz] |
 |  TOP | 167 | 79 |   | ? |
 |  TOP | 168 | 79 |   | ? |
