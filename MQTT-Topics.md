@@ -59,6 +59,7 @@ TOP40 | sdc/DHW_Energy_Production | Thermal DHW power production (Watt)
 TOP41 | sdc/DHW_Energy_Consumtion | Elektrical DHW power consumtion (Watt)
 TOP42 | sdc/Z1_Water_Target_Temp | Zone 1 water target temperature (°C)
 TOP43 | sdc/Z2_Water_Target_Temp | Zone 2 water target temperature (°C)
+TOP44 | sdc/Error | Last active Error from Heat Pump
 
 
 ## Command Topics:

@@ -132,7 +132,7 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
 
   
   //new style topic decoding
-  int topicsrun[]={3,4,18,17,20,26,9,6,8,10,13,14,5,36,37,7,33,21,27,28,29,30,31,32,33,34,2,19,15,16, 22, 23, 24,38,39,40,41,42,43}; // which topics are already working with new style
+  int topicsrun[]={3,4,18,17,20,26,9,6,8,10,13,14,5,36,37,7,33,21,27,28,29,30,31,32,33,34,2,19,15,16,22,23,24,38,39,40,41,42,43}; // which topics are already working with new style
   for (int i=0 ; i < sizeof(topicsrun)/sizeof(topicsrun[0]) ; i++) {
     int Topic_Number = topicsrun[i];
     String Topic_Name;
@@ -158,6 +158,8 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Pump_Flow"); mqtt_client.publish(mqtt_topic, String(PumpFlow).c_str(), MQTT_RETAIN_VALUES);
   }
 
+
+
  // TOP12 //
   int Operations_Counter  = word(data[180], data[179]) - 1;
   if ( actData["Operations_Counter"] != Operations_Counter ) {
@@ -174,7 +176,36 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Operations_Hours"); mqtt_client.publish(mqtt_topic, String(Operations_Hours).c_str(), MQTT_RETAIN_VALUES);
   }
 
+  // TOP44 //
+
+int Error_type = (int)(data[113]);
+int Error_number = (int)(data[114]) - 17;
+if ( actData["Error_type"] != Error_type ) {
+    actData["Error_type"] = Error_type;
+
+  char* Error_type_string;
+  char* Error_number_string;
+  char* Error_string;
+  switch (Error_type) {
+    case 177:                  //B1=F type error
+      Error_type_string = "F";
+      Error_number_string = (Error_number,HEX);
+      break;
+    case 161:                  //A1=H type error
+      Error_type_string = "H";
+      Error_number_string = (Error_number,HEX);
+      break;
+    default:
+      Error_type_string = "No";
+      Error_number_string = "error";  
+    }
+    Error_string =  Error_type_string + Error_number_string; 
+    
+    sprintf(log_msg, "Last error: %d (%s)", Error_string); log_message(log_msg);
+    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Error"); mqtt_client.publish(mqtt_topic, String(Error_string).c_str(), MQTT_RETAIN_VALUES);
+  }
 
 
 }
-//////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////
