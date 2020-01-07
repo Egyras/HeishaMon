@@ -54,7 +54,7 @@ static const String topics[] = {
             "HCurveOutLowTemp",        //TOP30
             "HCurveOutsHighTemp",      //TOP31
             "HCurveOutsLowTemp",       //TOP32
-            "Room_Temp",               //TOP33
+            "Roomthermostat_Temp",     //TOP33
             "Z2_HeatShift_Temp",       //TOP34
             "Z2_CoolShift_Temp",       //TOP35
             "Z1_Water_Temp",           //TOP36
