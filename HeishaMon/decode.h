@@ -25,7 +25,7 @@ static const String topics[] = {
             "TOP1",                    //TOP1
             "ForceDHW_State",          //TOP2
             "Quietmode_Schedule",      //TOP3
-            "OpMode",                  //TOP4
+            "OpMode_State",                  //TOP4
             "Flow_Inlet_Temp",         //TOP5
             "Z1_Flow_Outlet_Temp",     //TOP6
             "Flow_Target_Temp",        //TOP7
@@ -54,7 +54,7 @@ static const String topics[] = {
             "HCurveOutLowTemp",        //TOP30
             "HCurveOutsHighTemp",      //TOP31
             "HCurveOutsLowTemp",       //TOP32
-            "Room_Temp",               //TOP33
+            "Roomthermostat_Temp",     //TOP33
             "Z2_HeatShift_Temp",       //TOP34
             "Z2_CoolShift_Temp",       //TOP35
             "Z1_Water_Temp",           //TOP36
