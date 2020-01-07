@@ -46,7 +46,7 @@ static const String topics[] = {
             "Tank_Heat_Delta",         //TOP22
             "Heat_Delta",              //TOP23
             "Cool_Delta",              //TOP24
-            "Z1_HeatShift_Temp",       //TOP25
+            "ShiftTank_Temp",          //TOP25
             "Defrosting_State",        //TOP26
             "Z1_HeatShift_Temp",       //TOP27
             "Z1_CoolShift_Temp",       //TOP28
