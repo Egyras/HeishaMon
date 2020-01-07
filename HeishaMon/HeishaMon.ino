@@ -66,7 +66,7 @@ char data[MAXDATASIZE];
 int data_length = 0;
 
 // store actual data in a json doc
-DynamicJsonDocument actData(2048);
+DynamicJsonDocument actData(4096);
 
 // log message to sprintf to
 char log_msg[256];
@@ -211,6 +211,9 @@ void setupHttp() {
   httpServer.on("/", [] {
     handleRoot(&httpServer, &actData);
   });
+  httpServer.on("/tablerefresh", [] {
+    handleTableRefresh(&httpServer, &actData);
+  });  
   httpServer.on("/factoryreset", [] {
     handleFactoryReset(&httpServer);
   });
