@@ -41,7 +41,7 @@ TOP21 | sdc/Outside_Pipe_Temp | Outside pipe temperature (°C)
 TOP22 | sdc/Tank_Heat_Delta | Tank delta (K)
 TOP23 | sdc/Heat_Delta | Heat delta (K)
 TOP24 | sdc/Cool_Delta | Cool delta (K)
-TOP25 |  | 
+TOP25 | sdc/ShiftTank_Temp | Shift tank temperatur (tbd)
 TOP26 | sdc/Defrosting_State | Defrost state (0=off, 1=on)
 TOP27 | sdc/Z1_HeatShift_Temp | Zone 1 Heat Shift/Targettemp (-5 to 5) or direct heat temperatur (20 to 55)
 TOP28 | sdc/Z1_CoolShift_Temp | Zone 1 Cool Shift/Targettemp (-5 to 5) or direct cool temperatur (?? to ??)
@@ -61,7 +61,17 @@ TOP41 | sdc/DHW_Energy_Consumtion | Elektrical DHW power consumtion (Watt)
 TOP42 | sdc/Z1_Water_Target_Temp | Zone 1 water target temperature (°C)
 TOP43 | sdc/Z2_Water_Target_Temp | Zone 2 water target temperature (°C)
 TOP44 | sdc/Error | Last active Error from Heat Pump
-TOP45 | sdc/ShiftHoliday_Temp | Shift holyday temperatur (-5 to 5)
+TOP45 | sdc/ShiftHoliday_Temp | Shift holiday temperatur (-15 to 15)
+TOP46 | sdc/Buffer_Temp | Actual Buffer temperature (°C)
+TOP47 | sdc/Solar_Temp | Actual Solar temperature (°C)
+TOP48 | sdc/Pool_Temp | Actual Pool temperature (°C)
+TOP49 | sdc/Z2_Flow_Outlet_Temp | Zone 2 Outlet water temperature (°C)
+TOP50 | sdc/Discharge_Temp | Discharge Temperature (°C)
+TOP51 | sdc/Inside_Pipe_Temp | Inside pipe temperature (°C)
+TOP52 | sdc/Defrost_Temp | Defrost temperature (°C)
+TOP53 | sdc/EvaOutlet_Temp | Eva Outlet temperature (°C)
+TOP54 | sdc/BypassOutlet_Temp | Bypass Outlet temperature (°C)
+TOP55 | sdc/Ipm_Temp | Ipm temperature (°C)
 
 ## Command Topics:
 
