@@ -67,8 +67,8 @@ static const String topics[] = {"Power_State", //TOP0
                                 "TOP44", //TOP44
                                 "ShiftHoliday_Temp" //TOP45
                                 };
-static const unsigned int topicBytes[] = {0, //TOP0
-                                4, //TOP1
+static const unsigned int topicBytes[] = {4, //TOP0
+                                0, //TOP1
                                 4, //TOP2
                                 7,  //TOP3
                                 6, //TOP4
