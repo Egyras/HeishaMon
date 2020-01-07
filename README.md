@@ -222,20 +222,20 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP37 | 146 | 79 |  to DEC-128 | Zone2: Water Temperature [°C] |
 |  TOP42 | 147 | 79 |  to DEC-128 | Zone1: Water Temperature (Target) [°C] |
 |  TOP43 | 148 | 79 |  to DEC-128 | Zone2: Water Temperature (Target) [°C]  |
-|  TOP | 149 | 79 |  to DEC-128 | Buffer Tank: Water Temperature [°C] |
-|  TOP | 150 | 79 |  to DEC-128 | Solar: Water Temperature [°C]  |
-|  TOP | 151 | 79 |  to DEC-128| Pool: Water Temperature [°C] |
+|  TOP46 | 149 | 79 |  to DEC-128 | Buffer Tank: Water Temperature [°C] |
+|  TOP47 | 150 | 79 |  to DEC-128 | Solar: Water Temperature [°C]  |
+|  TOP48 | 151 | 79 |  to DEC-128| Pool: Water Temperature [°C] |
 |  TOP | 152 | 80 |   | ? |
 |  TOP7 | 153 | 79 |  to DEC-128 | Zone1: Outlet Water Temperature (Target) [°C] |
-|  TOP | 154 | 79 |  to DEC-128 | Zone2: Outlet Temperature [°C] |
-|  TOP | 155 | 79 |  to DEC-128 | Discharge Temperature [°C] |
+|  TOP49 | 154 | 79 |  to DEC-128 | Zone2: Outlet Temperature [°C] |
+|  TOP50 | 155 | 79 |  to DEC-128 | Discharge Temperature [°C] |
 |  TOP33 | 156 | 79 |  to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
-|  TOP | 157 | 79 |  to DEC-128 | Indoor Piping Temperature [°C] |
+|  TOP51 | 157 | 79 |  to DEC-128 | Indoor Piping Temperature [°C] |
 |  TOP21 | 158 | 79 |  to DEC-128 | Outdoor Piping Temperature [°C] |
-|  TOP | 159 | 79 |  to DEC-128 | Defrost Temperature [°C] |
-|  TOP | 160 | 79 |  to DEC-128 | Eva Outlet Temperature [°C] |
-|  TOP | 161 | 79 |  to DEC-128 | Bypass Outlet Temperature [°C] |
-|  TOP | 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
+|  TOP52 | 159 | 79 |  to DEC-128 | Defrost Temperature [°C] |
+|  TOP53 | 160 | 79 |  to DEC-128 | Eva Outlet Temperature [°C] |
+|  TOP54 | 161 | 79 |  to DEC-128 | Bypass Outlet Temperature [°C] |
+|  TOP55 | 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
 |  TOP | 163 | 79 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
 |  TOP | 164 | 79 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
 |  TOP | 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] |
