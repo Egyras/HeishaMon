@@ -16,9 +16,10 @@ LOG1 | log | Log of responses from pump
 
 ID | Topic | Response
 --- | --- | ---
+TOP0 | sdc/Power_State | Power state (0=off, 1=on)
 TOP1 | sdc/Pump_Flow | Pump flow (l/min)
 TOP2 | sdc/ForceDHW_State | DHW status (0=off, 1=on -1=unknown)
-TOP3 | sdc/Power_State | Power state (0=off, 1=on)
+TOP3 | sdc/Quietmode_Schedule | Quiet mode schedule (0=inactive, 1=active)
 TOP4 | sdc/OpMode_State | Operating mode (0=Heat only, 1=Cool only, 2=Auto, 3=Tank only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW)
 TOP5 | sdc/Flow_Inlet_Temp | Zone 1 Inlet water temperature (°C)
 TOP6 | sdc/Z1_Flow_Outlet_Temp | Zone 1 Outlet water temperature (°C)
@@ -40,7 +41,7 @@ TOP21 | sdc/Outside_Pipe_Temp | Outside pipe temperature (°C)
 TOP22 | sdc/Tank_Heat_Delta | Tank delta (K)
 TOP23 | sdc/Heat_Delta | Heat delta (K)
 TOP24 | sdc/Cool_Delta | Cool delta (K)
-TOP25 | sdc/Quietmode_State | Silent mode state (0=off, 1=Mode1, 2=Mode2, 3=Mode3) 
+TOP25 |  | 
 TOP26 | sdc/Defrosting_State | Defrost state (0=off, 1=on)
 TOP27 | sdc/Z1_HeatShift_Temp | Zone 1 Heat Shift/Targettemp (-5 to 5) or direct heat temperatur (20 to 55)
 TOP28 | sdc/Z1_CoolShift_Temp | Zone 1 Cool Shift/Targettemp (-5 to 5) or direct cool temperatur (?? to ??)
