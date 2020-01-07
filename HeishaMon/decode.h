@@ -25,7 +25,7 @@ static const String topics[] = {
             "TOP1",                    //TOP1
             "ForceDHW_State",          //TOP2
             "Quietmode_Schedule",      //TOP3
-            "OpMode",                  //TOP4
+            "OpMode_State",                  //TOP4
             "Flow_Inlet_Temp",         //TOP5
             "Z1_Flow_Outlet_Temp",     //TOP6
             "Flow_Target_Temp",        //TOP7
