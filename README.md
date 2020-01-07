@@ -78,7 +78,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 01 | c8 | Data length ( Packet length = Data length + 3 )  |  Header |
 |  TOP | 02 | 01|   | Header  |
 |  TOP | 03 | 10 |   | Header   |
-|  TOP3+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
+|  TOP0+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
 |  TOP19+TOP13 | 05 | 55 | (hex) Holiday mode off and weekly shedule off =55, Holiday mode off and weekly shedule on =95, Holiday mode on and weekly shedule off = 65, Holiday mode on and active and weekly shedule off =75, Holiday mode on and weekly shedule on =B5, Holiday mode off and weekly shedule off + pump works on heater =59 | Holiday mode and Sheduler status |
 |  TOP4 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerfull mode status |
@@ -118,7 +118,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP35 | 41 | 8a | Convert to DEC 138-128 = 10  | Zone 2 water shift set Temperature For Cool Mode [°C] |
 |  TOP9 | 42 | b2 | Convert to DEC 178-128 = 50  | Tank Target Temperature [°C] |
 |  TOP45 | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode |
-|  TOP | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for Tank mode  |
+|  TOP25 | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for Tank mode  |
 |  TOP | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
 |  TOP | 46 | 99 |   | ? |
 |  TOP | 47 | 00 |   | ? |
@@ -222,20 +222,20 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP37 | 146 | 79 |  to DEC-128 | Zone2: Water Temperature [°C] |
 |  TOP42 | 147 | 79 |  to DEC-128 | Zone1: Water Temperature (Target) [°C] |
 |  TOP43 | 148 | 79 |  to DEC-128 | Zone2: Water Temperature (Target) [°C]  |
-|  TOP | 149 | 79 |  to DEC-128 | Buffer Tank: Water Temperature [°C] |
-|  TOP | 150 | 79 |  to DEC-128 | Solar: Water Temperature [°C]  |
-|  TOP | 151 | 79 |  to DEC-128| Pool: Water Temperature [°C] |
+|  TOP46 | 149 | 79 |  to DEC-128 | Buffer Tank: Water Temperature [°C] |
+|  TOP47 | 150 | 79 |  to DEC-128 | Solar: Water Temperature [°C]  |
+|  TOP48 | 151 | 79 |  to DEC-128| Pool: Water Temperature [°C] |
 |  TOP | 152 | 80 |   | ? |
 |  TOP7 | 153 | 79 |  to DEC-128 | Zone1: Outlet Water Temperature (Target) [°C] |
-|  TOP | 154 | 79 |  to DEC-128 | Zone2: Outlet Temperature [°C] |
-|  TOP | 155 | 79 |  to DEC-128 | Discharge Temperature [°C] |
+|  TOP49 | 154 | 79 |  to DEC-128 | Zone2: Outlet Temperature [°C] |
+|  TOP50 | 155 | 79 |  to DEC-128 | Discharge Temperature [°C] |
 |  TOP33 | 156 | 79 |  to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
-|  TOP | 157 | 79 |  to DEC-128 | Indoor Piping Temperature [°C] |
+|  TOP51 | 157 | 79 |  to DEC-128 | Indoor Piping Temperature [°C] |
 |  TOP21 | 158 | 79 |  to DEC-128 | Outdoor Piping Temperature [°C] |
-|  TOP | 159 | 79 |  to DEC-128 | Defrost Temperature [°C] |
-|  TOP | 160 | 79 |  to DEC-128 | Eva Outlet Temperature [°C] |
-|  TOP | 161 | 79 |  to DEC-128 | Bypass Outlet Temperature [°C] |
-|  TOP | 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
+|  TOP52 | 159 | 79 |  to DEC-128 | Defrost Temperature [°C] |
+|  TOP53 | 160 | 79 |  to DEC-128 | Eva Outlet Temperature [°C] |
+|  TOP54 | 161 | 79 |  to DEC-128 | Bypass Outlet Temperature [°C] |
+|  TOP55 | 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
 |  TOP | 163 | 79 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
 |  TOP | 164 | 79 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
 |  TOP | 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] |
@@ -247,7 +247,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 171 | 79 | to DEC (X-1) X 100 /2  | Pump Speed [R/Min] |
 |  TOP | 172 | 79 | to DEC X-1   | Pump Duty [Duty] |
 |  TOP | 173 | 79 | to DEC (X-1) X10  | Fan Motor Speed 1 [R/Min |
-|  TOP | 174 | 79 | to DEX x-1  | Fan Motor Speed 2 [R/Min] |
+|  TOP | 174 | 79 | to DEC x-1  | Fan Motor Speed 2 [R/Min] |
 |  TOP | 175 | 79 |   | ? |
 |  TOP | 176 | 79 |   | ? |
 |  TOP | 177 | 79 |   | ? |
@@ -266,12 +266,12 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 190 | 79 |   | ? |
 |  TOP | 191 | 79 |   | ? |
 |  TOP | 192 | 79 |   | ? |
-|  TOP16 | 193 | 01 | to DEX (x-1) / 5   | Energy Consumption for Heat in [kw]  |
-|  TOP15 | 194 | 07 | to DEX (x-1) / 5   | Energy Generation for Heat in [kw] |
-|  TOP38 | 195 | 79 | to DEX (x-1) / 5   | Energy Consumption for Cool in [kw] |
-|  TOP39 | 196 | 79 | to DEX (x-1) / 5   | Energy Generation for Cool in [kw] |
-|  TOP40 | 197 | 79 | to DEX (x-1) / 5   | Energy Consumption for DHW in [kw] |
-|  TOP41 | 198 | 79 | to DEX (x-1) / 5   | Energy Generation for DHW in [kw] |
+|  TOP16 | 193 | 01 | to DEC (x-1) / 5   | Energy Consumption for Heat in [kw]  |
+|  TOP15 | 194 | 07 | to DEC (x-1) / 5   | Energy Generation for Heat in [kw] |
+|  TOP38 | 195 | 79 | to DEC (x-1) / 5   | Energy Consumption for Cool in [kw] |
+|  TOP39 | 196 | 79 | to DEC (x-1) / 5   | Energy Generation for Cool in [kw] |
+|  TOP40 | 197 | 79 | to DEC (x-1) / 5   | Energy Consumption for DHW in [kw] |
+|  TOP41 | 198 | 79 | to DEC (x-1) / 5   | Energy Generation for DHW in [kw] |
 |  TOP | 199 | 79 |   | ? |
 |  TOP | 200 | 79 |   | ? |
 |  TOP | 201 | 79 |   | ? |
