@@ -25,10 +25,10 @@ static const String topics[] = {
             "TOP1",                    //TOP1
             "ForceDHW_State",          //TOP2
             "Quietmode_Schedule",      //TOP3
-            "OpMode",                  //TOP4
-            "Flow_Inlet_Temp",         //TOP5
-            "Z1_Flow_Outlet_Temp",     //TOP6
-            "Flow_Target_Temp",        //TOP7
+            "OpMode_State",            //TOP4
+            "Water_Inlet_Temp",        //TOP5
+            "Water_Outlet_Temp",       //TOP6
+            "Water_Target_Temp",       //TOP7
             "Compressor_Freq",         //TOP8
             "Tank_Target_Temp",        //TOP9
             "Tank_Temp",               //TOP10
@@ -50,11 +50,11 @@ static const String topics[] = {
             "Defrosting_State",        //TOP26
             "Z1_HeatShift_Temp",       //TOP27
             "Z1_CoolShift_Temp",       //TOP28
-            "HCurveOutHighTemp",       //TOP29
-            "HCurveOutLowTemp",        //TOP30
-            "HCurveOutsHighTemp",      //TOP31
-            "HCurveOutsLowTemp",       //TOP32
-            "Room_Temp",               //TOP33
+            "HCurve_OutHighTemp",      //TOP29
+            "HCurve_OutLowTemp",       //TOP30
+            "HCurve_OutsHighTemp",     //TOP31
+            "HCurve_OutsLowTemp",      //TOP32
+            "Roomthermostat_Temp",     //TOP33
             "Z2_HeatShift_Temp",       //TOP34
             "Z2_CoolShift_Temp",       //TOP35
             "Z1_Water_Temp",           //TOP36
@@ -70,13 +70,15 @@ static const String topics[] = {
             "Buffer_Temp",             //TOP46
             "Solar_Temp",              //TOP47
             "Pool_Temp",               //TOP48
-            "Z2_Flow_Outlet_Temp",     //TOP49
+            "Water_Hex_Outlet_Temp",   //TOP49
             "Discharge_Temp",          //TOP50
             "Inside_Pipe_Temp",        //TOP51
             "Defrost_Temp",            //TOP52
             "EvaOutlet_Temp",          //TOP53
             "BypassOutlet_Temp",       //TOP54
             "Ipm_Temp",                //TOP55
+            "Z1_Temp",                 //TOP56
+            "Z2_Temp",                 //TOP57
 };
 
 static const unsigned int topicBytes[] = {
@@ -86,7 +88,7 @@ static const unsigned int topicBytes[] = {
         7,      //TOP3
         6,      //TOP4
         143,    //TOP5
-        139,    //TOP6
+        144,    //TOP6
         153,    //TOP7
         166,    //TOP8
         42,     //TOP9
@@ -136,6 +138,8 @@ static const unsigned int topicBytes[] = {
         160,    //TOP53
         161,    //TOP54
         162,    //TOP55
+        139,    //TOP56
+        140,    //TOP57
 };        
 
 typedef String (*topicFP)(byte);
@@ -196,5 +200,7 @@ static const topicFP topicFunctions[] = {
     getIntMinus128,        //TOP52
     getIntMinus128,        //TOP53
     getIntMinus128,        //TOP54
-    getIntMinus128         //TOP55
+    getIntMinus128,        //TOP55
+    getIntMinus128,        //TOP56
+    getIntMinus128         //TOP57
 };

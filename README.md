@@ -212,12 +212,12 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 136 | 79 |   | ? |
 |  TOP | 137 | 79 |   | ? |
 |  TOP | 138 | 79 |   | ? |
-|  TOP6 | 139 | 79 |  to DEC-128 | Zone1: Actual (Water Outlet/Room/Pool) Temperature [°C] |
-|  TOP | 140 | 79 |  to DEC-128 |  Zone2: Actual (Water Outlet/Room/Pool) Temperature [°C] |
-|  TOP10 | 141 | 79 |  to DEC-128 | Actual Tank Temperature [°C] \ |
+|  TOP56 | 139 | 79 |  to DEC-128 | Zone1: Actual (Zone 1) Temperature [°C] |
+|  TOP57 | 140 | 79 |  to DEC-128 | Zone2: Actual (Zone 2) Temperature [°C] |
+|  TOP10 | 141 | 79 |  to DEC-128 | Actual Tank Temperature [°C]  |
 |  TOP14 | 142 | 79 |  to DEC-128 | Actual Outdoor Temperature [°C] |
-|  TOP5 | 143 | 79 |  to DEC-128 | Zone1: Inlet Water Temperature [°C] |
-|  TOP | 144 | 79 |  to DEC-128 | Zone1: Outlet Water Temperature [°C] |
+|  TOP5 | 143 | 79 |  to DEC-128 | Inlet Water Temperature [°C] |
+|  TOP6 | 144 | 79 |  to DEC-128 |  Outlet Water Temperature [°C] |
 |  TOP36 | 145 | 79 |  to DEC-128 | Zone1: Water Temperature [°C] |
 |  TOP37 | 146 | 79 |  to DEC-128 | Zone2: Water Temperature [°C] |
 |  TOP42 | 147 | 79 |  to DEC-128 | Zone1: Water Temperature (Target) [°C] |
@@ -227,7 +227,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP48 | 151 | 79 |  to DEC-128| Pool: Water Temperature [°C] |
 |  TOP | 152 | 80 |   | ? |
 |  TOP7 | 153 | 79 |  to DEC-128 | Zone1: Outlet Water Temperature (Target) [°C] |
-|  TOP49 | 154 | 79 |  to DEC-128 | Zone2: Outlet Temperature [°C] |
+|  TOP49 | 154 | 79 |  to DEC-128 | Outlet2 (heat exhanger?) Temperature [°C] |
 |  TOP50 | 155 | 79 |  to DEC-128 | Discharge Temperature [°C] |
 |  TOP33 | 156 | 79 |  to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
 |  TOP51 | 157 | 79 |  to DEC-128 | Indoor Piping Temperature [°C] |
