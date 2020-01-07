@@ -41,7 +41,7 @@ TOP21 | sdc/Outside_Pipe_Temp | Outside pipe temperature (°C)
 TOP22 | sdc/Tank_Heat_Delta | Tank delta (K)
 TOP23 | sdc/Heat_Delta | Heat delta (K)
 TOP24 | sdc/Cool_Delta | Cool delta (K)
-TOP25 |  | 
+TOP25 | sdc/ShiftTank_Temp | Shift tank temperatur (tbd)
 TOP26 | sdc/Defrosting_State | Defrost state (0=off, 1=on)
 TOP27 | sdc/Z1_HeatShift_Temp | Zone 1 Heat Shift/Targettemp (-5 to 5) or direct heat temperatur (20 to 55)
 TOP28 | sdc/Z1_CoolShift_Temp | Zone 1 Cool Shift/Targettemp (-5 to 5) or direct cool temperatur (?? to ??)
@@ -61,7 +61,7 @@ TOP41 | sdc/DHW_Energy_Consumtion | Elektrical DHW power consumtion (Watt)
 TOP42 | sdc/Z1_Water_Target_Temp | Zone 1 water target temperature (°C)
 TOP43 | sdc/Z2_Water_Target_Temp | Zone 2 water target temperature (°C)
 TOP44 | sdc/Error | Last active Error from Heat Pump
-TOP45 | sdc/ShiftHoliday_Temp | Shift holyday temperatur (-5 to 5)
+TOP45 | sdc/ShiftHoliday_Temp | Shift holiday temperatur (-15 to 15)
 
 ## Command Topics:
 
