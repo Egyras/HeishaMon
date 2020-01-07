@@ -12,6 +12,7 @@ String getBit1and2(byte input);
 String getBit3and4(byte input);
 String getBit5and6(byte input);
 String getBit7and8(byte input);
+String getBit3and4and5(byte input);
 String getLeft5bits(byte input);
 String getRight3bits(byte input);
 String getIntMinus1(byte input);
@@ -19,10 +20,10 @@ String getIntMinus128(byte input);
 String getOpMode(byte input);
 String getEnergy(byte input);
 
-static const String topics[] = {"TOP0", //TOP0
+static const String topics[] = {"Power_State", //TOP0
                                 "TOP1", //TOP1
                                 "ForceDHW_State", //TOP2
-                                "Power_State", //TOP3
+                                "Quietmode_Schedule", //TOP3
                                 "OpMode", //TOP4
                                 "Flow_Inlet_Temp", //TOP5
                                 "Z1_Flow_Outlet_Temp", //TOP6
@@ -67,9 +68,9 @@ static const String topics[] = {"TOP0", //TOP0
                                 "ShiftHoliday_Temp" //TOP45
                                 };
 static const unsigned int topicBytes[] = {0, //TOP0
-                                0, //TOP1
+                                4, //TOP1
                                 4, //TOP2
-                                4,  //TOP3
+                                7,  //TOP3
                                 6, //TOP4
                                 143, //TOP5
                                 139, //TOP6
@@ -116,10 +117,10 @@ static const unsigned int topicBytes[] = {0, //TOP0
 
 typedef String (*topicFP)(byte);
 
-static const topicFP topicFunctions[] = {unknown, //TOP0
+static const topicFP topicFunctions[] = {getBit7and8, //TOP0
                                 unknown, //TOP1
                                 getBit1and2, //TOP2
-                                getBit7and8, //TOP3
+                                getBit1and2, //TOP3
                                 getOpMode, //TOP4
                                 getIntMinus128, //TOP5
                                 getIntMinus128, //TOP6
@@ -134,7 +135,7 @@ static const topicFP topicFunctions[] = {unknown, //TOP0
                                 getEnergy, //TOP15
                                 getEnergy, //TOP16
                                 getRight3bits, //TOP17
-                                getLeft5bits, //TOP18
+                                getBit3and4and5, //TOP18
                                 getBit3and4, //TOP19
                                 getBit7and8, //TOP20
                                 getIntMinus128, //TOP21

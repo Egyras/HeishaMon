@@ -20,6 +20,11 @@ String getBit7and8(byte input) {
   return String((input & 0b11)-1);
 }
 
+String getBit3and4and5(byte input) {
+  return String(((input >> 3) & 0b111)-1);
+}
+
+
 String getLeft5bits(byte input) {
   return String((input >> 3)-1);
 }
@@ -82,7 +87,7 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
 
 
   //new style topic decoding
-  int topicsrun[] = {3, 4, 18, 17, 20, 26, 9, 6, 8, 10, 13, 14, 5, 36, 37, 7, 33, 21, 27, 28, 29, 30, 31, 32, 33, 34, 2, 19, 15, 16, 22, 23, 24, 38, 39, 40, 41, 42, 43, 45}; // which topics are already working with new style
+  int topicsrun[] = {0, 3, 4, 18, 17, 20, 26, 9, 6, 8, 10, 13, 14, 5, 36, 37, 7, 33, 21, 27, 28, 29, 30, 31, 32, 33, 34, 2, 19, 15, 16, 22, 23, 24, 38, 39, 40, 41, 42, 43, 45}; // which topics are already working with new style
   for (int i = 0 ; i < sizeof(topicsrun) / sizeof(topicsrun[0]) ; i++) {
     int Topic_Number = topicsrun[i];
     String Topic_Name;

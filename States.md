@@ -11,11 +11,12 @@ For every state: -1 = unknown
 |	| 4 | Heat+DHW mode |
 |	| 5 | Cool+DHW mode |
 |	| 6 | Auto+DHW mode |
-|panasonic_heat_pump/sdc/Quietmode_state	| 8 | Quiet mode off |
-|	| 9 | Quiet mode 1 |
-|	| 10 | Quiet mode 2 |
-|	| 11| Quiet mode 3 |
-|	| 16 | Quiet mode scheduled |
+|panasonic_heat_pump/sdc/Quietmode_state	| 0 | Quiet mode off |
+|	| 1 | Quiet mode 1 |
+|	| 2 | Quiet mode 2 |
+|	| 3 | Quiet mode 3 |
+|panasonic_heat_pump/sdc/Quietmode_Schedule	| 0 | Quiet mode schedule inactive |
+|	| 1 | Quiet mode schedule active |
 |panasonic_heat_pump/sdc/Powerfullmode_state	| 0 | Powerfull mode off |
 |	| 1 | Powerfull mode 30 min |
 |	| 2 | Powerfull mode 60 min |
