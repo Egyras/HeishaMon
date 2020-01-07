@@ -151,6 +151,8 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
     sprintf(log_msg, "received Error: %s", Error_string); log_message(log_msg);
     sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Error"); mqtt_client.publish(mqtt_topic, Error_string, MQTT_RETAIN_VALUES);
   }
+  
+  //run this only to check state of json doc. memory usage (currently sized at 4096)
+  //sprintf(log_msg, "JSON doc memory usage: %d", actData.memoryUsage()); log_message(log_msg);
 
 }
-
