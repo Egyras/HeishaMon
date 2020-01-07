@@ -1,0 +1,47 @@
+sitemap panasonic label="Panasonic" icon="House" {
+  Text item=panasonic_heat_pump_HeatPumpStatus label="Panasonic Air-watwer Power" icon="heating" {
+
+ Frame {
+
+               Switch item=panasonic_heat_pump_Mode label="Heat Pump Mode" mappings=[5="Cool+DHW", 4="Heat+DHW", 6="Auto+DHW"]
+               Switch item=panasonic_heat_pump_Mode label="Heat Pump Mode" mappings=[3="Tank", 0="Heat", 2="Auto", 1="Cool"]
+               Switch item=panasonic_heat_pump_Quiet_mode label="Set Quiet Mode" mappings=[0="OFF", 1="1", 2="2", 3="3"]
+               Switch item=panasonic_heat_pump_ForceDHW label="Set Force DHW" mappings=[0="OFF", 1="ON"]
+               Switch item=panasonic_heat_pump_Holiday label="Set Holiday Mode" mappings=[84="OFF", 100="ON"]
+               Switch item=panasonic_heat_pump_PowerMode label="Set Power Mode" mappings=[0="OFF", 1="30", 2="60", 3="90"]
+               Setpoint item=panasonic_heat_pump_Shift_mode step=1 minValue=-5 maxValue=5
+
+      }            
+                                
+            
+    Frame {
+                Switch item=panasonic_heat_pump_HeatPumpStatus label="Heat Pump Status" mappings=[0="OFF", 1="ON"]
+                Text item=panasonic_heat_pump_HeatShiftTemp label="Heat Shift Temperature"
+                Switch item=panasonic_heat_pump_walve_state label="3-Way Valve Status" mappings=[0="Room", 1="DHW"]
+                Switch item=panasonic_heat_pump_defrost_state label="Defrost Status" mappings=[0="OFF", 1="ON"]
+                Text item=panasonic_heat_pump_WatOutTarTemp label="Water Outlet Target Temperature"
+                Text item=panasonic_heat_pump_InletTemp label="Water Inlet Temperature"
+                Text item=panasonic_heat_pump_ActWatOutTemp label="Outlet Water Temperature"
+                Text item=panasonic_heat_pump_HCurveOutHighTemp label="Curve Outlet H Water Temperature"
+                Text item=panasonic_heat_pump_HCurveOutLowTemp label="Curve Outlet L Water Temperature"
+                Text item=panasonic_heat_pump_HCurveOutsLowTemp label="Curve Outside L Temperature"
+                Text item=panasonic_heat_pump_HCurveOutsHighTemp label="Curve Outside H Temperature"
+                Text item=panasonic_heat_pump_TankSetTemp label="Tank Set Temperature"
+                Text item=panasonic_heat_pump_ActTankTemp label="Tank Actual Temperature"
+                Text item=panasonic_heat_pump_RoomTherTemp label="Room Thermostat Temperature"
+                Text item=panasonic_heat_pump_ActOutTemp label="Outside Air Temperature"
+                Text item=panasonic_heat_pump_PumpFlow label="Pump Flow Speed"
+                Text item=panasonic_heat_pump_OperatingTime label="Operating Time"
+                Text item=panasonic_heat_pump_OperationsNumber label="Number Of Operations"
+                Text item=panasonic_heat_pump_CompFreq label="Heat Pump Frequency"
+                Text item=panasonic_heat_pump_Floor_HeatDelta label="Floor Heat Delta"
+                Text item=panasonic_heat_pump_Floor_CoolDelta label="Floor Cool Delta"
+                Text item=panasonic_heat_pump_Tank_HeatDelta label="Tank Re-heat Delta"
+                Text item=panasonic_heat_pump_Error label="Error"
+                Text item=panasonic_heat_pump_controller label="Controller Status"
+                
+    }
+     
+  }          
+     
+}
