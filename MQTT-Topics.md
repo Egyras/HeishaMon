@@ -41,7 +41,7 @@ TOP21 | sdc/Outside_Pipe_Temp | Outside pipe temperature (°C)
 TOP22 | sdc/Tank_Heat_Delta | Tank delta (K)
 TOP23 | sdc/Heat_Delta | Heat delta (K)
 TOP24 | sdc/Cool_Delta | Cool delta (K)
-TOP25 | sdc/Quietmode_State | Silent mode state (0=off, 1=Mode1, 2=Mode2, 3=Mode3) 
+TOP25 |  | 
 TOP26 | sdc/Defrosting_State | Defrost state (0=off, 1=on)
 TOP27 | sdc/Z1_HeatShift_Temp | Zone 1 Heat Shift/Targettemp (-5 to 5) or direct heat temperatur (20 to 55)
 TOP28 | sdc/Z1_CoolShift_Temp | Zone 1 Cool Shift/Targettemp (-5 to 5) or direct cool temperatur (?? to ??)
