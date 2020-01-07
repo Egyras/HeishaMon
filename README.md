@@ -247,7 +247,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 171 | 79 | to DEC (X-1) X 100 /2  | Pump Speed [R/Min] |
 |  TOP | 172 | 79 | to DEC X-1   | Pump Duty [Duty] |
 |  TOP | 173 | 79 | to DEC (X-1) X10  | Fan Motor Speed 1 [R/Min |
-|  TOP | 174 | 79 | to DEX x-1  | Fan Motor Speed 2 [R/Min] |
+|  TOP | 174 | 79 | to DEC x-1  | Fan Motor Speed 2 [R/Min] |
 |  TOP | 175 | 79 |   | ? |
 |  TOP | 176 | 79 |   | ? |
 |  TOP | 177 | 79 |   | ? |
@@ -266,12 +266,12 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 190 | 79 |   | ? |
 |  TOP | 191 | 79 |   | ? |
 |  TOP | 192 | 79 |   | ? |
-|  TOP16 | 193 | 01 | to DEX (x-1) / 5   | Energy Consumption for Heat in [kw]  |
-|  TOP15 | 194 | 07 | to DEX (x-1) / 5   | Energy Generation for Heat in [kw] |
-|  TOP38 | 195 | 79 | to DEX (x-1) / 5   | Energy Consumption for Cool in [kw] |
-|  TOP39 | 196 | 79 | to DEX (x-1) / 5   | Energy Generation for Cool in [kw] |
-|  TOP40 | 197 | 79 | to DEX (x-1) / 5   | Energy Consumption for DHW in [kw] |
-|  TOP41 | 198 | 79 | to DEX (x-1) / 5   | Energy Generation for DHW in [kw] |
+|  TOP16 | 193 | 01 | to DEC (x-1) / 5   | Energy Consumption for Heat in [kw]  |
+|  TOP15 | 194 | 07 | to DEC (x-1) / 5   | Energy Generation for Heat in [kw] |
+|  TOP38 | 195 | 79 | to DEC (x-1) / 5   | Energy Consumption for Cool in [kw] |
+|  TOP39 | 196 | 79 | to DEC (x-1) / 5   | Energy Generation for Cool in [kw] |
+|  TOP40 | 197 | 79 | to DEC (x-1) / 5   | Energy Consumption for DHW in [kw] |
+|  TOP41 | 198 | 79 | to DEC (x-1) / 5   | Energy Generation for DHW in [kw] |
 |  TOP | 199 | 79 |   | ? |
 |  TOP | 200 | 79 |   | ? |
 |  TOP | 201 | 79 |   | ? |
