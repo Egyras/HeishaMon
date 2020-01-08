@@ -447,6 +447,7 @@ sensor:
     sensors:
       heisha_cop:
         friendly_name: "Heisha COP"
+		unit_of_measurement: "x"
         value_template: >-
           {%- if states('sensor.heisha_w_production') != "Unknown" -%}
             {%- if states('sensor.heisha_w_consumption') > "0" -%}
