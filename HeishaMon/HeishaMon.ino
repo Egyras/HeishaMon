@@ -27,19 +27,17 @@
 // of the address block
 #define DRD_ADDRESS 0x00
 
-#define WAITTIME 5000
-
+#define WAITTIME 5000 // wait before next data read from heatpump
+#define SERIALTIMEOUT 1000 // wait until all 203 bytes are read, must not be too long to avoid blocking the code
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
-const char* default_hostname = "HeishaMon";
-const char* update_path = "/firmware";
-const char* update_username = "admin";
-const char* update_password = "heisha";
 
 // Default settings if config does not exists
-char* wifi_hostname = strdup(default_hostname);
-char* ota_password  = strdup(update_password);
+char* update_path = (char*)"/firmware";
+char* update_username = (char*)"admin";
+char* wifi_hostname = (char*)"HeishaMon";
+char* ota_password  = (char*)"heisha";
 char mqtt_server[40];
 char mqtt_port[6] = "1883";
 char mqtt_username[40];
@@ -47,6 +45,7 @@ char mqtt_password[40];
 
 bool sending = false; // mutex for sending data
 unsigned long nexttime = 0;
+unsigned long readtime = 0;
 
 
 //useful for debugging, outputs info to a separate mqtt topic
@@ -113,16 +112,15 @@ void log_message(char* string)
 }
 
 void logHex(char *hex, int hex_len) {
-  if (outputHexDump) {
-    char buffer [48];
-    buffer[47] = 0;
-    for (int i = 0; i < hex_len; i += 16) {
-      for (int j = 0; ((j < 16) && ((i + j) < hex_len)); j++) {
-        sprintf(&buffer[3 * j], "%02X ", hex[i + j]);
-      }
-      sprintf(log_msg, "data: %s", buffer ); log_message(log_msg);
+  char buffer [48];
+  buffer[47] = 0;
+  for (int i = 0; i < hex_len; i += 16) {
+    for (int j = 0; ((j < 16) && ((i + j) < hex_len)); j++) {
+      sprintf(&buffer[3 * j], "%02X ", hex[i + j]);
     }
+    sprintf(log_msg, "data: %s", buffer ); log_message(log_msg);
   }
+
 }
 
 byte calcChecksum(byte* command, int length) {
@@ -136,29 +134,43 @@ byte calcChecksum(byte* command, int length) {
 
 bool readSerial()
 {
-  //heatpump data is always 203 bytes
-  data_length = Serial.readBytes(data, 203);
-  sprintf(log_msg, "received size : %d", data_length); log_message(log_msg);
-  logHex(data, data_length);
-  byte chk = 0;
-  for ( int i = 0; i < sizeof(data); i++)  {
-    chk += data[i];
+  if (data_length && (millis() > readtime)) {  //start a new read, previous attempt failed due to timeout
+    log_message((char*)"Starting a new read, previous attempt failed due to timeout!");
+    data_length = 0;
   }
-  if ( chk == 0 ) {
-    log_message(strdup("Checksum received ok!"));
-    return true;
+  readtime = millis() + SERIALTIMEOUT;
+  while (Serial.available()) {
+    data[data_length] = Serial.read(); //read available data and place it after the last received data
+    data_length++;
   }
-  else {
-    log_message(strdup("Checksum received false!"));
-    return false;
+  //only enable this if you really want to see how the data is gathered in multiple tries
+  //sprintf(log_msg, "received size : %d", data_length); log_message(log_msg);
+
+  if (data_length == 203) { //panansonic read is always 203 on valid receive, if not yet there wait for next read
+    if (outputHexDump) logHex(data, data_length);
+    byte chk = 0;
+    for ( int i = 0; i < data_length; i++)  {
+      chk += data[i];
+    }
+    if ( chk == 0 ) {
+      log_message((char*)"Checksum received ok!");
+      data_length = 0; //for next attempt
+      return true;
+    }
+    else {
+      log_message((char*)"Checksum received false!");
+      data_length = 0; //for next attempt
+      return false;
+    }
   }
+  return false;
 }
 
 
 bool send_command(byte* command, int length)
 {
   if ( sending ) {
-    log_message(strdup("Already sending data. Aborting this send request"));
+    log_message((char*)"Already sending data. Aborting this send request");
     return false;
   }
   sending = true;
@@ -168,7 +180,7 @@ bool send_command(byte* command, int length)
   bytesSent += Serial.write(chk);
 
   sprintf(log_msg, "sent bytes: %d with checksum: %d ", bytesSent, int(chk)); log_message(log_msg);
-  logHex((char*)command, length);
+  if (outputHexDump) logHex((char*)command, length);
   sending = false;
   return true;
 }
@@ -180,7 +192,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     msg[i] = (char)payload[i];
   }
   msg[length] = '\0';
-  send_heatpump_command(topic,msg,send_command,log_message);
+  send_heatpump_command(topic, msg, send_command, log_message);
 }
 
 void setupOTA() {
@@ -207,13 +219,13 @@ void setupOTA() {
 }
 
 void setupHttp() {
-  httpUpdater.setup(&httpServer, update_path, update_username, update_password);
+  httpUpdater.setup(&httpServer, update_path, update_username, ota_password);
   httpServer.on("/", [] {
     handleRoot(&httpServer, &actData);
   });
   httpServer.on("/tablerefresh", [] {
     handleTableRefresh(&httpServer, &actData);
-  });  
+  });
   httpServer.on("/factoryreset", [] {
     handleFactoryReset(&httpServer);
   });
@@ -221,12 +233,12 @@ void setupHttp() {
     handleReboot(&httpServer);
   });
   httpServer.on("/togglelog", [] {
-    log_message(strdup("Toggled mqtt log flag"));
+    log_message((char*)"Toggled mqtt log flag");
     outputMqttLog ^= true;
     handleRoot(&httpServer, &actData);
   });
   httpServer.on("/togglehexdump", [] {
-    log_message(strdup("Toggled hexdump log flag"));
+    log_message((char*)"Toggled hexdump log flag");
     outputHexDump ^= true;
     handleRoot(&httpServer, &actData);
   });
@@ -263,14 +275,14 @@ void setup() {
 }
 
 void send_panasonic_query() {
-  log_message(strdup("Requesting new panasonic data..."));
+  log_message((char*)"Requesting new panasonic data...");
   send_command(panasonicQuery, PANASONICQUERYSIZE);
 }
 
 void read_panasonic_data() {
   if (Serial.available() > 0) {
-    // read the serial
-    if ( readSerial() ) decode_heatpump_data(data,actData,mqtt_client,log_message);
+    // read the serial and decode if ready
+    if ( readSerial() ) decode_heatpump_data(data, actData, mqtt_client, log_message);
   }
 }
 
