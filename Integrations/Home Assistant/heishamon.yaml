@@ -1,0 +1,494 @@
+################################################################
+## Packages / Heisha
+################################################################
+
+################################################################
+## Changelog
+################################################################
+##
+## 1.0.0 (08-01-2020)
+##   Added
+##   - Initial version
+
+
+
+# Automations #
+###############
+automation:
+  #Fetches quiet level from status and sets the selector accordingly
+  - alias: Set quiet level selector
+    trigger:
+      platform: mqtt
+      topic: "panasonic_heat_pump/sdc/Quietmode_Level"
+    action:
+      service: input_select.select_option
+      data_template:
+        entity_id: input_select.heisha_quietmode
+        option: >-
+          {%- if trigger.payload == "0" -%}
+            Off
+          {%- else -%}
+            {{ trigger.payload }}
+          {%- endif -%}
+
+  #Sets quiet level to the selected value
+  - alias: Set quiet level
+    trigger:
+      platform: state
+      entity_id: input_select.heisha_quietmode
+    action:
+      service: mqtt.publish
+      data_template:
+        topic: panasonic_heat_pump/SetQuietMode
+        retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
+        payload_template: >-
+          {%- if states('input_select.heisha_quietmode') == "Off" -%}
+            0
+          {%- else -%}
+            {{ states('input_select.heisha_quietmode') }}
+          {%- endif -%}
+
+  #Fetches powerfull level from status and sets the selector accordingly
+  - alias: Set powerfull level selector
+    trigger:
+      platform: mqtt
+      topic: "panasonic_heat_pump/sdc/Powerfullmode_Time"
+    action:
+      service: input_select.select_option
+      data_template:
+        entity_id: input_select.heisha_powermode
+        option: >-
+          {%- if trigger.payload == "0" -%}
+            Off
+          {%- else -%}
+            {{ (trigger.payload | int) * 30 }} min
+          {%- endif -%}
+
+  #Sets powerfull level to the selected value
+  - alias: Set powerfull level
+    trigger:
+      platform: state
+      entity_id: input_select.heisha_powermode
+    action:
+      service: mqtt.publish
+      data_template:
+        topic: panasonic_heat_pump/SetPowerfull
+        retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
+        payload_template: >-
+          {%- if states('input_select.heisha_powermode') == "Off" -%}
+            0
+          {%- else -%}
+            {{ "%.0f" % ((states('input_select.heisha_powermode') | replace("min", "") | int) / 30) }}
+          {%- endif -%}
+
+  #Fetches heatmode from status and sets the selector accordingly
+  - alias: Set heatmode selector
+    trigger:
+      platform: mqtt
+      topic: "panasonic_heat_pump/sdc/OpMode_State"
+    action:
+      service: input_select.select_option
+      data_template:
+        entity_id: input_select.heisha_heatmode
+        option: >-
+          {%- if trigger.payload == "0" -%}
+            Heat
+          {%- elif trigger.payload == "3" -%}
+            DHW
+          {%- elif trigger.payload == "4" -%}
+            Heat+DHW
+          {%- endif -%}
+
+  #Sets heatmode to the selected value
+  - alias: Set heatmode
+    trigger:
+      platform: state
+      entity_id: input_select.heisha_heatmode
+    action:
+      service: mqtt.publish
+      data_template:
+        topic: panasonic_heat_pump/SetOpMode
+        retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
+        payload_template: >-
+          {%- if states('input_select.heisha_heatmode') == "Heat" -%}
+            0
+          {%- elif states('input_select.heisha_heatmode') == "DHW" -%}
+            3
+          {%- elif states('input_select.heisha_heatmode') == "Heat+DHW" -%}
+            4
+          {%- endif -%}
+
+  #Fetches heatshift temperature from status and sets the selector accordingly
+  - alias: Set heatshift selector
+    trigger:
+      platform: mqtt
+      topic: "panasonic_heat_pump/sdc/Z1_HeatShift_Temp"
+    action:
+      service: input_number.set_value
+      data_template:
+        entity_id: input_number.heisha_heatshift
+        value: >-
+          {{ "%.1f" % (trigger.payload | int) }}
+
+  #Sets heatshift temperature to the selected value
+  - alias: Set heatshift
+    trigger:
+      platform: state
+      entity_id: input_number.heisha_heatshift
+    action:
+      service: mqtt.publish
+      data_template:
+        topic: panasonic_heat_pump/SetShiftTemperature
+        retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
+        payload_template: >-
+          {{ "%.0f" % (states('input_number.heisha_heatshift') | int) }}
+
+  #Fetches tank target temperature from status and sets the selector accordingly
+  - alias: Set tank target temperature selector
+    trigger:
+      platform: mqtt
+      topic: "panasonic_heat_pump/sdc/Tank_Target_Temp"
+    action:
+      service: input_number.set_value
+      data_template:
+        entity_id: input_number.heisha_tank_temp
+        value: >-
+          {{ "%.1f" % (trigger.payload | int) }}
+
+  #Sets tank target temperature to the selected value
+  - alias: Set tank target temperature
+    trigger:
+      platform: state
+      entity_id: input_number.heisha_tank_temp
+    action:
+      service: mqtt.publish
+      data_template:
+        topic: panasonic_heat_pump/SetTankTemp
+        retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
+        payload_template: >-
+          {{ "%.0f" % (states('input_number.heisha_tank_temp') | int) }}
+
+
+# input_number #
+################
+input_number:
+  heisha_tank_temp:
+    name: Set Tank Temperature
+    min: 40
+    max: 75
+    step: 1
+
+  heisha_heatshift:
+    name: Set Heatshift Temperature
+    min: -5
+    max: 5
+    step: 1
+
+
+# input_select #
+################
+input_select:
+  heisha_quietmode:
+    name: Set Quiet Mode
+    options:
+      - 'Off'
+      - 1
+      - 2
+      - 3
+
+  heisha_powermode:
+    name: Set Power Mode
+    options:
+      - 'Off'
+      - 30 min
+      - 60 min
+      - 90 min
+
+  #82 = heat only, 83 = cool only, 88 = Auto, 98 = Heat+DHW, 99 = Cool+DHW, 104 = Auto + DHW
+  heisha_heatmode:
+    name: Set Heat Mode
+    options:
+      - Heat+DHW
+      - Heat
+      - DHW
+
+# sensor #
+##########
+sensor:
+  #TOP0 - Power state
+  - platform: mqtt
+    name: Heisha Power State
+    state_topic: "panasonic_heat_pump/sdc/Power_State"
+    value_template: >-
+      {%- if value == "0" -%}
+        Off
+      {%- elif value == "1" -%}
+        On
+      {%- endif -%}
+
+  #TOP1 - Pumpflow
+  - platform: mqtt
+    name: Heisha Pump Flow
+    state_topic: "panasonic_heat_pump/sdc/Pump_Flow"
+    unit_of_measurement: 'L/m'
+
+  #TOP4 - Heat mode (Hot water, Heat or Hot water + heat)
+  - platform: mqtt
+    name: Heisha Mode
+    state_topic: "panasonic_heat_pump/sdc/OpMode_State"
+    value_template: >-
+      {%- if value == "0" -%}
+        Heat
+      {%- elif value == "1" -%}
+        Cool
+      {%- elif value == "2" -%}
+        Auto
+      {%- elif value == "3" -%}
+        DHW
+      {%- elif value == "4" -%}
+        Heat+DHW
+      {%- elif value == "5" -%}
+        Cool+DHW
+      {%- elif value == "6" -%}
+        Auto+DHW
+      {%- endif -%}
+      
+  #TOP5 - Water inlet temp
+  - platform: mqtt
+    name: Heisha Inlet Temperature
+    state_topic: "panasonic_heat_pump/sdc/Water_Inlet_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP6 - Water outlet temp
+  - platform: mqtt
+    name: Heisha Outlet Temperature
+    state_topic: "panasonic_heat_pump/sdc/Water_Outlet_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP7 - Water outlet target temp
+  - platform: mqtt
+    name: Heisha Outlet Target Temperature
+    state_topic: "panasonic_heat_pump/sdc/Water_Target_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP8 - Compressor frequency
+  - platform: mqtt
+    name: Heisha Compressor Frequency
+    state_topic: "panasonic_heat_pump/sdc/Compressor_Freq"
+    unit_of_measurement: 'Hz'
+
+  #TOP9 - Tank set temperature
+  - platform: mqtt
+    name: Heisha Tank Set Temperature
+    state_topic: "panasonic_heat_pump/sdc/Tank_Target_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP10 - Tank current temperature
+  - platform: mqtt
+    name: Heisha Actual Tank Temperature
+    state_topic: "panasonic_heat_pump/sdc/Tank_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP11 - Compressor Operating Time
+  - platform: mqtt
+    name: Heisha Compressor Operating Hours
+    state_topic: "panasonic_heat_pump/sdc/Operations_Hours"
+    unit_of_measurement: 'Hours'
+
+  #TOP12 - Compressor On/Off cycle number
+  - platform: mqtt
+    name: Heisha Compressor Start/Stop Counter
+    state_topic: "panasonic_heat_pump/sdc/Operations_Counter"
+
+  #TOP14 - Outdoor unit ambient temperature
+  - platform: mqtt
+    name: Heisha Outdoor Ambient
+    state_topic: "panasonic_heat_pump/sdc/Outside_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP15 - Heating power produced
+  - platform: mqtt
+    name: Heisha Power Produced
+    state_topic: "panasonic_heat_pump/sdc/Heat_Energy_Production"
+    unit_of_measurement: 'W'
+
+  #TOP16 - Heating power consumed
+  - platform: mqtt
+    name: Heisha Power Consumed
+    state_topic: "panasonic_heat_pump/sdc/Heat_Energy_Consumption"
+    unit_of_measurement: 'W'
+
+  #TOP17 - Heating powerfull mode
+  - platform: mqtt
+    name: Heisha Powerfull Mode
+    state_topic: "panasonic_heat_pump/sdc/Powerfullmode_Time"
+    unit_of_measurement: 'Min'
+    value_template: >-
+      {{ (value | int) * 30 }}
+
+  #TOP18 - Heating quiet mode
+  - platform: mqtt
+    name: Heisha Quiet Mode
+    state_topic: "panasonic_heat_pump/sdc/Quietmode_Level"
+    value_template: >-
+      {%- if value == "4" -%}
+        Scheduled
+      {%- else -%}
+        {{ value }}
+      {%- endif -%}
+
+  #TOP19 - Holiday Mode
+  - platform: mqtt
+    name: Heisha Holiday Mode
+    state_topic: "panasonic_heat_pump/sdc/Holidaymode_State"
+    value_template: >-
+      {%- if value == "0" -%}
+        Off
+      {%- elif value == "1" -%}
+        On
+      {%- endif -%}
+
+  #TOP20 - 3-way valve state
+  - platform: mqtt
+    name: Heisha 3-way Valve
+    state_topic: "panasonic_heat_pump/sdc/Valve_State"
+    value_template: >-
+      {%- if value == "0" -%}
+        Room
+      {%- elif value == "1" -%}
+        Tank
+      {%- endif -%}
+
+  #TOP21 - Outside pipe temp
+  - platform: mqtt
+    name: Heisha Outdoor Pipe Temperature
+    state_topic: "panasonic_heat_pump/sdc/Outside_Pipe_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP26 - Defrost state
+  - platform: mqtt
+    name: Heisha Defrost State
+    state_topic: "panasonic_heat_pump/sdc/Defrosting_State"
+    value_template: >-
+      {%- if value == "0" -%}
+        Inactive
+      {%- elif value == "1" -%}
+        Active
+      {%- endif -%}
+
+  #TOP27 - Heatshift Temperature
+  - platform: mqtt
+    name: Heisha Heatshift Temperature
+    state_topic: "panasonic_heat_pump/sdc/Z1_HeatShift_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP40 - DHW power produced
+  - platform: mqtt
+    name: Heisha DHW Power Produced
+    state_topic: "panasonic_heat_pump/sdc/DHW_Energy_Production"
+    unit_of_measurement: 'W'
+
+  #TOP41 - DHW power consumed
+  - platform: mqtt
+    name: Heisha DHW Power Consumed
+    state_topic: "panasonic_heat_pump/sdc/DHW_Energy_Consumption"
+    unit_of_measurement: 'W'
+
+  #TOP44 - Last active error
+  - platform: mqtt
+    name: Heisha Last Error
+    state_topic: "panasonic_heat_pump/sdc/Error"
+
+  #TOP49 - Water HEX Outlet temp
+  - platform: mqtt
+    name: Heisha Water HEX Outlet Temperature
+    state_topic: "panasonic_heat_pump/sdc/Water_HEX_Outlet_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP50 - Discharge temp
+  - platform: mqtt
+    name: Heisha Discharge Temperature
+    state_topic: "panasonic_heat_pump/sdc/Discharge_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP51 - Inside Pipe temp
+  - platform: mqtt
+    name: Heisha Inside Pipe Temperature
+    state_topic: "panasonic_heat_pump/sdc/Inside_Pipe_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP52 - Defrost temp
+  - platform: mqtt
+    name: Heisha Defrost Temperature
+    state_topic: "panasonic_heat_pump/sdc/Defrost_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP53 - Eva Outlet temp
+  - platform: mqtt
+    name: Heisha Eva Outlet Temperature
+    state_topic: "panasonic_heat_pump/sdc/EvaOutlet_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP54 - Bypass Outlet temp
+  - platform: mqtt
+    name: Heisha Bypass Outlet Temperature
+    state_topic: "panasonic_heat_pump/sdc/BypassOutlet_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP55 - lpm temp
+  - platform: mqtt
+    name: Heisha Ipm Temperature
+    state_topic: "panasonic_heat_pump/sdc/Ipm_Temp"
+    unit_of_measurement: '°C'
+
+  #### SENSORS BELOW ARE NOT IN FIRMWARE ####
+  #COP Calculations
+  - platform: template
+    sensors:
+      heisha_cop:
+        friendly_name: "Heisha COP"
+        value_template: >-
+          {%- if states('sensor.heisha_w_production') != "Unknown" -%}
+            {%- if states('sensor.heisha_w_consumption') > "0" -%}
+              {{ '%0.1f' % ((states('sensor.heisha_w_production') | float ) / (states('sensor.heisha_w_consumption') | float)) }}
+            {%- else -%}
+              0.0
+            {%- endif -%}
+          {%- else -%}
+            n/a
+          {%- endif -%}
+
+  #Energy use/production
+  - platform: template
+    sensors:
+      heisha_w_production:
+        friendly_name: "Panasonic Energy Production"
+        unit_of_measurement: 'W'
+        value_template: >-
+          {%- if states('sensor.heisha_dhw_power_produced') != "0" -%}
+            {{ states('sensor.heisha_dhw_power_produced') }}
+          {%- else -%}
+            {{ states('sensor.heisha_power_produced') }}
+          {%- endif -%}
+      heisha_w_consumption:
+        friendly_name: "Panasonic Energy Consumption"
+        unit_of_measurement: 'W'
+        value_template: >-
+          {%- if states('sensor.heisha_dhw_power_consumed') != "0" -%}
+            {{ states('sensor.heisha_dhw_power_consumed') }}
+          {%- else -%}
+            {{ states('sensor.heisha_power_consumed') }}
+          {%- endif -%}
+
+
+# switch #
+##########
+switch:
+  - platform: mqtt
+    name: Heisha Holiday Mode
+    command_topic: "panasonic_heat_pump/SetHoliday"
+    state_topic: "panasonic_heat_pump/sdc/Holidaymode_State"
+    qos: 0
+    payload_on: "1"
+    payload_off: "0"
+    retain: false
