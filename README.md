@@ -64,7 +64,8 @@ arduinojson by benoit blanchon version 6.13.0 https://github.com/bblanchon/Ardui
 ## MQTT topics
 [Current list of documented MQTT topics can be found here](MQTT-Topics.md)
 
-## Integration Examples for Opensource automation systems https://github.com/Egyras/HeishaMon/tree/master/Integrations
+## Integration Examples for Opensource automation systems
+[Openhab2](Integrations\Openhab)
 
 ## Protocol info packet:
 
