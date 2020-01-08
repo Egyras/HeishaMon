@@ -64,6 +64,9 @@ arduinojson by benoit blanchon version 6.13.0 https://github.com/bblanchon/Ardui
 ## MQTT topics
 [Current list of documented MQTT topics can be found here](MQTT-Topics.md)
 
+## Integration Examples for Opensource automation systems
+[Openhab2](Integrations/Openhab2)
+
 ## Protocol info packet:
 
 To get information from a heat pump, "magic" packet should be send to CN-CNT: 
@@ -84,16 +87,16 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerfull mode status |
 |  TOP | 08 | 00 |   | ? |
 |  TOP | 09 | 05 | HEX values - should be Low Byte (2nd value)Floor heater off + Tank heater off=55, Floor heater on + Tanks heater off=56, Floor Heater off + Tank heater on=59, Floor heater on + Tank heater on=5A | heaters status|
-|  TOP | 10 | 00 |   | ? |
-|  TOP | 11 | 00 |   | ? |
-|  TOP | 12 | 00 |   | ? |
-|  TOP | 13 | 00 |   | ? |
-|  TOP | 14 | 00 |   | ? |
-|  TOP | 15 | 00 |   | ? |
-|  TOP | 16 | 00 |   | ? |
-|  TOP | 17 | 00 |   | ? |
-|  TOP | 18 | 00 |   | ? |
-|  TOP | 19 | 00 |   | ? |
+|  TOP | 10 | 00 |   | 0 byte |
+|  TOP | 11 | 00 |   | 0 byte |
+|  TOP | 12 | 00 |   | 0 byte |
+|  TOP | 13 | 00 |   | 0 byte |
+|  TOP | 14 | 00 |   | 0 byte |
+|  TOP | 15 | 00 |   | 0 byte |
+|  TOP | 16 | 00 |   | 0 byte |
+|  TOP | 17 | 00 |   | 0 byte |
+|  TOP | 18 | 00 |   | 0 byte |
+|  TOP | 19 | 00 |   | 0 byte |
 |  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Anti freezing |
 |  TOP | 21 | 15 |   | ? |
 |  TOP | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
@@ -103,15 +106,15 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 26 | 55 | (hex) Biwalent Off=55, Biwalent alternative =56, Biwalent parallel=5A | Biwalent settings |
 |  TOP | 27 | 05 |   | ? |
 |  TOP | 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
-|  TOP | 29 | 00 |   | ? |
-|  TOP | 30 | 00 |   | ? |
-|  TOP | 31 | 00 |   | ? |
-|  TOP | 32 | 00 |   | ? |
-|  TOP | 33 | 00 |   | ? |
-|  TOP | 34 | 00 |   | ? |
-|  TOP | 35 | 00 |   | ? |
-|  TOP | 36 | 00 |   | ? |
-|  TOP | 37 | 00 |   | ? |
+|  TOP | 29 | 00 |   | 0 byte |
+|  TOP | 30 | 00 |   | 0 byte |
+|  TOP | 31 | 00 |   | 0 byte |
+|  TOP | 32 | 00 |   | 0 byte |
+|  TOP | 33 | 00 |   | 0 byte |
+|  TOP | 34 | 00 |   | 0 byte |
+|  TOP | 35 | 00 |   | 0 byte |
+|  TOP | 36 | 00 |   | 0 byte |
+|  TOP | 37 | 00 |   | 0 byte |
 |  TOP27 | 38 | 80 | Convert to DEC 128-128 = 0  | Zone 1 water shift set or direct mode value Temperature For Heat Mode [°C] |
 |  TOP28 | 39 | 8f | Convert to DEC 143-128 = 15 in direct mode set temp or shift value  | Zone 1 water shift set Temperature For Cool Mode [°C] |
 |  TOP34 | 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
@@ -121,17 +124,17 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP25 | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for Tank mode  |
 |  TOP | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
 |  TOP | 46 | 99 |   | ? |
-|  TOP | 47 | 00 |   | ? |
-|  TOP | 48 | 00 |   | ? |
-|  TOP | 49 | 00 |   | ? |
-|  TOP | 50 | 00 |   | ? |
-|  TOP | 51 | 00 |   | ? |
-|  TOP | 52 | 00 |   | ? |
-|  TOP | 53 | 00 |   | ? |
-|  TOP | 54 | 00 |   | ? |
-|  TOP | 55 | 00 |   | ? |
-|  TOP | 56 | 00 |   | ? |
-|  TOP | 57 | 00 |   | ? |
+|  TOP | 47 | 00 |   | 0 byte |
+|  TOP | 48 | 00 |   | 0 byte |
+|  TOP | 49 | 00 |   | 0 byte |
+|  TOP | 50 | 00 |   | 0 byte |
+|  TOP | 51 | 00 |   | 0 byte |
+|  TOP | 52 | 00 |   | 0 byte |
+|  TOP | 53 | 00 |   | 0 byte |
+|  TOP | 54 | 00 |   | 0 byte |
+|  TOP | 55 | 00 |   | 0 byte |
+|  TOP | 56 | 00 |   | 0 byte |
+|  TOP | 57 | 00 |   | 0 byte |
 |  TOP | 58 | 80 |   | ? |
 |  TOP | 59 | 85 |   | ? |
 |  TOP | 60 | 15 | Convert to DEC X-1   | Time set for external heaters 20min-3h, step 5min. |
@@ -144,6 +147,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 67 | 1f |   | ? |
 |  TOP | 68 | 7e |   | ? |
 |  TOP | 69 | 1f |   | ? |
+|  TOP | 70 | 1f |   | ? |
 |  TOP | 71 | 79 |   | ? |
 |  TOP | 72 | 79 |   | ? |
 |  TOP | 73 | 8d |   =13| ? |
@@ -175,106 +179,106 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP22 | 99 | 78 | Convert to DEC 120-128=-8 | DHW delta for re-heat  [°C] |
 |  TOP | 100 | c1 |  Convert to DEC 193-128=65  | Sterilization boiling temperature [°C] |
 |  TOP | 101 | 0b |  Convert to DEC 11 - 1 = 10 | Sterilization max operation time [min] |
-|  TOP | 102 | 79 |   | ? |
-|  TOP | 103 | 79 |   | ? |
-|  TOP | 104 | 79 |   | ? |
-|  TOP | 105 | 79 |   | ? |
-|  TOP | 106 | 79 |   | ? |
-|  TOP | 107 | 79 |   | ? |
-|  TOP | 108 | 79 |   | ? |
-|  TOP | 109 | 79 |   | ? |
-|  TOP | 110 | 79 |   | ? |
+|  TOP | 102 | 00 |   | 0 byte |
+|  TOP | 103 | 00 |   | 0 byte |
+|  TOP | 104 | 00 |   | 0 byte |
+|  TOP | 105 | 00 |   | 0 byte |
+|  TOP | 106 | 00 |   | 0 byte |
+|  TOP | 107 | 00 |   | 0 byte |
+|  TOP | 108 | 00 |   | 0 byte |
+|  TOP | 109 | 00 |   | 0 byte |
+|  TOP | 110 | 55 |   | ? |
 |  TOP20+TOP26 | 111 | 56 |  right 2 bits: 0b10=Tank 0b01=Room 3-Way Valve. Next 2 bits (from right) is defrosting state (0b01 = defrosting not active, 0b10 = defrosting active) | 3 way valve + Defrost status |
-|  TOP | 112 | 79 |  Hex 59 - external active, 55 - external and internal not active, 56 - internal active (room or tank) | Heater status |
-|  TOP44 | 113 | 31 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
-|  TOP44 | 114 | 56 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
-|  TOP | 115 | 79 |   | ? |
-|  TOP | 116 | 79 |   | ? |
-|  TOP | 117 | 79 |   | ? |
-|  TOP | 118 | 79 |   | ? |
-|  TOP | 119 | 79 |   | ? |
-|  TOP | 120 | 79 |   | ? |
-|  TOP | 121 | 79 |   | ? |
-|  TOP | 122 | 79 |   | ? |
-|  TOP | 123 | 79 |   | ? |
-|  TOP | 124 | 79 |   | ? |
-|  TOP | 125 | 79 |   | ? |
-|  TOP | 126 | 79 |   | ? |
-|  TOP | 127 | 79 |   | ? |
-|  TOP | 128 | 79 |   | ? |
-|  TOP | 129 | 79 |   | ? |
-|  TOP | 130 | 79 |   | ? |
-|  TOP | 131 | 79 |   | ? |
-|  TOP | 132 | 79 |   | ? |
-|  TOP | 133 | 79 |   | ? |
-|  TOP | 134 | 79 |   | ? |
-|  TOP | 135 | 79 |   | ? |
-|  TOP | 136 | 79 |   | ? |
-|  TOP | 137 | 79 |   | ? |
-|  TOP | 138 | 79 |   | ? |
-|  TOP56 | 139 | 79 |  to DEC-128 | Zone1: Actual (Zone 1) Temperature [°C] |
-|  TOP57 | 140 | 79 |  to DEC-128 | Zone2: Actual (Zone 2) Temperature [°C] |
-|  TOP10 | 141 | 79 |  to DEC-128 | Actual Tank Temperature [°C]  |
-|  TOP14 | 142 | 79 |  to DEC-128 | Actual Outdoor Temperature [°C] |
-|  TOP5 | 143 | 79 |  to DEC-128 | Inlet Water Temperature [°C] |
-|  TOP6 | 144 | 79 |  to DEC-128 |  Outlet Water Temperature [°C] |
-|  TOP36 | 145 | 79 |  to DEC-128 | Zone1: Water Temperature [°C] |
-|  TOP37 | 146 | 79 |  to DEC-128 | Zone2: Water Temperature [°C] |
-|  TOP42 | 147 | 79 |  to DEC-128 | Zone1: Water Temperature (Target) [°C] |
-|  TOP43 | 148 | 79 |  to DEC-128 | Zone2: Water Temperature (Target) [°C]  |
-|  TOP46 | 149 | 79 |  to DEC-128 | Buffer Tank: Water Temperature [°C] |
-|  TOP47 | 150 | 79 |  to DEC-128 | Solar: Water Temperature [°C]  |
-|  TOP48 | 151 | 79 |  to DEC-128| Pool: Water Temperature [°C] |
+|  TOP | 112 | 55 |  Hex 59 - external active, 55 - external and internal not active, 56 - internal active (room or tank) | Heater status |
+|  TOP44 | 113 | 21 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
+|  TOP44 | 114 | 53 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
+|  TOP | 115 | 15 |   | ? |
+|  TOP | 116 | 5a |   | ? |
+|  TOP | 117 | 05 |   | ? |
+|  TOP | 118 | 12 |   | ? |
+|  TOP | 119 | 12 |   | ? |
+|  TOP | 120 | 19 |   | ? |
+|  TOP | 121 | 00 |   | 0 byte |
+|  TOP | 122 | 00 |   | 0 byte |
+|  TOP | 123 | 00 |   | 0 byte |
+|  TOP | 124 | 00 |   | 0 byte |
+|  TOP | 125 | 00 |   | 0 byte |
+|  TOP | 126 | 00 |   | 0 byte |
+|  TOP | 127 | 00 |   | 0 byte |
+|  TOP | 128 | 00 |   | 0 byte |
+|  TOP | 129 | e2 |   | ? |
+|  TOP | 130 | ce |   | ? |
+|  TOP | 131 | 0d |   | ? |
+|  TOP | 132 | 71 |   | ? |
+|  TOP | 133 | 81 |   | ? |
+|  TOP | 134 | 72 |   | ? |
+|  TOP | 135 | ce |   | ? |
+|  TOP | 136 | 0c |   | ? |
+|  TOP | 137 | 92 |   | ? |
+|  TOP | 138 | 81 |   | ? |
+|  TOP56 | 139 | b0 |  to DEC-128 | Zone1: Actual (Zone 1) Temperature [°C] |
+|  TOP57 | 140 | 00 |  to DEC-128 |  Zone2: Actual (Zone 2) Temperature [°C] |
+|  TOP10 | 141 | aa |  to DEC-128 | Actual Tank Temperature [°C] \ |
+|  TOP14 | 142 | 7c |  to DEC-128 | Actual Outdoor Temperature [°C] |
+|  TOP5 | 143 | ab |  to DEC-128 | Inlet Water Temperature [°C] |
+|  TOP6 | 144 | b0 |  to DEC-128 | Outlet Water Temperature [°C] |
+|  TOP36 | 145 | 32 |  to DEC-128 | Zone1: Water Temperature [°C] |
+|  TOP37 | 146 | 32 |  to DEC-128 | Zone2: Water Temperature [°C] |
+|  TOP42 | 147 | 9c |  to DEC-128 | Zone1: Water Temperature (Target) [°C] |
+|  TOP43 | 148 | b6 |  to DEC-128 | Zone2: Water Temperature (Target) [°C]  |
+|  TOP46 | 149 | 32 |  to DEC-128 | Buffer Tank: Water Temperature [°C] |
+|  TOP47 | 150 | 32 |  to DEC-128 | Solar: Water Temperature [°C]  |
+|  TOP48 | 151 | 32 |  to DEC-128| Pool: Water Temperature [°C] |
 |  TOP | 152 | 80 |   | ? |
-|  TOP7 | 153 | 79 |  to DEC-128 | Outlet Water Temperature (Target) [°C] |
-|  TOP49 | 154 | 79 |  to DEC-128 | Outlet 2 heat exchanger water temperature [°C] |
-|  TOP50 | 155 | 79 |  to DEC-128 | Discharge Temperature [°C] |
-|  TOP33 | 156 | 79 |  to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
-|  TOP51 | 157 | 79 |  to DEC-128 | Indoor Piping Temperature [°C] |
+|  TOP7 | 153 | b7 |  to DEC-128 | Outlet Water Temperature (Target) [°C] |
+|  TOP49 | 154 | af |  to DEC-128 | Outlet 2 heat exchanger water temperature [°C] |
+|  TOP50 | 155 | cd |  to DEC-128 | Discharge Temperature [°C] |
+|  TOP33 | 156 | 9a |  to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
+|  TOP51 | 157 | ac |  to DEC-128 | Indoor Piping Temperature [°C] |
 |  TOP21 | 158 | 79 |  to DEC-128 | Outdoor Piping Temperature [°C] |
-|  TOP52 | 159 | 79 |  to DEC-128 | Defrost Temperature [°C] |
-|  TOP53 | 160 | 79 |  to DEC-128 | Eva Outlet Temperature [°C] |
-|  TOP54 | 161 | 79 |  to DEC-128 | Bypass Outlet Temperature [°C] |
-|  TOP55 | 162 | 79 |  to DEC-128 | Ipm Temperature [°C]  |
-|  TOP | 163 | 79 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
-|  TOP | 164 | 79 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
-|  TOP | 165 | 79 |  to DEC (X-1)/5 | Outdoor Current [A] |
-|  TOP8 | 166 | 79 | to DEC x-1  | Compressor Frequency [Hz] |
-|  TOP | 167 | 79 |   | ? |
-|  TOP | 168 | 79 |   | ? |
-|  TOP1 | 169 | 79 | to DEC (X -1)/5 X 2 | 2nd Value for Pump Flow Rate [L/Min]  |
-|  TOP1 | 170 | 79 | to DEC | 1st Value for Pump Flow Rate [L/Min] |
-|  TOP | 171 | 79 | to DEC (X-1) X 100 /2  | Pump Speed [R/Min] |
-|  TOP | 172 | 79 | to DEC X-1   | Pump Duty [Duty] |
-|  TOP | 173 | 79 | to DEC (X-1) X10  | Fan Motor Speed 1 [R/Min |
-|  TOP | 174 | 79 | to DEC x-1  | Fan Motor Speed 2 [R/Min] |
-|  TOP | 175 | 79 |   | ? |
+|  TOP52 | 159 | 80 |  to DEC-128 | Defrost Temperature [°C] |
+|  TOP53 | 160 | 77 |  to DEC-128 | Eva Outlet Temperature [°C] |
+|  TOP54 | 161 | 80 |  to DEC-128 | Bypass Outlet Temperature [°C] |
+|  TOP55 | 162 | ff |  to DEC-128 | Ipm Temperature [°C]  |
+|  TOP | 163 | 91 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
+|  TOP | 164 | 01 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
+|  TOP | 165 | 29 |  to DEC (X-1)/5 | Outdoor Current [A] |
+|  TOP8 | 166 | 59 | to DEC x-1  | Compressor Frequency [Hz] |
+|  TOP | 167 | 00 |   | 0 byte |
+|  TOP | 168 | 00 |   | 0 byte |
+|  TOP1 | 169 | 3b | to DEC (X -1)/5 X 2 | 2nd Value for Pump Flow Rate [L/Min]  |
+|  TOP1 | 170 | 0b | to DEC | 1st Value for Pump Flow Rate [L/Min] |
+|  TOP | 171 | 1c | to DEC (X-1) X 100 /2  | Pump Speed [R/Min] |
+|  TOP | 172 | 51 | to DEC X-1   | Pump Duty [Duty] |
+|  TOP | 173 | 59 | to DEC (X-1) X10  | Fan Motor Speed 1 [R/Min |
+|  TOP | 174 | 01 | to DEC x-1  | Fan Motor Speed 2 [R/Min] |
+|  TOP | 175 | 36 |   | ? |
 |  TOP | 176 | 79 |   | ? |
-|  TOP | 177 | 79 |   | ? |
-|  TOP | 178 | 79 |   | ? |
-|  TOP12 | 179 | be | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
-|  TOP12 | 180 | 08 |  look at 179 | number of operations |
-|  TOP | 181 | 79 |   | ? |
-|  TOP11 | 182 | 25 | combine both bytes (183) 0b  (182) 25 = 2853 - 1 = 2852  | Operating time in h |
-|  TOP11 | 183 | 0b | look at 182  | Operating time in h |
-|  TOP | 184 | 79 |   | ? |
-|  TOP | 185 | 79 | to DEC X-1  | Room Heater operation time in h |
-|  TOP | 186 | 79 |   | ? |
-|  TOP | 187 | 79 |   | ? |
-|  TOP | 188 | 79 | to DEC X-1   | Tank Heater operation time in h  |
-|  TOP | 189 | 79 |   | ? |
-|  TOP | 190 | 79 |   | ? |
-|  TOP | 191 | 79 |   | ? |
-|  TOP | 192 | 79 |   | ? |
+|  TOP | 177 | 01 |   | ? |
+|  TOP | 178 | 01 |   | ? |
+|  TOP12 | 179 | c3 | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
+|  TOP12 | 180 | 02 |  look at 179 | number of operations |
+|  TOP | 181 | 00 |   | ? |
+|  TOP11 | 182 | dd | combine both bytes (183) 0b  (182) 25 = 2853 - 1 = 2852  | Operating time in h |
+|  TOP11 | 183 | 02 | look at 182  | Operating time in h |
+|  TOP | 184 | 00 |   | ? |
+|  TOP | 185 | 05 | to DEC X-1  | Room Heater operation time in h |
+|  TOP | 186 | 00 |   | ? |
+|  TOP | 187 | 00 |   | ? |
+|  TOP | 188 | 01 | to DEC X-1   | Tank Heater operation time in h  |
+|  TOP | 189 | 00 |   | ? |
+|  TOP | 190 | 00 |   | ? |
+|  TOP | 191 | 06 |   | ? |
+|  TOP | 192 | 01 |   | ? |
 |  TOP16 | 193 | 01 | to DEC (x-1) / 5   | Energy Consumption for Heat in [kw]  |
-|  TOP15 | 194 | 07 | to DEC (x-1) / 5   | Energy Generation for Heat in [kw] |
-|  TOP38 | 195 | 79 | to DEC (x-1) / 5   | Energy Consumption for Cool in [kw] |
-|  TOP39 | 196 | 79 | to DEC (x-1) / 5   | Energy Generation for Cool in [kw] |
-|  TOP40 | 197 | 79 | to DEC (x-1) / 5   | Energy Consumption for DHW in [kw] |
-|  TOP41 | 198 | 79 | to DEC (x-1) / 5   | Energy Generation for DHW in [kw] |
-|  TOP | 199 | 79 |   | ? |
-|  TOP | 200 | 79 |   | ? |
-|  TOP | 201 | 79 |   | ? |
+|  TOP15 | 194 | 01 | to DEC (x-1) / 5   | Energy Generation for Heat in [kw] |
+|  TOP38 | 195 | 01 | to DEC (x-1) / 5   | Energy Consumption for Cool in [kw] |
+|  TOP39 | 196 | 01 | to DEC (x-1) / 5   | Energy Generation for Cool in [kw] |
+|  TOP40 | 197 | 0a | to DEC (x-1) / 5   | Energy Consumption for DHW in [kw] |
+|  TOP41 | 198 | 14 | to DEC (x-1) / 5   | Energy Generation for DHW in [kw] |
+|  TOP | 199 | 00 |   | byte 0 |
+|  TOP | 200 | 00 |   | byte 0 |
+|  TOP | 201 | 00 |   | byte 0 |
 |  TOP | 202 | 79 |  CHECKSUM |  |
 
 
