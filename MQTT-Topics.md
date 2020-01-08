@@ -72,8 +72,8 @@ TOP52 | sdc/Defrost_Temp | Defrost temperature (°C)
 TOP53 | sdc/EvaOutlet_Temp | Eva Outlet temperature (°C)
 TOP54 | sdc/BypassOutlet_Temp | Bypass Outlet temperature (°C)
 TOP55 | sdc/Ipm_Temp | Ipm temperature (°C)
-TOP56 | sdc/Z1_Temp / Zone1: Actual (Zone 1) Temperature [°C] 
-TOP57 | sdc/Z2_Temp / Zone2: Actual (Zone 2) Temperature [°C] |
+TOP56 | sdc/Z1_Temp | Zone1: Actual (Zone 1) Temperature [°C] 
+TOP57 | sdc/Z2_Temp | Zone2: Actual (Zone 2) Temperature [°C] |
 
 ## Command Topics:
 
