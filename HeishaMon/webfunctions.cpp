@@ -11,12 +11,46 @@
 //flag for saving data
 bool shouldSaveConfig = false;
 
-static const char webHeader[] PROGMEM  = "<!DOCTYPE html><html><title>Heisha monitor</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\"><style>.w3-btn {margin-bottom:10px;}</style>";
+static const char webHeader[] PROGMEM  =
+"<!DOCTYPE html>"
+"<html>"
+"<title>Heisha monitor</title>"
+"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
+"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">"
+"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">"
+"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
+"<style>"
+"	.w3-btn { margin-bottom:10px; }"
+"</style>";
+
 static const char refreshMeta[] PROGMEM = "<meta http-equiv=\"refresh\" content=\"5; url=/\" />";
-static const char webBodyStart[] PROGMEM = "<body><button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button><header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor configuration</h1></header>";
+static const char webBodyStart[] PROGMEM =
+"<body>"
+"<button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button>"
+"<header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor configuration</h1></header>";
+
 static const char webFooter[] PROGMEM  = "</body></html>";
-static const char menuJS[] PROGMEM = "<script>function openLeftMenu() {var x = document.getElementById(\"leftMenu\");if (x.style.display === \"none\") {x.style.display = \"block\";} else {x.style.display = \"none\";} }</script>";
-static const char refreshJS[] PROGMEM = "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js\"></script><script>$(document).ready(function(){refreshTable();});function refreshTable(){$('#heishavalues').load('/tablerefresh', function(){setTimeout(refreshTable, 30000);});}</script>";
+static const char menuJS[] PROGMEM =
+"<script>"
+"	function openLeftMenu() {"
+"		var x = document.getElementById(\"leftMenu\");"
+"		if (x.style.display === \"none\") {"
+"			x.style.display = \"block\";"
+"		} else {"
+"			x.style.display = \"none\";"
+"		}"
+"	}"
+"</script>";
+
+static const char refreshJS[] PROGMEM =
+"<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js\"></script>"
+"<script>"
+"	$(document).ready(function(){refreshTable();});"
+"	function refreshTable(){"
+"		$('#heishavalues').load('/tablerefresh', function(){setTimeout(refreshTable, 30000);});"
+"	}"
+"</script>";
 
 void(* resetFunc) (void) = 0;
 
