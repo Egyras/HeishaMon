@@ -201,11 +201,12 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
 
   String httptext = "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">";
   httptext = httptext + "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot heisha monitor</a>";
-  httptext = httptext + "<a href=\"/factoryreset\" class=\"w3-bar-item w3-button\">Factory reset</a>";
   httptext = httptext + "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>";
   httptext = httptext + "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>";
   httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
-  httptext = httptext + "</div>";  
+  httptext = httptext + "<br />";
+  httptext = httptext + "<a href=\"/factoryreset\" class=\"w3-red w3-bar-item w3-button\">Factory reset</a>";
+  httptext = httptext + "</div>";
 
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
