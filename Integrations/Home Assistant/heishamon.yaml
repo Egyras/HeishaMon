@@ -447,6 +447,7 @@ sensor:
     sensors:
       heisha_cop:
         friendly_name: "Heisha COP"
+		unit_of_measurement: "x"
         value_template: >-
           {%- if states('sensor.heisha_w_production') != "Unknown" -%}
             {%- if states('sensor.heisha_w_consumption') > "0" -%}
@@ -462,7 +463,7 @@ sensor:
   - platform: template
     sensors:
       heisha_w_production:
-        friendly_name: "Panasonic Energy Production"
+        friendly_name: "Heisha Energy Production"
         unit_of_measurement: 'W'
         value_template: >-
           {%- if states('sensor.heisha_dhw_power_produced') != "0" -%}
@@ -471,7 +472,7 @@ sensor:
             {{ states('sensor.heisha_power_produced') }}
           {%- endif -%}
       heisha_w_consumption:
-        friendly_name: "Panasonic Energy Consumption"
+        friendly_name: "Heisha Energy Consumption"
         unit_of_measurement: 'W'
         value_template: >-
           {%- if states('sensor.heisha_dhw_power_consumed') != "0" -%}
