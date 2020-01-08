@@ -216,12 +216,12 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 136 | 0c |   | ? |
 |  TOP | 137 | 92 |   | ? |
 |  TOP | 138 | 81 |   | ? |
-|  TOP6 | 139 | b0 |  to DEC-128 | Zone1: Actual (Water Outlet/Room/Pool) Temperature [°C] |
-|  TOP | 140 | 00 |  to DEC-128 |  Zone2: Actual (Water Outlet/Room/Pool) Temperature [°C] |
+|  TOP56 | 139 | b0 |  to DEC-128 | Zone1: Actual (Zone 1) Temperature [°C] |
+|  TOP57 | 140 | 00 |  to DEC-128 |  Zone2: Actual (Zone 2) Temperature [°C] |
 |  TOP10 | 141 | aa |  to DEC-128 | Actual Tank Temperature [°C] \ |
 |  TOP14 | 142 | 7c |  to DEC-128 | Actual Outdoor Temperature [°C] |
-|  TOP5 | 143 | ab |  to DEC-128 | Zone1: Inlet Water Temperature [°C] |
-|  TOP | 144 | b0 |  to DEC-128 | Zone1: Outlet Water Temperature [°C] |
+|  TOP5 | 143 | ab |  to DEC-128 | Inlet Water Temperature [°C] |
+|  TOP6 | 144 | b0 |  to DEC-128 | Outlet Water Temperature [°C] |
 |  TOP36 | 145 | 32 |  to DEC-128 | Zone1: Water Temperature [°C] |
 |  TOP37 | 146 | 32 |  to DEC-128 | Zone2: Water Temperature [°C] |
 |  TOP42 | 147 | 9c |  to DEC-128 | Zone1: Water Temperature (Target) [°C] |
@@ -230,8 +230,8 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP47 | 150 | 32 |  to DEC-128 | Solar: Water Temperature [°C]  |
 |  TOP48 | 151 | 32 |  to DEC-128| Pool: Water Temperature [°C] |
 |  TOP | 152 | 80 |   | ? |
-|  TOP7 | 153 | b7 |  to DEC-128 | Zone1: Outlet Water Temperature (Target) [°C] |
-|  TOP49 | 154 | af |  to DEC-128 | Outlet 2 Temperature [°C] (Sensor between heater and exchanger) |
+|  TOP7 | 153 | b7 |  to DEC-128 | Outlet Water Temperature (Target) [°C] |
+|  TOP49 | 154 | af |  to DEC-128 | Outlet 2 heat exchanger water temperature [°C] |
 |  TOP50 | 155 | cd |  to DEC-128 | Discharge Temperature [°C] |
 |  TOP33 | 156 | 9a |  to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
 |  TOP51 | 157 | ac |  to DEC-128 | Indoor Piping Temperature [°C] |
