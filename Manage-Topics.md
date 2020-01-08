@@ -37,8 +37,3 @@ static const topicFP topicFunctions[] = {unknown, //TOP0
                                          };
 ```
 
-4. Open decode.cpp and ad the #-part of TOPxx at the end of 
-
-```
-int topicsrun[] = {3, 4, 18, 17, ##};
-```

@@ -74,64 +74,14 @@ String getEnergy(byte input) {
   return (String)value;
 }
 
-// Decode ////////////////////////////////////////////////////////////////////////////
-void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient &mqtt_client, void (*log_message)(char*)) {
-  char log_msg[256];
-  char mqtt_topic[256];
-
-  if (millis() > nextalldatatime) {
-    actData.clear(); // clearing all actual data so everything will be updated and sent to mqtt
-    nextalldatatime = millis() + UPDATEALLTIME;
-  }
-
-
-
-  //new style topic decoding
-  int topicsrun[] = {0, 3, 4, 18, 17, 20, 26, 9, 6, 8, 10, 13, 14, 5, 36, 37, 7, 33, 21, 27, 28, 29, 30, 31, 32, 33, 34, 2, 19, 15, 16, 22, 23, 24, 38, 39, 40, 41, 42, 43, 45, 25, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55}; // which topics are already working with new style
-  for (int i = 0 ; i < sizeof(topicsrun) / sizeof(topicsrun[0]) ; i++) {
-    int Topic_Number = topicsrun[i];
-    String Topic_Name;
-    byte Input_Byte;
-    String Topic_Value;
-    Topic_Name = topics[Topic_Number];
-    Input_Byte = data[topicBytes[Topic_Number]];
-    Topic_Value = topicFunctions[Topic_Number](Input_Byte);
-    if ( actData[Topic_Name] != Topic_Value ) {
-      actData[Topic_Name] = Topic_Value;
-      sprintf(log_msg, "received %s: %d (%s)", Topic_Name.c_str(), (int)Input_Byte, Topic_Value.c_str()); log_message(log_msg);
-      sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, Topic_Name.c_str()); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
-    }
-  }
-
-  // TOP1 //
+String getPumpFlow(char* data){   // TOP1 //
   int PumpFlow1 = (int)data[170];
   float PumpFlow2 = ((((float)data[169] - 1) / 5) * 2) / 100;
   float PumpFlow = PumpFlow1 + PumpFlow2;
-  if ( actData["Pump_Flow"] != PumpFlow ) {
-    actData["Pump_Flow"] = PumpFlow;
-    sprintf(log_msg, "received pump flow (Pump_Flow): %.2f", PumpFlow); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Pump_Flow"); mqtt_client.publish(mqtt_topic, String(PumpFlow).c_str(), MQTT_RETAIN_VALUES);
-  }
+  return String(PumpFlow);
+}
 
-
-
-  // TOP12 //
-  int Operations_Counter  = word(data[180], data[179]) - 1;
-  if ( actData["Operations_Counter"] != Operations_Counter ) {
-    actData["Operations_Counter"] = Operations_Counter;
-    sprintf(log_msg, "received Operations_Counter: %.2f", Operations_Counter); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Operations_Counter"); mqtt_client.publish(mqtt_topic, String(Operations_Counter).c_str(), MQTT_RETAIN_VALUES);
-  }
-
-  // TOP11 //
-  int Operations_Hours  = word(data[183], data[182]) - 1;
-  if ( actData["Operations_Hours"] != Operations_Hours ) {
-    actData["Operations_Hours"] = Operations_Hours;
-    sprintf(log_msg, "received Operations_Hours: %.2f", Operations_Hours); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Operations_Hours"); mqtt_client.publish(mqtt_topic, String(Operations_Hours).c_str(), MQTT_RETAIN_VALUES);
-  }
-  
-  // TOP44 //
+String getErrorInfo(char* data){ // TOP44 //
   int Error_type = (int)(data[113]);
   int Error_number = ((int)(data[114])) - 17;
   char Error_string[10];
@@ -146,12 +96,49 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
       sprintf(Error_string,"No error");
       break;
   }
-  if ( actData["Error"] != Error_string ) {
-    actData["Error"] = Error_string;
-    sprintf(log_msg, "received Error: %s", Error_string); log_message(log_msg);
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, "Error"); mqtt_client.publish(mqtt_topic, Error_string, MQTT_RETAIN_VALUES);
+  return String(Error_string);  
+}
+
+// Decode ////////////////////////////////////////////////////////////////////////////
+void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient &mqtt_client, void (*log_message)(char*)) {
+  char log_msg[256];
+  char mqtt_topic[256];
+
+  if (millis() > nextalldatatime) {
+    actData.clear(); // clearing all actual data so everything will be updated and sent to mqtt
+    nextalldatatime = millis() + UPDATEALLTIME;
   }
-  
+
+  for (int Topic_Number = 0 ; Topic_Number < sizeof(topics) / sizeof(topics[0]) ; Topic_Number++) {
+    String Topic_Name;
+    byte Input_Byte;
+    String Topic_Value;
+    Topic_Name = topics[Topic_Number];
+    switch (Topic_Number) { //switch on topic numbers, some have special needs
+      case 1: 
+        Topic_Value = getPumpFlow(data);
+        break;
+      case 11:
+        Topic_Value = String(word(data[183], data[182]) - 1);
+        break;
+      case 12:
+        Topic_Value = String(word(data[180], data[179]) - 1);
+        break;
+      case 44:
+        Topic_Value = getErrorInfo(data);
+        break;
+      default:
+        Input_Byte = data[topicBytes[Topic_Number]];
+        Topic_Value = topicFunctions[Topic_Number](Input_Byte);
+        break;
+    }
+    if ( actData[Topic_Name] != Topic_Value ) {
+      actData[Topic_Name] = Topic_Value;
+      sprintf(log_msg, "received %s: %s", Topic_Name.c_str(), Topic_Value.c_str()); log_message(log_msg);
+      sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, Topic_Name.c_str()); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
+    }
+  }
+
   //run this only to check state of json doc. memory usage (currently sized at 4096)
   //sprintf(log_msg, "JSON doc memory usage: %d", actData.memoryUsage()); log_message(log_msg);
 
