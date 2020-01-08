@@ -73,7 +73,13 @@ TOP53 | sdc/EvaOutlet_Temp | Eva Outlet temperature (°C)
 TOP54 | sdc/BypassOutlet_Temp | Bypass Outlet temperature (°C)
 TOP55 | sdc/Ipm_Temp | Ipm temperature (°C)
 TOP56 | sdc/Z1_Temp | Zone1: Actual (Zone 1) Temperature [°C] 
-TOP57 | sdc/Z2_Temp | Zone2: Actual (Zone 2) Temperature [°C] |
+TOP57 | sdc/Z2_Temp | Zone2: Actual (Zone 2) Temperature [°C] 
+TOP58 | sdc/TankHeater_State | Tank electric heater allowed state (disabled - enabled)
+TOP59 | sdc/WaterHeater_State | Water electric heater allowed state (disabled - enabled)
+TOP60 | sdc/InternalHeater_State | Internal heater state (inactive - active)
+TOP61 | sdc/ExternalHeater_State | External heater state (inactive - active)
+TOP62 | sdc/Fan1Motor_Speed | Fan 1 Motor speed [R/Min]
+TOP63 | sdc/Fan2Motor_Speed | Fan 1 Motor speed [R/Min]
 
 ## Command Topics:
 

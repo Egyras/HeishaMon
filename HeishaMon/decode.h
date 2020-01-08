@@ -17,6 +17,9 @@ String getLeft5bits(byte input);
 String getRight3bits(byte input);
 String getIntMinus1(byte input);
 String getIntMinus128(byte input);
+String getIntMinus1Div5(byte input);
+String getIntMinus1Times10(byte input);
+String getIntMinus1Times50(byte input);
 String getOpMode(byte input);
 String getEnergy(byte input);
 
@@ -79,6 +82,12 @@ static const String topics[] = {
             "Ipm_Temp",                //TOP55
             "Z1_Temp",                 //TOP56
             "Z2_Temp",                 //TOP57
+            "TankHeater_State",        //TOP58
+            "WaterHeater_State",       //TOP59
+            "InternalHeater_State",    //TOP60
+            "ExternalHeater_State",    //TOP61
+            "Fan1Motor_Speed",         //TOP62
+            "Fan2Motor_Speed",         //TOP63
 };
 
 static const unsigned int topicBytes[] = {
@@ -140,6 +149,12 @@ static const unsigned int topicBytes[] = {
         162,    //TOP55
         139,    //TOP56
         140,    //TOP57
+        9,      //TOP58
+        9,      //TOP59
+        112,    //TOP60
+        112,    //TOP61
+        173,    //TOP62
+        174,    //TOP63
 };        
 
 typedef String (*topicFP)(byte);
@@ -202,5 +217,11 @@ static const topicFP topicFunctions[] = {
     getIntMinus128,        //TOP54
     getIntMinus128,        //TOP55
     getIntMinus128,        //TOP56
-    getIntMinus128         //TOP57
+    getIntMinus128,        //TOP57
+    getBit5and6,           //TOP58
+    getBit7and8,           //TOP59
+    getBit5and6,           //TOP60
+    getBit7and8,           //TOP61
+    getIntMinus1Times10,   //TOP61    
+    getIntMinus1Times10,   //TOP61
 };
