@@ -1,5 +1,5 @@
 sitemap panasonic label="Panasonic" icon="House" {
-  Text item=panasonic_heat_pump_HeatPumpStatus label="Panasonic Air-watwer Power" icon="heating" {
+  Text item=panasonic_heat_pump_HeatPumpStatus label="Heat Pump Status" mappings=[0="OFF", 1="ON"] icon="heating" {
 
  Frame {
 
