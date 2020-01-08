@@ -80,6 +80,8 @@ TOP60 | sdc/InternalHeater_State | Internal heater state (inactive - active)
 TOP61 | sdc/ExternalHeater_State | External heater state (inactive - active)
 TOP62 | sdc/Fan1Motor_Speed | Fan 1 Motor speed [R/Min]
 TOP63 | sdc/Fan2Motor_Speed | Fan 1 Motor speed [R/Min]
+TOP64 | sdc/High_Pressure | High Pressure [Kgf/Cm2]
+TOP65 | sdc/Pump_Speed | Pump Speed [R/Min]
 
 ## Command Topics:
 

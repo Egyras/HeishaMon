@@ -88,6 +88,8 @@ static const String topics[] = {
             "ExternalHeater_State",    //TOP61
             "Fan1Motor_Speed",         //TOP62
             "Fan2Motor_Speed",         //TOP63
+            "High_Pressure",           //TOP64
+            "Pump_Speed",              //TOP65
 };
 
 static const unsigned int topicBytes[] = {
@@ -155,6 +157,8 @@ static const unsigned int topicBytes[] = {
         112,    //TOP61
         173,    //TOP62
         174,    //TOP63
+        163,    //TOP64
+        171,    //TOP65
 };        
 
 typedef String (*topicFP)(byte);
@@ -222,6 +226,8 @@ static const topicFP topicFunctions[] = {
     getBit7and8,           //TOP59
     getBit5and6,           //TOP60
     getBit7and8,           //TOP61
-    getIntMinus1Times10,   //TOP61    
-    getIntMinus1Times10,   //TOP61
+    getIntMinus1Times10,   //TOP62    
+    getIntMinus1Times10,   //TOP63
+    getIntMinus1Div5,      //TOP64
+    getIntMinus1Times50,   //TOP65
 };

@@ -240,7 +240,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP53 | 160 | 77 |  to DEC-128 | Eva Outlet Temperature [°C] |
 |  TOP54 | 161 | 80 |  to DEC-128 | Bypass Outlet Temperature [°C] |
 |  TOP55 | 162 | ff |  to DEC-128 | Ipm Temperature [°C]  |
-|  TOP | 163 | 91 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
+|  TOP64 | 163 | 91 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
 |  TOP | 164 | 01 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
 |  TOP | 165 | 29 |  to DEC (X-1)/5 | Outdoor Current [A] |
 |  TOP8 | 166 | 59 | to DEC x-1  | Compressor Frequency [Hz] |
@@ -248,7 +248,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 168 | 00 |   | 0 byte |
 |  TOP1 | 169 | 3b | to DEC (X -1)/5 X 2 | 2nd Value for Pump Flow Rate [L/Min]  |
 |  TOP1 | 170 | 0b | to DEC | 1st Value for Pump Flow Rate [L/Min] |
-|  TOP | 171 | 1c | to DEC (X-1) X 100 /2  | Pump Speed [R/Min] |
+|  TOP65 | 171 | 1c | to DEC (X-1) X 50 | Pump Speed [R/Min] |
 |  TOP | 172 | 51 | to DEC X-1   | Pump Duty [Duty] |
 |  TOP62 | 173 | 59 | to DEC (X-1) X10  | Fan 1 Motor Speed [R/Min |
 |  TOP63 | 174 | 01 | to DEC (X-1) X10  | Fan 2 Motor Speed [R/Min] |
