@@ -86,7 +86,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP4 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerfull mode status |
 |  TOP | 08 | 00 |   | ? |
-|  TOP | 09 | 05 | HEX values - should be Low Byte (2nd value)Floor heater off + Tank heater off=55, Floor heater on + Tanks heater off=56, Floor Heater off + Tank heater on=59, Floor heater on + Tank heater on=5A | heaters status|
+|  TOP58+TOP59 | 09 | 05 | HEX values - should be Low Byte (2nd value)Water heater off + Tank heater off=55, Water heater on + Tanks heater off=56, Water Heater off + Tank heater on=59, Weater heater on + Tank heater on=5A | Heaters enable allowed status|
 |  TOP | 10 | 00 |   | 0 byte |
 |  TOP | 11 | 00 |   | 0 byte |
 |  TOP | 12 | 00 |   | 0 byte |
@@ -189,7 +189,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 109 | 00 |   | 0 byte |
 |  TOP | 110 | 55 |   | ? |
 |  TOP20+TOP26 | 111 | 56 |  right 2 bits: 0b10=Tank 0b01=Room 3-Way Valve. Next 2 bits (from right) is defrosting state (0b01 = defrosting not active, 0b10 = defrosting active) | 3 way valve + Defrost status |
-|  TOP | 112 | 55 |  Hex 59 - external active, 55 - external and internal not active, 56 - internal active (room or tank) | Heater status |
+|  TOP60+TOP61 | 112 | 55 |  Hex 59 - external active, 55 - external and internal not active, 56 - internal active (room or tank) | Heater status |
 |  TOP44 | 113 | 21 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
 |  TOP44 | 114 | 53 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 |  TOP | 115 | 15 |   | ? |
@@ -240,7 +240,7 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP53 | 160 | 77 |  to DEC-128 | Eva Outlet Temperature [°C] |
 |  TOP54 | 161 | 80 |  to DEC-128 | Bypass Outlet Temperature [°C] |
 |  TOP55 | 162 | ff |  to DEC-128 | Ipm Temperature [°C]  |
-|  TOP | 163 | 91 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
+|  TOP64 | 163 | 91 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
 |  TOP | 164 | 01 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
 |  TOP | 165 | 29 |  to DEC (X-1)/5 | Outdoor Current [A] |
 |  TOP8 | 166 | 59 | to DEC x-1  | Compressor Frequency [Hz] |
@@ -248,10 +248,10 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 |  TOP | 168 | 00 |   | 0 byte |
 |  TOP1 | 169 | 3b | to DEC (X -1)/5 X 2 | 2nd Value for Pump Flow Rate [L/Min]  |
 |  TOP1 | 170 | 0b | to DEC | 1st Value for Pump Flow Rate [L/Min] |
-|  TOP | 171 | 1c | to DEC (X-1) X 100 /2  | Pump Speed [R/Min] |
+|  TOP65 | 171 | 1c | to DEC (X-1) X 50 | Pump Speed [R/Min] |
 |  TOP | 172 | 51 | to DEC X-1   | Pump Duty [Duty] |
-|  TOP | 173 | 59 | to DEC (X-1) X10  | Fan Motor Speed 1 [R/Min |
-|  TOP | 174 | 01 | to DEC x-1  | Fan Motor Speed 2 [R/Min] |
+|  TOP62 | 173 | 59 | to DEC (X-1) X10  | Fan 1 Motor Speed [R/Min |
+|  TOP63 | 174 | 01 | to DEC (X-1) X10  | Fan 2 Motor Speed [R/Min] |
 |  TOP | 175 | 36 |   | ? |
 |  TOP | 176 | 79 |   | ? |
 |  TOP | 177 | 01 |   | ? |

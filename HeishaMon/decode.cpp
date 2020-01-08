@@ -43,6 +43,20 @@ String getIntMinus128(byte input) {
   return (String)value;
 }
 
+String getIntMinus1Div5(byte input){
+  int value = (int)input - 1;
+  return (String)(value/5);
+  
+}
+String getIntMinus1Times10(byte input){
+  int value = (int)input - 1;
+  return (String)(value*10);
+  
+}
+String getIntMinus1Times50(byte input){
+  int value = (int)input - 1;
+  return (String)(value*50);
+}
 
 String unknown(byte input) {
   return "-1";
