@@ -64,6 +64,8 @@ arduinojson by benoit blanchon version 6.13.0 https://github.com/bblanchon/Ardui
 ## MQTT topics
 [Current list of documented MQTT topics can be found here](MQTT-Topics.md)
 
+## Integration Examples for Opensource automation systems https://github.com/Egyras/HeishaMon/tree/master/Integrations
+
 ## Protocol info packet:
 
 To get information from a heat pump, "magic" packet should be send to CN-CNT: 
