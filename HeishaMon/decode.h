@@ -22,7 +22,7 @@ String getEnergy(byte input);
 
 static const String topics[] = {
             "Power_State",             //TOP0
-            "TOP1",                    //TOP1
+            "Pump_Flow",               //TOP1
             "ForceDHW_State",          //TOP2
             "Quietmode_Schedule",      //TOP3
             "OpMode_State",            //TOP4
@@ -32,8 +32,8 @@ static const String topics[] = {
             "Compressor_Freq",         //TOP8
             "Tank_Target_Temp",        //TOP9
             "Tank_Temp",               //TOP10
-            "TOP11",                   //TOP11
-            "TOP12",                   //TOP12
+            "Operations_Hours",        //TOP11
+            "Operations_Counter",      //TOP12
             "MainSchedule_State",      //TOP13
             "Outside_Temp",            //TOP14
             "Heat_Energy_Production",  //TOP15
@@ -65,7 +65,7 @@ static const String topics[] = {
             "DHW_Energy_Consumption",  //TOP41
             "Z1_Water_Target_Temp",    //TOP42
             "Z2_Water_Target_Temp",    //TOP43
-            "TOP44",                   //TOP44
+            "Error",                   //TOP44
             "ShiftHoliday_Temp",       //TOP45
             "Buffer_Temp",             //TOP46
             "Solar_Temp",              //TOP47
