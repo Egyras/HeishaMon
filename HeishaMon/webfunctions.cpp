@@ -210,7 +210,7 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
  
-  httptext = httptext + "<table id=\"heishavalues\" class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Value</th></tr></thead><tr><td>...Loading...</td><td></td></tr></table></div>";
+  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Value</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
   httpServer->sendContent(httptext);
   
   httpServer->sendContent_P(menuJS);
