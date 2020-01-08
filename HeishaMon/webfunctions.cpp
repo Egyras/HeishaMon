@@ -11,12 +11,46 @@
 //flag for saving data
 bool shouldSaveConfig = false;
 
-static const char webHeader[] PROGMEM  = "<!DOCTYPE html><html><title>Heisha monitor</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">  <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\"><style>.w3-btn {margin-bottom:10px;}</style>";
+static const char webHeader[] PROGMEM  =
+"<!DOCTYPE html>"
+"<html>"
+"<title>Heisha monitor</title>"
+"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
+"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">"
+"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">"
+"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
+"<style>"
+"	.w3-btn { margin-bottom:10px; }"
+"</style>";
+
 static const char refreshMeta[] PROGMEM = "<meta http-equiv=\"refresh\" content=\"5; url=/\" />";
-static const char webBodyStart[] PROGMEM = "<body><button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button><header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor configuration</h1></header>";
+static const char webBodyStart[] PROGMEM =
+"<body>"
+"<button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button>"
+"<header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor configuration</h1></header>";
+
 static const char webFooter[] PROGMEM  = "</body></html>";
-static const char menuJS[] PROGMEM = "<script>function openLeftMenu() {var x = document.getElementById(\"leftMenu\");if (x.style.display === \"none\") {x.style.display = \"block\";} else {x.style.display = \"none\";} }</script>";
-static const char refreshJS[] PROGMEM = "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js\"></script><script>$(document).ready(function(){refreshTable();});function refreshTable(){$('#heishavalues').load('/tablerefresh', function(){setTimeout(refreshTable, 30000);});}</script>";
+static const char menuJS[] PROGMEM =
+"<script>"
+"	function openLeftMenu() {"
+"		var x = document.getElementById(\"leftMenu\");"
+"		if (x.style.display === \"none\") {"
+"			x.style.display = \"block\";"
+"		} else {"
+"			x.style.display = \"none\";"
+"		}"
+"	}"
+"</script>";
+
+static const char refreshJS[] PROGMEM =
+"<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js\"></script>"
+"<script>"
+"	$(document).ready(function(){refreshTable();});"
+"	function refreshTable(){"
+"		$('#heishavalues').load('/tablerefresh', function(){setTimeout(refreshTable, 30000);});"
+"	}"
+"</script>";
 
 void(* resetFunc) (void) = 0;
 
@@ -167,16 +201,17 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
 
   String httptext = "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">";
   httptext = httptext + "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot heisha monitor</a>";
-  httptext = httptext + "<a href=\"/factoryreset\" class=\"w3-bar-item w3-button\">Factory reset</a>";
   httptext = httptext + "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>";
   httptext = httptext + "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>";
   httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
-  httptext = httptext + "</div>";  
+  httptext = httptext + "<br />";
+  httptext = httptext + "<a href=\"/factoryreset\" class=\"w3-red w3-bar-item w3-button\">Factory reset</a>";
+  httptext = httptext + "</div>";
 
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
  
-  httptext = httptext + "<table id=\"heishavalues\" class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Value</th></tr></thead><tr><td>...Loading...</td><td></td></tr></table></div>";
+  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Value</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
   httpServer->sendContent(httptext);
   
   httpServer->sendContent_P(menuJS);
