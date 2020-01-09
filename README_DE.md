@@ -1,12 +1,8 @@
 [![Jion the Slack chat room](https://img.shields.io/badge/Slack-Join%20the%20chat%20room-orange)](https://join.slack.com/t/panasonic-wemos/shared_invite/enQtODg2MDY0NjE1OTI3LTgzYjkwMzIwNTAwZTMyYzgwNDQ1Y2QxYjkwODg3NjMyN2MyM2ViMDM3Yjc3OGE3MGRiY2FkYzI4MzZiZDVkNGE)
 
+Diese Übersetzung ist gerade in Arbeit. Bitte noch etwas Gedult.
 
 # Panasonic H Series Aquarea air-water heat pump protocol
-
-Eine deutschsprachige [README_DE.md](README_DE.md) findest du hier. 
-
-Hilfe bei der Übersetzung auch für weitere Sprachen willkommen. \
-Help on translation to other languages are welcome.
 
 
 
@@ -72,9 +68,6 @@ arduinojson by benoit blanchon version 6.13.0 https://github.com/bblanchon/Ardui
 ## Integration Examples for Opensource automation systems
 [Openhab2](Integrations/Openhab2)
 
-[Home Assistant](https://github.com/Egyras/HeishaMon/tree/master/Integrations/Home%20Assistant)
-
-
 ## Protocol info packet:
 
 To get information from a heat pump, "magic" packet should be send to CN-CNT: 
@@ -82,6 +75,4 @@ To get information from a heat pump, "magic" packet should be send to CN-CNT:
 `71 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12`
 
 ## Protocol byte decrypt info:
-
 [Current list of documented bytes decrypted can be found here](ProtocolByteDecrypt.md)
-

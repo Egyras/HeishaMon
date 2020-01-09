@@ -24,7 +24,7 @@ Number panasonic_heat_pump_OperatingTime                 "Time [%.0f h]"  		  <t
 Number panasonic_heat_pump_OperationsNumber              "Operations [%.0f]"  	 <chart>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Operations_Counter:state:default]"}
 String panasonic_heat_pump_Error                         "Error_string  [%s]"	 <error>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Error:state:default]"}
 Number panasonic_heat_pump_HeatPumpStatus                "Mode"		            <switch>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Power_State:state:default]"}
-Number panasonic_heat_pump_Quiet_mode                    "Mode"            <soundvolume>       (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetQuietMode:*:${command}],
+Number panasonic_heat_pump_Quiet_mode                    "Mode"            <soundvolume>       (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetQuietMode:command:*:${command}],
                                                                                                                   <[broker:panasonic_heat_pump/sdc/Quietmode_Level:state:default]"}
 Number panasonic_heat_pump_Shift_mode          "Set Heat Shift  [%.0f °C]" <temperature>       (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetShiftTemperature:command:*:${command}],
                                                                                                                   <[broker:panasonic_heat_pump/sdc/Z1_HeatShift_Temp:state:default]"}
