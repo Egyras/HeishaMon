@@ -123,7 +123,7 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
     nextalldatatime = millis() + UPDATEALLTIME;
   }
 
-  for (int Topic_Number = 0 ; Topic_Number < sizeof(topics) / sizeof(topics[0]) ; Topic_Number++) {
+  for (unsigned int Topic_Number = 0 ; Topic_Number < sizeof(topics) / sizeof(topics[0]) ; Topic_Number++) {
     String Topic_Name;
     byte Input_Byte;
     String Topic_Value;
@@ -146,9 +146,9 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
         Topic_Value = topicFunctions[Topic_Number](Input_Byte);
         break;
     }
-    if ( actData[Topic_Name] != Topic_Value ) {
-      actData[Topic_Name] = Topic_Value;
-      sprintf(log_msg, "received %s: %s", Topic_Name.c_str(), Topic_Value.c_str()); log_message(log_msg);
+    if ( actData[(String)Topic_Number] != Topic_Value ) {
+      actData[(String)Topic_Number] = Topic_Value;
+      sprintf(log_msg, "received TOP%d %s: %s", Topic_Number, Topic_Name.c_str(), Topic_Value.c_str()); log_message(log_msg);
       sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, Topic_Name.c_str()); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
     }
   }
