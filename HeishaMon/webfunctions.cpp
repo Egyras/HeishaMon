@@ -208,7 +208,7 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   httptext = httptext + "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>";
   httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
   httptext = httptext + "<br />";
-  httptext = httptext + "<a href=\"/factoryreset\" class=\"w3-red w3-bar-item w3-button\">Factory reset</a>";
+  httptext = httptext + "<a href=\"/factoryreset\" class=\"w3-red w3-bar-item w3-button\" onclick=\"return confirm('Are you sure?')\" >Factory reset</a>";
   httptext = httptext + "</div>";
 
   httptext = httptext + "<div class=\"w3-container w3-center\">";
