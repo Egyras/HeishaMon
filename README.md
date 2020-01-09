@@ -71,7 +71,8 @@ arduinojson by benoit blanchon version 6.13.0 https://github.com/bblanchon/Ardui
 
 ## Integration Examples for Opensource automation systems
 [Openhab2](Integrations/Openhab2)
-[Home Assistant](Integrations/Home Assistant)
+
+[Home Assistant](https://github.com/Egyras/HeishaMon/tree/master/Integrations/Home%20Assistant)
 
 
 ## Protocol info packet:
