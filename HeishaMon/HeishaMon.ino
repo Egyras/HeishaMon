@@ -278,6 +278,7 @@ void setupMqtt() {
 void setup() {
   setupSerial();
   setupWifi(drd, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password);
+  MDNS.begin(wifi_hostname);
   setupOTA();
   setupMqtt();
   setupHttp();
@@ -301,6 +302,8 @@ void loop() {
   ArduinoOTA.handle();
   // then handle HTTP
   httpServer.handleClient();
+  // Allow MDNS processing
+  MDNS.update();  
 
   if (!mqtt_client.connected())
   {
@@ -314,5 +317,6 @@ void loop() {
   if (millis() > nexttime) {
     nexttime = millis() + WAITTIME;
     send_panasonic_query();
+    MDNS.announce();
   }
 }

@@ -259,6 +259,8 @@ void handleFactoryReset(ESP8266WebServer *httpServer) {
   httpServer->sendContent("");
   httpServer->client().stop();
   delay(1000);
+  SPIFFS.begin();
+  SPIFFS.format();
   WiFi.disconnect(true);
   delay(1000);
   resetFunc();
