@@ -11,7 +11,7 @@ TOPxx | sdc/Unique_Topic_Name | description and response
 - find the Byte# and the decrypt rule in table *Protocol byte decrypt info:* according to the new topic
 - add the new TOPxx in front of the line.
 
-3. Open decode.h and add the new topic in. Make sure last in array does not end with comma (,) but all others do.
+3. Open decode.h and add the new topic in. Make sure each array entry ends with a comma ",". 
 
 ```
 static const String topics[] = {"TOP0", //TOP0
@@ -37,3 +37,11 @@ static const topicFP topicFunctions[] = {unknown, //TOP0
                                          };
 ```
 
+```
+static const char **topicDescription[] = {
+    OffOn,                 //TOP0
+    .
+    .
+	descriptionArrayXXX    //TOPxx
+};
+```
