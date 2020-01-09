@@ -65,7 +65,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
-  wifiManager.setDebugOutput(false);
+  wifiManager.setDebugOutput(true); //this is debugging on serial port, because serial swap is done after full startup this is ok
 
   if (drd.detect()) {
     Serial.println("Double reset detected, clearing config.");
@@ -149,7 +149,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
 
 
   wifiManager.setConfigPortalTimeout(180);
-  wifiManager.setConnectTimeout(60);
+  wifiManager.setConnectTimeout(10);
   if (!wifiManager.autoConnect("HeishaMon-Setup")) {
     Serial.println("failed to connect and hit timeout");
     delay(3000);
