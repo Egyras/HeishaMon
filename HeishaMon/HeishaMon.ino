@@ -34,10 +34,10 @@ ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
 // Default settings if config does not exists
-char* update_path = (char*)"/firmware";
-char* update_username = (char*)"admin";
-char* wifi_hostname = (char*)"HeishaMon";
-char* ota_password  = (char*)"heisha";
+const char* update_path = "/firmware";
+const char* update_username = "admin";
+char wifi_hostname[40] = "HeishaMon";
+char ota_password[40] = "heisha";
 char mqtt_server[40];
 char mqtt_port[6] = "1883";
 char mqtt_username[40];
@@ -249,7 +249,16 @@ void setupSerial() {
   //debug line on serial1 (D4, GPIO2)
   Serial1.begin(115200);
 
+  //boot issue's first on normal serial
+  Serial.begin(115200);
+  Serial.flush();
+}
+
+void switchSerial() {
+  Serial.println("Switching serial to connect to heatpump. Look for debug on serial1 (GPIO2) and mqtt log topic.");
   //serial to cn-cnt
+  Serial.flush();
+  Serial.end();
   Serial.begin(9600, SERIAL_8E1);
   Serial.flush();
   //swap to gpio13 (D7) and gpio15 (D8)
@@ -259,6 +268,7 @@ void setupSerial() {
   pinMode(5, OUTPUT);
   digitalWrite(5, HIGH);
 }
+
 
 void setupMqtt() {
   mqtt_client.setServer(mqtt_server, atoi(mqtt_port));
@@ -271,7 +281,7 @@ void setup() {
   setupOTA();
   setupMqtt();
   setupHttp();
-  //switchSerial();
+  switchSerial();
 }
 
 void send_panasonic_query() {

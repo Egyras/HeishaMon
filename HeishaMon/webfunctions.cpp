@@ -56,7 +56,7 @@ void(* resetFunc) (void) = 0;
 
 //callback notifying us of the need to save config
 void saveConfigCallback () {
-  Serial1.println("Should save config");
+  Serial.println("Should save config");
   shouldSaveConfig = true;
 }
 
@@ -67,23 +67,23 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   wifiManager.setDebugOutput(false);
 
   if (drd.detect()) {
-    Serial1.println("Double reset detected, clearing config.");
+    Serial.println("Double reset detected, clearing config.");
     SPIFFS.begin();
     SPIFFS.format();
     wifiManager.resetSettings();
-    Serial1.println("Config cleared. Please open the Wifi portal to configure this device...");
+    Serial.println("Config cleared. Please open the Wifi portal to configure this device...");
   } else {
     //read configuration from FS json
-    Serial1.println("mounting FS...");
+    Serial.println("mounting FS...");
 
     if (SPIFFS.begin()) {
-      Serial1.println("mounted file system");
+      Serial.println("mounted file system");
       if (SPIFFS.exists("/config.json")) {
         //file exists, reading and loading
-        Serial1.println("reading config file");
+        Serial.println("reading config file");
         File configFile = SPIFFS.open("/config.json", "r");
         if (configFile) {
-          Serial1.println("opened config file");
+          Serial.println("opened config file");
           size_t size = configFile.size();
           // Allocate a buffer to store contents of the file.
           std::unique_ptr<char[]> buf(new char[size]);
@@ -91,28 +91,30 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
           configFile.readBytes(buf.get(), size);
           DynamicJsonDocument jsonDoc(1024);
           DeserializationError error = deserializeJson(jsonDoc, buf.get());
-          serializeJson(jsonDoc, Serial1);
+          serializeJson(jsonDoc, Serial);
           if (!error) {
-            Serial1.println("\nparsed json");
-            strcpy(wifi_hostname, jsonDoc["wifi_hostname"]);
-            strcpy(ota_password, jsonDoc["ota_password"]);
-            strcpy(mqtt_server, jsonDoc["mqtt_server"]);
-            strcpy(mqtt_port, jsonDoc["mqtt_port"]);
-            strcpy(mqtt_username, jsonDoc["mqtt_username"]);
-            strcpy(mqtt_password, jsonDoc["mqtt_password"]);
+            Serial.println("\nparsed json");
+            //read updated parameters, make sure no overflow
+            strncpy(wifi_hostname, jsonDoc["wifi_hostname"], 39); wifi_hostname[39] = '\0';
+            strncpy(ota_password, jsonDoc["ota_password"], 39); ota_password[39] = '\0';
+            strncpy(mqtt_server, jsonDoc["mqtt_server"], 39); mqtt_server[39] = '\0';
+            strncpy(mqtt_port, jsonDoc["mqtt_port"], 5); mqtt_port[5] = '\0';
+            strncpy(mqtt_username, jsonDoc["mqtt_username"], 39); mqtt_username[39] = '\0';
+            strncpy(mqtt_password, jsonDoc["mqtt_password"], 39); mqtt_password[39] = '\0';
 
           } else {
-            Serial1.println("Failed to load json config, forcing config reset.");
+            Serial.println("Failed to load json config, forcing config reset.");
             wifiManager.resetSettings();
           }
           configFile.close();
         }
       }
       else {
-        Serial1.println("No config.json exists! Forcing a config reset.");
+        Serial.println("No config.json exists! Forcing a config reset.");
+        wifiManager.resetSettings();
       }
     } else {
-      Serial1.println("failed to mount FS");
+      Serial.println("failed to mount FS");
     }
     //end read
   }
@@ -121,13 +123,13 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   // After connecting, parameter.getValue() will get you the configured value
   // id/name placeholder/prompt default length
   WiFiManagerParameter custom_text1("<p>My hostname and OTA password</p>");
-  WiFiManagerParameter custom_wifi_hostname("wifi_hostname", "wifi hostname", wifi_hostname, 40);
-  WiFiManagerParameter custom_ota_password("ota_password", "ota password", ota_password, 40);
+  WiFiManagerParameter custom_wifi_hostname("wifi_hostname", "wifi hostname", wifi_hostname, 39);
+  WiFiManagerParameter custom_ota_password("ota_password", "ota password", ota_password, 39);
   WiFiManagerParameter custom_text2("<p>Configure MQTT settings</p>");
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
-  WiFiManagerParameter custom_mqtt_username("username", "mqtt username", mqtt_username, 40);
-  WiFiManagerParameter custom_mqtt_password("password", "mqtt password", mqtt_password, 40);
+  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 39);
+  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 5);
+  WiFiManagerParameter custom_mqtt_username("username", "mqtt username", mqtt_username, 39);
+  WiFiManagerParameter custom_mqtt_password("password", "mqtt password", mqtt_password, 39);
 
 
   //set config save notify callback
@@ -148,7 +150,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   wifiManager.setConfigPortalTimeout(180);
   wifiManager.setConnectTimeout(60);
   if (!wifiManager.autoConnect("HeishaMon-Setup")) {
-    Serial1.println("failed to connect and hit timeout");
+    Serial.println("failed to connect and hit timeout");
     delay(3000);
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
@@ -156,20 +158,20 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   }
 
   //if you get here you have connected to the WiFi
-  Serial1.println("Wifi connected...yeey :)");
+  Serial.println("Wifi connected...yeey :)");
 
-  //read updated parameters
-  strcpy(wifi_hostname, custom_wifi_hostname.getValue());
-  strcpy(ota_password, custom_ota_password.getValue());
-  strcpy(mqtt_server, custom_mqtt_server.getValue());
-  strcpy(mqtt_port, custom_mqtt_port.getValue());
-  strcpy(mqtt_username, custom_mqtt_username.getValue());
-  strcpy(mqtt_password, custom_mqtt_password.getValue());
+  //read updated parameters, make sure no overflow
+  strncpy(wifi_hostname, custom_wifi_hostname.getValue(), 39); wifi_hostname[39] = '\0';
+  strncpy(ota_password, custom_ota_password.getValue(), 39); ota_password[39] = '\0';
+  strncpy(mqtt_server, custom_mqtt_server.getValue(), 39); mqtt_server[39] = '\0';
+  strncpy(mqtt_port, custom_mqtt_port.getValue(), 5); mqtt_port[5] = '\0';
+  strncpy(mqtt_username, custom_mqtt_username.getValue(), 39); mqtt_username[39] = '\0';
+  strncpy(mqtt_password, custom_mqtt_password.getValue(), 39); mqtt_password[39] = '\0';
 
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {
-    Serial1.println("saving config");
+    Serial.println("saving config");
     DynamicJsonDocument jsonDoc(1024);
     jsonDoc["wifi_hostname"] = wifi_hostname;
     jsonDoc["ota_password"] = ota_password;
@@ -180,17 +182,17 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
-      Serial1.println("failed to open config file for writing");
+      Serial.println("failed to open config file for writing");
     }
 
-    serializeJson(jsonDoc, Serial1);
+    serializeJson(jsonDoc, Serial);
     serializeJson(jsonDoc, configFile);
     configFile.close();
     //end save
   }
 
-  Serial1.println("local ip");
-  Serial1.println(WiFi.localIP());
+  Serial.println("local ip");
+  Serial.println(WiFi.localIP());
 }
   
 void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
