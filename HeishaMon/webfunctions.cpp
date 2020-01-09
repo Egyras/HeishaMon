@@ -1,5 +1,6 @@
 #include <FS.h>                   //this needs to be first, or it all crashes and burns...
 #include "webfunctions.h"
+#include "decode.h"
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -213,7 +214,7 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
  
-  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Value</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
+  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
   httpServer->sendContent(httptext);
   
   httpServer->sendContent_P(menuJS);
@@ -228,13 +229,21 @@ void handleTableRefresh(ESP8266WebServer *httpServer, DynamicJsonDocument *actDa
   httpServer->send(200, "text/html", "");  
   JsonObject root = actData->as<JsonObject>();
   for (JsonPair kv : root) {
+    int topic = atoi(kv.key().c_str());
+    String topicname = topics[topic];
+    String topicdesc;
+    if (topicDescription[topic][0] == "value") {
+      topicdesc = topicDescription[topic][1];
+    }
+    else {
+      int value = kv.value();
+      topicdesc = topicDescription[topic][value];
+    }
     String tabletext = "<tr>";
-    tabletext = tabletext + "<td>";
-    tabletext = tabletext + "panasonic_heat_pump/sdc/" + kv.key().c_str();
-    tabletext = tabletext + "</td>";
-    tabletext = tabletext + "<td>";
-    tabletext = tabletext + kv.value().as<String>();
-    tabletext = tabletext + "</td>";
+    tabletext = tabletext + "<td>TOP" + kv.key().c_str() + "</td>";
+    tabletext = tabletext + "<td>" + topicname + "</td>";
+    tabletext = tabletext + "<td>" + kv.value().as<String>() + "</td>";
+    tabletext = tabletext + "<td>" + topicdesc + "</td>";
     tabletext = tabletext + "</tr>";
     httpServer->sendContent(tabletext);
   }  
