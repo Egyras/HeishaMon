@@ -235,6 +235,7 @@ static const topicFP topicFunctions[] = {
 
 static const char *DisabledEnabled[] = {"Disabled","Enabled"};
 static const char *OffOn[] = {"Off","On"};
+static const char *InactiveActive[] = {"Inactive","Active"};
 static const char *OpModeDesc[] = {"Heat","Cool","Auto","Tank","Heat+Tank","Cool+Tank","Auto+Tank"};
 static const char *Powerfullmode[] = {"Off","30min","60min","90min"};
 static const char *Quietmode[] = {"Off","Level 1","Level 2","Level 3"};
@@ -310,8 +311,8 @@ static const char **topicDescription[] = {
     Celsius,               //TOP57    
     DisabledEnabled,       //TOP58    
     DisabledEnabled,       //TOP59    
-    Celsius,               //TOP60
-    Celsius,               //TOP61    
+    InactiveActive,        //TOP60
+    InactiveActive,        //TOP61    
     RotationsPerMin,       //TOP62    
     RotationsPerMin,       //TOP63    
     Pressure,              //TOP64    
