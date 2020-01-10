@@ -25,7 +25,8 @@ Voeg tevens wat 24 AWG afgeschermde 4 aderige kabel toe (lengte zelf te bepalen)
 
 ## Hoe te bestellen
 Momenteel zijn de PCB's in (beta) productie. wij adviseren om nog even te wachten met bestellen omdat de testen nog lopen. Binnenkort kun je een van de PCB ontwerpen bestellen rechtstreeks bij de project eigenaren. Maar natuurlijk delen wij hier de schema's ook. De volgende mogelijke oplossingen zijn of worden momenteel getest. \
-[PCD Designs from the project members](PCB_Designs.md)
+[PCD Designs from the project members](PCB_Designs.md) \
+[Picture Wemos D1 beta](WEMOSD1.JPG)
 
 
 ## Gebruik van het test arduino image
