@@ -10,3 +10,4 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData);
 void handleTableRefresh(ESP8266WebServer *httpServer, DynamicJsonDocument *actData);
 void handleFactoryReset(ESP8266WebServer *httpServer);
 void handleReboot(ESP8266WebServer *httpServer);
+void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password);

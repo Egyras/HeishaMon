@@ -13,45 +13,45 @@
 bool shouldSaveConfig = false;
 
 static const char webHeader[] PROGMEM  =
-"<!DOCTYPE html>"
-"<html>"
-"<title>Heisha monitor</title>"
-"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
-"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
-"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">"
-"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">"
-"<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
-"<style>"
-"	.w3-btn { margin-bottom:10px; }"
-"</style>";
+  "<!DOCTYPE html>"
+  "<html>"
+  "<title>Heisha monitor</title>"
+  "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+  "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
+  "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">"
+  "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">"
+  "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
+  "<style>"
+  "	.w3-btn { margin-bottom:10px; }"
+  "</style>";
 
 static const char refreshMeta[] PROGMEM = "<meta http-equiv=\"refresh\" content=\"5; url=/\" />";
 static const char webBodyStart[] PROGMEM =
-"<body>"
-"<button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button>"
-"<header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor configuration</h1></header>";
+  "<body>"
+  "<button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button>"
+  "<header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor</h1></header>";
 
 static const char webFooter[] PROGMEM  = "</body></html>";
 static const char menuJS[] PROGMEM =
-"<script>"
-"	function openLeftMenu() {"
-"		var x = document.getElementById(\"leftMenu\");"
-"		if (x.style.display === \"none\") {"
-"			x.style.display = \"block\";"
-"		} else {"
-"			x.style.display = \"none\";"
-"		}"
-"	}"
-"</script>";
+  "<script>"
+  "	function openLeftMenu() {"
+  "		var x = document.getElementById(\"leftMenu\");"
+  "		if (x.style.display === \"none\") {"
+  "			x.style.display = \"block\";"
+  "		} else {"
+  "			x.style.display = \"none\";"
+  "		}"
+  "	}"
+  "</script>";
 
 static const char refreshJS[] PROGMEM =
-"<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js\"></script>"
-"<script>"
-"	$(document).ready(function(){refreshTable();});"
-"	function refreshTable(){"
-"		$('#heishavalues').load('/tablerefresh', function(){setTimeout(refreshTable, 30000);});"
-"	}"
-"</script>";
+  "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js\"></script>"
+  "<script>"
+  "	$(document).ready(function(){refreshTable();});"
+  "	function refreshTable(){"
+  "		$('#heishavalues').load('/tablerefresh', function(){setTimeout(refreshTable, 30000);});"
+  "	}"
+  "</script>";
 
 void(* resetFunc) (void) = 0;
 
@@ -195,28 +195,27 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
 }
-  
+
 void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
-  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN); 
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(webBodyStart);
 
   String httptext = "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">";
-  httptext = httptext + "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot heisha monitor</a>";
+  httptext = httptext + "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>";
   httptext = httptext + "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>";
+  httptext = httptext + "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>";
   httptext = httptext + "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>";
   httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
-  httptext = httptext + "<br />";
-  httptext = httptext + "<a href=\"/factoryreset\" class=\"w3-red w3-bar-item w3-button\">Factory reset</a>";
   httptext = httptext + "</div>";
 
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
- 
+
   httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
   httpServer->sendContent(httptext);
-  
+
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(refreshJS);
   httpServer->sendContent_P(webFooter);
@@ -226,7 +225,7 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
 
 void handleTableRefresh(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
-  httpServer->send(200, "text/html", "");  
+  httpServer->send(200, "text/html", "");
   JsonObject root = actData->as<JsonObject>();
   for (JsonPair kv : root) {
     int topic = atoi(kv.key().c_str());
@@ -246,9 +245,9 @@ void handleTableRefresh(ESP8266WebServer *httpServer, DynamicJsonDocument *actDa
     tabletext = tabletext + "<td>" + topicdesc + "</td>";
     tabletext = tabletext + "</tr>";
     httpServer->sendContent(tabletext);
-  }  
+  }
   httpServer->sendContent("");
-  httpServer->client().stop();  
+  httpServer->client().stop();
 }
 
 
@@ -258,7 +257,7 @@ void handleFactoryReset(ESP8266WebServer *httpServer) {
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(refreshMeta);
   httpServer->sendContent_P(webBodyStart);
-    
+
   String httptext = "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<p>Removing configuration. To reconfigure please connect to WiFi hotspot after reset.</p>";
   httptext = httptext + "</div>";
@@ -276,12 +275,12 @@ void handleFactoryReset(ESP8266WebServer *httpServer) {
 }
 
 void handleReboot(ESP8266WebServer *httpServer) {
-  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN); 
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(refreshMeta);
   httpServer->sendContent_P(webBodyStart);
-    
+
   String httptext = "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<p>Rebooting</p>";
   httptext = httptext + "</div>";
@@ -292,4 +291,101 @@ void handleReboot(ESP8266WebServer *httpServer) {
   httpServer->client().stop();
   delay(1000);
   resetFunc();
+}
+
+void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password) {
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->send(200, "text/html", "");
+  httpServer->sendContent_P(webHeader);
+  httpServer->sendContent_P(webBodyStart);
+
+  String httptext = "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">";
+  httptext = httptext + "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>";
+  httptext = httptext + "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>";
+  httptext = httptext + "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>";
+  httptext = httptext + "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>";
+  httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
+  httptext = httptext + "</div>";
+  httpServer->sendContent(httptext);
+
+  //check if POST was made with save settings, if yes then save and reboot
+  if (httpServer->args()) {
+    DynamicJsonDocument jsonDoc(1024);
+    jsonDoc["wifi_hostname"] = wifi_hostname;
+    jsonDoc["ota_password"] = ota_password;
+    jsonDoc["mqtt_server"] = mqtt_server;
+    jsonDoc["mqtt_port"] = mqtt_port;
+    jsonDoc["mqtt_username"] = mqtt_username;
+    jsonDoc["mqtt_password"] = mqtt_password;
+    if (httpServer->hasArg("wifi_hostname")) {
+      jsonDoc["wifi_hostname"] = httpServer->arg("wifi_hostname");
+    }
+    if (httpServer->hasArg("ota_password")) {
+      jsonDoc["ota_password"] = httpServer->arg("ota_password");
+    }
+    if (httpServer->hasArg("mqtt_server")) {
+      jsonDoc["mqtt_server"] = httpServer->arg("mqtt_server");
+    }
+    if (httpServer->hasArg("mqtt_port")) {
+      jsonDoc["mqtt_port"] = httpServer->arg("mqtt_port");
+    }
+    if (httpServer->hasArg("mqtt_username")) {
+      jsonDoc["mqtt_username"] = httpServer->arg("mqtt_username");
+    }
+    if (httpServer->hasArg("mqtt_password")) {
+      jsonDoc["mqtt_password"] = httpServer->arg("mqtt_password");
+    }
+
+    if (SPIFFS.begin()) {
+      File configFile = SPIFFS.open("/config.json", "w");
+      if (configFile) {
+        serializeJson(jsonDoc, configFile);
+        configFile.close();
+        delay(1000);
+
+        httptext = "<div class=\"w3-container w3-center\">";
+        httptext = httptext + "<h3>--- saved ---</h3>";
+        httptext = httptext + "<h3>-- rebooting --</h3>";
+        httptext = httptext + "</div>";
+        httpServer->sendContent(httptext);
+        httpServer->sendContent_P(refreshMeta);
+        httpServer->sendContent_P(webFooter);
+        httpServer->sendContent("");
+        httpServer->client().stop();
+        resetFunc();
+      }
+    }
+  }
+
+  httptext = "<div class=\"w3-container w3-center\">";
+  httptext = httptext + "<h2>Settings</h2>";
+  httptext = httptext + "<form action=\"/settings\" method=\"POST\">";
+  httptext = httptext + "Hostname:<br>";
+  httptext = httptext + "<input type=\"text\" name=\"wifi_hostname\" value=\"" + wifi_hostname + "\">";
+  httptext = httptext + "<br><br>";
+  httptext = httptext + "Update password:<br>";
+  httptext = httptext + "<input type=\"password\" name=\"ota_password\" value=\"" + ota_password + "\">";
+  httptext = httptext + "<br><br>";
+  httptext = httptext + "Mqtt server:<br>";
+  httptext = httptext + "<input type=\"text\" name=\"mqtt_server\" value=\"" + mqtt_server + "\">";
+  httptext = httptext + "<br><br>";
+  httptext = httptext + "Mqtt port:<br>";
+  httptext = httptext + "<input type=\"number\" name=\"mqtt_port\" value=\"" + mqtt_port + "\">";
+  httptext = httptext + "<br><br>";
+  httptext = httptext + "Mqtt username:<br>";
+  httptext = httptext + "<input type=\"text\" name=\"mqtt_username\" value=\"" + mqtt_username + "\">";
+  httptext = httptext + "<br><br>";
+  httptext = httptext + "Mqtt password:<br>";
+  httptext = httptext + "<input type=\"password\" name=\"mqtt_password\" value=\"" + mqtt_password + "\">";
+  httptext = httptext + "<br><br>";
+  httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
+  httptext = httptext + "</form>";
+  httptext = httptext + "<br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\" >Factory reset</a>";
+  httptext = httptext + "</div>";
+  httpServer->sendContent(httptext);
+
+  httpServer->sendContent_P(menuJS);
+  httpServer->sendContent_P(webFooter);
+  httpServer->sendContent("");
+  httpServer->client().stop();
 }
