@@ -3,7 +3,9 @@
 
 # Panasonic H Series Aquarea air-water heat pump protocol
 
-Eine deutschsprachige [README_DE.md](README_DE.md) findest du hier. 
+Eine deutschsprachige [README_DE.md](README_DE.md) findest du hier.
+
+NL-språk [README_NL.md](https://github.com/Egyras/HeishaMon/blob/master/README_NL.md) 
 
 *Help on translation to other languages are welcome.*
 
