@@ -5,7 +5,7 @@
 
 Eine deutschsprachige [README_DE.md](README_DE.md) findest du hier.
 
-NL-språk [README_NL.md](https://github.com/Egyras/HeishaMon/blob/master/README_NL.md) 
+Een nederlandse vertaling [README_NL.md](README_NL.md) vind je hier.
 
 *Help on translation to other languages are welcome.*
 
