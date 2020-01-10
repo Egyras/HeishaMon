@@ -232,6 +232,9 @@ void setupHttp() {
   httpServer.on("/reboot", [] {
     handleReboot(&httpServer);
   });
+  httpServer.on("/settings", [] {
+    handleSettings(&httpServer, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password);
+  });
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
     outputMqttLog ^= true;
