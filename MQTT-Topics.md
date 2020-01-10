@@ -87,7 +87,8 @@ TOP65 | sdc/Pump_Speed | Pump Speed (R/Min)
 
 Topic | Description | Values
 --- | --- | ---
-SetHoliday | Set holiday mode on or off | 84=off, 100=on
+SetPower | Set power on or off | 0=off, 1=on
+SetHoliday | Set holiday mode on or off | 0=off, 1=on
 SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
 SetPowerfull | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
 SetShiftTemperature | Set heatshift or direct heat temperature | -5 to 5 or 20 to 50
