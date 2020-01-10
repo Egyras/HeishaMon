@@ -50,7 +50,7 @@ esp8266 by esp8266 community version 2.6.3 [Arduino](https://github.com/esp8266/
 
 
 ## Protokoll Info Packet:
-Um daten von der Wärmepumpe zu erhalten muß dieses "magic" Packet an die CN-CNT Schnittstelle gesendet werden:
+Um Daten von der Wärmepumpe zu erhalten muß dieses "magic" Packet an die CN-CNT Schnittstelle gesendet werden:
 
 `71 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12`
 
