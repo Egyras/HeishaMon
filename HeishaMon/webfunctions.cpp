@@ -1,7 +1,7 @@
 #include <FS.h>                   //this needs to be first, or it all crashes and burns...
 #include "webfunctions.h"
 #include "decode.h"
-
+#include "version.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
@@ -208,7 +208,7 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   httptext = httptext + "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>";
   httptext = httptext + "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>";
   httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
-  httptext = httptext + "</div>";
+  httptext = httptext + "<hr><div class=\"w3-text-grey\">Version: " + heishamon_version + "</div><hr></div>";
 
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
