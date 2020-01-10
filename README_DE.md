@@ -4,7 +4,6 @@ Diese Übersetzung ist gerade in Arbeit. Bitte noch etwas Gedult.
 
 # Panasonic H Series Aquarea air-water heat pump protocol
 
-
 *Help on translation to other languages are welcome.*
 
 
@@ -26,8 +25,8 @@ Use some 24 AWG shielded 4-conductors cable.
 
 
 ## How to connect
-Currently the PCB's are in (beta) production. We suggest to wait a while for them to be tested. \
-Soon you will be cable to order one of the PCB design directly from the project owners but ofcourse \
+Currently the PCB's are in (beta) production. We suggest to wait a while for them to be tested. 
+Soon you will be cable to order one of the PCB design directly from the project owners but ofcourse 
 we will share the schematics also. For now these are some schematics we are testing or have tested. \
 [PCD Designs  from the project members](PCB_Designs.md)
 
