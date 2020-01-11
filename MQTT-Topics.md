@@ -82,6 +82,8 @@ TOP62 | sdc/Fan1Motor_Speed | Fan 1 Motor speed (R/Min)
 TOP63 | sdc/Fan2Motor_Speed | Fan 2 Motor speed (R/Min)
 TOP64 | sdc/High_Pressure | High Pressure (Kgf/Cm2)
 TOP65 | sdc/Pump_Speed | Pump Speed (R/Min)
+TOP66 | sdc/Low_Pressure | Low Pressure (Kgf/Cm2)
+TOP67 | sdc/Outdoor_Current | Outdoor Current (Ampere)
 
 ## Command Topics:
 

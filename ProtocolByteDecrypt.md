@@ -166,8 +166,8 @@
 |  TOP54 | 161 | 80 |  to DEC-128 | Bypass Outlet Temperature [°C] |
 |  TOP55 | 162 | ff |  to DEC-128 | Ipm Temperature [°C]  |
 |  TOP64 | 163 | 91 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
-|  TOP | 164 | 01 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
-|  TOP | 165 | 29 |  to DEC (X-1)/5 | Outdoor Current [A] |
+|  TOP66 | 164 | 01 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
+|  TOP67 | 165 | 29 |  to DEC (X-1)/5 | Outdoor Current [A] |
 |  TOP8 | 166 | 59 | to DEC x-1  | Compressor Frequency [Hz] |
 |  TOP | 167 | 00 |   | 0 byte |
 |  TOP | 168 | 00 |   | 0 byte |
