@@ -90,6 +90,8 @@ static const String topics[] = {
             "Fan2Motor_Speed",         //TOP63
             "High_Pressure",           //TOP64
             "Pump_Speed",              //TOP65
+            "Low_Pressure",            //TOP66
+            "Outdoor_Current",         //TOP67
 };
 
 static const unsigned int topicBytes[] = {
@@ -159,79 +161,82 @@ static const unsigned int topicBytes[] = {
         174,    //TOP63
         163,    //TOP64
         171,    //TOP65
+        164,    //TOP66
+        165,    //TOP67
 };        
 
 typedef String (*topicFP)(byte);
 
 static const topicFP topicFunctions[] = {
-    getBit7and8,           //TOP0
-    unknown,               //TOP1
-    getBit1and2,           //TOP2
-    getBit1and2,           //TOP3
-    getOpMode,             //TOP4
-    getIntMinus128,        //TOP5
-    getIntMinus128,        //TOP6
-    getIntMinus128,        //TOP7
-    getIntMinus1,          //TOP8
-    getIntMinus128,        //TOP9
-    getIntMinus128,        //TOP10
-    unknown,               //TOP11
-    unknown,               //TOP12
-    getBit1and2,           //TOP13
-    getIntMinus128,        //TOP14
-    getEnergy,             //TOP15
-    getEnergy,             //TOP16
-    getRight3bits,         //TOP17
-    getBit3and4and5,       //TOP18
-    getBit3and4,           //TOP19
-    getBit7and8,           //TOP20
-    getIntMinus128,        //TOP21
-    getIntMinus128,        //TOP22
-    getIntMinus128,        //TOP23
-    getIntMinus128,        //TOP24
-    getIntMinus128,        //TOP25
-    getBit5and6,           //TOP26
-    getIntMinus128,        //TOP27
-    getIntMinus128,        //TOP28
-    getIntMinus128,        //TOP29
-    getIntMinus128,        //TOP30
-    getIntMinus128,        //TOP31
-    getIntMinus128,        //TOP32
-    getIntMinus128,        //TOP33
-    getIntMinus128,        //TOP34
-    getIntMinus128,        //TOP35
-    getIntMinus128,        //TOP36
-    getIntMinus128,        //TOP37
-    getEnergy,             //TOP38
-    getEnergy,             //TOP39
-    getEnergy,             //TOP40
-    getEnergy,             //TOP41
-    getIntMinus128,        //TOP42
-    getIntMinus128,        //TOP43
-    unknown,               //TOP44
-    getIntMinus128,        //TOP45
-    getIntMinus128,        //TOP46
-    getIntMinus128,        //TOP47
-    getIntMinus128,        //TOP48
-    getIntMinus128,        //TOP49
-    getIntMinus128,        //TOP50
-    getIntMinus128,        //TOP51
-    getIntMinus128,        //TOP52
-    getIntMinus128,        //TOP53
-    getIntMinus128,        //TOP54
-    getIntMinus128,        //TOP55
-    getIntMinus128,        //TOP56
-    getIntMinus128,        //TOP57
-    getBit5and6,           //TOP58
-    getBit7and8,           //TOP59
-    getBit5and6,           //TOP60
-    getBit7and8,           //TOP61
-    getIntMinus1Times10,   //TOP62    
-    getIntMinus1Times10,   //TOP63
-    getIntMinus1Div5,      //TOP64
-    getIntMinus1Times50,   //TOP65
+    getBit7and8,         //TOP0
+    unknown,             //TOP1
+    getBit1and2,         //TOP2
+    getBit1and2,         //TOP3
+    getOpMode,           //TOP4
+    getIntMinus128,      //TOP5
+    getIntMinus128,      //TOP6
+    getIntMinus128,      //TOP7
+    getIntMinus1,        //TOP8
+    getIntMinus128,      //TOP9
+    getIntMinus128,      //TOP10
+    unknown,             //TOP11
+    unknown,             //TOP12
+    getBit1and2,         //TOP13
+    getIntMinus128,      //TOP14
+    getEnergy,           //TOP15
+    getEnergy,           //TOP16
+    getRight3bits,       //TOP17
+    getBit3and4and5,     //TOP18
+    getBit3and4,         //TOP19
+    getBit7and8,         //TOP20
+    getIntMinus128,      //TOP21
+    getIntMinus128,      //TOP22
+    getIntMinus128,      //TOP23
+    getIntMinus128,      //TOP24
+    getIntMinus128,      //TOP25
+    getBit5and6,         //TOP26
+    getIntMinus128,      //TOP27
+    getIntMinus128,      //TOP28
+    getIntMinus128,      //TOP29
+    getIntMinus128,      //TOP30
+    getIntMinus128,      //TOP31
+    getIntMinus128,      //TOP32
+    getIntMinus128,      //TOP33
+    getIntMinus128,      //TOP34
+    getIntMinus128,      //TOP35
+    getIntMinus128,      //TOP36
+    getIntMinus128,      //TOP37
+    getEnergy,           //TOP38
+    getEnergy,           //TOP39
+    getEnergy,           //TOP40
+    getEnergy,           //TOP41
+    getIntMinus128,      //TOP42
+    getIntMinus128,      //TOP43
+    unknown,             //TOP44
+    getIntMinus128,      //TOP45
+    getIntMinus128,      //TOP46
+    getIntMinus128,      //TOP47
+    getIntMinus128,      //TOP48
+    getIntMinus128,      //TOP49
+    getIntMinus128,      //TOP50
+    getIntMinus128,      //TOP51
+    getIntMinus128,      //TOP52
+    getIntMinus128,      //TOP53
+    getIntMinus128,      //TOP54
+    getIntMinus128,      //TOP55
+    getIntMinus128,      //TOP56
+    getIntMinus128,      //TOP57
+    getBit5and6,         //TOP58
+    getBit7and8,         //TOP59
+    getBit5and6,         //TOP60
+    getBit7and8,         //TOP61
+    getIntMinus1Times10, //TOP62
+    getIntMinus1Times10, //TOP63
+    getIntMinus1Div5,    //TOP64
+    getIntMinus1Times50, //TOP65
+    getIntMinus1,        //TOP66
+    getIntMinus1Div5,    //TOP67
 };
-
 
 static const char *DisabledEnabled[] = {"Disabled","Enabled"};
 static const char *OffOn[] = {"Off","On"};
@@ -250,6 +255,7 @@ static const char *Counter[] = {"value","count"};
 static const char *Hours[] = {"value","hours"};
 static const char *Watt[] = {"value","Watt"};
 static const char *ErrorState[] = {"value","Error"};
+static const char *Ampere[] = {"value","Ampere"};
 static const char **topicDescription[] = {
     OffOn,                 //TOP0
     LitersPerMin,          //TOP1
@@ -317,6 +323,8 @@ static const char **topicDescription[] = {
     RotationsPerMin,       //TOP63    
     Pressure,              //TOP64    
     RotationsPerMin,       //TOP65    
+    Pressure,              //TOP66
+    Ampere,                //TOP67
 };
 
  
