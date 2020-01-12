@@ -24,7 +24,7 @@ String getOpMode(byte input);
 String getEnergy(byte input);
 
 static const String topics[] = {
-            "Power_State",             //TOP0
+            "Heatpump_State",             //TOP0
             "Pump_Flow",               //TOP1
             "ForceDHW_State",          //TOP2
             "Quietmode_Schedule",      //TOP3
@@ -92,6 +92,7 @@ static const String topics[] = {
             "Pump_Speed",              //TOP65
             "Low_Pressure",            //TOP66
             "Outdoor_Current",         //TOP67
+            "ForceHeater_State",       //TOP68
 };
 
 static const unsigned int topicBytes[] = {
@@ -163,6 +164,7 @@ static const unsigned int topicBytes[] = {
         171,    //TOP65
         164,    //TOP66
         165,    //TOP67
+        5,      //TOP68
 };        
 
 typedef String (*topicFP)(byte);
@@ -228,14 +230,15 @@ static const topicFP topicFunctions[] = {
     getIntMinus128,      //TOP57
     getBit5and6,         //TOP58
     getBit7and8,         //TOP59
-    getBit5and6,         //TOP60
-    getBit7and8,         //TOP61
+    getBit7and8,         //TOP60
+    getBit5and6,         //TOP61
     getIntMinus1Times10, //TOP62
     getIntMinus1Times10, //TOP63
     getIntMinus1Div5,    //TOP64
     getIntMinus1Times50, //TOP65
     getIntMinus1,        //TOP66
     getIntMinus1Div5,    //TOP67
+    getBit5and6,         //TOP68
 };
 
 static const char *DisabledEnabled[] = {"Disabled","Enabled"};
@@ -325,6 +328,7 @@ static const char **topicDescription[] = {
     RotationsPerMin,       //TOP65    
     Pressure,              //TOP66
     Ampere,                //TOP67
+    InactiveActive,                //TOP68
 };
 
  

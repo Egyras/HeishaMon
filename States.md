@@ -2,7 +2,7 @@ For every state: -1 = unknown
 
 | Topic | State | Description |
 | ----- | ---- | ----- |
-|panasonic_heat_pump/sdc/Power_state | 0 | Heatpump disabled |
+|panasonic_heat_pump/sdc/Heatpump_state | 0 | Heatpump disabled |
 | | 1 | Heatpump enabled |
 |panasonic_heat_pump/sdc/OpMode_state | 0 | Heat mode |
 |	| 1 | Cool mode |
@@ -32,3 +32,6 @@ For every state: -1 = unknown
 | | 2 | Holiday mode active |
 |panasonic_heat_pump/sdc/MainSchedule_state | 0 | Main schedule disabled |
 | | 1 | Main schedule active |
+|panasonic_heat_pump/sdc/ForceHeater_State | 0 | Force heater disabled |
+| | 1 | Force heater enabled |
+

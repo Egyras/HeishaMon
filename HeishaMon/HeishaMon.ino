@@ -90,7 +90,7 @@ void mqtt_reconnect()
     mqtt_client.subscribe(mqtt_set_quiet_mode_topic);
     mqtt_client.subscribe(mqtt_set_shift_temperature_topic);
     mqtt_client.subscribe(mqtt_set_mode_topic);
-    mqtt_client.subscribe(mqtt_set_power_state_topic);
+    mqtt_client.subscribe(mqtt_set_heatpump_state_topic);
     mqtt_client.subscribe(mqtt_set_force_DHW_topic);
     mqtt_client.subscribe(mqtt_set_force_defrost_topic);
     mqtt_client.subscribe(mqtt_set_force_sterilization_topic);
@@ -148,6 +148,7 @@ bool readSerial()
   //sprintf(log_msg, "received size : %d", data_length); log_message(log_msg);
 
   if (data_length == 203) { //panansonic read is always 203 on valid receive, if not yet there wait for next read
+    log_message((char*)"Received 203 bytes data");
     if (outputHexDump) logHex(data, data_length);
     byte chk = 0;
     for ( int i = 0; i < data_length; i++)  {
