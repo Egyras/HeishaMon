@@ -44,8 +44,7 @@ String getIntMinus128(byte input) {
 }
 
 String getIntMinus1Div5(byte input){
-  float value = ((int)input - 1) / 5;
-  return (String)value;
+  return String((((float)input - 1) / 5),1);
   
 }
 String getIntMinus1Times10(byte input){
@@ -90,9 +89,9 @@ String getEnergy(byte input) {
 
 String getPumpFlow(char* data){   // TOP1 //
   int PumpFlow1 = (int)data[170];
-  float PumpFlow2 = ((((float)data[169] - 1) / 5) * 2) / 100;
+  float PumpFlow2 = (((float)data[169]-1) / 256);
   float PumpFlow = PumpFlow1 + PumpFlow2;
-  return String(PumpFlow);
+  return String(PumpFlow,2);
 }
 
 String getErrorInfo(char* data){ // TOP44 //
