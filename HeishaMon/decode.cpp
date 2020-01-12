@@ -89,7 +89,7 @@ String getEnergy(byte input) {
 
 String getPumpFlow(char* data){   // TOP1 //
   int PumpFlow1 = (int)data[170];
-  float PumpFlow2 = ((((float)data[169] - 1) / 5) * 2) / 100;
+  float PumpFlow2 = (((float)data[169]-1) / 256);
   float PumpFlow = PumpFlow1 + PumpFlow2;
   return String(PumpFlow,2);
 }
