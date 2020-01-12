@@ -44,8 +44,8 @@ String getIntMinus128(byte input) {
 }
 
 String getIntMinus1Div5(byte input){
-  int value = (int)input - 1;
-  return (String)(value/5);
+  float value = ((int)input - 1) / 5;
+  return (String)value;
   
 }
 String getIntMinus1Times10(byte input){
