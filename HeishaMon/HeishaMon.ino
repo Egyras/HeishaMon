@@ -148,6 +148,7 @@ bool readSerial()
   //sprintf(log_msg, "received size : %d", data_length); log_message(log_msg);
 
   if (data_length == 203) { //panansonic read is always 203 on valid receive, if not yet there wait for next read
+    log_message((char*)"Received 203 bytes data");
     if (outputHexDump) logHex(data, data_length);
     byte chk = 0;
     for ( int i = 0; i < data_length; i++)  {

@@ -84,6 +84,7 @@ TOP64 | sdc/High_Pressure | High Pressure (Kgf/Cm2)
 TOP65 | sdc/Pump_Speed | Pump Speed (R/Min)
 TOP66 | sdc/Low_Pressure | Low Pressure (Kgf/Cm2)
 TOP67 | sdc/Outdoor_Current | Outdoor Current (Ampere)
+TOP68 | sdc/ForceHeater_State | Force heater status (0=inactive, 1=active)
 
 ## Command Topics:
 

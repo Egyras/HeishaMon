@@ -92,6 +92,7 @@ static const String topics[] = {
             "Pump_Speed",              //TOP65
             "Low_Pressure",            //TOP66
             "Outdoor_Current",         //TOP67
+            "ForceHeater_State",       //TOP68
 };
 
 static const unsigned int topicBytes[] = {
@@ -163,6 +164,7 @@ static const unsigned int topicBytes[] = {
         171,    //TOP65
         164,    //TOP66
         165,    //TOP67
+        5,      //TOP68
 };        
 
 typedef String (*topicFP)(byte);
@@ -236,6 +238,7 @@ static const topicFP topicFunctions[] = {
     getIntMinus1Times50, //TOP65
     getIntMinus1,        //TOP66
     getIntMinus1Div5,    //TOP67
+    getBit5and6,         //TOP68
 };
 
 static const char *DisabledEnabled[] = {"Disabled","Enabled"};
@@ -325,6 +328,7 @@ static const char **topicDescription[] = {
     RotationsPerMin,       //TOP65    
     Pressure,              //TOP66
     Ampere,                //TOP67
+    InactiveActive,                //TOP68
 };
 
  
