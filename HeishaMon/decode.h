@@ -228,8 +228,8 @@ static const topicFP topicFunctions[] = {
     getIntMinus128,      //TOP57
     getBit5and6,         //TOP58
     getBit7and8,         //TOP59
-    getBit5and6,         //TOP60
-    getBit7and8,         //TOP61
+    getBit7and8,         //TOP60
+    getBit5and6,         //TOP61
     getIntMinus1Times10, //TOP62
     getIntMinus1Times10, //TOP63
     getIntMinus1Div5,    //TOP64
