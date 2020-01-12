@@ -16,7 +16,7 @@ LOG1 | log | Log of responses from pump
 
 ID | Topic | Response
 --- | --- | ---
-TOP0 | sdc/Power_State | Power state (0=off, 1=on)
+TOP0 | sdc/Heatpump_State | Heatpump state (0=off, 1=on)
 TOP1 | sdc/Pump_Flow | Pump flow (l/min)
 TOP2 | sdc/ForceDHW_State | DHW status (0=off, 1=on -1=unknown)
 TOP3 | sdc/Quietmode_Schedule | Quiet mode schedule (0=inactive, 1=active)
@@ -90,7 +90,7 @@ TOP68 | sdc/ForceHeater_State | Force heater status (0=inactive, 1=active)
 
 Topic | Description | Values
 --- | --- | ---
-SetPower | Set power on or off | 0=off, 1=on
+SetHeatpump | Set heatpump on or off | 0=off, 1=on
 SetHoliday | Set holiday mode on or off | 0=off, 1=on
 SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
 SetPowerfull | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90

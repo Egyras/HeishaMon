@@ -90,7 +90,7 @@ void mqtt_reconnect()
     mqtt_client.subscribe(mqtt_set_quiet_mode_topic);
     mqtt_client.subscribe(mqtt_set_shift_temperature_topic);
     mqtt_client.subscribe(mqtt_set_mode_topic);
-    mqtt_client.subscribe(mqtt_set_power_state_topic);
+    mqtt_client.subscribe(mqtt_set_heatpump_state_topic);
     mqtt_client.subscribe(mqtt_set_force_DHW_topic);
     mqtt_client.subscribe(mqtt_set_force_defrost_topic);
     mqtt_client.subscribe(mqtt_set_force_sterilization_topic);

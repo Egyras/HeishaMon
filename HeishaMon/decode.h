@@ -24,7 +24,7 @@ String getOpMode(byte input);
 String getEnergy(byte input);
 
 static const String topics[] = {
-            "Power_State",             //TOP0
+            "Heatpump_State",             //TOP0
             "Pump_Flow",               //TOP1
             "ForceDHW_State",          //TOP2
             "Quietmode_Schedule",      //TOP3
