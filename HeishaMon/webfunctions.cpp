@@ -169,6 +169,8 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   strncpy(mqtt_username, custom_mqtt_username.getValue(), 39); mqtt_username[39] = '\0';
   strncpy(mqtt_password, custom_mqtt_password.getValue(), 39); mqtt_password[39] = '\0';
 
+  //Set hostname on wifi rather than ESP_xxxxx
+  WiFi.hostname(wifi_hostname);
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {

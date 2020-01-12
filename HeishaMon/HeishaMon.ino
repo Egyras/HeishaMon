@@ -322,5 +322,8 @@ void loop() {
     nexttime = millis() + WAITTIME;
     send_panasonic_query();
     MDNS.announce();
+
+	//Make sure the LWT is set to Online, even if the broker have marked it dead.
+	mqtt_client.publish(mqtt_willtopic, "Online");
   }
 }
