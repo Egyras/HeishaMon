@@ -38,8 +38,8 @@
 |  TOP | 33 | 00 |   | 0 byte |
 |  TOP | 34 | 00 |   | 0 byte |
 |  TOP | 35 | 00 |   | 0 byte |
-|  TOP | 36 | 00 |   | 0 byte |
-|  TOP | 37 | 00 |   | 0 byte |
+|  TOP | 36 | 19 |   | ? |
+|  TOP | 37 | 15 |   | ? |
 |  TOP27 | 38 | 80 | Convert to DEC 128-128 = 0  | Zone 1 water shift set or direct mode value Temperature For Heat Mode [°C] |
 |  TOP28 | 39 | 8f | Convert to DEC 143-128 = 15 in direct mode set temp or shift value  | Zone 1 water shift set Temperature For Cool Mode [°C] |
 |  TOP34 | 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
@@ -119,7 +119,7 @@
 |  TOP44 | 114 | 53 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 |  TOP | 115 | 15 |   | ? |
 |  TOP | 116 | 5a |   | ? |
-|  TOP | 117 | 05 |   | ? |
+|  TOP | 117 | 05 | No sterilization -05 , Sterilization active  -09  | Sterilization status |
 |  TOP | 118 | 12 |   | ? |
 |  TOP | 119 | 12 |   | ? |
 |  TOP | 120 | 19 |   | ? |
