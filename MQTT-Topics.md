@@ -101,3 +101,7 @@ SetTankTemp | Set tank target temperature | 40 - 75
 SetCoolTemp | Set cooldown temperature | 5 - 20
 SetForceDefrost | Forces defrost routine | 1
 SetForceSterilization | Forces tank sterilization routine | 1
+
+
+
+*If you operate your Heisha with direct temperature, the shift values correspond to the absolute temperature*
