@@ -51,15 +51,15 @@ static const String topics[] = {
     "Cool_Delta",              //TOP24
     "DHW_Shift_Temp",          //TOP25
     "Defrosting_State",        //TOP26
-    "Z1_HeatShift_Temp",       //TOP27
-    "Z1_CoolShift_Temp",       //TOP28
+    "Z1_HeatRequest_Temp",     //TOP27
+    "Z1_CoolRequest_Temp",     //TOP28
     "HCurve_OutHighTemp",      //TOP29
     "HCurve_OutLowTemp",       //TOP30
     "HCurve_OutsHighTemp",     //TOP31
     "HCurve_OutsLowTemp",      //TOP32
     "Roomthermostat_Temp",     //TOP33
-    "Z2_HeatShift_Temp",       //TOP34
-    "Z2_CoolShift_Temp",       //TOP35
+    "Z2_HeatRequest_Temp",     //TOP34
+    "Z2_CoolRequest_Temp",     //TOP35
     "Z1_Water_Temp",           //TOP36
     "Z2_Water_Temp",           //TOP37
     "Cool_Energy_Production",  //TOP38
@@ -253,7 +253,7 @@ static const topicFP topicFunctions[] = {
 static const char *DisabledEnabled[] = {"Disabled","Enabled"};
 static const char *OffOn[] = {"Off","On"};
 static const char *InactiveActive[] = {"Inactive","Active"};
-static const char *OpModeDesc[] = {"Heat","Cool","Auto","Tank","Heat+Tank","Cool+Tank","Auto+Tank"};
+static const char *OpModeDesc[] = {"Heat","Cool","Auto","DHW","Heat+DHW","Cool+DHW","Auto+DHW"};
 static const char *Powerfullmode[] = {"Off","30min","60min","90min"};
 static const char *Quietmode[] = {"Off","Level 1","Level 2","Level 3"};
 static const char *Valve[] = {"Room","DHW"};

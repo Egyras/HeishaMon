@@ -43,15 +43,15 @@ TOP23 | sdc/Heat_Delta | Heat delta (K)
 TOP24 | sdc/Cool_Delta | Cool delta (K)
 TOP25 | sdc/DHW_Shift_Temp | Shift tank temperatur (tbd)
 TOP26 | sdc/Defrosting_State | Defrost state (0=off, 1=on)
-TOP27 | sdc/Z1_HeatShift_Temp | Zone 1 Heat Shift/Targettemp (-5 to 5) or direct heat temperatur (20 to 55)
-TOP28 | sdc/Z1_CoolShift_Temp | Zone 1 Cool Shift/Targettemp (-5 to 5) or direct cool temperatur (?? to ??)
+TOP27 | sdc/Z1_HeatRequest_Temp | Zone 1 Heat Requested shift temp (-5 to 5) or direct heat temp (20 to 55)
+TOP28 | sdc/Z1_CoolRequest_Temp | Zone 1 Cool Requested shift temp (-5 to 5) or direct cool temp (?? to ??)
 TOP29 | sdc/HCurve_OutHighTemp | Target temperatur at lowest point on the heating curve (eg. 34 °C)
 TOP30 | sdc/HCurve_OutLowTemp | Target temperatur at highest point on the heating curve (eg. 24°C)
 TOP31 | sdc/HCurve_OutsHighTemp | Lowest outside temperatur on the heating curve (eg. -12°C)
 TOP32 | sdc/HCurve_OutsLowTemp | Highest outside temperatur on the heating curve (eg. 15°C)
 TOP33 | sdc/Roomthermostat_Temp | Remote control thermostat temp (°C)
-TOP34 | sdc/Z2_HeatShift_Temp | Zone 2 Heatshift (-5 to 5) or direct heat temperatur (20 to 55)
-TOP35 | sdc/Z2_CoolShift_Temp | Zone 2 Coolshift (-5 to 5) or direct cool temperatur (?? to ??)
+TOP34 | sdc/Z2_HeatRequest_Temp | Zone 2 Heat Requested shift temp (-5 to 5) or direct heat temp (20 to 55)
+TOP35 | sdc/Z2_CoolRequest_Temp | Zone 2 Cool Requested shift temp (-5 to 5) or direct cool temp (?? to ??)
 TOP36 | sdc/Z1_Water_Temp | Zone 1 Room/Pool outlet temperature (°C)
 TOP37 | sdc/Z2_Water_Temp | Zone 2 Room/Pool outlet temperature (°C)
 TOP38 | sdc/Cool_Energy_Production | Thermal cooling power production (Watt)
@@ -98,7 +98,10 @@ SetHeatpump | Set heatpump on or off | 0=off, 1=on
 SetHoliday | Set holiday mode on or off | 0=off, 1=on
 SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
 SetPowerfull | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
-SetShiftTemperature | Set heatshift or direct heat temperature | -5 to 5 or 20 to 50
+SetZ1HeatRequestTemperature | Set Z1 heat shift or direct heat temperature | -5 to 5 or 20 to 50
+SetZ1CoolRequestTemperature | Set Z1 cool shift or direct cool temperature | -5 to 5 or 20 to 50
+SetZ2HeatRequestTemperature | Set Z2 heat shift or direct heat temperature | -5 to 5 or 20 to 50
+SetZ2CoolRequestTemperature | Set Z2 cool shift or direct cool temperature | -5 to 5 or 20 to 50
 SetOperationMode | Sets operating mode | 0=Heat only, 1=Cool only, 2=Auto, 3=Tank only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW
 SetForceDHW | Forces DHW mode only | 1
 SetDHWTemp | Set tank target temperature | 40 - 75

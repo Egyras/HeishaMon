@@ -88,9 +88,12 @@ void mqtt_reconnect()
   if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password, mqtt_willtopic, 1, true, "Offline"))
   {
     mqtt_client.subscribe(mqtt_set_quiet_mode_topic);
-    mqtt_client.subscribe(mqtt_set_shift_temperature_topic);
     mqtt_client.subscribe(mqtt_set_operationmode_topic);
     mqtt_client.subscribe(mqtt_set_heatpump_state_topic);
+    mqtt_client.subscribe(mqtt_set_z1_heat_request_temperature_topic);
+    mqtt_client.subscribe(mqtt_set_z1_cool_request_temperature_topic);
+    mqtt_client.subscribe(mqtt_set_z2_heat_request_temperature_topic);
+    mqtt_client.subscribe(mqtt_set_z2_cool_request_temperature_topic);
     mqtt_client.subscribe(mqtt_set_force_DHW_topic);
     mqtt_client.subscribe(mqtt_set_force_defrost_topic);
     mqtt_client.subscribe(mqtt_set_force_sterilization_topic);
