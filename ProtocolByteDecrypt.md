@@ -38,8 +38,8 @@
 |  TOP | 33 | 00 |   | 0 byte |
 |  TOP | 34 | 00 |   | 0 byte |
 |  TOP | 35 | 00 |   | 0 byte |
-|  TOP | 36 | 00 |   | 0 byte |
-|  TOP | 37 | 00 |   | 0 byte |
+|  TOP | 36 | 19 |   | ? |
+|  TOP | 37 | 15 |   | ? |
 |  TOP27 | 38 | 80 | Convert to DEC 128-128 = 0  | Zone 1 water shift set or direct mode value Temperature For Heat Mode [°C] |
 |  TOP28 | 39 | 8f | Convert to DEC 143-128 = 15 in direct mode set temp or shift value  | Zone 1 water shift set Temperature For Cool Mode [°C] |
 |  TOP34 | 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift set Temperature For Heat Mode [°C] |
@@ -102,8 +102,8 @@
 |  TOP | 97 | 05 | Donvert to DEC (X-1) x 30   | Tank settings - Room operation max time [min] |
 |  TOP | 98 | 65 | Convert to DEC 101-1=100   | Tank heat up time (max) [min] |
 |  TOP22 | 99 | 78 | Convert to DEC 120-128=-8 | DHW delta for re-heat  [°C] |
-|  TOP | 100 | c1 |  Convert to DEC 193-128=65  | Sterilization boiling temperature [°C] |
-|  TOP | 101 | 0b |  Convert to DEC 11 - 1 = 10 | Sterilization max operation time [min] |
+|  TOP70 | 100 | c1 |  Convert to DEC 193-128=65  | Sterilization boiling temperature [°C] |
+|  TOP71 | 101 | 0b |  Convert to DEC 11 - 1 = 10 | Sterilization max operation time [min] |
 |  TOP | 102 | 00 |   | 0 byte |
 |  TOP | 103 | 00 |   | 0 byte |
 |  TOP | 104 | 00 |   | 0 byte |
@@ -119,7 +119,7 @@
 |  TOP44 | 114 | 53 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 |  TOP | 115 | 15 |   | ? |
 |  TOP | 116 | 5a |   | ? |
-|  TOP | 117 | 05 |   | ? |
+|  TOP69 | 117 | 05 | No sterilization -05 , Sterilization active  -09  | Sterilization status |
 |  TOP | 118 | 12 |   | ? |
 |  TOP | 119 | 12 |   | ? |
 |  TOP | 120 | 19 |   | ? |
