@@ -93,7 +93,10 @@ static const String topics[] = {
     "Low_Pressure",            //TOP66
     "Compressor_Current",      //TOP67
     "ForceHeater_State",       //TOP68
-};
+    "Sterilization_State",     //TOP69
+    "Sterilization_Temp",      //TOP70
+    "Sterilization_Max_Time",  //TOP71
+    };
 
 static const unsigned int topicBytes[] = {
         4,      //TOP0
@@ -165,6 +168,9 @@ static const unsigned int topicBytes[] = {
         164,    //TOP66
         165,    //TOP67
         5,      //TOP68
+        117,    //TOP69
+        100,    //TOP70
+        101,    //TOP71
 };        
 
 typedef String (*topicFP)(byte);
@@ -239,6 +245,9 @@ static const topicFP topicFunctions[] = {
     getIntMinus1,        //TOP66
     getIntMinus1Div5,    //TOP67
     getBit5and6,         //TOP68
+    getBit5and6,         //TOP69
+    getIntMinus128,      //TOP70
+    getIntMinus1,        //TOP71
 };
 
 static const char *DisabledEnabled[] = {"Disabled","Enabled"};
@@ -259,76 +268,78 @@ static const char *Hours[] = {"value","hours"};
 static const char *Watt[] = {"value","Watt"};
 static const char *ErrorState[] = {"value","Error"};
 static const char *Ampere[] = {"value","Ampere"};
+static const char *Minutes[] = {"value", "Minutes"};
 static const char **topicDescription[] = {
-    OffOn,                 //TOP0
-    LitersPerMin,          //TOP1
-    DisabledEnabled,       //TOP2
-    DisabledEnabled,       //TOP3
-    OpModeDesc,            //TOP4
-    Celsius,               //TOP5
-    Celsius,               //TOP6
-    Celsius,               //TOP7
-    Hertz,                 //TOP8
-    Celsius,               //TOP9
-    Celsius,               //TOP10
-    Hours,                 //TOP11    
-    Counter,               //TOP12    
-    DisabledEnabled,       //TOP13    
-    Celsius,               //TOP14    
-    Watt,                  //TOP15    
-    Watt,                  //TOP16    
-    Powerfullmode,         //TOP17    
-    Quietmode,             //TOP18    
-    DisabledEnabled,       //TOP19    
-    Valve,                 //TOP20
-    Celsius,               //TOP21    
-    Kelvin,                //TOP22    
-    Kelvin,                //TOP23    
-    Kelvin,                //TOP24    
-    Kelvin,                //TOP25    
-    DisabledEnabled,       //TOP26    
-    Celsius,               //TOP27    
-    Celsius,               //TOP28    
-    Celsius,               //TOP29    
-    Celsius,               //TOP30
-    Celsius,               //TOP31    
-    Celsius,               //TOP32    
-    Celsius,               //TOP33    
-    Celsius,               //TOP34    
-    Celsius,               //TOP35    
-    Celsius,               //TOP36    
-    Celsius,               //TOP37    
-    Watt,                  //TOP38    
-    Watt,                  //TOP39    
-    Watt,                  //TOP40
-    Watt,                  //TOP41    
-    Celsius,               //TOP42    
-    Celsius,               //TOP43    
-    ErrorState,            //TOP44    
-    Celsius,               //TOP45    
-    Celsius,               //TOP46    
-    Celsius,               //TOP47    
-    Celsius,               //TOP48    
-    Celsius,               //TOP49    
-    Celsius,               //TOP50
-    Celsius,               //TOP51    
-    Celsius,               //TOP52    
-    Celsius,               //TOP53    
-    Celsius,               //TOP54    
-    Celsius,               //TOP55    
-    Celsius,               //TOP56    
-    Celsius,               //TOP57    
-    DisabledEnabled,       //TOP58    
-    DisabledEnabled,       //TOP59    
-    InactiveActive,        //TOP60
-    InactiveActive,        //TOP61    
-    RotationsPerMin,       //TOP62    
-    RotationsPerMin,       //TOP63    
-    Pressure,              //TOP64    
-    RotationsPerMin,       //TOP65    
-    Pressure,              //TOP66
-    Ampere,                //TOP67
-    InactiveActive,                //TOP68
+    OffOn,           //TOP0
+    LitersPerMin,    //TOP1
+    DisabledEnabled, //TOP2
+    DisabledEnabled, //TOP3
+    OpModeDesc,      //TOP4
+    Celsius,         //TOP5
+    Celsius,         //TOP6
+    Celsius,         //TOP7
+    Hertz,           //TOP8
+    Celsius,         //TOP9
+    Celsius,         //TOP10
+    Hours,           //TOP11
+    Counter,         //TOP12
+    DisabledEnabled, //TOP13
+    Celsius,         //TOP14
+    Watt,            //TOP15
+    Watt,            //TOP16
+    Powerfullmode,   //TOP17
+    Quietmode,       //TOP18
+    DisabledEnabled, //TOP19
+    Valve,           //TOP20
+    Celsius,         //TOP21
+    Kelvin,          //TOP22
+    Kelvin,          //TOP23
+    Kelvin,          //TOP24
+    Kelvin,          //TOP25
+    DisabledEnabled, //TOP26
+    Celsius,         //TOP27
+    Celsius,         //TOP28
+    Celsius,         //TOP29
+    Celsius,         //TOP30
+    Celsius,         //TOP31
+    Celsius,         //TOP32
+    Celsius,         //TOP33
+    Celsius,         //TOP34
+    Celsius,         //TOP35
+    Celsius,         //TOP36
+    Celsius,         //TOP37
+    Watt,            //TOP38
+    Watt,            //TOP39
+    Watt,            //TOP40
+    Watt,            //TOP41
+    Celsius,         //TOP42
+    Celsius,         //TOP43
+    ErrorState,      //TOP44
+    Celsius,         //TOP45
+    Celsius,         //TOP46
+    Celsius,         //TOP47
+    Celsius,         //TOP48
+    Celsius,         //TOP49
+    Celsius,         //TOP50
+    Celsius,         //TOP51
+    Celsius,         //TOP52
+    Celsius,         //TOP53
+    Celsius,         //TOP54
+    Celsius,         //TOP55
+    Celsius,         //TOP56
+    Celsius,         //TOP57
+    DisabledEnabled, //TOP58
+    DisabledEnabled, //TOP59
+    InactiveActive,  //TOP60
+    InactiveActive,  //TOP61
+    RotationsPerMin, //TOP62
+    RotationsPerMin, //TOP63
+    Pressure,        //TOP64
+    RotationsPerMin, //TOP65
+    Pressure,        //TOP66
+    Ampere,          //TOP67
+    InactiveActive,  //TOP68
+    InactiveActive,  //TOP69
+    Celsius,         //TOP70
+    Minutes,         //TOP71
 };
-
- 

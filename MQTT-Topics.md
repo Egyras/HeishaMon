@@ -85,6 +85,10 @@ TOP65 | sdc/Pump_Speed | Pump Speed (R/Min)
 TOP66 | sdc/Low_Pressure | Low Pressure (Kgf/Cm2)
 TOP67 | sdc/Compressor_Current | Outdoor Current (Ampere)
 TOP68 | sdc/ForceHeater_State | Force heater status (0=inactive, 1=active)
+TOP69 | sdC/Sterilization_State | Sterilisation State (0=inactive, 1=active)
+TOP70 | sdC/Sterilization_Temp | Sterilisation Temperatur (°C)
+TOP71 | sdC/Sterilization_Max_Time | Sterilisation maximum time (minutes)
+
 
 ## Command Topics:
 
@@ -95,9 +99,9 @@ SetHoliday | Set holiday mode on or off | 0=off, 1=on
 SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
 SetPowerfull | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
 SetShiftTemperature | Set heatshift or direct heat temperature | -5 to 5 or 20 to 50
-SetOpMode | Sets operating mode | 0=Heat only, 1=Cool only, 2=Auto, 3=Tank only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW
+SetOperationMode | Sets operating mode | 0=Heat only, 1=Cool only, 2=Auto, 3=Tank only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW
 SetForceDHW | Forces DHW mode only | 1
-SetTankTemp | Set tank target temperature | 40 - 75
+SetDHWTemp | Set tank target temperature | 40 - 75
 SetCoolTemp | Set cooldown temperature | 5 - 20
 SetForceDefrost | Forces defrost routine | 1
 SetForceSterilization | Forces tank sterilization routine | 1
