@@ -322,8 +322,22 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
     if (httpServer->hasArg("wifi_hostname")) {
       jsonDoc["wifi_hostname"] = httpServer->arg("wifi_hostname");
     }
-    if (httpServer->hasArg("ota_password")) {
-      jsonDoc["ota_password"] = httpServer->arg("ota_password");
+    if (httpServer->hasArg("new_ota_password")) {
+      if (httpServer->hasArg("current_ota_password") && (strcmp(ota_password, httpServer->arg("current_ota_password").c_str()) == 0 )) {
+        jsonDoc["ota_password"] = httpServer->arg("new_ota_password");
+      }
+      else {
+        httptext = "<div class=\"w3-container w3-center\">";
+        httptext = httptext + "<h3>------- wrong current password -------</h3>";
+        httptext = httptext + "<h3>-- do factory reset if password lost --</h3>";
+        httptext = httptext + "</div>";
+        httpServer->sendContent(httptext);
+        httpServer->sendContent_P(refreshMeta);
+        httpServer->sendContent_P(webFooter);
+        httpServer->sendContent("");
+        httpServer->client().stop();
+        return;
+      }
     }
     if (httpServer->hasArg("mqtt_server")) {
       jsonDoc["mqtt_server"] = httpServer->arg("mqtt_server");
@@ -365,8 +379,11 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
   httptext = httptext + "Hostname:<br>";
   httptext = httptext + "<input type=\"text\" name=\"wifi_hostname\" value=\"" + wifi_hostname + "\">";
   httptext = httptext + "<br><br>";
-  httptext = httptext + "Update password:<br>";
-  httptext = httptext + "<input type=\"password\" name=\"ota_password\" value=\"" + ota_password + "\">";
+  httptext = httptext + "Current update password:<br>";
+  httptext = httptext + "<input type=\"password\" name=\"current_ota_password\" value=\"\">";
+  httptext = httptext + "<br><br>";
+  httptext = httptext + "New update password:<br>";
+  httptext = httptext + "<input type=\"password\" name=\"new_ota_password\" value=\"\">";
   httptext = httptext + "<br><br>";
   httptext = httptext + "Mqtt server:<br>";
   httptext = httptext + "<input type=\"text\" name=\"mqtt_server\" value=\"" + mqtt_server + "\">";
