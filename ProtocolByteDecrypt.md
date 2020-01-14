@@ -26,7 +26,7 @@
 |  TOP | 21 | 15 |   | ? |
 |  TOP | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
-|  TOP | 24 | 16 | (hex) DHW connected=16, DHW not connected=15, no buffer(DHW connected)=16, DHW+Buffer=1A | DHW Connection and Buffer status |
+|  TOP | 24 | 16 | (hex) DHW connected (no solar) =16, DHW not connected=15, no buffer(DHW connected)=16, DHW+Buffer=1A, DHW as buffer for Solar=26, Buffer tank as Buffer for solar=36  | DHW Connection and Buffer + Solar status |
 |  TOP | 25 | 5e | (hex) DHW Heater internal and 3kW=95, DHW Heater external and 3kW=96, DHW Heater internal and 6kW=99, DHW Heater external and 6kW=9A, DHW Heater internal and 9kW=9D, DHW Heater External and 9KW -9E, DHW Heater external and 9KW + Heater pad Type A on=AE, DHW Heater external and 9KW + Heater pad Type B on=BE  | Power of internal heater + DHW heater Internal/External + Heater for external pad |
 |  TOP | 26 | 55 | (hex) Biwalent Off=55, Biwalent alternative =56, Biwalent parallel=5A | Biwalent settings |
 |  TOP | 27 | 05 |   | ? |
@@ -63,8 +63,8 @@
 |  TOP | 58 | 80 |   | ? |
 |  TOP | 59 | 85 | Convert to DEC-128  | Delta T for buffer tank [°C]|
 |  TOP | 60 | 15 | Convert to DEC X-1   | Time set for external heaters 20min-3h, step 5min. |
-|  TOP | 61 | 8a |   | ? |
-|  TOP | 62 | 85 |  Convert to DEC | ? | 
+|  TOP | 61 | 8a | Convert to DEC-128  | ? Possible Solar Connection Set delta T for tank ON (DHW or Buffer) |
+|  TOP | 62 | 85 |  Convert to DEC-128 | ? Possible Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
 |  TOP | 63 | 85 |   | ? |
 |  TOP | 64 | d0 |   | ? |
 |  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Biwalent device -15-35[°C]|
