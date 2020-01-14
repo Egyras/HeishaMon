@@ -44,7 +44,7 @@ static const String topics[] = {
     "Powerfullmode_Time",      //TOP17
     "Quietmode_Level",         //TOP18
     "Holidaymode_State",       //TOP19
-    "ThreewayValve_State",     //TOP20
+    "ThreeWayValve_State",     //TOP20
     "Outside_Pipe_Temp",       //TOP21
     "DHW_Heat_Delta",          //TOP22
     "Heat_Delta",              //TOP23
