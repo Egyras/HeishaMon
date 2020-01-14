@@ -27,7 +27,7 @@ static const String topics[] = {
     "Heatpump_State",          //TOP0
     "Pump_Flow",               //TOP1
     "ForceDHW_State",          //TOP2
-    "Quietmode_Schedule",      //TOP3
+    "QuietMode_Schedule",      //TOP3
     "OperatingMode_State",     //TOP4
     "Water_Inlet_Temp",        //TOP5
     "Water_Outlet_Temp",       //TOP6
@@ -42,8 +42,8 @@ static const String topics[] = {
     "Heat_Energy_Production",  //TOP15
     "Heat_Energy_Consumption", //TOP16
     "Powerfullmode_Time",      //TOP17
-    "Quietmode_Level",         //TOP18
-    "Holidaymode_State",       //TOP19
+    "QuietMode_Level",         //TOP18
+    "HolidayMode_State",       //TOP19
     "ThreeWayValve_State",     //TOP20
     "Outside_Pipe_Temp",       //TOP21
     "DHW_Heat_Delta",          //TOP22
