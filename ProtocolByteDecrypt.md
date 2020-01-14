@@ -61,7 +61,7 @@
 |  TOP | 56 | 00 |   | 0 byte |
 |  TOP | 57 | 00 |   | 0 byte |
 |  TOP | 58 | 80 |   | ? |
-|  TOP | 59 | 85 |   | ? |
+|  TOP | 59 | 85 | Convert to DEC-128  | Delta T for buffer tank [°C]|
 |  TOP | 60 | 15 | Convert to DEC X-1   | Time set for external heaters 20min-3h, step 5min. |
 |  TOP | 61 | 8a |   | ? |
 |  TOP | 62 | 85 |  Convert to DEC | ? | 
