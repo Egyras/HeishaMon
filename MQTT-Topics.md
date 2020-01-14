@@ -36,7 +36,7 @@ TOP16 | sdc/Heat_Energy_Consumption | Elektrical heat power consumption at heat 
 TOP17 | sdc/Powerfullmode_Time | Powerfull state in minutes (0, 1, 2 or 3 x 30min)
 TOP18 | sdc/Quietmode_Level | Quiet mode level (0, 1, 2, 3)
 TOP19 | sdc/Holidaymode_State | Holiday mode (84=off, 100=on)
-TOP20 | sdc/ThreewayValve_State | 3-way valve mode (0=Room, 1=DHW)
+TOP20 | sdc/ThreeWayValve_State | 3-way valve mode (0=Room, 1=DHW)
 TOP21 | sdc/Outside_Pipe_Temp | Outside pipe temperature (°C)
 TOP22 | sdc/DHW_Heat_Delta | DHW delta (K)
 TOP23 | sdc/Heat_Delta | Heat delta (K)
