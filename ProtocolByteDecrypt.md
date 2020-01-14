@@ -65,7 +65,7 @@
 |  TOP | 60 | 15 | Convert to DEC X-1   | Time set for external heaters 20min-3h, step 5min. |
 |  TOP | 61 | 8a | Convert to DEC-128  | ? Possible Solar Connection Set delta T for tank ON (DHW or Buffer) |
 |  TOP | 62 | 85 |  Convert to DEC-128 | ? Possible Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
-|  TOP | 63 | 85 |   | ? |
+|  TOP | 63 | 85 |  Convert to DEC-128 | ? Possible Set Antifreeze for Solar |
 |  TOP | 64 | d0 |   | ? |
 |  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Biwalent device -15-35[°C]|
 |  TOP | 66 | 78 |   | ? |
