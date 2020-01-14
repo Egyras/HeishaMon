@@ -15,7 +15,7 @@ For every state: -1 = unknown
 |	| 1 | Quiet mode 1 |
 |	| 2 | Quiet mode 2 |
 |	| 3 | Quiet mode 3 |
-|panasonic_heat_pump/sdc/Quietmode_Schedule	| 0 | Quiet mode schedule inactive |
+|panasonic_heat_pump/sdc/QuietMode_Schedule	| 0 | Quiet mode schedule inactive |
 |	| 1 | Quiet mode schedule active |
 |panasonic_heat_pump/sdc/Powerfullmode_state	| 0 | Powerfull mode off |
 |	| 1 | Powerfull mode 30 min |
@@ -27,7 +27,7 @@ For every state: -1 = unknown
 | | 1 | Defrosting active |
 |panasonic_heat_pump/sdc/ForceDHW_state | 0 | Force DHW disabled |
 | | 1 | Force DHW enabled |
-|panasonic_heat_pump/sdc/Holidaymode_state | 0 | Holiday mode disabled |
+|panasonic_heat_pump/sdc/HolidayMode_State | 0 | Holiday mode disabled |
 | | 1 | Holiday mode set |
 | | 2 | Holiday mode active |
 |panasonic_heat_pump/sdc/MainSchedule_state | 0 | Main schedule disabled |
