@@ -49,7 +49,7 @@ TOP29 | sdc/HCurve_OutHighTemp | Target temperatur at lowest point on the heatin
 TOP30 | sdc/HCurve_OutLowTemp | Target temperatur at highest point on the heating curve (eg. 24°C)
 TOP31 | sdc/HCurve_OutsHighTemp | Lowest outside temperatur on the heating curve (eg. -12°C)
 TOP32 | sdc/HCurve_OutsLowTemp | Highest outside temperatur on the heating curve (eg. 15°C)
-TOP33 | sdc/Roomthermostat_Temp | Remote control thermostat temp (°C)
+TOP33 | sdc/RoomThermostat_Temp | Remote control thermostat temp (°C)
 TOP34 | sdc/Z2_HeatRequest_Temp | Zone 2 Heat Requested shift temp (-5 to 5) or direct heat temp (20 to 55)
 TOP35 | sdc/Z2_CoolRequest_Temp | Zone 2 Cool Requested shift temp (-5 to 5) or direct cool temp (?? to ??)
 TOP36 | sdc/Z1_Water_Temp | Zone 1 Room/Pool outlet temperature (°C)
