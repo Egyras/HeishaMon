@@ -25,8 +25,8 @@
 |  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Anti freezing |
 |  TOP | 21 | 15 |   | ? |
 |  TOP | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
-|  TOP | 23 | 55 | (hex) Off=55, On=56  | External Switch |
-|  TOP | 24 | 16 | (hex) DHW connected=16, not connected=15 | DHW Connection status |
+|  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
+|  TOP | 24 | 16 | (hex) DHW connected (no solar) =16, DHW not connected=15, no buffer(DHW connected)=16, DHW+Buffer=1A, DHW as buffer for Solar=26, Buffer tank as Buffer for solar=36  | DHW Connection and Buffer + Solar status |
 |  TOP | 25 | 5e | (hex) DHW Heater internal and 3kW=95, DHW Heater external and 3kW=96, DHW Heater internal and 6kW=99, DHW Heater external and 6kW=9A, DHW Heater internal and 9kW=9D, DHW Heater External and 9KW -9E, DHW Heater external and 9KW + Heater pad Type A on=AE, DHW Heater external and 9KW + Heater pad Type B on=BE  | Power of internal heater + DHW heater Internal/External + Heater for external pad |
 |  TOP | 26 | 55 | (hex) Biwalent Off=55, Biwalent alternative =56, Biwalent parallel=5A | Biwalent settings |
 |  TOP | 27 | 05 |   | ? |
@@ -61,12 +61,12 @@
 |  TOP | 56 | 00 |   | 0 byte |
 |  TOP | 57 | 00 |   | 0 byte |
 |  TOP | 58 | 80 |   | ? |
-|  TOP | 59 | 85 |   | ? |
+|  TOP | 59 | 85 | Convert to DEC-128  | Delta T for buffer tank [°C]|
 |  TOP | 60 | 15 | Convert to DEC X-1   | Time set for external heaters 20min-3h, step 5min. |
-|  TOP | 61 | 8a |   | ? |
-|  TOP | 62 | 85 |  Convert to DEC | ? | 
-|  TOP | 63 | 85 |   | ? |
-|  TOP | 64 | d0 |   | ? |
+|  TOP | 61 | 8a | Convert to DEC-128  | ? Possible Solar Connection Set delta T for tank ON (DHW or Buffer) |
+|  TOP | 62 | 85 |  Convert to DEC-128 | ? Possible Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
+|  TOP | 63 | 85 |  Convert to DEC-128 | ? Possible Set Antifreeze for solar |
+|  TOP | 64 | d0 |  Convert to DEC-128 | ? Possible Set Hi limitfor solar |
 |  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Biwalent device -15-35[°C]|
 |  TOP | 66 | 78 |   | ? |
 |  TOP | 67 | 1f |   | ? |
@@ -190,8 +190,8 @@
 |  TOP | 185 | 05 | to DEC X-1  | Room Heater operation time in h |
 |  TOP | 186 | 00 |   | ? |
 |  TOP | 187 | 00 |   | ? |
-|  TOP | 188 | 01 | to DEC X-1   | DHW Heater operation time in h  |
-|  TOP | 189 | 00 |   | ? |
+|  TOP | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
+|  TOP | 189 | 00 | look at 188 | DHW Heater operation time in h |
 |  TOP | 190 | 00 |   | ? |
 |  TOP | 191 | 06 |   | ? |
 |  TOP | 192 | 01 |   | ? |
