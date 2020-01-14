@@ -1,7 +1,7 @@
 ## Protocol byte decrypt info:
 
 |  Topic# | Byte# | Possible Value | Value decrypt | Value Description |
-| ----: | ---- | ---- | ----- | ----:|
+| :---- | ---- | ---- | ----- | ----:|
 |  TOP | 00 | 71 |   | Header  |
 |  TOP | 01 | c8 | Data length ( Packet length = Data length + 3 )  |  Header |
 |  TOP | 02 | 01|   | Header  |

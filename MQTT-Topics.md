@@ -1,21 +1,21 @@
 # MQTT Topics for HeishaMon
 
-## Availability topic:
+## Availability Topic:
 
 ID | Topic | Response
 --- | --- | ---
 || LWT | Online/Offline (automatically returns to Offline if connection with the HeishaMon lost)
 
-## Log topic:
+## Log Topic:
 
 ID | Topic | Response
 --- | --- | ---
-LOG1 | log | Log of responses from pump
+LOG1 | log | response from headpump (level switchable)
 
-## Sensors Topics:
+## Sensor Topics:
 
-ID | Topic | Response
---- | --- | ---
+ID | Topic | Response/Description
+:--- | --- | ---
 TOP0 | sdc/Heatpump_State | Heatpump state (0=off, 1=on)
 TOP1 | sdc/Pump_Flow | Pump flow (l/min)
 TOP2 | sdc/ForceDHW_State | DHW status (0=off, 1=on -1=unknown)
@@ -92,23 +92,23 @@ TOP71 | sdC/Sterilization_Max_Time | Sterilisation maximum time (minutes)
 
 ## Command Topics:
 
-Topic | Description | Values
---- | --- | ---
-SetHeatpump | Set heatpump on or off | 0=off, 1=on
-SetHoliday | Set holiday mode on or off | 0=off, 1=on
-SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
-SetPowerfull | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
-SetZ1HeatRequestTemperature | Set Z1 heat shift or direct heat temperature | -5 to 5 or 20 to 50
-SetZ1CoolRequestTemperature | Set Z1 cool shift or direct cool temperature | -5 to 5 or 20 to 50
-SetZ2HeatRequestTemperature | Set Z2 heat shift or direct heat temperature | -5 to 5 or 20 to 50
-SetZ2CoolRequestTemperature | Set Z2 cool shift or direct cool temperature | -5 to 5 or 20 to 50
-SetOperationMode | Sets operating mode | 0=Heat only, 1=Cool only, 2=Auto, 3=DHW only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW
-SetForceDHW | Forces DHW mode only | 1
-SetDHWTemp | Set DHW target temperature | 40 - 75
-SetCoolTemp | Set cooldown temperature | 5 - 20
-SetForceDefrost | Forces defrost routine | 1
-SetForceSterilization | Forces DHW sterilization routine | 1
+ ID |Topic | Description | Value/Range
+:--- | :--- | --- | ---
+SET1  | SetHeatpump | Set heatpump on or off | 0=off, 1=on
+SET2  | SetHoliday | Set holiday mode on or off | 0=off, 1=on
+SET3  | SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
+SET4  | SetPowerfull | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
+SET5  | SetZ1HeatRequestTemperature | Set Z1 heat shift or direct heat temperature | -5 to 5 or 20 to 50
+SET6  | SetZ1CoolRequestTemperature | Set Z1 cool shift or direct cool temperature | -5 to 5 or 20 to 50
+SET7  | SetZ2HeatRequestTemperature | Set Z2 heat shift or direct heat temperature | -5 to 5 or 20 to 50
+SET8  | SetZ2CoolRequestTemperature | Set Z2 cool shift or direct cool temperature | -5 to 5 or 20 to 50
+SET9  | SetOperationMode | Sets operating mode | 0=Heat only, 1=Cool only, 2=Auto, 3=DHW only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW
+SET10 | SetForceDHW | Forces DHW mode only | 0, 1
+SET11 | SetDHWTemp | Set DHW target temperature | 40 - 75
+SET12 | SetCoolTemp | Set cooldown temperature | 5 - 20
+SET13 | SetForceDefrost | Forces defrost routine | 0, 1
+SET14 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
 
 
 
-*If you operate your Heisha with direct temperature, the shift values correspond to the absolute temperature*
+*If you operate your Heisha with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*
