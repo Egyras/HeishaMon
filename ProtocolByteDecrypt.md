@@ -190,8 +190,8 @@
 |  TOP | 185 | 05 | to DEC X-1  | Room Heater operation time in h |
 |  TOP | 186 | 00 |   | ? |
 |  TOP | 187 | 00 |   | ? |
-|  TOP | 188 | 01 | to DEC X-1   | DHW Heater operation time in h  |
-|  TOP | 189 | 00 |   | ? |
+|  TOP | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
+|  TOP | 189 | 00 | look at 188 | DHW Heater operation time in h |
 |  TOP | 190 | 00 |   | ? |
 |  TOP | 191 | 06 |   | ? |
 |  TOP | 192 | 01 |   | ? |
