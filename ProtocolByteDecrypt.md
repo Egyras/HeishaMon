@@ -73,10 +73,10 @@
 |  TOP | 68 | 7e | Convert to DEC-128  | ?  Possible Controll pattern in Bivalent set temperature source to stop the bivalent heat source |
 |  TOP | 69 | 1f | Convert to DEC X-1  | ? Possible Bivalent Delay timer to stop the bivalent heat source |
 |  TOP | 70 | 1f | Convert to DEC X-1  | ? Possible Bivalent Control pattern for DHW delay timer to start the bivalent source  |
-|  TOP | 71 | 79 |   | ? |
-|  TOP | 72 | 79 |   | ? |
-|  TOP | 73 | 8d |   =13| ? |
-|  TOP | 74 | 8d |   =13| ? |
+|  TOP | 71 | 79 |   | ? SG settings |
+|  TOP | 72 | 79 |   | ? SG settings |
+|  TOP | 73 | 8d |   =13| ? SG settings |
+|  TOP | 74 | 8d |   =13| ? SG settings |
 |  TOP29 | 75 | 9e | Convert to DEC 158-128 =30 | Heating Curve Outlet Water Temperature Highest Set [°C] |
 |  TOP30 | 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
 |  TOP32 | 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
