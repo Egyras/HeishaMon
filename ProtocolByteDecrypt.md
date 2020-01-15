@@ -193,8 +193,8 @@
 |  TOP | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
 |  TOP | 189 | 00 | look at 188 | DHW Heater operation time in h |
 |  TOP | 190 | 00 |   | ? |
-|  TOP | 191 | 06 |   | ? |
-|  TOP | 192 | 01 |   | ? |
+|  TOP | 191 | 06 | to DEC X-1  | ? Possible heat pump power in Kw |
+|  TOP | 192 | 01 | (hex) simple model=1, T-CAP=2  | ? Possible Heat pump indicator for T-CAP  |
 |  TOP16 | 193 | 01 | to DEC (x-1) / 5   | Energy Consumption for Heat in [kw]  |
 |  TOP15 | 194 | 01 | to DEC (x-1) / 5   | Energy Generation for Heat in [kw] |
 |  TOP38 | 195 | 01 | to DEC (x-1) / 5   | Energy Consumption for Cool in [kw] |
