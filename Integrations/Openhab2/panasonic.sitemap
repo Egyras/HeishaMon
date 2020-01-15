@@ -7,7 +7,7 @@ sitemap panasonic label="Panasonic" icon="House" {
                Switch item=panasonic_heat_pump_Mode label="Heat Pump Mode" mappings=[3="Tank", 0="Heat", 2="Auto", 1="Cool"]
                Switch item=panasonic_heat_pump_Quiet_mode label="Set Quiet Mode" mappings=[0="OFF", 1="1", 2="2", 3="3"]
                Switch item=panasonic_heat_pump_ForceDHW label="Set Force DHW" mappings=[0="OFF", 1="ON"]
-               Switch item=panasonic_heat_pump_Holiday label="Set Holiday Mode" mappings=[84="OFF", 100="ON"]
+               Switch item=panasonic_heat_pump_Holiday label="Set Holiday Mode" mappings=[0="OFF", 1="ON"]
                Switch item=panasonic_heat_pump_PowerMode label="Set Power Mode" mappings=[0="OFF", 1="30", 2="60", 3="90"]
                Setpoint item=panasonic_heat_pump_Shift_mode step=1 minValue=-5 maxValue=5
 
