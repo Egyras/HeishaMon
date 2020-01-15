@@ -67,9 +67,9 @@
 |  TOP | 62 | 85 |  Convert to DEC-128 | ? Possible Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
 |  TOP | 63 | 85 |  Convert to DEC-128 | ? Possible Set Antifreeze for solar |
 |  TOP | 64 | d0 |  Convert to DEC-128 | ? Possible Set Hi limitfor solar |
-|  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Biwalent device -15-35[°C]|
-|  TOP | 66 | 78 |   | ? |
-|  TOP | 67 | 1f |   | ? |
+|  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Bivalent device -15-35[°C]|
+|  TOP | 66 | 78 | Convert to DEC-128  | ? Possible Controll pattern in Bivalent set temperature source to start the bivalent heat source |
+|  TOP | 67 | 1f | Convert to DEC-1  | ?  Possible Bivalent Delay timer to start the bivalent heat source |
 |  TOP | 68 | 7e |   | ? |
 |  TOP | 69 | 1f |   | ? |
 |  TOP | 70 | 1f |   | ? |
