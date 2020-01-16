@@ -294,7 +294,8 @@ void setup() {
 }
 
 void send_panasonic_query() {
-  log_message((char*)"Requesting new panasonic data...");
+  String message = "Requesting new panasonic data (uptime: " + getUptime() + ")";
+  log_message((char*)message.c_str());
   send_command(panasonicQuery, PANASONICQUERYSIZE);
 }
 

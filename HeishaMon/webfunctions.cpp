@@ -8,9 +8,14 @@
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 #include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
 
+#define UPTIME_OVERFLOW 4294967295 // Uptime overflow value
+
 
 //flag for saving data
 bool shouldSaveConfig = false;
+
+
+
 
 static const char webHeader[] PROGMEM  =
   "<!DOCTYPE html>"
@@ -61,7 +66,55 @@ void saveConfigCallback () {
   shouldSaveConfig = true;
 }
 
+int getWifiQuality() {
+  if (WiFi.status() != WL_CONNECTED)
+    return -1;
+  int dBm = WiFi.RSSI();
+  if (dBm <= -100)
+    return 0;
+  if (dBm >= -50)
+    return 100;
+  return 2 * (dBm + 100);
+}
+
+int getFreeMemory() {
+  //store total memory at boot time
+  static uint32_t total_memory = 0;
+  if ( 0 == total_memory ) total_memory = ESP.getFreeHeap();
+
+  uint32_t free_memory   = ESP.getFreeHeap();
+  return (100 * free_memory / total_memory ) ; // as a %
+}
+
+// returns system uptime in seconds
+String getUptime() {
+  static uint32_t last_uptime      = 0;
+  static uint8_t  uptime_overflows = 0;
+
+  if (millis() < last_uptime) {
+    ++uptime_overflows;
+  }
+  last_uptime             = millis();
+  uint32_t t = uptime_overflows * (UPTIME_OVERFLOW / 1000) + (last_uptime / 1000);
+
+  char     uptime[200];
+  uint8_t  d   = t / 86400L;
+  uint8_t  h   = ((t % 86400L) / 3600L) % 60;
+  uint32_t rem = t % 3600L;
+  uint8_t  m   = rem / 60;
+  uint8_t  sec = rem % 60;
+  sprintf(uptime, "%d day%s %d hour%s %d minute%s %d second%s", d, (d == 1) ? "" : "s", h, (h == 1) ? "" : "s", m, (m == 1) ? "" : "s", sec, (sec == 1) ? "" : "s");
+  return String(uptime);
+}
+
 void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password) {
+
+  //first get total memory before we do anything
+  getFreeMemory();
+
+  //set boottime
+  getUptime();
+
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
@@ -212,6 +265,11 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
   httptext = httptext + "<hr><div class=\"w3-text-grey\">Version: " + heishamon_version + "<br><a href=\"https://github.com/Egyras/HeishaMon\">Heishamon software</a></div><hr></div>";
 
+  httptext = httptext + "<div class=\"w3-container w3-left\">";
+  httptext = httptext + "<br>Wifi signal: " + String(getWifiQuality()) + "%";
+  httptext = httptext + "<br>Memory free: " + String(getFreeMemory()) + "%";
+  httptext = httptext + "<br>Uptime: " + getUptime();
+  httptext = httptext + "</div>";
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
 
