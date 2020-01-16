@@ -1,7 +1,7 @@
 ## Protocol byte decrypt info:
 
 |  Topic# | Byte# | Possible Value | Value decrypt | Value Description |
-| ----: | ---- | ---- | ----- | ----:|
+| :---- | ---- | ---- | ----- | ----:|
 |  TOP | 00 | 71 |   | Header  |
 |  TOP | 01 | c8 | Data length ( Packet length = Data length + 3 )  |  Header |
 |  TOP | 02 | 01|   | Header  |
@@ -10,7 +10,7 @@
 |  TOP19+TOP13+TOP68 | 05 | 55 | Holiday mode off/on (bit3and4), weekly shedule off/on (bit 1and2) force heater off/on (bit5and6) | Holiday mode, Sheduler status, force heater state |
 |  TOP4 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerfull mode status |
-|  TOP | 08 | 00 |   | ? |
+|  TOP | 08 | 00 |   | 0 byte |
 |  TOP58+TOP59 | 09 | 05 | HEX values - should be Low Byte (2nd value)Water heater off + DHW heater off=55, Water heater on + DHWs heater off=56, Water Heater off + DHW heater on=59, Weater heater on + DHW heater on=5A | Heaters enable allowed status|
 |  TOP | 10 | 00 |   | 0 byte |
 |  TOP | 11 | 00 |   | 0 byte |
@@ -29,7 +29,7 @@
 |  TOP | 24 | 16 | (hex) DHW connected (no solar) =16, DHW not connected=15, no buffer(DHW connected)=16, DHW+Buffer=1A, DHW as buffer for Solar=26, Buffer tank as Buffer for solar=36  | DHW Connection and Buffer + Solar status |
 |  TOP | 25 | 5e | (hex) DHW Heater internal and 3kW=95, DHW Heater external and 3kW=96, DHW Heater internal and 6kW=99, DHW Heater external and 6kW=9A, DHW Heater internal and 9kW=9D, DHW Heater External and 9KW -9E, DHW Heater external and 9KW + Heater pad Type A on=AE, DHW Heater external and 9KW + Heater pad Type B on=BE  | Power of internal heater + DHW heater Internal/External + Heater for external pad |
 |  TOP | 26 | 55 | (hex) Biwalent Off=55, Biwalent alternative =56, Biwalent parallel=5A | Biwalent settings |
-|  TOP | 27 | 05 |   | ? |
+|  TOP | 27 | 05 | (hex) SG off+controll needs off=05, SG off+control needs on=06, SG on+control needs on=0A, SG on+control needsoff=09  | SG control |
 |  TOP | 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
 |  TOP | 29 | 00 |   | 0 byte |
 |  TOP | 30 | 00 |   | 0 byte |
@@ -66,17 +66,17 @@
 |  TOP | 61 | 8a | Convert to DEC-128  | ? Possible Solar Connection Set delta T for tank ON (DHW or Buffer) |
 |  TOP | 62 | 85 |  Convert to DEC-128 | ? Possible Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
 |  TOP | 63 | 85 |  Convert to DEC-128 | ? Possible Set Antifreeze for solar |
-|  TOP | 64 | d0 |  Convert to DEC-128 | ? Possible Set Hi limitfor solar |
-|  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Biwalent device -15-35[°C]|
-|  TOP | 66 | 78 |   | ? |
-|  TOP | 67 | 1f |   | ? |
-|  TOP | 68 | 7e |   | ? |
-|  TOP | 69 | 1f |   | ? |
-|  TOP | 70 | 1f |   | ? |
-|  TOP | 71 | 79 |   | ? |
-|  TOP | 72 | 79 |   | ? |
-|  TOP | 73 | 8d |   =13| ? |
-|  TOP | 74 | 8d |   =13| ? |
+|  TOP | 64 | d0 |  Convert to DEC-128 | ? Possible Set Hi limit for solar |
+|  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Bivalent device -15-35[°C]|
+|  TOP | 66 | 78 | Convert to DEC-128  | ? Possible Control pattern in Bivalent set temperature source to start the bivalent heat source |
+|  TOP | 67 | 1f | Convert to DEC X-1  | ?  Possible Bivalent Delay timer to start the bivalent heat source |
+|  TOP | 68 | 7e | Convert to DEC-128  | ?  Possible Controll pattern in Bivalent set temperature source to stop the bivalent heat source |
+|  TOP | 69 | 1f | Convert to DEC X-1  | ? Possible Bivalent Delay timer to stop the bivalent heat source |
+|  TOP | 70 | 1f | Convert to DEC X-1  | ? Possible Bivalent Control pattern for DHW delay timer to start the bivalent source  |
+|  TOP | 71 | 79 |79-120%   |SG Setting 1 Heating Capacity  |
+|  TOP | 72 | 79 |79-120%   |SG Setting 1 DHW Capacity  |
+|  TOP | 73 | 8d |8d-140%   |SG Setting 2 Heating Capacity  |
+|  TOP | 74 | 8d |8d-140%   |SG Setting 2 DHW Capacity  |
 |  TOP29 | 75 | 9e | Convert to DEC 158-128 =30 | Heating Curve Outlet Water Temperature Highest Set [°C] |
 |  TOP30 | 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
 |  TOP32 | 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
@@ -88,10 +88,10 @@
 |  TOP | 83 | 8e | Convert to DEC-128  | Outdoor Temperature to stop heating 5-35 [°C] |
 |  TOP23 | 84 | 80 | Convert to DEC 133-128 =5  | Floor heating set delta [°C] |
 |  TOP | 85 | 80 | Convert to DEC 128-128=0 | ? Possible Outdoor temperature for heater ON [°C]  |
-|  TOP | 86 | 8f | Convert to DEC 143-128 =15 | Set temperature for Cooling direct mode [°C] |
-|  TOP | 87 | 8a |   =10| ?  Possible cooling curve |
-|  TOP | 88 | 94 |  =20 | ? Possible cooling curve |
-|  TOP | 89 | 9e |  =30 | ? Possible cooling curve  |
+|  TOP | 86 | 8f | Convert to DEC 143-128 =15 | Set temperature for Cooling direct mode [°C] or Cooling Curve Outlet Water Temperature Highest Set [°C]|
+|  TOP | 87 | 8a |   =10| Cooling Curve Outlet Water Temperature Lowest Set [°C] |
+|  TOP | 88 | 94 |  =20 | Cooling Curve Outside Temperature Lowest Set [°C] |
+|  TOP | 89 | 9e |  =30 | Cooling Curve Outside Temperature Highest Set [°C] |
 |  TOP | 90 | 8a |  =10 | ? |
 |  TOP | 91 | 8a |  =10| ? |
 |  TOP | 92 | 94 |  =20 | ? |
@@ -193,8 +193,8 @@
 |  TOP | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
 |  TOP | 189 | 00 | look at 188 | DHW Heater operation time in h |
 |  TOP | 190 | 00 |   | ? |
-|  TOP | 191 | 06 |   | ? |
-|  TOP | 192 | 01 |   | ? |
+|  TOP | 191 | 06 | to DEC X-1  | ? Possible heat pump power in Kw |
+|  TOP | 192 | 01 | (hex) simple model=1, T-CAP=2  | ? Possible Heat pump indicator for T-CAP  |
 |  TOP16 | 193 | 01 | to DEC (x-1) / 5   | Energy Consumption for Heat in [kw]  |
 |  TOP15 | 194 | 01 | to DEC (x-1) / 5   | Energy Generation for Heat in [kw] |
 |  TOP38 | 195 | 01 | to DEC (x-1) / 5   | Energy Consumption for Cool in [kw] |

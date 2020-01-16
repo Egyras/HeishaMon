@@ -1,39 +1,44 @@
 //Panasonic Heat Pump//
 String panasonic_heat_pump_controller                    "State [%s]"      <settings>          (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/LWT:state:default]"}  
-Number panasonic_heat_pump_HeatShiftTemp                 "Temp [%.0f °C]"  <temperature_hot>   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Z1_HeatShift_Temp:state:default]"}
-Number panasonic_heat_pump_CoolShiftTemp                 "Temp [%.0f °C]"  <temperature_cold>  (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Z1_CoolShift_Temp:state:default]"}
-Number panasonic_heat_pump_TankSetTemp                   "Temp [%.0f °C]"  <temperature_hot>   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Tank_Target_Temp:state:default]"}
-Number panasonic_heat_pump_HCurveOutHighTemp             "Temp [%.0f °C]"  <temperature_hot>   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/HCurve_OutHighTemp:state:default]"}
-Number panasonic_heat_pump_HCurveOutLowTemp              "Temp [%.0f °C]"  <temperature_cold>  (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/HCurve_OutLowTemp:state:default]"}
-Number panasonic_heat_pump_HCurveOutsLowTemp             "Temp [%.0f °C]"  <temperature_cold>  (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/HCurve_OutsLowTemp:state:default]"}
-Number panasonic_heat_pump_HCurveOutsHighTemp            "Temp [%.0f °C]"  <temperature_hot>   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/HCurve_OutsHighTemp:state:default]"}
-Number panasonic_heat_pump_ActWatOutTemp                 "Temp [%.0f °C]"  <temperature>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Z1_Flow_Outlet_Temp:state:default]"}
-Number panasonic_heat_pump_ActTankTemp                   "Temp [%.0f °C]"  <temperature>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Tank_Temp:state:default]"}
+Number panasonic_heat_pump_HeatShiftTemp                 "Temp [%.0f °C]"  <temperature_hot>   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Z1_HeatRequest_Temp:state:default]"}
+Number panasonic_heat_pump_CoolShiftTemp                 "Temp [%.0f °C]"  <temperature_cold>  (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Z1_CoolRequest_Temp:state:default]"}
+Number panasonic_heat_pump_TankSetTemp                   "Temp [%.0f °C]"  <temperature_hot>   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/DHW_Target_Temp:state:default]"}
+Number panasonic_heat_pump_HCurveOutHighTemp             "Temp [%.0f °C]"  <temperature_hot>   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/HCurveOutHighTemp:state:default]"}
+Number panasonic_heat_pump_HCurveOutLowTemp              "Temp [%.0f °C]"  <temperature_cold>  (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/HCurveOutLowTemp:state:default]"}
+Number panasonic_heat_pump_HCurveOutsLowTemp             "Temp [%.0f °C]"  <temperature_cold>  (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/HCurveOutsLowTemp:state:default]"}
+Number panasonic_heat_pump_HCurveOutsHighTemp            "Temp [%.0f °C]"  <temperature_hot>   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/HCurveOutsHighTemp:state:default]"}
+Number panasonic_heat_pump_ActWatOutTemp                 "Temp [%.0f °C]"  <temperature>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Water_Outlet_Temp:state:default]"}
+Number panasonic_heat_pump_ActTankTemp                   "Temp [%.0f °C]"  <temperature>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/DHW_Temp:state:default]"}
 Number panasonic_heat_pump_ActOutTemp                    "Temp [%.0f °C]"  <temperature> 	   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Outside_Temp:state:default]"}
 Number panasonic_heat_pump_WatOutTarTemp                 "Temp [%.0f °C]"  <temperature>	   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Water_Target_Temp:state:default]"}
-Number panasonic_heat_pump_RoomTherTemp                  "Temp [%.0f °C]"  <temperature>	   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Roomthermostat_Temp:state:default]"}
+Number panasonic_heat_pump_RoomTherTemp                  "Temp [%.0f °C]"  <temperature>	   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/RoomThermostat_Temp:state:default]"}
 Number panasonic_heat_pump_InletTemp                     "Temp [%.0f °C]"  <temperature> 	   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Water_Inlet_Temp:state:default]"}
 Number panasonic_heat_pump_Floor_HeatDelta               "Temp [%.0f °C]"  <temperature> 	   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Heat_Delta:state:default]"}
 Number panasonic_heat_pump_Floor_CoolDelta               "Temp [%.0f °C]"  <temperature> 	   (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Cool_Delta:state:default]"}
-Number panasonic_heat_pump_Tank_HeatDelta                "Temp [%.0f °C]"  <temperature>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Tank_Heat_Delta:state:default]"}
+Number panasonic_heat_pump_Tank_HeatDelta                "Temp [%.0f °C]"  <temperature>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/DHW_Heat_Delta:state:default]"}
 Number panasonic_heat_pump_PumpFlow                      "Flow [%.2f L/min]"      <pump>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Pump_Flow:state:default]"}
-Number panasonic_heat_pump_walve_state                   "walve_state"	         <water>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Valve_State:state:default]"}
+Number panasonic_heat_pump_walve_state                   "walve_state"	         <water>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/ThreeWayValve_State:state:default]"}
 Number panasonic_heat_pump_defrost_state                 "Defrost"               <smoke>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Defrosting_State:state:default]"}
 Number panasonic_heat_pump_CompFreq                      "Frequency [%.0f Hz]" 	  <flow>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Compressor_Freq:state:default]"}
 Number panasonic_heat_pump_OperatingTime                 "Time [%.0f h]"  		  <time>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Operations_Hours:state:default]"}
 Number panasonic_heat_pump_OperationsNumber              "Operations [%.0f]"  	 <chart>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Operations_Counter:state:default]"}
 String panasonic_heat_pump_Error                         "Error_string  [%s]"	 <error>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Error:state:default]"}
-Number panasonic_heat_pump_HeatPumpStatus                "Mode"		            <switch>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Power_State:state:default]"}
+Number panasonic_heat_pump_HeatPumpStatus                "Mode"		            <switch>       (HeatPump)  {mqtt="<[broker:panasonic_heat_pump/sdc/Heatpump_State:state:default]"}
 Number panasonic_heat_pump_Quiet_mode                    "Mode"            <soundvolume>       (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetQuietMode:command:*:${command}],
-                                                                                                                  <[broker:panasonic_heat_pump/sdc/Quietmode_Level:state:default]"}
-Number panasonic_heat_pump_Shift_mode          "Set Heat Shift  [%.0f °C]" <temperature>       (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetShiftTemperature:command:*:${command}],
-                                                                                                                  <[broker:panasonic_heat_pump/sdc/Z1_HeatShift_Temp:state:default]"}
-Number panasonic_heat_pump_Mode                          "Mode"		       <settings>          (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetOpMode:command:*:${command}],
-                                                                                                                  <[broker:panasonic_heat_pump/sdc/OpMode_State:state:default]"}
+                                                                                                                  <[broker:panasonic_heat_pump/sdc/QuietMode_Level:state:default]"}
+
+Number panasonic_heat_pump_Shift_mode          "Set Heat Shift  [%.0f °C]" <temperature>       (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetZ1HeatRequestTemperature:command:*:${command}],
+                                                                                                                  <[broker:panasonic_heat_pump/sdc/Z1_HeatRequest_Temp:state:default]"}
+
+Number panasonic_heat_pump_Mode                          "Mode"		       <settings>          (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetOperationMode:command:*:${command}],
+                                                                                                                  <[broker:panasonic_heat_pump/sdc/OperatingMode_State:state:default]"}
+
 Number panasonic_heat_pump_ForceDHW                      "Mode"            <energy>            (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetForceDHW:command:*:${command}],
-                                                                                                                  <[broker:panasonic_heat_pump/sdc/ForceDHW:state:default]"}
+                                                                                                                 <[broker:panasonic_heat_pump/sdc/ForceDHW_State:state:default]"}
+
 Number panasonic_heat_pump_Holiday                       "Mode"            <energy>            (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetHoliday:command:*:${command}],
-                                                                                                                  <[broker:panasonic_heat_pump/sdc/Holiday:state:default]"}
+                                                                                                                  <[broker:panasonic_heat_pump/sdc/HolidayMode_State:state:default]"}
+
 Number panasonic_heat_pump_PowerMode                     "Time"            <energy>            (HeatPump)  {mqtt=">[broker:panasonic_heat_pump/SetPowerfull:command:*:${command}],
-                                                                                                                  <[broker:panasonic_heat_pump/sdc/powerfull_mode_state:state:default]"}
+                                                                                                                  <[broker:panasonic_heat_pump/sdc/Powerfullmode_Time:state:default]"}
 //Panasonic Heat Pump//
