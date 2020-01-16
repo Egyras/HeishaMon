@@ -66,17 +66,17 @@
 |  TOP | 61 | 8a | Convert to DEC-128  | ? Possible Solar Connection Set delta T for tank ON (DHW or Buffer) |
 |  TOP | 62 | 85 |  Convert to DEC-128 | ? Possible Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
 |  TOP | 63 | 85 |  Convert to DEC-128 | ? Possible Set Antifreeze for solar |
-|  TOP | 64 | d0 |  Convert to DEC-128 | ? Possible Set Hi limitfor solar |
+|  TOP | 64 | d0 |  Convert to DEC-128 | ? Possible Set Hi limit for solar |
 |  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Bivalent device -15-35[°C]|
 |  TOP | 66 | 78 | Convert to DEC-128  | ? Possible Control pattern in Bivalent set temperature source to start the bivalent heat source |
 |  TOP | 67 | 1f | Convert to DEC X-1  | ?  Possible Bivalent Delay timer to start the bivalent heat source |
 |  TOP | 68 | 7e | Convert to DEC-128  | ?  Possible Controll pattern in Bivalent set temperature source to stop the bivalent heat source |
 |  TOP | 69 | 1f | Convert to DEC X-1  | ? Possible Bivalent Delay timer to stop the bivalent heat source |
 |  TOP | 70 | 1f | Convert to DEC X-1  | ? Possible Bivalent Control pattern for DHW delay timer to start the bivalent source  |
-|  TOP | 71 | 79 |   | ? SG settings |
-|  TOP | 72 | 79 |   | ? SG settings |
-|  TOP | 73 | 8d |   =13| ? SG settings |
-|  TOP | 74 | 8d |   =13| ? SG settings |
+|  TOP | 71 | 79 |79-120%   |SG Setting 1 Heating Capacity  |
+|  TOP | 72 | 79 |79-120%   |SG Setting 1 DHW Capacity  |
+|  TOP | 73 | 8d |8d-140%   |SG Setting 2 Heating Capacity  |
+|  TOP | 74 | 8d |8d-140%   |SG Setting 2 DHW Capacity  |
 |  TOP29 | 75 | 9e | Convert to DEC 158-128 =30 | Heating Curve Outlet Water Temperature Highest Set [°C] |
 |  TOP30 | 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
 |  TOP32 | 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
@@ -88,10 +88,10 @@
 |  TOP | 83 | 8e | Convert to DEC-128  | Outdoor Temperature to stop heating 5-35 [°C] |
 |  TOP23 | 84 | 80 | Convert to DEC 133-128 =5  | Floor heating set delta [°C] |
 |  TOP | 85 | 80 | Convert to DEC 128-128=0 | ? Possible Outdoor temperature for heater ON [°C]  |
-|  TOP | 86 | 8f | Convert to DEC 143-128 =15 | Set temperature for Cooling direct mode [°C] |
-|  TOP | 87 | 8a |   =10| ?  Possible cooling curve |
-|  TOP | 88 | 94 |  =20 | ? Possible cooling curve |
-|  TOP | 89 | 9e |  =30 | ? Possible cooling curve  |
+|  TOP | 86 | 8f | Convert to DEC 143-128 =15 | Set temperature for Cooling direct mode [°C] or Cooling Curve Outlet Water Temperature Highest Set [°C]|
+|  TOP | 87 | 8a |   =10| Cooling Curve Outlet Water Temperature Lowest Set [°C] |
+|  TOP | 88 | 94 |  =20 | Cooling Curve Outside Temperature Lowest Set [°C] |
+|  TOP | 89 | 9e |  =30 | Cooling Curve Outside Temperature Highest Set [°C] |
 |  TOP | 90 | 8a |  =10 | ? |
 |  TOP | 91 | 8a |  =10| ? |
 |  TOP | 92 | 94 |  =20 | ? |
