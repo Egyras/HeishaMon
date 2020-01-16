@@ -5,6 +5,7 @@
 extern byte panasonicQuery[PANASONICQUERYSIZE];
 
 extern const char* mqtt_topic_base;
+extern const char* mqtt_topic_1wire;
 extern const char* mqtt_logtopic;
 extern const char* mqtt_willtopic;
 extern const char* mqtt_set_heatpump_state_topic;

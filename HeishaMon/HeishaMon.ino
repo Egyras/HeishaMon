@@ -14,9 +14,7 @@
 #include "webfunctions.h"
 #include "decode.h"
 #include "commands.h"
-
-
-
+#include "featureboard.h"
 
 // maximum number of seconds between resets that
 // counts as a double reset
@@ -56,7 +54,8 @@ bool outputHexDump = false;
 // *needs implementation in this code and in the webpage*
 bool outputSerial1 = true;
 
-
+//1wire enabled?
+bool use_1wire = false;
 
 
 // instead of passing array pointers between functions we just define this in the global scope
@@ -238,7 +237,7 @@ void setupHttp() {
     handleReboot(&httpServer);
   });
   httpServer.on("/settings", [] {
-    handleSettings(&httpServer, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password);
+    handleSettings(&httpServer, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire);
   });
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
@@ -281,16 +280,19 @@ void switchSerial() {
 void setupMqtt() {
   mqtt_client.setServer(mqtt_server, atoi(mqtt_port));
   mqtt_client.setCallback(mqtt_callback);
+  mqtt_reconnect();
 }
 
 void setup() {
   setupSerial();
-  setupWifi(drd, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password);
+  setupWifi(drd, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire);
   MDNS.begin(wifi_hostname);
   setupOTA();
   setupMqtt();
   setupHttp();
+  if (use_1wire) initDallasSensors(log_message);  
   switchSerial();
+
 }
 
 void send_panasonic_query() {
@@ -312,7 +314,7 @@ void loop() {
   // then handle HTTP
   httpServer.handleClient();
   // Allow MDNS processing
-  MDNS.update();  
+  MDNS.update();
 
   if (!mqtt_client.connected())
   {
@@ -322,13 +324,14 @@ void loop() {
 
   read_panasonic_data();
 
+  if (use_1wire) dallasLoop(mqtt_client, log_message);
+
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
     nexttime = millis() + WAITTIME;
     send_panasonic_query();
     MDNS.announce();
-
-	//Make sure the LWT is set to Online, even if the broker have marked it dead.
-	mqtt_client.publish(mqtt_willtopic, "Online");
+    //Make sure the LWT is set to Online, even if the broker have marked it dead.
+    mqtt_client.publish(mqtt_willtopic, "Online");
   }
 }
