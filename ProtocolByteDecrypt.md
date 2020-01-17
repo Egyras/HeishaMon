@@ -7,7 +7,7 @@
 |  TOP | 02 | 01|   | Header  |
 |  TOP | 03 | 10 |   | Header   |
 |  TOP0+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
-|  TOP19+TOP13+TOP68 | 05 | 55 | Holiday mode off/on (bit3and4), weekly shedule off/on (bit 1and2) force heater off/on (bit5and6) Dry Concrete (bit7and8) | Holiday mode, Sheduler status, force heater state , Dry Concrete |
+|  TOP19+TOP13+TOP68 | 05 | 55 | Holiday mode off/on (bit3and4), weekly shedule off/on (bit 1and2) force heater off/on (bit5and6) Dry Concrete off/on (bit7and8) | Holiday mode, Sheduler status, force heater state , Dry Concrete |
 |  TOP4 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerfull mode status |
 |  TOP | 08 | 00 |   | 0 byte |
@@ -97,7 +97,7 @@
 |  TOP | 92 | 94 |  =20 | ? |
 |  TOP | 93 | 9e |  =30 | ? |
 |  TOP24 | 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
-|  TOP | 95 |  90  | Convert to DEC 144-128=16|  | Outdoor temperature for (heat to cool)   [°C]  |
+|  TOP | 95 |  90  | Convert to DEC 144-128=16|  Outdoor temperature for (heat to cool)   [°C]  |
 |  TOP80 | 96 | 8b | Convert to DEC 139-128=11|  Outdoor temperature for (cool to heat) [°C] |
 |  TOP | 97 | 05 | Donvert to DEC (X-1) x 30   | DHW settings - Room operation max time [min] |
 |  TOP | 98 | 65 | Convert to DEC 101-1=100   | DHW heat up time (max) [min] |
