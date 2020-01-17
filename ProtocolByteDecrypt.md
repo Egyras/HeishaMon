@@ -88,10 +88,10 @@
 |  TOP77 | 83 | 8e | Convert to DEC-128  | Outdoor Temperature to stop heating 5-35 [°C] |
 |  TOP23 | 84 | 80 | Convert to DEC 133-128 =5 | Floor heating set delta [°C] |
 |  TOP78 | 85 | 80 | Convert to DEC 128-128=0 | Outdoor temperature for heater ON [°C]  |
-|  TOP | 86 | 8f | Convert to DEC-128 | Cooling Curve Outlet Water Temperature Highest Set [°C]|
-|  TOP | 87 | 8a | Convert to DEC-128 | Cooling Curve Outlet Water Temperature Lowest Set [°C] |
-|  TOP | 88 | 94 | Convert to DEC-128 | Cooling Curve Outside Temperature Lowest Set [°C] |
-|  TOP | 89 | 9e | Convert to DEC-128 | Cooling Curve Outside Temperature Highest Set [°C] |
+|  TOP72 | 86 | 8f | Convert to DEC-128 | Cooling Curve Outlet Water Temperature Highest Set [°C]|
+|  TOP73 | 87 | 8a | Convert to DEC-128 | Cooling Curve Outlet Water Temperature Lowest Set [°C] |
+|  TOP74 | 88 | 94 | Convert to DEC-128 | Cooling Curve Outside Temperature Lowest Set [°C] |
+|  TOP75 | 89 | 9e | Convert to DEC-128 | Cooling Curve Outside Temperature Highest Set [°C] |
 |  TOP | 90 | 8a |  =10 | ? |
 |  TOP | 91 | 8a |  =10| ? |
 |  TOP | 92 | 94 |  =20 | ? |
