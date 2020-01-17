@@ -97,7 +97,7 @@
 |  TOP | 92 | 94 |  =20 | ? |
 |  TOP | 93 | 9e |  =30 | ? |
 |  TOP24 | 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
-|  TOP | 95 |  90  | Convert to DEC 144-128=16|  Outdoor temperature for (heat to cool)   [°C]  |
+|  TOP79 | 95 |  90  | Convert to DEC 144-128=16|  Outdoor temperature for (heat to cool)   [°C]  |
 |  TOP80 | 96 | 8b | Convert to DEC 139-128=11|  Outdoor temperature for (cool to heat) [°C] |
 |  TOP | 97 | 05 | Donvert to DEC (X-1) x 30   | DHW settings - Room operation max time [min] |
 |  TOP | 98 | 65 | Convert to DEC 101-1=100   | DHW heat up time (max) [min] |
