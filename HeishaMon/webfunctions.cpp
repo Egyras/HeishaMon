@@ -8,9 +8,14 @@
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 #include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
 
+#define UPTIME_OVERFLOW 4294967295 // Uptime overflow value
+
 
 //flag for saving data
 bool shouldSaveConfig = false;
+
+
+
 
 static const char webHeader[] PROGMEM  =
   "<!DOCTYPE html>"
@@ -61,7 +66,55 @@ void saveConfigCallback () {
   shouldSaveConfig = true;
 }
 
-void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password) {
+int getWifiQuality() {
+  if (WiFi.status() != WL_CONNECTED)
+    return -1;
+  int dBm = WiFi.RSSI();
+  if (dBm <= -100)
+    return 0;
+  if (dBm >= -50)
+    return 100;
+  return 2 * (dBm + 100);
+}
+
+int getFreeMemory() {
+  //store total memory at boot time
+  static uint32_t total_memory = 0;
+  if ( 0 == total_memory ) total_memory = ESP.getFreeHeap();
+
+  uint32_t free_memory   = ESP.getFreeHeap();
+  return (100 * free_memory / total_memory ) ; // as a %
+}
+
+// returns system uptime in seconds
+String getUptime() {
+  static uint32_t last_uptime      = 0;
+  static uint8_t  uptime_overflows = 0;
+
+  if (millis() < last_uptime) {
+    ++uptime_overflows;
+  }
+  last_uptime             = millis();
+  uint32_t t = uptime_overflows * (UPTIME_OVERFLOW / 1000) + (last_uptime / 1000);
+
+  char     uptime[200];
+  uint8_t  d   = t / 86400L;
+  uint8_t  h   = ((t % 86400L) / 3600L) % 60;
+  uint32_t rem = t % 3600L;
+  uint8_t  m   = rem / 60;
+  uint8_t  sec = rem % 60;
+  sprintf(uptime, "%d day%s %d hour%s %d minute%s %d second%s", d, (d == 1) ? "" : "s", h, (h == 1) ? "" : "s", m, (m == 1) ? "" : "s", sec, (sec == 1) ? "" : "s");
+  return String(uptime);
+}
+
+void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire) {
+
+  //first get total memory before we do anything
+  getFreeMemory();
+
+  //set boottime
+  getUptime();
+
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
@@ -102,7 +155,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
             strncpy(mqtt_port, jsonDoc["mqtt_port"], 5); mqtt_port[5] = '\0';
             strncpy(mqtt_username, jsonDoc["mqtt_username"], 39); mqtt_username[39] = '\0';
             strncpy(mqtt_password, jsonDoc["mqtt_password"], 39); mqtt_password[39] = '\0';
-
+            if ( jsonDoc["use_1wire"] == "enabled" ) use_1wire = true;
           } else {
             Serial.println("Failed to load json config, forcing config reset.");
             wifiManager.resetSettings();
@@ -212,6 +265,11 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
   httptext = httptext + "<hr><div class=\"w3-text-grey\">Version: " + heishamon_version + "<br><a href=\"https://github.com/Egyras/HeishaMon\">Heishamon software</a></div><hr></div>";
 
+  httptext = httptext + "<div class=\"w3-container w3-left\">";
+  httptext = httptext + "<br>Wifi signal: " + String(getWifiQuality()) + "%";
+  httptext = httptext + "<br>Memory free: " + String(getFreeMemory()) + "%";
+  httptext = httptext + "<br>Uptime: " + getUptime();
+  httptext = httptext + "</div>";
   httptext = httptext + "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
 
@@ -295,7 +353,7 @@ void handleReboot(ESP8266WebServer *httpServer) {
   resetFunc();
 }
 
-void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password) {
+void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -319,10 +377,15 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
     jsonDoc["mqtt_port"] = mqtt_port;
     jsonDoc["mqtt_username"] = mqtt_username;
     jsonDoc["mqtt_password"] = mqtt_password;
+    if (use_1wire) {
+      jsonDoc["use_1wire"] = "enabled";
+    } else {
+      jsonDoc["use_1wire"] = "disabled";
+    }
     if (httpServer->hasArg("wifi_hostname")) {
       jsonDoc["wifi_hostname"] = httpServer->arg("wifi_hostname");
     }
-    if (httpServer->hasArg("new_ota_password")) {
+    if (httpServer->hasArg("new_ota_password") && (httpServer->arg("new_ota_password") != NULL) && (httpServer->arg("current_ota_password") != NULL) ) {
       if (httpServer->hasArg("current_ota_password") && (strcmp(ota_password, httpServer->arg("current_ota_password").c_str()) == 0 )) {
         jsonDoc["ota_password"] = httpServer->arg("new_ota_password");
       }
@@ -351,6 +414,11 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
     if (httpServer->hasArg("mqtt_password")) {
       jsonDoc["mqtt_password"] = httpServer->arg("mqtt_password");
     }
+    if (httpServer->hasArg("use_1wire")) {
+      jsonDoc["use_1wire"] = "enabled";
+    } else {
+      jsonDoc["use_1wire"] = "disabled";
+    }
 
     if (SPIFFS.begin()) {
       File configFile = SPIFFS.open("/config.json", "w");
@@ -368,6 +436,7 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
         httpServer->sendContent_P(webFooter);
         httpServer->sendContent("");
         httpServer->client().stop();
+        delay(1000);
         resetFunc();
       }
     }
@@ -397,7 +466,14 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
   httptext = httptext + "Mqtt password:<br>";
   httptext = httptext + "<input type=\"password\" name=\"mqtt_password\" value=\"" + mqtt_password + "\">";
   httptext = httptext + "<br><br>";
-  httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
+  httptext = httptext + "Use 1wire DS18b20: ";
+  if (use_1wire) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"use_1wire\" value=\"enabled\" checked >";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" name=\"use_1wire\" value=\"enabled\">";
+  }
+
+  httptext = httptext + "<br><br>";  httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
   httptext = httptext + "</form>";
   httptext = httptext + "<br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\" >Factory reset</a>";
   httptext = httptext + "</div>";
