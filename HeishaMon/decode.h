@@ -22,6 +22,7 @@ String getIntMinus1Times10(byte input);
 String getIntMinus1Times50(byte input);
 String getOpMode(byte input);
 String getEnergy(byte input);
+String getHeatMode(byte input);
 
 static const String topics[] = {
     "Heatpump_State",          //TOP0
@@ -96,6 +97,15 @@ static const String topics[] = {
     "Sterilization_State",     //TOP69
     "Sterilization_Temp",      //TOP70
     "Sterilization_Max_Time",  //TOP71
+    "CCurve_OutHighTemp",      //TOP72
+    "CCurve_OutLowTemp",       //TOP73
+    "CCurve_OutsHighTemp",     //TOP74
+    "CCurve_OutsLowTemp",      //TOP75
+    "Heating_Mode",             //TOP76
+    "Outdoor_HeatingOff_Temp",  //TOP77
+    "Outdoor_BackupOn_Temp",    //TOP78
+    "Heat_To_Cool_Temp",        //TOP79
+    "Cool_To_Heat_Temp",        //TOP80
     };
 
 static const unsigned int topicBytes[] = {
@@ -171,6 +181,15 @@ static const unsigned int topicBytes[] = {
         117,    //TOP69
         100,    //TOP70
         101,    //TOP71
+        86,     //TOP72
+        87,     //TOP73
+        88,     //TOP74
+        89,     //TOP75
+        28,     //TOP76
+        83,     //TOP77
+        85,     //TOP78
+        95,     //TOP79
+        96,     //TOP80
 };        
 
 typedef String (*topicFP)(byte);
@@ -248,6 +267,15 @@ static const topicFP topicFunctions[] = {
     getBit5and6,         //TOP69
     getIntMinus128,      //TOP70
     getIntMinus1,        //TOP71
+    getIntMinus128,      //TOP72
+    getIntMinus128,      //TOP73
+    getIntMinus128,      //TOP74
+    getIntMinus128,      //TOP75
+    getHeatMode,         //TOP76
+    getIntMinus128,      //TOP77
+    getIntMinus128,      //TOP78
+    getIntMinus128,      //TOP79
+    getIntMinus128,      //TOP80
 };
 
 static const char *DisabledEnabled[] = {"Disabled","Enabled"};
@@ -269,6 +297,7 @@ static const char *Watt[] = {"value","Watt"};
 static const char *ErrorState[] = {"value","Error"};
 static const char *Ampere[] = {"value","Ampere"};
 static const char *Minutes[] = {"value", "Minutes"};
+static const char *HeatModeDesc[] = {"comp heat + direct cool", "comp heat + cool", "direct heat + cool", "direct heat + comp cool"};
 static const char **topicDescription[] = {
     OffOn,           //TOP0
     LitersPerMin,    //TOP1
@@ -342,4 +371,13 @@ static const char **topicDescription[] = {
     InactiveActive,  //TOP69
     Celsius,         //TOP70
     Minutes,         //TOP71
+    Celsius,         //TOP72
+    Celsius,         //TOP73
+    Celsius,         //TOP74
+    Celsius,         //TOP75
+    HeatModeDesc,    //TOP76
+    Celsius,         //TOP77
+    Celsius,         //TOP78
+    Celsius,         //TOP79
+    Celsius,         //TOP80
 };
