@@ -82,21 +82,6 @@ String getOpMode(byte input) {
   }
 }
 
-String getHeatMode(byte input) {
-  switch ((int)input) {
-    case 9:
-      return "0";      break;
-    case 5:
-      return "1";      break;
-    case 10:
-      return "2";      break;
-    case 6:
-      return "3";      break;
-    default:
-      return "-1";     break;
-  }
-}
-
 String getEnergy(byte input)
     {
       int value = ((int)input - 1) * 200;

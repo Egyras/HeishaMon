@@ -101,11 +101,12 @@ static const String topics[] = {
     "CCurve_OutLowTemp",       //TOP73
     "CCurve_OutsHighTemp",     //TOP74
     "CCurve_OutsLowTemp",      //TOP75
-    "Heating_Mode",             //TOP76
-    "Outdoor_HeatingOff_Temp",  //TOP77
-    "Outdoor_BackupOn_Temp",    //TOP78
-    "Heat_To_Cool_Temp",        //TOP79
-    "Cool_To_Heat_Temp",        //TOP80
+    "Heating_Mode",            //TOP76
+    "Outdoor_HeatingOff_Temp", //TOP77
+    "Outdoor_BackupOn_Temp",   //TOP78
+    "Heat_To_Cool_Temp",       //TOP79
+    "Cool_To_Heat_Temp",       //TOP80
+    "Cooling_Mode",            //TOP81
     };
 
 static const unsigned int topicBytes[] = {
@@ -190,6 +191,7 @@ static const unsigned int topicBytes[] = {
         85,     //TOP78
         95,     //TOP79
         96,     //TOP80
+        28,     //TOP81
 };        
 
 typedef String (*topicFP)(byte);
@@ -271,11 +273,12 @@ static const topicFP topicFunctions[] = {
     getIntMinus128,      //TOP73
     getIntMinus128,      //TOP74
     getIntMinus128,      //TOP75
-    getHeatMode,         //TOP76
+    getBit7and8,         //TOP76
     getIntMinus128,      //TOP77
     getIntMinus128,      //TOP78
     getIntMinus128,      //TOP79
     getIntMinus128,      //TOP80
+    getBit5and6,         //TOP81
 };
 
 static const char *DisabledEnabled[] = {"Disabled","Enabled"};
@@ -297,7 +300,7 @@ static const char *Watt[] = {"value","Watt"};
 static const char *ErrorState[] = {"value","Error"};
 static const char *Ampere[] = {"value","Ampere"};
 static const char *Minutes[] = {"value", "Minutes"};
-static const char *HeatModeDesc[] = {"comp heat + direct cool", "comp heat + cool", "direct heat + cool", "direct heat + comp cool"};
+static const char *HeatCoolModeDesc[] = {"Comp. Curve","Direct"};
 static const char **topicDescription[] = {
     OffOn,           //TOP0
     LitersPerMin,    //TOP1
@@ -375,9 +378,10 @@ static const char **topicDescription[] = {
     Celsius,         //TOP73
     Celsius,         //TOP74
     Celsius,         //TOP75
-    HeatModeDesc,    //TOP76
+    HeatCoolModeDesc,//TOP76
     Celsius,         //TOP77
     Celsius,         //TOP78
     Celsius,         //TOP79
     Celsius,         //TOP80
+    HeatCoolModeDesc,//TOP81
 };
