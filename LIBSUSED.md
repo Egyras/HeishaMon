@@ -7,3 +7,5 @@
 |pubsubclient by nick o'leary | 2.7.0 | https://github.com/knolleary/pubsubclient/releases/tag/v2.7 |
 |doubleresetdetect by jens-christian skibakk | 1.0.0 | https://github.com/jenscski/DoubleResetDetect/releases/tag/1.0.0 |
 |arduinojson by benoit blanchon | 6.13.0 | https://github.com/bblanchon/ArduinoJson/releases/tag/v6.13.0 |
+|dallastemperature | 3.8.0 | https://github.com/milesburton/Arduino-Temperature-Control-Library |
+|onewire | 2.3.5 | https://www.pjrc.com/teensy/td_libs_OneWire.html|
