@@ -92,11 +92,12 @@ TOP72 | sdc/CCurve_OutHighTemp | Target temperature at lowest point on the cooli
 TOP73 | sdc/CCurve_OutLowTemp | Target temperature at highest point on the cooling curve (°C)
 TOP74 | sdc/CCurve_OutsHighTemp | Lowest outside temperature on the cooling curve (°C)
 TOP75 | sdc/CCurve_OutsLowTemp | Highest outside temperature on the cooling curve (°C)
-TOP76 | sdc/Heating_Mode | Compensation / Direct mode for Heat and cool (1=comp heat/direct cool, 2=comp heat+cool, 3=direct heat+cool, 4=direct heat/comp cool)
+TOP76 | sdc/Heating_Mode | Compensation / Direct mode for heat (0 = compensation curve, 1 = direct)
 TOP77 | sdc/Outdoor_HeatingOff_Temp | Outdoor temperature heating off (5 to 35 °C)
 TOP78 | sdc/Outdoor_BackupOn_Temp | Outdoor temperature for backup on (-15 to 20 °C)
 TOP79 | sdc/Heat_To_Cool_Temp | Outdoor temperature to swith from heat to cool mode (°C)
 TOP80 | sdc/Cool_To_Heat_Temp | Outdoor temperature to swith from cool to heat mode (°C)
+TOP81 | sdc/Cooling_Mode | Compensation / Direct mode for cool (0 = compensation curve, 1 = direct)
 
 ## Command Topics:
 
