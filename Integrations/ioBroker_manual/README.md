@@ -13,7 +13,7 @@ With this manual, you can manually integrate the heishamon into iobroker via mqt
 
 ## Configuration
 
-1. Navigate to the iobroker `Instances menu and click on the wrench symbol for the mqtt-instance. It will most likely be called `mqtt.0`
+1. Navigate to the iobroker `Instances` menu and click on the wrench symbol for the mqtt-instance. It will most likely be called `mqtt.0`
 
 ![mqtt_setup](https://github.com/emign/HeishaMon/blob/master/Integrations/ioBroker_manual/images/mqtt_setup.png)
 
@@ -36,8 +36,8 @@ Password: Password you want your mqtt clients to authenticate with
 
 # Test
 1. Go back to iobroker
-2. Navigate to `objects
-3. Wait. (seriously, grab a coffee or something. iobroker sometimes needs minutes to detect all incoming messages and propagate them correctly)
+2. Navigate to `objects`
+3. Wait. (seriously: wait, grab a coffee or something. iobroker sometimes needs minutes to detect all incoming messages and propagate them correctly)
 
 ![iobroker_objects](https://github.com/emign/HeishaMon/blob/master/Integrations/ioBroker_manual/images/iobroker_objects.png)
 
