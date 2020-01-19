@@ -8,14 +8,14 @@ With this manual, you can manually integrate the heishamon into iobroker via mqt
 
 ## Installation
 1. Install the mqtt adapter for iobroker. Go to *Adapters* and search for `mqtt`.  
-![adapters_mqtt](https://imgur.com/4YIHj3s)
+![adapters_mqtt](https://github.com/emign/HeishaMon/blob/master/Integrations/ioBroker_manual/images/adapters_mqtt.png)
 2. Install the `MQTT Broker/Client` adapter with clicking the plus-symbol in the correspinding line. Wait for it to finish.
 
 ## Configuration
 
 1. Navigate to the iobroker `Instances menu and click on the wrench symbol for the mqtt-instance. It will most likely be called `mqtt.0`
 
-![mqtt_setup](https://imgur.com/ukAHwEg)
+![mqtt_setup](https://github.com/emign/HeishaMon/blob/master/Integrations/ioBroker_manual/images/mqtt_setup.png)
 
 2. Configure the Connection settings as follows:
 
@@ -39,11 +39,11 @@ Password: Password you want your mqtt clients to authenticate with
 2. Navigate to `objects
 3. Wait. (seriously, grab a coffee or something. iobroker sometimes needs minutes to detect all incoming messages and propagate them correctly)
 
-![iobroker_objects](https://imgur.com/1IWA5X2)
+![iobroker_objects](https://github.com/emign/HeishaMon/blob/master/Integrations/ioBroker_manual/images/iobroker_objects.png)
 
 4. When everything is setup correctly, a new group `panasonic_heat_pump` will be displayed. Under the subgroup `sdc` there already should be values coming in. They flash green when updated
 
-![sdc values](https://imgur.com/rPWVuuB)
+![sdc values](https://github.com/emign/HeishaMon/blob/master/Integrations/ioBroker_manual/images/sdc_values.png)
 
 # Setting values
 
