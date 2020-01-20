@@ -21,9 +21,9 @@ TOP1 | sdc/Pump_Flow | Pump flow (l/min)
 TOP2 | sdc/Force_DHW_State | DHW status (0=off, 1=on -1=unknown)
 TOP3 | sdc/Quiet_Mode_Schedule | Quiet mode schedule (0=inactive, 1=active)
 TOP4 | sdc/Operating_Mode_State | Operating mode (0=Heat only, 1=Cool only, 2=Auto, 3=DHW only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW)
-TOP5 | sdc/Water_Inlet_Temp | Inlet water temperature (°C)
-TOP6 | sdc/Water_Outlet_Temp | Outlet water temperature (°C)
-TOP7 | sdc/Water_Target_Temp | Outlet water target temperature (°C)
+TOP5 | sdc/Main_Inlet_Temp | Main inlet water temperature (°C)
+TOP6 | sdc/Main_Outlet_Temp | Main outlet water temperature (°C)
+TOP7 | sdc/Main_Target_Temp | Main outlet water target temperature (°C)
 TOP8 | sdc/Compressor_Freq | Compressor frequency (Hz)
 TOP9 | sdc/DHW_Target_Temp | DHW target temperature (°C)
 TOP10 | sdc/DHW_Temp | Actual DHW temperature (°C)
@@ -61,11 +61,11 @@ TOP41 | sdc/DHW_Energy_Consumption | Elektrical DHW power consumption (Watt)
 TOP42 | sdc/Z1_Water_Target_Temp | Zone 1 water target temperature (°C)
 TOP43 | sdc/Z2_Water_Target_Temp | Zone 2 water target temperature (°C)
 TOP44 | sdc/Error | Last active Error from Heat Pump
-TOP45 | sdc/Water_Holiday_Shift_Temp | Water Holiday shift temperature (-15 to 15)
+TOP45 | sdc/Room_Holiday_Shift_Temp | Room heating Holiday shift temperature (-15 to 15)
 TOP46 | sdc/Buffer_Temp | Actual Buffer temperature (°C)
 TOP47 | sdc/Solar_Temp | Actual Solar temperature (°C)
 TOP48 | sdc/Pool_Temp | Actual Pool temperature (°C)
-TOP49 | sdc/Water_Hex_Outlet_Temp | Outlet 2, after heat exchanger water temperature (°C)
+TOP49 | sdc/Main_Hex_Outlet_Temp | Outlet 2, after heat exchanger water temperature (°C)
 TOP50 | sdc/Discharge_Temp | Discharge Temperature (°C)
 TOP51 | sdc/Inside_Pipe_Temp | Inside pipe temperature (°C)
 TOP52 | sdc/Defrost_Temp | Defrost temperature (°C)
@@ -75,7 +75,7 @@ TOP55 | sdc/Ipm_Temp | Ipm temperature (°C)
 TOP56 | sdc/Z1_Temp | Zone1: Actual Temperature (°C) 
 TOP57 | sdc/Z2_Temp | Zone2: Actual Temperature (°C) 
 TOP58 | sdc/DHW_Heater_State | When enabled, backup/booster heater can be used for DHW heating (disabled - enabled)
-TOP59 | sdc/Water_Heater_State | When enabled, backup heater can be used for water heating (disabled - enabled)
+TOP59 | sdc/Room_Heater_State | When enabled, backup heater can be used for room heating (disabled - enabled)
 TOP60 | sdc/Internal_Heater_State | Internal backup heater state (inactive - active)
 TOP61 | sdc/External_Heater_State | External backup/booster heater state (inactive - active)
 TOP62 | sdc/Fan1_Motor_Speed | Fan 1 Motor rotation speed (R/Min)
@@ -114,7 +114,7 @@ SET8  | SetZ2CoolRequestTemperature | Set Z2 cool shift or direct cool temperatu
 SET9  | SetOperationMode | Sets operating mode | 0=Heat only, 1=Cool only, 2=Auto, 3=DHW only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW
 SET10 | SetForceDHW | Forces DHW mode only | 0, 1
 SET11 | SetDHWTemp | Set DHW target temperature | 40 - 75
-SET12 | SetCoolTemp | Set cooldown temperature | 5 - 20
+SET12 | SetCoolTemp | Set cooldown temperature | 5 - 20 (!!can be deleted!!)
 SET13 | SetForceDefrost | Forces defrost routine | 0, 1
 SET14 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
 
