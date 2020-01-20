@@ -33,12 +33,12 @@ TOP13 | sdc/Main_Schedule_State | Main thermostat schedule state (inactive - act
 TOP14 | sdc/Outside_Temp | Outside ambient temperature (°C)
 TOP15 | sdc/Heat_Energy_Production | Thermal heat power production (Watt)
 TOP16 | sdc/Heat_Energy_Consumption | Elektrical heat power consumption at heat mode (Watt)
-TOP17 | sdc/Powerfull_Mode_Time | Powerfull state in minutes (0, 1, 2 or 3 x 30min)
+TOP17 | sdc/Powerful_Mode_Time | Powerful state in minutes (0, 1, 2 or 3 x 30min)
 TOP18 | sdc/Quiet_Mode_Level | Quiet mode level (0, 1, 2, 3)
 TOP19 | sdc/Holiday_Mode_State | Holiday mode (0=off, 1=scheduled, 2=active)
 TOP20 | sdc/ThreeWay_Valve_State | 3-way valve mode (0=Room, 1=DHW)
 TOP21 | sdc/Outside_Pipe_Temp | Outside pipe temperature (°C)
-TOP22 | sdc/DHW_Heat_Delta | DHW heating delta (K)
+TOP22 | sdc/DHW_Heat_Delta | DHW heating delta (-12 to -2) (K)
 TOP23 | sdc/Heat_Delta | Heat delta (K)
 TOP24 | sdc/Cool_Delta | Cool delta (K)
 TOP25 | sdc/DHW_Holiday_Shift_Temp | DHW Holiday shift temperature  (-15 to +15)
@@ -106,7 +106,7 @@ TOP81 | sdc/Cooling_Mode | Compensation / Direct mode for cool (0 = compensation
 SET1  | SetHeatpump | Set heatpump on or off | 0=off, 1=on
 SET2  | SetHoliday | Set holiday mode on or off | 0=off, 1=on
 SET3  | SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
-SET4  | SetPowerfullMode | Set powerfull mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
+SET4  | SetPowerfulMode | Set powerful mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
 SET5  | SetZ1HeatRequestTemperature | Set Z1 heat shift or direct heat temperature | -5 to 5 or 20 to max
 SET6  | SetZ1CoolRequestTemperature | Set Z1 cool shift or direct cool temperature | -5 to 5 or 20 to max
 SET7  | SetZ2HeatRequestTemperature | Set Z2 heat shift or direct heat temperature | -5 to 5 or 20 to max
