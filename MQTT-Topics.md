@@ -113,7 +113,7 @@ TOP89 | sdc/Z2_Cool_Curve_Outside_Low_Temp | Highest outside temperature on the 
  ID |Topic | Description | Value/Range
 :--- | :--- | --- | ---
 SET1  | SetHeatpump | Set heatpump on or off | 0=off, 1=on
-SET2  | SetHoliday | Set holiday mode on or off | 0=off, 1=on
+SET2  | SetHolidayMode | Set holiday mode on or off | 0=off, 1=on
 SET3  | SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
 SET4  | SetPowerfulMode | Set powerful mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
 SET5  | SetZ1HeatRequestTemperature | Set Z1 heat shift or direct heat temperature | -5 to 5 or 20 to max

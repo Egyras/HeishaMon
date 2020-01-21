@@ -128,7 +128,7 @@ void logHex(char *hex, int hex_len) {
 
 byte calcChecksum(byte* command, int length) {
   byte chk = 0;
-  for ( int i = 0; i < length; i++)  {
+  for ( unsigned int i = 0; i < length; i++)  {
     chk += command[i];
   }
   chk = (chk ^ 0xFF) + 01;
@@ -192,7 +192,7 @@ bool send_command(byte* command, int length)
 // Callback function that is called when a message has been pushed to one of your topics.
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   char msg[length + 1];
-  for (int i = 0; i < length; i++) {
+  for (unsigned int i = 0; i < length; i++) {
     msg[i] = (char)payload[i];
   }
   msg[length] = '\0';

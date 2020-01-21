@@ -17,8 +17,8 @@ const char* mqtt_set_operationmode_topic = "panasonic_heat_pump/SetOperationMode
 const char* mqtt_set_force_DHW_topic = "panasonic_heat_pump/SetForceDHW";
 const char* mqtt_set_force_defrost_topic = "panasonic_heat_pump/SetForceDefrost";
 const char* mqtt_set_force_sterilization_topic = "panasonic_heat_pump/SetForceSterilization";
-const char* mqtt_set_holiday_topic = "panasonic_heat_pump/SetHoliday";
-const char* mqtt_set_powerfull_topic = "panasonic_heat_pump/SetPowerfull";
+const char* mqtt_set_holiday_topic = "panasonic_heat_pump/SetHolidayMode";
+const char* mqtt_set_powerfull_topic = "panasonic_heat_pump/SetPowerfulMode";
 const char* mqtt_set_dhw_temp_topic = "panasonic_heat_pump/SetDHWTemp";
 const char* mqtt_set_cool_temp_topic = "panasonic_heat_pump/SetCoolTemp";
 
