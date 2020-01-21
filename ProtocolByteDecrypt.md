@@ -22,7 +22,7 @@
 |  TOP | 17 | 00 |   | 0 byte |
 |  TOP | 18 | 00 |   | 0 byte |
 |  TOP | 19 | 00 |   | 0 byte |
-|  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Anti freezing |
+|  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Optional PCB, Anti freezing, Colling Medium,External outdoor temp sensor |
 |  TOP | 21 | 15 |   | ? |
 |  TOP | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
@@ -179,8 +179,8 @@
 |  TOP63 | 174 | 01 | to DEC (X-1) X10  | Fan 2 Motor Speed [R/Min] |
 |  TOP | 175 | 36 |   | ? |
 |  TOP | 176 | 79 |   | ? |
-|  TOP | 177 | 01 |   | ? |
-|  TOP | 178 | 01 |   | ? |
+|  TOP | 177 | 01 | Convert to DEC -1  | ? Posible Time for Mixing vave 1 Zone2 [seconds]|
+|  TOP | 178 | 01 | Convert to DEC -1  | ? Posible Time for Mixing vave 2 Zone2 [seconds] |
 |  TOP12 | 179 | c3 | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
 |  TOP12 | 180 | 02 |  look at 179 | number of operations |
 |  TOP | 181 | 00 |   | ? |
