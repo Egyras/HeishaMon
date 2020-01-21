@@ -16,11 +16,11 @@ DallasTemperature DS18B20(&oneWire);
 
 int dallasDevicecount = 0;
 float dallasTemp[15];
-int dallasTempTime[15];
+unsigned long dallasTempTime[15];
 DeviceAddress dallasSensor[15];
 String dallasSensorAddress[15];
 
-int dallasTimer = 0;
+unsigned long dallasTimer = 0;
 
 void initDallasSensors(void (*log_message)(char*)) {
   char log_msg[256];
@@ -69,7 +69,6 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*)) {
 }
 
 void dallasLoop(PubSubClient &mqtt_client, void (*log_message)(char*)) {
-  char log_msg[256];
   if (millis() > dallasTimer) {
     log_message((char*)"Requesting new 1wire temperatures");
     dallasTimer = millis() + FETCHTEMPSTIME;

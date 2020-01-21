@@ -128,7 +128,7 @@ void logHex(char *hex, int hex_len) {
 
 byte calcChecksum(byte* command, int length) {
   byte chk = 0;
-  for ( unsigned int i = 0; i < length; i++)  {
+  for ( int i = 0; i < length; i++)  {
     chk += command[i];
   }
   chk = (chk ^ 0xFF) + 01;
