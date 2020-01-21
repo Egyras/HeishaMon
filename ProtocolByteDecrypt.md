@@ -22,7 +22,7 @@
 |  TOP | 17 | 00 |   | 0 byte |
 |  TOP | 18 | 00 |   | 0 byte |
 |  TOP | 19 | 00 |   | 0 byte |
-|  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Anti freezing |
+|  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Optional PCB, Anti freezing, Colling Medium,External outdoor temp sensor |
 |  TOP | 21 | 15 |   | ? |
 |  TOP | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
@@ -81,10 +81,10 @@
 |  TOP30 | 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
 |  TOP32 | 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
 |  TOP31 | 78 | 8f | Convert to DEC 143-128 =15  | Heating Curve Outside Temperature Highest Set [°C] |
-|  TOP | 79 | b7 | Convert to DEC 183-128 =55  | ? Possible Direct Zone2 water Temperature set [°C] |
-|  TOP | 80 | a3 |   =35| ? |
-|  TOP | 81 | 7b |   =-5| ? |
-|  TOP | 82 | 8f |   =15| ? |
+|  TOP | 79 | b7 | Convert to DEC 183-128 =55  | ? Possible Direct Zone2 water Temperature set [°C] and Z2 Heating Curve Outlet Water Temperature Highest Set [°C] |
+|  TOP | 80 | a3 | Convert to DEC 163 -128  =35| ? Possible Z2 Heating Curve Outlet Water Temperature Lowest Set [°C]  |
+|  TOP | 81 | 7b | Convert to DEC 123 -128  =-5| ? Possible Z2 Heating Curve Outside Temperature Lowest Set [°C] |
+|  TOP | 82 | 8f | Convert to DEC 143 -128  =15| ? Possible Z2 Heating Curve Outside Temperature Highest Set [°C] |
 |  TOP77 | 83 | 8e | Convert to DEC-128  | Outdoor Temperature to stop heating 5-35 [°C] |
 |  TOP23 | 84 | 80 | Convert to DEC 133-128 =5 | Floor heating set delta [°C] |
 |  TOP78 | 85 | 80 | Convert to DEC 128-128=0 | Outdoor temperature for heater ON [°C]  |
@@ -92,10 +92,10 @@
 |  TOP73 | 87 | 8a | Convert to DEC-128 | Cooling Curve Outlet Water Temperature Lowest Set [°C] |
 |  TOP74 | 88 | 94 | Convert to DEC-128 | Cooling Curve Outside Temperature Lowest Set [°C] |
 |  TOP75 | 89 | 9e | Convert to DEC-128 | Cooling Curve Outside Temperature Highest Set [°C] |
-|  TOP | 90 | 8a |  =10 | ? |
-|  TOP | 91 | 8a |  =10| ? |
-|  TOP | 92 | 94 |  =20 | ? |
-|  TOP | 93 | 9e |  =30 | ? |
+|  TOP | 90 | 8a |  Convert to DEC-128 | ? Possible Z2 Cooling Curve Outlet Water Temperature Highest Set [°C] |
+|  TOP | 91 | 8a | Convert to DEC-128| ? Possible Z2 Cooling Curve Outlet Water Temperature Lowest Set [°C]  |
+|  TOP | 92 | 94 | Convert to DEC-128 | ? Possible Z2 Cooling Curve Outside Temperature Lowest Set [°C]  |
+|  TOP | 93 | 9e | Convert to DEC-128 | ? Possible Z2 Cooling Curve Outside Temperature Highest Set [°C]  |
 |  TOP24 | 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
 |  TOP79 | 95 |  90  | Convert to DEC 144-128=16|  Outdoor temperature for (heat to cool)   [°C]  |
 |  TOP80 | 96 | 8b | Convert to DEC 139-128=11|  Outdoor temperature for (cool to heat) [°C] |
@@ -179,8 +179,8 @@
 |  TOP63 | 174 | 01 | to DEC (X-1) X10  | Fan 2 Motor Speed [R/Min] |
 |  TOP | 175 | 36 |   | ? |
 |  TOP | 176 | 79 |   | ? |
-|  TOP | 177 | 01 |   | ? |
-|  TOP | 178 | 01 |   | ? |
+|  TOP | 177 | 01 | Convert to DEC -1  | ? Posible Time for Mixing vave 1 Zone2 [seconds]|
+|  TOP | 178 | 01 | Convert to DEC -1  | ? Posible Time for Mixing vave 2 Zone2 [seconds] |
 |  TOP12 | 179 | c3 | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
 |  TOP12 | 180 | 02 |  look at 179 | number of operations |
 |  TOP | 181 | 00 |   | ? |
