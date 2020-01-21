@@ -3,6 +3,8 @@
 ################################################################################
 
 /.vs
-/platformio.ini
 /.pio
 /.vscode
+/.pioenvs
+/.cache
+platformio.ini
