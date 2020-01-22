@@ -19,7 +19,7 @@ extern const char* mqtt_set_force_DHW_topic;
 extern const char* mqtt_set_force_defrost_topic;
 extern const char* mqtt_set_force_sterilization_topic;
 extern const char* mqtt_set_holiday_topic;
-extern const char* mqtt_set_powerfull_topic;
+extern const char* mqtt_set_powerful_topic;
 extern const char* mqtt_set_dhw_temp_topic;
 extern const char* mqtt_set_cool_temp_topic;
 

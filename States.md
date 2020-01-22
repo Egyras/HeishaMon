@@ -17,10 +17,10 @@ For every state: -1 = unknown
 |	| 3 | Quiet mode 3 |
 |panasonic_heat_pump/sdc/Quiet_Mode_Schedule	| 0 | Quiet mode schedule inactive |
 |	| 1 | Quiet mode schedule active |
-|panasonic_heat_pump/sdc/Powerfull_Mode_State	| 0 | Powerfull mode off |
-|	| 1 | Powerfull mode 30 min |
-|	| 2 | Powerfull mode 60 min |
-|	| 3 | Powerfull mode 90 min |
+|panasonic_heat_pump/sdc/Powerful_Mode_State	| 0 | Powerful mode off |
+|	| 1 | Powerful mode 30 min |
+|	| 2 | Powerful mode 60 min |
+|	| 3 | Powerful mode 90 min |
 |panasonic_heat_pump/sdc/Threeway_Valve_State	| 0 | 3-way valve on Room |
 | | 1 | 3-way valve on DHW Tank 
 |panasonic_heat_pump/sdc/Defrosting_State	| 0 | Defrosting off |

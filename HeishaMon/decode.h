@@ -311,7 +311,7 @@ static const char *OffOn[] = {"Off","On"};
 static const char *InactiveActive[] = {"Inactive","Active"};
 static const char *HolidayState[] = {"Off","Scheduled","Active"};
 static const char *OpModeDesc[] = {"Heat","Cool","Auto","DHW","Heat+DHW","Cool+DHW","Auto+DHW"};
-static const char *Powerfullmode[] = {"Off","30min","60min","90min"};
+static const char *Powerfulmode[] = {"Off","30min","60min","90min"};
 static const char *Quietmode[] = {"Off","Level 1","Level 2","Level 3"};
 static const char *Valve[] = {"Room","DHW"};
 static const char *LitersPerMin[] = {"value","l/min"};
@@ -345,7 +345,7 @@ static const char **topicDescription[] = {
     Celsius,         //TOP14
     Watt,            //TOP15
     Watt,            //TOP16
-    Powerfullmode,   //TOP17
+    Powerfulmode,   //TOP17
     Quietmode,       //TOP18
     HolidayState,    //TOP19
     Valve,           //TOP20
