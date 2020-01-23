@@ -2,9 +2,13 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs
-/.pio
-/.vscode
-/.pioenvs
-/.cache
+.vs
+.pio
+pio
+.vscode
+.pioenvs
+.cache
 platformio.ini
+build_output
+firmware.map
+firmware.asm
