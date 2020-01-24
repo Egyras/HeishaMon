@@ -27,40 +27,40 @@ String getHeatMode(byte input);
 static const String topics[] = {
     "Heatpump_State",          //TOP0
     "Pump_Flow",               //TOP1
-    "ForceDHW_State",          //TOP2
-    "QuietMode_Schedule",      //TOP3
-    "OperatingMode_State",     //TOP4
-    "Water_Inlet_Temp",        //TOP5
-    "Water_Outlet_Temp",       //TOP6
-    "Water_Target_Temp",       //TOP7
+    "Force_DHW_State",         //TOP2
+    "Quiet_Mode_Schedule",     //TOP3
+    "Operating_Mode_State",    //TOP4
+    "Main_Inlet_Temp",         //TOP5
+    "Main_Outlet_Temp",        //TOP6
+    "Main_Target_Temp",        //TOP7
     "Compressor_Freq",         //TOP8
     "DHW_Target_Temp",         //TOP9
     "DHW_Temp",                //TOP10
     "Operations_Hours",        //TOP11
     "Operations_Counter",      //TOP12
-    "MainSchedule_State",      //TOP13
+    "Main_Schedule_State",     //TOP13
     "Outside_Temp",            //TOP14
     "Heat_Energy_Production",  //TOP15
     "Heat_Energy_Consumption", //TOP16
-    "Powerfullmode_Time",      //TOP17
-    "QuietMode_Level",         //TOP18
-    "HolidayMode_State",       //TOP19
-    "ThreeWayValve_State",     //TOP20
+    "Powerful_Mode_Time",      //TOP17
+    "Quiet_Mode_Level",        //TOP18
+    "Holiday_Mode_State",      //TOP19
+    "ThreeWay_Valve_State",    //TOP20
     "Outside_Pipe_Temp",       //TOP21
     "DHW_Heat_Delta",          //TOP22
     "Heat_Delta",              //TOP23
     "Cool_Delta",              //TOP24
-    "DHW_Shift_Temp",          //TOP25
+    "DHW_Holiday_Shift_Temp",  //TOP25
     "Defrosting_State",        //TOP26
-    "Z1_HeatRequest_Temp",     //TOP27
-    "Z1_CoolRequest_Temp",     //TOP28
-    "HCurve_OutHighTemp",      //TOP29
-    "HCurve_OutLowTemp",       //TOP30
-    "HCurve_OutsHighTemp",     //TOP31
-    "HCurve_OutsLowTemp",      //TOP32
-    "RoomThermostat_Temp",     //TOP33
-    "Z2_HeatRequest_Temp",     //TOP34
-    "Z2_CoolRequest_Temp",     //TOP35
+    "Z1_Heat_Request_Temp",    //TOP27
+    "Z1_Cool_Request_Temp",    //TOP28
+    "Z1_Heat_Curve_Target_High_Temp",      //TOP29
+    "Z1_Heat_Curve_Target_Low_Temp",       //TOP30
+    "Z1_Heat_Curve_Outside_High_Temp",     //TOP31
+    "Z1_Heat_Curve_Outside_Low_Temp",      //TOP32
+    "Room_Thermostat_Temp",    //TOP33
+    "Z2_Heat_Request_Temp",    //TOP34
+    "Z2_Cool_Request_Temp",    //TOP35
     "Z1_Water_Temp",           //TOP36
     "Z2_Water_Temp",           //TOP37
     "Cool_Energy_Production",  //TOP38
@@ -70,11 +70,11 @@ static const String topics[] = {
     "Z1_Water_Target_Temp",    //TOP42
     "Z2_Water_Target_Temp",    //TOP43
     "Error",                   //TOP44
-    "Holiday_Shift_Temp",      //TOP45
+    "Room_Holiday_Shift_Temp", //TOP45
     "Buffer_Temp",             //TOP46
     "Solar_Temp",              //TOP47
     "Pool_Temp",               //TOP48
-    "Water_Hex_Outlet_Temp",   //TOP49
+    "Main_Hex_Outlet_Temp",    //TOP49
     "Discharge_Temp",          //TOP50
     "Inside_Pipe_Temp",        //TOP51
     "Defrost_Temp",            //TOP52
@@ -84,30 +84,38 @@ static const String topics[] = {
     "Z1_Temp",                 //TOP56
     "Z2_Temp",                 //TOP57
     "DHW_Heater_State",        //TOP58
-    "WaterHeater_State",       //TOP59
-    "InternalHeater_State",    //TOP60
-    "ExternalHeater_State",    //TOP61
-    "Fan1Motor_Speed",         //TOP62
-    "Fan2Motor_Speed",         //TOP63
+    "Room_Heater_State",       //TOP59
+    "Internal_Heater_State",   //TOP60
+    "External_Heater_State",   //TOP61
+    "Fan1_Motor_Speed",        //TOP62
+    "Fan2_Motor_Speed",        //TOP63
     "High_Pressure",           //TOP64
     "Pump_Speed",              //TOP65
     "Low_Pressure",            //TOP66
     "Compressor_Current",      //TOP67
-    "ForceHeater_State",       //TOP68
+    "Force_Heater_State",      //TOP68
     "Sterilization_State",     //TOP69
     "Sterilization_Temp",      //TOP70
     "Sterilization_Max_Time",  //TOP71
-    "CCurve_OutHighTemp",      //TOP72
-    "CCurve_OutLowTemp",       //TOP73
-    "CCurve_OutsHighTemp",     //TOP74
-    "CCurve_OutsLowTemp",      //TOP75
+    "Z1_Cool_Curve_Target_High_Temp",      //TOP72
+    "Z1_Cool_Curve_Target_Low_Temp",       //TOP73
+    "Z1_Cool_Curve_Outside_High_Temp",     //TOP74
+    "Z1_Cool_Curve_Outside_Low_Temp",      //TOP75
     "Heating_Mode",            //TOP76
-    "Outdoor_HeatingOff_Temp", //TOP77
-    "Outdoor_BackupOn_Temp",   //TOP78
+    "Heating_Off_Outdoor_Temp",//TOP77
+    "Heater_On_Outdoor_Temp",  //TOP78
     "Heat_To_Cool_Temp",       //TOP79
     "Cool_To_Heat_Temp",       //TOP80
     "Cooling_Mode",            //TOP81
-    };
+    "Z2_Heat_Curve_Target_High_Temp",      //TOP82
+    "Z2_Heat_Curve_Target_Low_Temp",       //TOP83
+    "Z2_Heat_Curve_Outside_High_Temp",     //TOP84
+    "Z2_Heat_Curve_Outside_Low_Temp",      //TOP85
+    "Z2_Cool_Curve_Target_High_Temp",      //TOP86
+    "Z2_Cool_Curve_Target_Low_Temp",       //TOP87
+    "Z2_Cool_Curve_Outside_High_Temp",     //TOP88
+    "Z2_Cool_Curve_Outside_Low_Temp",      //TOP89
+};
 
 static const unsigned int topicBytes[] = {
         4,      //TOP0
@@ -192,6 +200,14 @@ static const unsigned int topicBytes[] = {
         95,     //TOP79
         96,     //TOP80
         28,     //TOP81
+        79,     //TOP82        
+        80,     //TOP83        
+        81,     //TOP84        
+        82,     //TOP85        
+        90,     //TOP86        
+        91,     //TOP87        
+        92,     //TOP88        
+        93,     //TOP89
 };        
 
 typedef String (*topicFP)(byte);
@@ -279,20 +295,30 @@ static const topicFP topicFunctions[] = {
     getIntMinus128,      //TOP79
     getIntMinus128,      //TOP80
     getBit5and6,         //TOP81
+    getIntMinus128,      //TOP82
+    getIntMinus128,      //TOP83
+    getIntMinus128,      //TOP84
+    getIntMinus128,      //TOP85            
+    getIntMinus128,      //TOP86
+    getIntMinus128,      //TOP87
+    getIntMinus128,      //TOP88
+    getIntMinus128,      //TOP89            
 };
 
 static const char *DisabledEnabled[] = {"Disabled","Enabled"};
+static const char *BlockedFree[] = {"Blocked","Free"};
 static const char *OffOn[] = {"Off","On"};
 static const char *InactiveActive[] = {"Inactive","Active"};
+static const char *HolidayState[] = {"Off","Scheduled","Active"};
 static const char *OpModeDesc[] = {"Heat","Cool","Auto","DHW","Heat+DHW","Cool+DHW","Auto+DHW"};
-static const char *Powerfullmode[] = {"Off","30min","60min","90min"};
+static const char *Powerfulmode[] = {"Off","30min","60min","90min"};
 static const char *Quietmode[] = {"Off","Level 1","Level 2","Level 3"};
 static const char *Valve[] = {"Room","DHW"};
 static const char *LitersPerMin[] = {"value","l/min"};
 static const char *RotationsPerMin[] = {"value","r/min"};
 static const char *Pressure[] = {"value","Kgf/cm2"};
 static const char *Celsius[] = {"value","&deg;C"};
-static const char *Kelvin[] = {"value","&deg;K"};
+static const char *Kelvin[] = {"value","K"};
 static const char *Hertz[] = {"value","Hz"};
 static const char *Counter[] = {"value","count"};
 static const char *Hours[] = {"value","hours"};
@@ -319,9 +345,9 @@ static const char **topicDescription[] = {
     Celsius,         //TOP14
     Watt,            //TOP15
     Watt,            //TOP16
-    Powerfullmode,   //TOP17
+    Powerfulmode,   //TOP17
     Quietmode,       //TOP18
-    DisabledEnabled, //TOP19
+    HolidayState,    //TOP19
     Valve,           //TOP20
     Celsius,         //TOP21
     Kelvin,          //TOP22
@@ -347,7 +373,7 @@ static const char **topicDescription[] = {
     Celsius,         //TOP42
     Celsius,         //TOP43
     ErrorState,      //TOP44
-    Celsius,         //TOP45
+    Kelvin,          //TOP45
     Celsius,         //TOP46
     Celsius,         //TOP47
     Celsius,         //TOP48
@@ -360,8 +386,8 @@ static const char **topicDescription[] = {
     Celsius,         //TOP55
     Celsius,         //TOP56
     Celsius,         //TOP57
-    DisabledEnabled, //TOP58
-    DisabledEnabled, //TOP59
+    BlockedFree,     //TOP58
+    BlockedFree,     //TOP59
     InactiveActive,  //TOP60
     InactiveActive,  //TOP61
     RotationsPerMin, //TOP62
@@ -384,4 +410,12 @@ static const char **topicDescription[] = {
     Celsius,         //TOP79
     Celsius,         //TOP80
     HeatCoolModeDesc,//TOP81
+    Celsius,         //TOP82
+    Celsius,         //TOP83
+    Celsius,         //TOP84
+    Celsius,         //TOP85
+    Celsius,         //TOP86
+    Celsius,         //TOP87
+    Celsius,         //TOP99
+    Celsius,         //TOP89
 };

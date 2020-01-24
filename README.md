@@ -9,7 +9,7 @@ Een nederlandse vertaling [README_NL.md](README_NL.md) vind je hier.
 *Help on translation to other languages are welcome.*
 
 # Current releases
-Current beta release is version 0.2b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.2b.bin) can be installed on a Wemos D1 mini(and generally on any ESP8266 based board - but without guarantee ). Or download the code compile it yourself (see required libraries below).
+Current beta release is version 0.3b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.3b.bin) can be installed on a Wemos D1 mini(and generally on any ESP8266 based board - but without guarantee ). Or download the code compile it yourself (see required libraries below).
 
 
 ## Connection details:
@@ -55,6 +55,9 @@ esp8266 by esp8266 community version 2.6.3 [Arduino](https://github.com/esp8266/
 
 ## MQTT topics
 [Current list of documented MQTT topics can be found here](MQTT-Topics.md)
+
+## DS18b20 1-wire support
+The software also supports ds18b20 1-wire temperature sensors reading. A proper 1-wire configuration (with 4.7kohm pull-up resistor) connected to GPIO4 will be read each 30 secs and send at the panasonic_heat_pump/1wire/"sensor-hex-address" topic.
 
 
 ## Protocol info packet:
