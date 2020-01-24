@@ -19,8 +19,8 @@ extern const char* mqtt_set_force_DHW_topic;
 extern const char* mqtt_set_force_defrost_topic;
 extern const char* mqtt_set_force_sterilization_topic;
 extern const char* mqtt_set_holiday_topic;
-extern const char* mqtt_set_powerfull_topic;
+extern const char* mqtt_set_powerful_topic;
 extern const char* mqtt_set_dhw_temp_topic;
 extern const char* mqtt_set_cool_temp_topic;
 
-void send_heatpump_command(char* topic, char msg[],bool (*send_command)(byte*, int),void (*log_message)(char*));
+void send_heatpump_command(char* topic, char *msg,bool (*send_command)(byte*, int),void (*log_message)(char*));

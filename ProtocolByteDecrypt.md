@@ -9,6 +9,10 @@
 |  TOP0+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
 |  TOP19+TOP13+TOP68 | 05 | 55 | Holiday mode off/on (bit3and4), weekly shedule off/on (bit 1and2) force heater off/on (bit5and6) Dry Concrete off/on (bit7and8) | Holiday mode, Sheduler status, force heater state , Dry Concrete |
 |  TOP4 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
+<<<<<<< HEAD
+|  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerful mode status |
+=======
+>>>>>>> 195aa717d7923bdabee3e1390db4ebaf1a879a32
 |  TOP | 08 | 00 |   | 0 byte |
 |  TOP58+TOP59 | 09 | 05 | HEX values - should be Low Byte (2nd value)Water heater off + DHW heater off=55, Water heater on + DHWs heater off=56, Water Heater off + DHW heater on=59, Weater heater on + DHW heater on=5A | Heaters enable allowed status|
 |  TOP | 10 | 00 |   | 0 byte |
@@ -76,26 +80,26 @@
 |  TOP | 72 | 79 | Convert to DEC X-1  |SG Setting 1 DHW Capacity  |
 |  TOP | 73 | 8d | Convert to DEC X-1  |SG Setting 2 Heating Capacity  |
 |  TOP | 74 | 8d | Convert to DEC X-1  |SG Setting 2 DHW Capacity  |
-|  TOP29 | 75 | 9e | Convert to DEC 158-128 =30 | Heating Curve Outlet Water Temperature Highest Set [°C] |
-|  TOP30 | 76 | 96 | Convert to DEC 150-128 =22 | Heating Curve Outlet Water Temperature Lowest Set [°C] |
-|  TOP32 | 77 | 71 | Convert to DEC 113-128 =-15 | Heating Curve Outside Temperature Lowest Set [°C] |
-|  TOP31 | 78 | 8f | Convert to DEC 143-128 =15  | Heating Curve Outside Temperature Highest Set [°C] |
-|  TOP | 79 | b7 | Convert to DEC 183-128 =55  | ? Possible Direct Zone2 water Temperature set [°C] and Z2 Heating Curve Outlet Water Temperature Highest Set [°C] |
-|  TOP | 80 | a3 | Convert to DEC 163 -128  =35| ? Possible Z2 Heating Curve Outlet Water Temperature Lowest Set [°C]  |
-|  TOP | 81 | 7b | Convert to DEC 123 -128  =-5| ? Possible Z2 Heating Curve Outside Temperature Lowest Set [°C] |
-|  TOP | 82 | 8f | Convert to DEC 143 -128  =15| ? Possible Z2 Heating Curve Outside Temperature Highest Set [°C] |
+|  TOP29 | 75 | 9e | Convert to DEC 158-128 =30 | Z1 Heating Curve Outlet Water Temperature Highest Set [°C] |
+|  TOP30 | 76 | 96 | Convert to DEC 150-128 =22 | Z1 Heating Curve Outlet Water Temperature Lowest Set [°C] |
+|  TOP32 | 77 | 71 | Convert to DEC 113-128 =-15 | Z1 Heating Curve Outside Temperature Lowest Set [°C] |
+|  TOP31 | 78 | 8f | Convert to DEC 143-128 =15  | Z1 Heating Curve Outside Temperature Highest Set [°C] |
+|  TOP82 | 79 | b7 | Convert to DEC 183-128 =55  | Z2 Heating Curve Outlet Water Temperature Highest Set [°C] |
+|  TOP83 | 80 | a3 |   =35| Z2 Heating Curve Outlet Water Temperature Lowest Set [°C] |
+|  TOP84 | 81 | 7b |   =-5| Z2 Heating Curve Outside Temperature Lowest Set [°C] |
+|  TOP85 | 82 | 8f |   =15| Z2 Heating Curve Outside Temperature Highest Set [°C] |
 |  TOP77 | 83 | 8e | Convert to DEC-128  | Outdoor Temperature to stop heating 5-35 [°C] |
 |  TOP23 | 84 | 80 | Convert to DEC 133-128 =5 | Floor heating set Delta [°K] |
 |  TOP78 | 85 | 80 | Convert to DEC 128-128=0 | Outdoor temperature for heater ON [°C]  |
-|  TOP72 | 86 | 8f | Convert to DEC-128 | Cooling Curve Outlet Water Temperature Highest Set [°C]|
-|  TOP73 | 87 | 8a | Convert to DEC-128 | Cooling Curve Outlet Water Temperature Lowest Set [°C] |
-|  TOP74 | 88 | 94 | Convert to DEC-128 | Cooling Curve Outside Temperature Lowest Set [°C] |
-|  TOP75 | 89 | 9e | Convert to DEC-128 | Cooling Curve Outside Temperature Highest Set [°C] |
-|  TOP | 90 | 8a |  Convert to DEC-128 | ? Possible Z2 Cooling Curve Outlet Water Temperature Highest Set [°C] |
-|  TOP | 91 | 8a | Convert to DEC-128| ? Possible Z2 Cooling Curve Outlet Water Temperature Lowest Set [°C]  |
-|  TOP | 92 | 94 | Convert to DEC-128 | ? Possible Z2 Cooling Curve Outside Temperature Lowest Set [°C]  |
-|  TOP | 93 | 9e | Convert to DEC-128 | ? Possible Z2 Cooling Curve Outside Temperature Highest Set [°C]  |
-|  TOP24 | 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set Delta [°K] |
+|  TOP72 | 86 | 8f | Convert to DEC-128 | Z1 Cooling Curve Outlet Water Temperature Highest Set [°C]|
+|  TOP73 | 87 | 8a | Convert to DEC-128 | Z1 Cooling Curve Outlet Water Temperature Lowest Set [°C]|
+|  TOP74 | 88 | 94 | Convert to DEC-128 | Z1 Cooling Curve Outside Temperature Lowest Set [°C] |
+|  TOP75 | 89 | 9e | Convert to DEC-128 | Z1 Cooling Curve Outside Temperature Highest Set [°C] |
+|  TOP86 | 90 | 8a | Convert to DEC-128 | Z2 Cooling Curve Outlet Water Temperature Lowest Set [°C]|
+|  TOP87 | 91 | 8a | Convert to DEC-128 | Z2 Cooling Curve Outlet Water Temperature Highest Set [°C]|
+|  TOP88 | 92 | 94 | Convert to DEC-128 | Z2 Cooling Curve Outside Temperature Lowest Set [°C] |
+|  TOP89 | 93 | 9e | Convert to DEC-128 | Z2 Cooling Curve Outside Temperature Highest Set [°C] |
+|  TOP24 | 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
 |  TOP79 | 95 |  90  | Convert to DEC 144-128=16|  Outdoor temperature for (heat to cool)   [°C]  |
 |  TOP80 | 96 | 8b | Convert to DEC 139-128=11|  Outdoor temperature for (cool to heat) [°C] |
 |  TOP | 97 | 05 | Donvert to DEC (X-1) x 30   | DHW settings - Room operation max time [min] |
