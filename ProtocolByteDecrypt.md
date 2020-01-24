@@ -9,7 +9,10 @@
 |  TOP0+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
 |  TOP19+TOP13+TOP68 | 05 | 55 | Holiday mode off/on (bit3and4), weekly shedule off/on (bit 1and2) force heater off/on (bit5and6) Dry Concrete off/on (bit7and8) | Holiday mode, Sheduler status, force heater state , Dry Concrete |
 |  TOP4 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
+<<<<<<< HEAD
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerful mode status |
+=======
+>>>>>>> 195aa717d7923bdabee3e1390db4ebaf1a879a32
 |  TOP | 08 | 00 |   | 0 byte |
 |  TOP58+TOP59 | 09 | 05 | HEX values - should be Low Byte (2nd value)Water heater off + DHW heater off=55, Water heater on + DHWs heater off=56, Water Heater off + DHW heater on=59, Weater heater on + DHW heater on=5A | Heaters enable allowed status|
 |  TOP | 10 | 00 |   | 0 byte |
@@ -23,7 +26,7 @@
 |  TOP | 18 | 00 |   | 0 byte |
 |  TOP | 19 | 00 |   | 0 byte |
 |  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Optional PCB, Anti freezing, Colling Medium,External outdoor temp sensor |
-|  TOP | 21 | 15 |   | ? |
+|  TOP | 21 | 15 |  (hex) 15 - 1 Zone and Z1 as room , 19 - 1 Zone and Z1 as pool, 16 - 2 Zones and Z2 as room, 26 - 2 Zones ,Z2 as pool| No. of Zones and Zone Destignation |
 |  TOP | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
 |  TOP | 24 | 16 | (hex) DHW connected (no solar) =16, DHW not connected=15, no buffer(DHW connected)=16, DHW+Buffer=1A, DHW as buffer for Solar=26, Buffer tank as Buffer for solar=36  | DHW Connection and Buffer + Solar status |
@@ -38,15 +41,15 @@
 |  TOP | 33 | 00 |   | 0 byte |
 |  TOP | 34 | 00 |   | 0 byte |
 |  TOP | 35 | 00 |   | 0 byte |
-|  TOP | 36 | 19 |   | ? |
-|  TOP | 37 | 15 |   | ? |
+|  TOP | 36 | 00 |   | 0 byte |
+|  TOP | 37 | 00 |   | 0 byte |
 |  TOP27 | 38 | 80 | Convert to DEC 128-128 = 0  | Zone 1 water shift set or direct mode value Temperature For Heat Mode [°C] |
 |  TOP28 | 39 | 8f | Convert to DEC 143-128 = 15 in direct mode set temp or shift value  | Zone 1 water shift set Temperature For Cool Mode [°C] |
 |  TOP34 | 40 | 80 | Convert to DEC 128-128 = 0  | Zone 2 water shift or direct mode set Temperature For Heat Mode [°C] |
 |  TOP35 | 41 | 8a | Convert to DEC 138-128 = 10  | Zone 2 water shift or direct mode set Temperature For Cool Mode [°C] |
 |  TOP9 | 42 | b2 | Convert to DEC 178-128 = 50  | DHW Target Temperature [°C] |
-|  TOP45 | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode |
-|  TOP25 | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for DHW mode  |
+|  TOP45 | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode [°K]  |
+|  TOP25 | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for DHW mode [°K] |
 |  TOP | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
 |  TOP | 46 | 99 |   | ? |
 |  TOP | 47 | 00 |   | 0 byte |
@@ -60,13 +63,13 @@
 |  TOP | 55 | 00 |   | 0 byte |
 |  TOP | 56 | 00 |   | 0 byte |
 |  TOP | 57 | 00 |   | 0 byte |
-|  TOP | 58 | 80 |   | ? |
-|  TOP | 59 | 85 | Convert to DEC-128  | Delta T for buffer tank [°C]|
+|  TOP | 58 | 80 | Convert to DEC-128   | Delta T for Pool [°K] |
+|  TOP | 59 | 85 | Convert to DEC-128  | Delta T for buffer tank [°K]|
 |  TOP | 60 | 15 | Convert to DEC X-1   | Time set for external heaters 20min-3h, step 5min. |
 |  TOP | 61 | 8a | Convert to DEC-128  | ? Possible Solar Connection Set delta T for tank ON (DHW or Buffer) |
-|  TOP | 62 | 85 |  Convert to DEC-128 | ? Possible Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
-|  TOP | 63 | 85 |  Convert to DEC-128 | ? Possible Set Antifreeze for solar |
-|  TOP | 64 | d0 |  Convert to DEC-128 | ? Possible Set Hi limit for solar |
+|  TOP | 62 | 85 | Convert to DEC-128 | ? Possible Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
+|  TOP | 63 | 85 | Convert to DEC-128 | ? Possible Set Antifreeze for solar |
+|  TOP | 64 | d0 | Convert to DEC-128 | ? Possible Set Hi limit for solar |
 |  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Bivalent device -15-35[°C]|
 |  TOP | 66 | 78 | Convert to DEC-128  | ? Possible Control pattern in Bivalent set temperature source to start the bivalent heat source |
 |  TOP | 67 | 1f | Convert to DEC X-1  | ?  Possible Bivalent Delay timer to start the bivalent heat source |
@@ -86,22 +89,22 @@
 |  TOP84 | 81 | 7b |   =-5| Z2 Heating Curve Outside Temperature Lowest Set [°C] |
 |  TOP85 | 82 | 8f |   =15| Z2 Heating Curve Outside Temperature Highest Set [°C] |
 |  TOP77 | 83 | 8e | Convert to DEC-128  | Outdoor Temperature to stop heating 5-35 [°C] |
-|  TOP23 | 84 | 80 | Convert to DEC 133-128 =5 | Floor heating set delta [°C] |
+|  TOP23 | 84 | 80 | Convert to DEC 133-128 =5 | Floor heating set Delta [°K] |
 |  TOP78 | 85 | 80 | Convert to DEC 128-128=0 | Outdoor temperature for heater ON [°C]  |
 |  TOP72 | 86 | 8f | Convert to DEC-128 | Z1 Cooling Curve Outlet Water Temperature Highest Set [°C]|
-|  TOP73 | 87 | 8a | Convert to DEC-128 | Z1 Cooling Curve Outlet Water Temperature Highest Set [°C]|
+|  TOP73 | 87 | 8a | Convert to DEC-128 | Z1 Cooling Curve Outlet Water Temperature Lowest Set [°C]|
 |  TOP74 | 88 | 94 | Convert to DEC-128 | Z1 Cooling Curve Outside Temperature Lowest Set [°C] |
 |  TOP75 | 89 | 9e | Convert to DEC-128 | Z1 Cooling Curve Outside Temperature Highest Set [°C] |
-|  TOP86 | 90 | 8a |  =10 | Z2 Curve Outlet Water Temperature Highest Set [°C]|
-|  TOP87 | 91 | 8a |  =10 | Z2 Cooling Curve Outlet Water Temperature Highest Set [°C]|
-|  TOP88 | 92 | 94 |  =20 | Z2 Cooling Curve Outside Temperature Lowest Set [°C] |
-|  TOP89 | 93 | 9e |  =30 | Z2 Cooling Curve Outside Temperature Highest Set [°C] |
+|  TOP86 | 90 | 8a | Convert to DEC-128 | Z2 Cooling Curve Outlet Water Temperature Lowest Set [°C]|
+|  TOP87 | 91 | 8a | Convert to DEC-128 | Z2 Cooling Curve Outlet Water Temperature Highest Set [°C]|
+|  TOP88 | 92 | 94 | Convert to DEC-128 | Z2 Cooling Curve Outside Temperature Lowest Set [°C] |
+|  TOP89 | 93 | 9e | Convert to DEC-128 | Z2 Cooling Curve Outside Temperature Highest Set [°C] |
 |  TOP24 | 94 | 82 | Convert to DEC 130-128 =2  | Floor cooling set delta [°C] |
 |  TOP79 | 95 |  90  | Convert to DEC 144-128=16|  Outdoor temperature for (heat to cool)   [°C]  |
 |  TOP80 | 96 | 8b | Convert to DEC 139-128=11|  Outdoor temperature for (cool to heat) [°C] |
 |  TOP | 97 | 05 | Donvert to DEC (X-1) x 30   | DHW settings - Room operation max time [min] |
 |  TOP | 98 | 65 | Convert to DEC 101-1=100   | DHW heat up time (max) [min] |
-|  TOP22 | 99 | 78 | Convert to DEC 120-128=-8 | DHW delta for re-heat  [°C] |
+|  TOP22 | 99 | 78 | Convert to DEC 120-128=-8 | DHW Delta for re-heat  [°K] |
 |  TOP70 | 100 | c1 |  Convert to DEC 193-128=65  | Sterilization boiling temperature [°C] |
 |  TOP71 | 101 | 0b |  Convert to DEC 11 - 1 = 10 | Sterilization max operation time [min] |
 |  TOP | 102 | 00 |   | 0 byte |
@@ -187,8 +190,8 @@
 |  TOP11 | 182 | dd | combine both bytes (183) 0b  (182) 25 = 2853 - 1 = 2852  | Operating time in h |
 |  TOP11 | 183 | 02 | look at 182  | Operating time in h |
 |  TOP | 184 | 00 |   | ? |
-|  TOP | 185 | 05 | to DEC X-1  | Room Heater operation time in h |
-|  TOP | 186 | 00 |   | ? |
+|  TOP | 185 | 05 | combine both bytes (186) 00  (185) 0005 = 5 - 1 = 4  | Room Heater operation time in h |
+|  TOP | 186 | 00 |  look at 185   | Room Heater operation time in h |
 |  TOP | 187 | 00 |   | ? |
 |  TOP | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
 |  TOP | 189 | 00 | look at 188 | DHW Heater operation time in h |
