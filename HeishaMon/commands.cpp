@@ -22,7 +22,7 @@ const char* mqtt_set_powerful_topic = "panasonic_heat_pump/SetPowerfulMode";
 const char* mqtt_set_dhw_temp_topic = "panasonic_heat_pump/SetDHWTemp";
 const char* mqtt_set_cool_temp_topic = "panasonic_heat_pump/SetCoolTemp";
 
-void send_heatpump_command(char* topic, char msg[],bool (*send_command)(byte*, int),void (*log_message)(char*)){
+void send_heatpump_command(char* topic, char *msg,bool (*send_command)(byte*, int),void (*log_message)(char*)){
   char log_msg[256];
 
   // set heatpump state to on by sending 1

@@ -291,7 +291,8 @@ void handleTableRefresh(ESP8266WebServer *httpServer, DynamicJsonDocument *actDa
     int topic = atoi(kv.key().c_str());
     String topicname = topics[topic];
     String topicdesc;
-    if (topicDescription[topic][0] == "value") {
+    const char *valuetext = "value";
+    if (strcmp(topicDescription[topic][0],valuetext) == 0) {
       topicdesc = topicDescription[topic][1];
     }
     else {
