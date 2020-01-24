@@ -318,7 +318,7 @@ static const char *LitersPerMin[] = {"value","l/min"};
 static const char *RotationsPerMin[] = {"value","r/min"};
 static const char *Pressure[] = {"value","Kgf/cm2"};
 static const char *Celsius[] = {"value","&deg;C"};
-static const char *Kelvin[] = {"value","&deg;K"};
+static const char *Kelvin[] = {"value","K"};
 static const char *Hertz[] = {"value","Hz"};
 static const char *Counter[] = {"value","count"};
 static const char *Hours[] = {"value","hours"};
@@ -373,7 +373,7 @@ static const char **topicDescription[] = {
     Celsius,         //TOP42
     Celsius,         //TOP43
     ErrorState,      //TOP44
-    Celsius,         //TOP45
+    Kelvin,          //TOP45
     Celsius,         //TOP46
     Celsius,         //TOP47
     Celsius,         //TOP48
