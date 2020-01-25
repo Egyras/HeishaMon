@@ -123,7 +123,7 @@ SET8  | SetZ2CoolRequestTemperature | Set Z2 cool shift or direct cool temperatu
 SET9  | SetOperationMode | Sets operating mode | 0=Heat only, 1=Cool only, 2=Auto, 3=DHW only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW
 SET10 | SetForceDHW | Forces DHW mode only | 0, 1
 SET11 | SetDHWTemp | Set DHW target temperature | 40 - 75
-SET12 | SetCoolTemp | Set cooldown temperature | 5 - 20 (!!can be deleted!!)
+SET12 | TBD |  |
 SET13 | SetForceDefrost | Forces defrost routine | 0, 1
 SET14 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
 

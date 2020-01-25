@@ -27,7 +27,8 @@ Aktuell sind mehrere Platinen in der Produktion (beta). Wir empfehlen, noch unse
 Es wird bald möglich sein, Platinen von den Projektmitgliedern zu erhalten. Die Layouts der Platinen und die Schaltpläne werden veröffentlicht.
 Hier findest du die Platinen, die im Moment getestet werden. \
 [PCD Designs  from the project members](PCB_Designs.md) \
-[Picture Wemos D1 beta](WEMOSD1.JPG)
+[Picture Wemos D1 beta](WEMOSD1.JPG) \
+[Picture ESP12-F](New_PCB.jpeg)
 
 
 ## Nutzung der aktuellen Software
