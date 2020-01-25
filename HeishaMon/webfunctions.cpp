@@ -251,7 +251,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   Serial.println(WiFi.localIP());
 }
 
-void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
+void handleRoot(ESP8266WebServer *httpServer) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -283,30 +283,57 @@ void handleRoot(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
   httpServer->client().stop();
 }
 
-void handleTableRefresh(ESP8266WebServer *httpServer, DynamicJsonDocument *actData) {
+void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
-  JsonObject root = actData->as<JsonObject>();
-  for (JsonPair kv : root) {
-    int topic = atoi(kv.key().c_str());
-    String topicname = topics[topic];
+  for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
     String topicdesc;
     const char *valuetext = "value";
     if (strcmp(topicDescription[topic][0],valuetext) == 0) {
       topicdesc = topicDescription[topic][1];
     }
     else {
-      int value = kv.value();
+      int value = actData[topic].toInt();
       topicdesc = topicDescription[topic][value];
     }
     String tabletext = "<tr>";
-    tabletext = tabletext + "<td>TOP" + kv.key().c_str() + "</td>";
-    tabletext = tabletext + "<td>" + topicname + "</td>";
-    tabletext = tabletext + "<td>" + kv.value().as<String>() + "</td>";
+    tabletext = tabletext + "<td>TOP" + topic + "</td>";
+    tabletext = tabletext + "<td>" + topics[topic] + "</td>";
+    tabletext = tabletext + "<td>" + actData[topic] + "</td>";
     tabletext = tabletext + "<td>" + topicdesc + "</td>";
     tabletext = tabletext + "</tr>";
     httpServer->sendContent(tabletext);
   }
+  httpServer->sendContent("");
+  httpServer->client().stop();
+}
+
+void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]) {
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->send(200, "application/json", "");
+  String tabletext = "{\"Heatpump values\":[";
+  httpServer->sendContent(tabletext);
+  for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
+    String topicdesc;
+    const char *valuetext = "value";
+    if (strcmp(topicDescription[topic][0],valuetext) == 0) {
+      topicdesc = topicDescription[topic][1];
+    }
+    else {
+      int value = actData[topic].toInt();
+      topicdesc = topicDescription[topic][value];
+    }
+    tabletext = "{";
+    tabletext = tabletext + "\"Topic\": \"TOP" + topic + "\",";
+    tabletext = tabletext + "\"Name\": \"" + topics[topic] + "\",";
+    tabletext = tabletext + "\"Value\": \"" + actData[topic] + "\",";
+    tabletext = tabletext + "\"Description\": \"" + topicdesc + "\"";
+    tabletext = tabletext + "}";
+    if (topic < NUMBER_OF_TOPICS-1) tabletext = tabletext + ",";
+    httpServer->sendContent(tabletext);
+  }
+  tabletext = "]}";
+  httpServer->sendContent(tabletext);  
   httpServer->sendContent("");
   httpServer->client().stop();
 }

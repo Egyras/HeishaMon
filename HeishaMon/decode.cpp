@@ -114,20 +114,19 @@ String getErrorInfo(char* data){ // TOP44 //
 }
 
 // Decode ////////////////////////////////////////////////////////////////////////////
-void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient &mqtt_client, void (*log_message)(char*)) {
+void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_client, void (*log_message)(char*)) {
   char log_msg[256];
   char mqtt_topic[256];
+  bool updatenow = false;
 
   if (millis() > nextalldatatime) {
-    actData.clear(); // clearing all actual data so everything will be updated and sent to mqtt
+    updatenow = true;
     nextalldatatime = millis() + UPDATEALLTIME;
   }
 
-  for (unsigned int Topic_Number = 0 ; Topic_Number < sizeof(topics) / sizeof(topics[0]) ; Topic_Number++) {
-    String Topic_Name;
+  for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS ; Topic_Number++) {
     byte Input_Byte;
     String Topic_Value;
-    Topic_Name = topics[Topic_Number];
     switch (Topic_Number) { //switch on topic numbers, some have special needs
       case 1: 
         Topic_Value = getPumpFlow(data);
@@ -146,14 +145,11 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
         Topic_Value = topicFunctions[Topic_Number](Input_Byte);
         break;
     }
-    if ( actData[(String)Topic_Number] != Topic_Value ) {
-      actData[(String)Topic_Number] = Topic_Value;
-      sprintf(log_msg, "received TOP%d %s: %s", Topic_Number, Topic_Name.c_str(), Topic_Value.c_str()); log_message(log_msg);
-      sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, Topic_Name.c_str()); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
+    if ((updatenow) || ( actData[Topic_Number] != Topic_Value )) {
+      actData[Topic_Number] = Topic_Value;
+      sprintf(log_msg, "received TOP%d %s: %s", Topic_Number, topics[Topic_Number], Topic_Value.c_str()); log_message(log_msg);
+      sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, topics[Topic_Number]); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
     }
   }
-
-  //run this only to check state of json doc. memory usage (currently sized at 2500)
-  //sprintf(log_msg, "JSON doc memory usage: %d", actData.memoryUsage()); log_message(log_msg);
 
 }

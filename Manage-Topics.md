@@ -51,3 +51,4 @@ static const char **topicDescription[] = {
 };
 ```
 
+4. Don't forget to update #define NUMBER_OF_TOPICS to match the last topic number + 1

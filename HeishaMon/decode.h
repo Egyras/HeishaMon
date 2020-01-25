@@ -5,7 +5,7 @@
 #define UPDATEALLTIME 300000 // how often all data is cleared and so resend to mqtt
 #define MQTT_RETAIN_VALUES 1
 
-void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient &mqtt_client, void (*log_message)(char*));
+void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_client, void (*log_message)(char*));
 
 String unknown(byte input);
 String getBit1and2(byte input);
@@ -24,7 +24,9 @@ String getOpMode(byte input);
 String getEnergy(byte input);
 String getHeatMode(byte input);
 
-static const String topics[] = {
+#define NUMBER_OF_TOPICS 90 //last topic number + 1
+
+static const char * topics[] = {
     "Heatpump_State",          //TOP0
     "Pump_Flow",               //TOP1
     "Force_DHW_State",         //TOP2
@@ -117,7 +119,7 @@ static const String topics[] = {
     "Z2_Cool_Curve_Outside_Low_Temp",      //TOP89
 };
 
-static const unsigned int topicBytes[] = {
+static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
         4,      //TOP0
         0,      //TOP1
         4,      //TOP2

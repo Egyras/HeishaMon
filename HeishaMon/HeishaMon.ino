@@ -64,8 +64,8 @@ bool use_1wire = false;
 char data[MAXDATASIZE];
 int data_length = 0;
 
-// store actual data in a json doc
-DynamicJsonDocument actData(2500);
+// store actual data in an String array
+String actData[NUMBER_OF_TOPICS];
 
 // log message to sprintf to
 char log_msg[256];
@@ -192,7 +192,7 @@ void pushCommandBuffer(byte* command, int length) {
   if (commandsInBuffer < MAXCOMMANDSINBUFFER) {
     command_struct* newCommand = new command_struct;
     newCommand->length = length;
-    for (unsigned int i = 0 ; i < length ; i++) {
+    for (int i = 0 ; i < length ; i++) {
       newCommand->value[i] = command[i];
     }
     newCommand->next = commandBuffer;
@@ -267,10 +267,13 @@ void setupOTA() {
 void setupHttp() {
   httpUpdater.setup(&httpServer, update_path, update_username, ota_password);
   httpServer.on("/", [] {
-    handleRoot(&httpServer, &actData);
+    handleRoot(&httpServer);
   });
   httpServer.on("/tablerefresh", [] {
-    handleTableRefresh(&httpServer, &actData);
+    handleTableRefresh(&httpServer, actData);
+  });
+  httpServer.on("/json", [] {
+    handleJsonOutput(&httpServer, actData);
   });
   httpServer.on("/factoryreset", [] {
     handleFactoryReset(&httpServer);
@@ -284,12 +287,12 @@ void setupHttp() {
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
     outputMqttLog ^= true;
-    handleRoot(&httpServer, &actData);
+    handleRoot(&httpServer);
   });
   httpServer.on("/togglehexdump", [] {
     log_message((char*)"Toggled hexdump log flag");
     outputHexDump ^= true;
-    handleRoot(&httpServer, &actData);
+    handleRoot(&httpServer);
   });
   httpServer.begin();
 }
