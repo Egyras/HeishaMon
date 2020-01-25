@@ -65,7 +65,7 @@ char data[MAXDATASIZE];
 int data_length = 0;
 
 // store actual data in a json doc
-DynamicJsonDocument actData(2048);
+DynamicJsonDocument actData(2500);
 
 // log message to sprintf to
 char log_msg[256];
@@ -75,12 +75,14 @@ char mqtt_topic[256];
 
 //buffer for commands to send
 struct command_struct {
-    byte value[128];
-    unsigned int length;
-    command_struct *next;
-    command_struct *previous;
+  byte value[128];
+  unsigned int length;
+  command_struct *next;
+  command_struct *previous;
 };
 command_struct *commandBuffer;
+unsigned int commandsInBuffer = 0;
+#define MAXCOMMANDSINBUFFER 2 //can't have too much in buffer due to memory shortage
 
 
 //doule reset detection
@@ -154,7 +156,7 @@ bool readSerial()
   //sprintf(log_msg, "received size : %d", data_length); log_message(log_msg);
 
   if (data_length > 203) return false; //panasonic never returns more than 203 bytes, so this is bad data
-  
+
   if (data_length == 203) { //panasonic read is always 203 on valid receive, if not yet there wait for next read
     log_message((char*)"Received 203 bytes data");
     sending = false; //we received an answer after our last command so from now on we can start a new send request again
@@ -181,28 +183,35 @@ void popCommandBuffer() {
   if (commandBuffer) { //to make sure we can pop a command from the buffer
     command_struct* command = commandBuffer;
     commandBuffer = commandBuffer->previous;
-    send_command(command->value,command->length);
+    send_command(command->value, command->length);
     free(command);
+    commandsInBuffer--;
   }
 }
 
-void pushCommandBuffer(byte* command, int length){
-    if (commandBuffer) { //already pointing to existing command, search for last position
-        while (commandBuffer->next != 0) {
-            commandBuffer = commandBuffer->next;
-        }
-        commandBuffer->next = new command_struct;
-        commandBuffer->next->previous = commandBuffer;
-        commandBuffer = commandBuffer->next;
-    } else {
-        commandBuffer = new command_struct;
-        commandBuffer->previous = 0; //this is the first command in buffer
+void pushCommandBuffer(byte* command, int length) {
+  if (commandsInBuffer == MAXCOMMANDSINBUFFER) {
+    log_message((char*)"Reached max buffered commands. Ignoring this command.");
+    return;
+  }
+  if (commandBuffer) { //already pointing to existing command, search for last position
+    while (commandBuffer->next != 0) {
+      commandBuffer = commandBuffer->next;
     }
-    commandBuffer->next = 0;
-    commandBuffer->length = length;
-    for (unsigned int i=0 ; i<length ; i++) {
-        commandBuffer->value[i] = command[i];
-    }
+    commandBuffer->next = new command_struct;
+    command_struct* previousCommand = commandBuffer;
+    commandBuffer = commandBuffer->next;
+    commandBuffer->previous = previousCommand;
+  } else {
+    commandBuffer = new command_struct;
+    commandBuffer->previous = 0; //this is the first command in buffer
+  }
+  commandBuffer->next = 0;
+  commandBuffer->length = length;
+  for (unsigned int i = 0 ; i < length ; i++) {
+    commandBuffer->value[i] = command[i];
+  }
+  commandsInBuffer++;
 }
 
 
@@ -210,7 +219,7 @@ bool send_command(byte* command, int length)
 {
   if ( sending ) {
     log_message((char*)"Already sending data. Buffering this send request");
-    pushCommandBuffer(command,length);
+    pushCommandBuffer(command, length);
     return false;
   }
   sending = true;
@@ -339,9 +348,16 @@ void setup() {
 }
 
 void send_panasonic_query() {
-  String message = "Requesting new panasonic data (uptime: " + getUptime() + ")";
-  log_message((char*)message.c_str());
-  send_command(panasonicQuery, PANASONICQUERYSIZE);
+  if (commandBuffer) {
+    log_message((char *)"Sending command from buffer");
+    popCommandBuffer();
+  }
+  else {
+    String message = "Requesting new panasonic data (uptime: " + getUptime() + ")";
+    log_message((char*)message.c_str());
+    send_command(panasonicQuery, PANASONICQUERYSIZE);
+      
+  }
 }
 
 void read_panasonic_data() {
@@ -349,7 +365,7 @@ void read_panasonic_data() {
     log_message((char*)"Previous read data attempt failed due to timeout!");
     data_length = 0; //clear any data in array
     sending = false; //receiving the answer from the send command timeout, so we are allowed to send a new command
-  }  
+  }
   if (sending && (Serial.available() > 0)) { //only read data if we have sent a command so we expect an answer
     // read the serial and decode if data is valid
     if ( readSerial() ) decode_heatpump_data(data, actData, mqtt_client, log_message);
@@ -371,11 +387,6 @@ void loop() {
   mqtt_client.loop();
 
   read_panasonic_data();
-
-  if (!sending  && commandBuffer) {
-    log_message((char *)"Sending command from buffer");
-    popCommandBuffer();
-  }
 
   if (use_1wire) dallasLoop(mqtt_client, log_message);
 
