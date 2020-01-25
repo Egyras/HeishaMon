@@ -153,7 +153,7 @@ void decode_heatpump_data(char* data, DynamicJsonDocument &actData, PubSubClient
     }
   }
 
-  //run this only to check state of json doc. memory usage (currently sized at 2048)
+  //run this only to check state of json doc. memory usage (currently sized at 2500)
   //sprintf(log_msg, "JSON doc memory usage: %d", actData.memoryUsage()); log_message(log_msg);
 
 }
