@@ -78,11 +78,10 @@ struct command_struct {
   byte value[128];
   unsigned int length;
   command_struct *next;
-  command_struct *previous;
 };
 command_struct *commandBuffer;
 unsigned int commandsInBuffer = 0;
-#define MAXCOMMANDSINBUFFER 2 //can't have too much in buffer due to memory shortage
+#define MAXCOMMANDSINBUFFER 5 //can't have too much in buffer due to memory shortage
 
 
 //doule reset detection
@@ -181,37 +180,28 @@ bool readSerial()
 
 void popCommandBuffer() {
   if (commandBuffer) { //to make sure we can pop a command from the buffer
-    command_struct* command = commandBuffer;
-    commandBuffer = commandBuffer->previous;
-    send_command(command->value, command->length);
-    free(command);
+    send_command(commandBuffer->value, commandBuffer->length);
+    command_struct* nextCommand = commandBuffer->next;
+    free(commandBuffer);
+    commandBuffer = nextCommand;
     commandsInBuffer--;
   }
 }
 
 void pushCommandBuffer(byte* command, int length) {
-  if (commandsInBuffer == MAXCOMMANDSINBUFFER) {
-    log_message((char*)"Reached max buffered commands. Ignoring this command.");
-    return;
-  }
-  if (commandBuffer) { //already pointing to existing command, search for last position
-    while (commandBuffer->next != 0) {
-      commandBuffer = commandBuffer->next;
+  if (commandsInBuffer < MAXCOMMANDSINBUFFER) {
+    command_struct* newCommand = new command_struct;
+    newCommand->length = length;
+    for (unsigned int i = 0 ; i < length ; i++) {
+      newCommand->value[i] = command[i];
     }
-    commandBuffer->next = new command_struct;
-    command_struct* previousCommand = commandBuffer;
-    commandBuffer = commandBuffer->next;
-    commandBuffer->previous = previousCommand;
-  } else {
-    commandBuffer = new command_struct;
-    commandBuffer->previous = 0; //this is the first command in buffer
+    newCommand->next = commandBuffer;
+    commandBuffer = newCommand;
+    commandsInBuffer++;
   }
-  commandBuffer->next = 0;
-  commandBuffer->length = length;
-  for (unsigned int i = 0 ; i < length ; i++) {
-    commandBuffer->value[i] = command[i];
+  else {
+    log_message((char*)"Too much commands already in buffer. Ignoring this commands.");
   }
-  commandsInBuffer++;
 }
 
 
@@ -348,15 +338,15 @@ void setup() {
 }
 
 void send_panasonic_query() {
+  String message = "Requesting new panasonic data (uptime: " + getUptime() + ")";
+  log_message((char*)message.c_str());
   if (commandBuffer) {
     log_message((char *)"Sending command from buffer");
     popCommandBuffer();
   }
   else {
-    String message = "Requesting new panasonic data (uptime: " + getUptime() + ")";
-    log_message((char*)message.c_str());
     send_command(panasonicQuery, PANASONICQUERYSIZE);
-      
+
   }
 }
 

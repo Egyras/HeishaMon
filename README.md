@@ -9,7 +9,7 @@ Een nederlandse vertaling [README_NL.md](README_NL.md) vind je hier.
 *Help on translation to other languages are welcome.*
 
 # Current releases
-Current beta release is version 0.3b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.3b.bin) can be installed on a Wemos D1 mini(and generally on any ESP8266 based board - but without guarantee ). Or download the code compile it yourself (see required libraries below).
+Current beta release is version 0.4b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.4.bin) can be installed on a Wemos D1 mini(and generally on any ESP8266 based board - but without guarantee ). Or download the code compile it yourself (see required libraries below).
 
 
 ## Connection details:
