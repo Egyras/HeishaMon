@@ -2,10 +2,10 @@
 
 |  Topic# | Byte# | Possible Value | Value decrypt | Value Description |
 | :---- | ---- | ---- | ----- | ----:|
-|  TOP | 00 | 71 |   | Header  |
-|  TOP | 01 | c8 | Data length ( Packet length = Data length + 3 )  |  Header |
-|  TOP | 02 | 01|   | Header  |
-|  TOP | 03 | 10 |   | Header   |
+|   | 00 | 71 |   | Header  |
+|   | 01 | c8 | Data length ( Packet length = Data length + 3 )  |  Header |
+|   | 02 | 01|   | Header  |
+|   | 03 | 10 |   | Header   |
 |  TOP0+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
 |  TOP19+TOP13+TOP68 | 05 | 55 | Holiday mode off/on (bit3and4), weekly shedule off/on (bit 1and2) force heater off/on (bit5and6) Dry Concrete off/on (bit7and8) | Holiday mode, Sheduler status, force heater state , Dry Concrete |
 |  TOP4 | 06 | 62 | If 62 Heat+DHW, If 52 Only Heat, If 61 only DHW, If 69 Auto+DHW, If 63 Cool+DHW, If 53 Cool, If 59 Auto   | Mode status   |
@@ -82,9 +82,9 @@
 |  TOP32 | 77 | 71 | Convert to DEC 113-128 =-15 | Z1 Heating Curve Outside Temperature Lowest Set [°C] |
 |  TOP31 | 78 | 8f | Convert to DEC 143-128 =15  | Z1 Heating Curve Outside Temperature Highest Set [°C] |
 |  TOP82 | 79 | b7 | Convert to DEC 183-128 =55  | Z2 Heating Curve Outlet Water Temperature Highest Set [°C] |
-|  TOP83 | 80 | a3 |   =35| Z2 Heating Curve Outlet Water Temperature Lowest Set [°C] |
-|  TOP84 | 81 | 7b |   =-5| Z2 Heating Curve Outside Temperature Lowest Set [°C] |
-|  TOP85 | 82 | 8f |   =15| Z2 Heating Curve Outside Temperature Highest Set [°C] |
+|  TOP83 | 80 | a3 | Convert to DEC-128 | Z2 Heating Curve Outlet Water Temperature Lowest Set [°C] |
+|  TOP84 | 81 | 7b | Convert to DEC-128 | Z2 Heating Curve Outside Temperature Lowest Set [°C] |
+|  TOP85 | 82 | 8f | Convert to DEC-128 | Z2 Heating Curve Outside Temperature Highest Set [°C] |
 |  TOP77 | 83 | 8e | Convert to DEC-128  | Outdoor Temperature to stop heating 5-35 [°C] |
 |  TOP23 | 84 | 80 | Convert to DEC 133-128 =5 | Floor heating set Delta [°K] |
 |  TOP78 | 85 | 80 | Convert to DEC 128-128=0 | Outdoor temperature for heater ON [°C]  |
@@ -141,42 +141,42 @@
 |  TOP | 136 | 0c |   | ? |
 |  TOP | 137 | 92 |   | ? |
 |  TOP | 138 | 81 |   | ? |
-|  TOP56 | 139 | b0 |  to DEC-128 | Zone1: Actual (Zone 1) Temperature [°C] |
-|  TOP57 | 140 | 00 |  to DEC-128 |  Zone2: Actual (Zone 2) Temperature [°C] |
-|  TOP10 | 141 | aa |  to DEC-128 | Actual DHW Temperature [°C] \ |
-|  TOP14 | 142 | 7c |  to DEC-128 | Actual Outdoor Temperature [°C] |
-|  TOP5 | 143 | ab |  to DEC-128 | Inlet Water Temperature [°C] |
-|  TOP6 | 144 | b0 |  to DEC-128 | Outlet Water Temperature [°C] |
-|  TOP36 | 145 | 32 |  to DEC-128 | Zone1: Water Temperature [°C] |
-|  TOP37 | 146 | 32 |  to DEC-128 | Zone2: Water Temperature [°C] |
-|  TOP42 | 147 | 9c |  to DEC-128 | Zone1: Water Temperature (Target) [°C] |
-|  TOP43 | 148 | b6 |  to DEC-128 | Zone2: Water Temperature (Target) [°C]  |
-|  TOP46 | 149 | 32 |  to DEC-128 | Buffer: Water Temperature [°C] |
-|  TOP47 | 150 | 32 |  to DEC-128 | Solar: Water Temperature [°C]  |
-|  TOP48 | 151 | 32 |  to DEC-128| Pool: Water Temperature [°C] |
+|  TOP56 | 139 | b0 |  Convert to DEC-128 | Zone1: Actual (Zone 1) Temperature [°C] |
+|  TOP57 | 140 | 00 |  Convert to DEC-128 |  Zone2: Actual (Zone 2) Temperature [°C] |
+|  TOP10 | 141 | aa |  Convert to DEC-128 | Actual DHW Temperature [°C] \ |
+|  TOP14 | 142 | 7c |  Convert to DEC-128 | Actual Outdoor Temperature [°C] |
+|  TOP5 | 143 | ab |  Convert to DEC-128 | Inlet Water Temperature [°C] |
+|  TOP6 | 144 | b0 |  Convert to DEC-128 | Outlet Water Temperature [°C] |
+|  TOP36 | 145 | 32 |  Convert to DEC-128 | Zone1: Water Temperature [°C] |
+|  TOP37 | 146 | 32 |  Convert to DEC-128 | Zone2: Water Temperature [°C] |
+|  TOP42 | 147 | 9c |  Convert to DEC-128 | Zone1: Water Temperature (Target) [°C] |
+|  TOP43 | 148 | b6 |  Convert to DEC-128 | Zone2: Water Temperature (Target) [°C]  |
+|  TOP46 | 149 | 32 |  Convert to DEC-128 | Buffer: Water Temperature [°C] |
+|  TOP47 | 150 | 32 |  Convert to DEC-128 | Solar: Water Temperature [°C]  |
+|  TOP48 | 151 | 32 |  Convert to DEC-128| Pool: Water Temperature [°C] |
 |  TOP | 152 | 80 |   | ? |
-|  TOP7 | 153 | b7 |  to DEC-128 | Outlet Water Temperature (Target) [°C] |
-|  TOP49 | 154 | af |  to DEC-128 | Outlet 2 heat exchanger water temperature [°C] |
-|  TOP50 | 155 | cd |  to DEC-128 | Discharge Temperature [°C] |
-|  TOP33 | 156 | 9a |  to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
-|  TOP51 | 157 | ac |  to DEC-128 | Indoor Piping Temperature [°C] |
-|  TOP21 | 158 | 79 |  to DEC-128 | Outdoor Piping Temperature [°C] |
-|  TOP52 | 159 | 80 |  to DEC-128 | Defrost Temperature [°C] |
-|  TOP53 | 160 | 77 |  to DEC-128 | Eva Outlet Temperature [°C] |
-|  TOP54 | 161 | 80 |  to DEC-128 | Bypass Outlet Temperature [°C] |
-|  TOP55 | 162 | ff |  to DEC-128 | Ipm Temperature [°C]  |
-|  TOP64 | 163 | 91 |  to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
-|  TOP66 | 164 | 01 |  to DEC x-1 | Low Pressure [Kgf/Cm2] |
-|  TOP67 | 165 | 29 |  to DEC (X-1)/5 | Outdoor Current [A] |
-|  TOP8 | 166 | 59 | to DEC x-1  | Compressor Frequency [Hz] |
+|  TOP7 | 153 | b7 |  Convert to DEC-128 | Outlet Water Temperature (Target) [°C] |
+|  TOP49 | 154 | af |  Convert to DEC-128 | Outlet 2 heat exchanger water temperature [°C] |
+|  TOP50 | 155 | cd |  Convert to DEC-128 | Discharge Temperature [°C] |
+|  TOP33 | 156 | 9a |  Convert to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
+|  TOP51 | 157 | ac |  Convert to DEC-128 | Indoor Piping Temperature [°C] |
+|  TOP21 | 158 | 79 |  Convert to DEC-128 | Outdoor Piping Temperature [°C] |
+|  TOP52 | 159 | 80 |  Convert to DEC-128 | Defrost Temperature [°C] |
+|  TOP53 | 160 | 77 |  Convert to DEC-128 | Eva Outlet Temperature [°C] |
+|  TOP54 | 161 | 80 |  Convert to DEC-128 | Bypass Outlet Temperature [°C] |
+|  TOP55 | 162 | ff |  Convert to DEC-128 | Ipm Temperature [°C]  |
+|  TOP64 | 163 | 91 |  Convert to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
+|  TOP66 | 164 | 01 |  Convert to DEC x-1 | Low Pressure [Kgf/Cm2] |
+|  TOP67 | 165 | 29 |  Convertto DEC (X-1)/5 | Outdoor Current [A] |
+|  TOP8 | 166 | 59 | Convert to DEC x-1  | Compressor Frequency [Hz] |
 |  TOP | 167 | 00 |   | 0 byte |
 |  TOP | 168 | 00 |   | 0 byte |
-|  TOP1 | 169 | 3b | to DEC (X -1)/5 X 2 | 2nd Value for Pump Flow Rate [L/Min]  |
-|  TOP1 | 170 | 0b | to DEC | 1st Value for Pump Flow Rate [L/Min] |
-|  TOP65 | 171 | 1c | to DEC (X-1) X 50 | Pump Speed [R/Min] |
-|  TOP | 172 | 51 | to DEC X-1   | Pump Duty [Duty] |
-|  TOP62 | 173 | 59 | to DEC (X-1) X10  | Fan 1 Motor Speed [R/Min |
-|  TOP63 | 174 | 01 | to DEC (X-1) X10  | Fan 2 Motor Speed [R/Min] |
+|  TOP1 | 169 | 3b | Convert to DEC (X -1)/256 | 2nd Value for Pump Flow Rate [L/Min]  |
+|  TOP1 | 170 | 0b | Convert to DEC | 1st Value for Pump Flow Rate [L/Min] |
+|  TOP65 | 171 | 1c | Convert to DEC (X-1) X 50 | Pump Speed [R/Min] |
+|  TOP | 172 | 51 | Convert to DEC X-1   | Pump Duty [Duty] |
+|  TOP62 | 173 | 59 | Convert to DEC (X-1) X10  | Fan 1 Motor Speed [R/Min |
+|  TOP63 | 174 | 01 | Convert to DEC (X-1) X10  | Fan 2 Motor Speed [R/Min] |
 |  TOP | 175 | 36 |   | ? |
 |  TOP | 176 | 79 |   | ? |
 |  TOP | 177 | 01 | Convert to DEC -1  | ? Posible Time for Mixing vave 1 Zone2 [seconds]|
@@ -193,14 +193,14 @@
 |  TOP | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
 |  TOP | 189 | 00 | look at 188 | DHW Heater operation time in h |
 |  TOP | 190 | 00 |   | ? |
-|  TOP | 191 | 06 | to DEC X-1  | ? Possible heat pump power in Kw |
+|  TOP | 191 | 06 | Convert to DEC X-1  | ? Possible heat pump power in Kw |
 |  TOP | 192 | 01 | (hex) simple model=1, T-CAP=2  | ? Possible Heat pump indicator for T-CAP  |
-|  TOP16 | 193 | 01 | to DEC (x-1) / 5   | Energy Consumption for Heat in [kw]  |
-|  TOP15 | 194 | 01 | to DEC (x-1) / 5   | Energy Generation for Heat in [kw] |
-|  TOP38 | 195 | 01 | to DEC (x-1) / 5   | Energy Consumption for Cool in [kw] |
-|  TOP39 | 196 | 01 | to DEC (x-1) / 5   | Energy Generation for Cool in [kw] |
-|  TOP40 | 197 | 0a | to DEC (x-1) / 5   | Energy Consumption for DHW in [kw] |
-|  TOP41 | 198 | 14 | to DEC (x-1) / 5   | Energy Generation for DHW in [kw] |
+|  TOP16 | 193 | 01 | Convert to DEC (x-1) / 5   | Energy Consumption for Heat in [kw]  |
+|  TOP15 | 194 | 01 | Convert to DEC (x-1) / 5   | Energy Generation for Heat in [kw] |
+|  TOP38 | 195 | 01 | Convert to DEC (x-1) / 5   | Energy Consumption for Cool in [kw] |
+|  TOP39 | 196 | 01 | Convert to DEC (x-1) / 5   | Energy Generation for Cool in [kw] |
+|  TOP40 | 197 | 0a | Convert to DEC (x-1) / 5   | Energy Consumption for DHW in [kw] |
+|  TOP41 | 198 | 14 | Convert to DEC (x-1) / 5   | Energy Generation for DHW in [kw] |
 |  TOP | 199 | 00 |   | byte 0 |
 |  TOP | 200 | 00 |   | byte 0 |
 |  TOP | 201 | 00 |   | byte 0 |

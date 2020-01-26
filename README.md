@@ -34,7 +34,8 @@ Currently the PCB's are in (beta) production. We suggest to wait a while for the
 Soon you will be cable to order one of the PCB design directly from the project owners but ofcourse \
 we will share the schematics also. For now these are some schematics we are testing or have tested. \
 [PCD Designs from the project members](PCB_Designs.md) \
-[Picture Wemos D1 beta](WEMOSD1.JPG)
+[Picture Wemos D1 beta](WEMOSD1.JPG) \
+[Picture ESP12-F](New_PCB.jpeg)
 
 
 ## Using the test arduino image
@@ -75,5 +76,7 @@ To get information from heat pump, "magic" packet should be send to CN-CNT:
 
 [Home Assistant](https://github.com/Egyras/HeishaMon/tree/master/Integrations/Home%20Assistant)
 
+[IOBroker Manual](Integrations/ioBroker_manual)
 
+[Domoticz](Integrations/Domoticz)
 
