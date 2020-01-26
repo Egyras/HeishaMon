@@ -76,5 +76,7 @@ To get information from heat pump, "magic" packet should be send to CN-CNT:
 
 [Home Assistant](https://github.com/Egyras/HeishaMon/tree/master/Integrations/Home%20Assistant)
 
+[IOBroker Manual](Integrations/ioBroker_manual)
 
+[Domoticz](Integrations/Domoticz)
 
