@@ -171,7 +171,7 @@
 |  TOP8 | 166 | 59 | Convert to DEC x-1  | Compressor Frequency [Hz] |
 |  TOP | 167 | 00 |   | 0 byte |
 |  TOP | 168 | 00 |   | 0 byte |
-|  TOP1 | 169 | 3b | Convert to DEC (X -1)/5 X 2 | 2nd Value for Pump Flow Rate [L/Min]  |
+|  TOP1 | 169 | 3b | Convert to DEC (X -1)/256 | 2nd Value for Pump Flow Rate [L/Min]  |
 |  TOP1 | 170 | 0b | Convert to DEC | 1st Value for Pump Flow Rate [L/Min] |
 |  TOP65 | 171 | 1c | Convert to DEC (X-1) X 50 | Pump Speed [R/Min] |
 |  TOP | 172 | 51 | Convert to DEC X-1   | Pump Duty [Duty] |
@@ -187,11 +187,11 @@
 |  TOP11 | 182 | dd | combine both bytes (183) 0b  (182) 25 = 2853 - 1 = 2852  | Operating time in h |
 |  TOP11 | 183 | 02 | look at 182  | Operating time in h |
 |  TOP | 184 | 00 |   | ? |
-|  TOP | 185 | 05 | combine both bytes (186) 00  (185) 0005 = 5 - 1 = 4  | Room Heater operation time in h |
-|  TOP | 186 | 00 |  look at 185   | Room Heater operation time in h |
+|  TOP90 | 185 | 05 | combine both bytes (186) 00  (185) 0005 = 5 - 1 = 4  | Room Heater operation time in h |
+|  TOP90 | 186 | 00 |  look at 185   | Room Heater operation time in h |
 |  TOP | 187 | 00 |   | ? |
-|  TOP | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
-|  TOP | 189 | 00 | look at 188 | DHW Heater operation time in h |
+|  TOP91 | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
+|  TOP91 | 189 | 00 | look at 188 | DHW Heater operation time in h |
 |  TOP | 190 | 00 |   | ? |
 |  TOP | 191 | 06 | Convert to DEC X-1  | ? Possible heat pump power in Kw |
 |  TOP | 192 | 01 | (hex) simple model=1, T-CAP=2  | ? Possible Heat pump indicator for T-CAP  |
