@@ -13,7 +13,7 @@ Current beta release is version 0.4b. The [compiled binary](binaries/HeishaMon.i
 
 # Using the software
 The current arduino beta image is able to read from the Panasonic Aquarea H-series CN-CNT connector. \
-If you want to compile this image yourself be sure to use the mentioned libraries and support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that. \
+If you want to compile this image yourself be sure to use the mentioned libraries and support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that.
 
 When starting for the first time a open-wifi-hotspot will be visible allowing you to config your wifi network and your mqtt server. \
 If you ever want to factory reset, just double reset the esp8266 within 0.1 second. It will then format the filesystem and remove the wifi setting and start the wifi hotspot again. \
