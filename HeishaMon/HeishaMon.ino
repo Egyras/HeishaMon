@@ -271,7 +271,7 @@ void setupHttp() {
     handleRoot(&httpServer);
   });
   httpServer.on("/tablerefresh", [] {
-    handleTableRefresh(&httpServer, actData);
+    handleTableRefresh(&httpServer, actData, actDallasData);
   });
   httpServer.on("/json", [] {
     handleJsonOutput(&httpServer, actData, actDallasData);

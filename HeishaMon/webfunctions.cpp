@@ -57,7 +57,20 @@ static const char refreshJS[] PROGMEM =
   "	$(document).ready(function(){refreshTable();});"
   "	function refreshTable(){"
   "		$('#heishavalues').load('/tablerefresh', function(){setTimeout(refreshTable, 30000);});"
+  "   $('#dallasvalues').load('/tablerefresh?1wire', function(){setTimeout(refreshTable, 30000);});"
   "	}"
+  "</script>";
+
+static const char selectJS[] PROGMEM =
+  "<script>"
+  "function openTable(tableName) {"
+  "  var i;"
+  "  var x = document.getElementsByClassName(\"heishatable\");"
+  "  for (i = 0; i < x.length; i++) {"
+  "    x[i].style.display = \"none\";"
+  "  }"
+  "  document.getElementById(tableName).style.display = \"block\";"
+  "}"
   "</script>";
 
 void(* resetFunc) (void) = 0;
@@ -267,44 +280,58 @@ void handleRoot(ESP8266WebServer *httpServer) {
   httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
   httptext = httptext + "<hr><div class=\"w3-text-grey\">Version: " + heishamon_version + "<br><a href=\"https://github.com/Egyras/HeishaMon\">Heishamon software</a></div><hr></div>";
 
+
+  httptext = httptext + "<div class=\"w3-bar w3-red\">";
+  httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Heatpump')\">Heatpump</button>";
+  httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Dallas')\">Dallas 1-wire</button>";
+  httptext = httptext + "</div>";
+
   httptext = httptext + "<div class=\"w3-container w3-left\">";
   httptext = httptext + "<br>Wifi signal: " + String(getWifiQuality()) + "%";
   httptext = httptext + "<br>Memory free: " + String(getFreeMemory()) + "%";
   httptext = httptext + "<br>Uptime: " + getUptime();
   httptext = httptext + "</div>";
-  httptext = httptext + "<div class=\"w3-container w3-center\">";
-  httptext = httptext + "<h2>Current heatpump values</h2>";
 
+  httptext = httptext + "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">";
+  httptext = httptext + "<h2>Current heatpump values</h2>";
   httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
+  httptext = httptext + "<div id=\"Dallas\" class=\"w3-container w3-center heishatable\" style=\"display:none\">";
+  httptext = httptext + "<h2>Current Dallas 1-wire values</h2>";
+  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Sensor</th><th>Temperature</th></tr></thead><tbody id=\"dallasvalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
   httpServer->sendContent(httptext);
 
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(refreshJS);
+  httpServer->sendContent_P(selectJS);
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
   httpServer->client().stop();
 }
 
-void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]) {
+void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
-  for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
-    String topicdesc;
-    const char *valuetext = "value";
-    if (strcmp(topicDescription[topic][0],valuetext) == 0) {
-      topicdesc = topicDescription[topic][1];
+  if (httpServer->hasArg("1wire")) {
+      httpServer->sendContent(dallasTableOutput(actDallasData));
+  } else {
+    for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
+      String topicdesc;
+      const char *valuetext = "value";
+      if (strcmp(topicDescription[topic][0], valuetext) == 0) {
+        topicdesc = topicDescription[topic][1];
+      }
+      else {
+        int value = actData[topic].toInt();
+        topicdesc = topicDescription[topic][value];
+      }
+      String tabletext = "<tr>";
+      tabletext = tabletext + "<td>TOP" + topic + "</td>";
+      tabletext = tabletext + "<td>" + topics[topic] + "</td>";
+      tabletext = tabletext + "<td>" + actData[topic] + "</td>";
+      tabletext = tabletext + "<td>" + topicdesc + "</td>";
+      tabletext = tabletext + "</tr>";
+      httpServer->sendContent(tabletext);
     }
-    else {
-      int value = actData[topic].toInt();
-      topicdesc = topicDescription[topic][value];
-    }
-    String tabletext = "<tr>";
-    tabletext = tabletext + "<td>TOP" + topic + "</td>";
-    tabletext = tabletext + "<td>" + topics[topic] + "</td>";
-    tabletext = tabletext + "<td>" + actData[topic] + "</td>";
-    tabletext = tabletext + "<td>" + topicdesc + "</td>";
-    tabletext = tabletext + "</tr>";
-    httpServer->sendContent(tabletext);
   }
   httpServer->sendContent("");
   httpServer->client().stop();
@@ -321,7 +348,7 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData
   for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
     String topicdesc;
     const char *valuetext = "value";
-    if (strcmp(topicDescription[topic][0],valuetext) == 0) {
+    if (strcmp(topicDescription[topic][0], valuetext) == 0) {
       topicdesc = topicDescription[topic][1];
     }
     else {
@@ -334,17 +361,17 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData
     tabletext = tabletext + "\"Value\": \"" + actData[topic] + "\",";
     tabletext = tabletext + "\"Description\": \"" + topicdesc + "\"";
     tabletext = tabletext + "}";
-    if (topic < NUMBER_OF_TOPICS-1) tabletext = tabletext + ",";
+    if (topic < NUMBER_OF_TOPICS - 1) tabletext = tabletext + ",";
     httpServer->sendContent(tabletext);
   }
   tabletext = "]";
-  httpServer->sendContent(tabletext);  
+  httpServer->sendContent(tabletext);
   //1wire data in json
   tabletext =  ",\"1wire\":" + dallasJsonOutput(actDallasData);
-  httpServer->sendContent(tabletext);    
-  //end json string  
+  httpServer->sendContent(tabletext);
+  //end json string
   tabletext = "}";
-  httpServer->sendContent(tabletext);  
+  httpServer->sendContent(tabletext);
   httpServer->sendContent("");
   httpServer->client().stop();
 }

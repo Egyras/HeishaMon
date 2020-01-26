@@ -14,3 +14,4 @@ struct dallasData {
 void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*));
 void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*));
 String dallasJsonOutput(dallasData actDallasData[]);
+String dallasTableOutput(dallasData actDallasData[]);

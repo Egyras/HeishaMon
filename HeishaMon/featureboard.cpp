@@ -82,3 +82,14 @@ String dallasJsonOutput(dallasData actDallasData[]) {
   output = output + "]";
   return output;
 }
+
+String dallasTableOutput(dallasData actDallasData[]) {
+  String output = "";
+  for (int i = 0; i < dallasDevicecount; i++) {
+    output = output + "<tr>";
+    output = output + "<td>" + actDallasData[i].address + "</td>";
+    output = output + "<td>" + actDallasData[i].temperature + "</td>";
+    output = output + "</tr>";
+  }
+  return output;
+}
