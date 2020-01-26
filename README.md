@@ -9,8 +9,29 @@ Een nederlandse vertaling [README_NL.md](README_NL.md) vind je hier.
 *Help on translation to other languages are welcome.*
 
 # Current releases
-Current beta release is version 0.4b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.4.bin) can be installed on a Wemos D1 mini(and generally on any ESP8266 based board - but without guarantee ). Or download the code compile it yourself (see required libraries below).
+Current beta release is version 0.5b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.5.bin) can be installed on a Wemos D1 mini(and generally on any ESP8266 based board - but without guarantee ). Or download the code compile it yourself (see required libraries below).
 
+# Using the software
+The current arduino beta image is able to read from the Panasonic Aquarea H-series CN-CNT connector. \
+If you want to compile this image yourself be sure to use the mentioned libraries and support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that.
+
+When starting for the first time a open-wifi-hotspot will be visible allowing you to config your wifi network and your mqtt server. \
+If you ever want to factory reset, just double reset the esp8266 within 0.1 second. It will then format the filesystem and remove the wifi setting and start the wifi hotspot again. \
+After configuring and booting the image will be able to read and talk to your heatpump. The GPIO13/GPIO15 connection will be used for communications so you can keep your computer/uploader connected to the board if you want. \
+Serial 1 (GPIO2) can be used to connect another serial line (GND and TX from the board only) to read some debugging data.
+
+All received data will be sent to different mqtt topics (see below for topic descriptions). There is also a 'panasonic_heat_pump/log' mqtt topic which provides debug logging and a hexdump of the received packets (if enabled in the web portal).
+
+You can connect a 1wire network on GPIO4 which will report in seperate mqtt topics (panasonic_heat_pump/1wire/sensorid). See more information below. 
+
+Updating the firmware is as easy as going to the firmware menu and, after authentication with username 'admin' and password you provided during setup, uploading the binary there.
+
+A json output of all received data (heatpump and 1wire) is available at the url http://heishamon.local/json (replace heishamon.local with the ip address of your heishamon device if MDNS is not working for you).
+
+Within the 'integrations' folder you can find examples how to connect your automation platform to the HeishaMon.
+
+# Further information
+Below you can find some technical details about the project. How to build your own cables. How to build you own PCB etc.
 
 ## Connection details:
 CN-CNT TTL UART 9600,8,E,1  \
@@ -37,14 +58,6 @@ we will share the schematics also. For now these are some schematics we are test
 [Picture Wemos D1 beta](WEMOSD1.JPG) \
 [Picture ESP12-F](New_PCB.jpeg)
 
-
-## Using the test arduino image
-The current arduino test image is able to read from the Panasonic Aquarea H-series CN-CNT connector. \
-You need to build this image with support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that. \
-When starting for the first time a open-wifi-hotspot will be visible allowing you to config your wifi network and your mqtt server. \
-If you ever want to factory reset, just double reset the esp8266 within 0.1 second. It will then format the filesystem and remove the wifi setting and start the wifi hotspot again. \
-After configuring and booting the image will be able to read and talk to your heatpump. The GPIO13/GPIO15 connection will be used for communications so you can keep your computer/uploader connected to the board if you want. \
-Serial 1 (GPIO2) can be used to connect another serial line (GND and TX from the board only) to read some debugging data.
 
 
 ## Building the test arduino image
