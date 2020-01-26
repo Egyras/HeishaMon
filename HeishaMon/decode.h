@@ -116,7 +116,7 @@ static const char * topics[] = {
   "Z2_Cool_Curve_Target_High_Temp",      //TOP86
   "Z2_Cool_Curve_Target_Low_Temp",       //TOP87
   "Z2_Cool_Curve_Outside_High_Temp",     //TOP88
-  "Z2_Cool_Curve_Outside_Low_Temp",      //
+  "Z2_Cool_Curve_Outside_Low_Temp",      //TOP89
   "Room_Heater_Operations_Hours", //TOP90
   "DHW_Heater_Operations_Hours",  //TOP91
 };
