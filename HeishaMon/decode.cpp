@@ -137,6 +137,12 @@ void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_clien
       case 12:
         Topic_Value = String(word(data[180], data[179]) - 1);
         break;
+      case 90:
+        Topic_Value = String(word(data[186], data[185]) - 1);
+        break;
+      case 91:
+        Topic_Value = String(word(data[189], data[188]) - 1);
+        break;
       case 44:
         Topic_Value = getErrorInfo(data);
         break;

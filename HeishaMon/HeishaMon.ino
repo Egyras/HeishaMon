@@ -110,8 +110,7 @@ void mqtt_reconnect()
     mqtt_client.subscribe(mqtt_set_holiday_topic);
     mqtt_client.subscribe(mqtt_set_powerful_topic);
     mqtt_client.subscribe(mqtt_set_dhw_temp_topic);
-    mqtt_client.subscribe(mqtt_set_cool_temp_topic);
-
+    
     mqtt_client.publish(mqtt_willtopic, "Online");
   }
 }

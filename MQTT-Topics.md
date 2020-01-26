@@ -106,6 +106,8 @@ TOP86 | sdc/Z2_Cool_Curve_Target_High_Temp | Target temperature at lowest point 
 TOP87 | sdc/Z2_Cool_Curve_Target_Low_Temp | Target temperature at highest point on the cooling curve (°C)
 TOP88 | sdc/Z2_Cool_Curve_Outside_High_Temp | Lowest outside temperature on the cooling curve (°C)
 TOP89 | sdc/Z2_Cool_Curve_Outside_Low_Temp | Highest outside temperature on the cooling curve (°C)
+TOP90 | sdc/Room_Heater_Operations_Hours | Electric heater operating time for Room (Hour)
+TOP91 | sdc/DHW_Heater_Operations_Hours | Electric heater operating time for DHW (Hour)
 
 
 ## Command Topics:
@@ -123,9 +125,8 @@ SET8  | SetZ2CoolRequestTemperature | Set Z2 cool shift or direct cool temperatu
 SET9  | SetOperationMode | Sets operating mode | 0=Heat only, 1=Cool only, 2=Auto, 3=DHW only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW
 SET10 | SetForceDHW | Forces DHW mode only | 0, 1
 SET11 | SetDHWTemp | Set DHW target temperature | 40 - 75
-SET12 | TBD |  |
-SET13 | SetForceDefrost | Forces defrost routine | 0, 1
-SET14 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
+SET12 | SetForceDefrost | Forces defrost routine | 0, 1
+SET13 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
 
 
 
