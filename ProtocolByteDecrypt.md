@@ -171,7 +171,7 @@
 |  TOP8 | 166 | 59 | Convert to DEC x-1  | Compressor Frequency [Hz] |
 |  TOP | 167 | 00 |   | 0 byte |
 |  TOP | 168 | 00 |   | 0 byte |
-|  TOP1 | 169 | 3b | Convert to DEC (X -1)/5 X 2 | 2nd Value for Pump Flow Rate [L/Min]  |
+|  TOP1 | 169 | 3b | Convert to DEC (X -1)/256 | 2nd Value for Pump Flow Rate [L/Min]  |
 |  TOP1 | 170 | 0b | Convert to DEC | 1st Value for Pump Flow Rate [L/Min] |
 |  TOP65 | 171 | 1c | Convert to DEC (X-1) X 50 | Pump Speed [R/Min] |
 |  TOP | 172 | 51 | Convert to DEC X-1   | Pump Duty [Duty] |
