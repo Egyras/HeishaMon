@@ -14,7 +14,6 @@
 #include "webfunctions.h"
 #include "decode.h"
 #include "commands.h"
-#include "featureboard.h"
 
 // maximum number of seconds between resets that
 // counts as a double reset
@@ -57,6 +56,8 @@ bool outputSerial1 = true;
 
 //1wire enabled?
 bool use_1wire = false;
+//global array for 1wire data
+dallasData actDallasData[MAX_DALLAS_SENSORS];
 
 
 // instead of passing array pointers between functions we just define this in the global scope
@@ -273,7 +274,7 @@ void setupHttp() {
     handleTableRefresh(&httpServer, actData);
   });
   httpServer.on("/json", [] {
-    handleJsonOutput(&httpServer, actData);
+    handleJsonOutput(&httpServer, actData, actDallasData);
   });
   httpServer.on("/factoryreset", [] {
     handleFactoryReset(&httpServer);
@@ -335,7 +336,7 @@ void setup() {
   setupOTA();
   setupMqtt();
   setupHttp();
-  if (use_1wire) initDallasSensors(log_message);
+  if (use_1wire) initDallasSensors(actDallasData,log_message);
   switchSerial();
 
 }
@@ -381,7 +382,7 @@ void loop() {
 
   read_panasonic_data();
 
-  if (use_1wire) dallasLoop(mqtt_client, log_message);
+  if (use_1wire) dallasLoop(actDallasData,mqtt_client, log_message);
 
   // run the data query only each WAITTIME
   if (millis() > nexttime) {

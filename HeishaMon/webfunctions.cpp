@@ -1,7 +1,9 @@
 #include <FS.h>                   //this needs to be first, or it all crashes and burns...
+
 #include "webfunctions.h"
 #include "decode.h"
 #include "version.h"
+
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
@@ -308,10 +310,13 @@ void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]) {
   httpServer->client().stop();
 }
 
-void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]) {
+void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "application/json", "");
-  String tabletext = "{\"Heatpump values\":[";
+  //begin json
+  String tabletext = "{";
+  //heatpump values in json
+  tabletext = tabletext + "\"heatpump\":[";
   httpServer->sendContent(tabletext);
   for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
     String topicdesc;
@@ -332,7 +337,13 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]) {
     if (topic < NUMBER_OF_TOPICS-1) tabletext = tabletext + ",";
     httpServer->sendContent(tabletext);
   }
-  tabletext = "]}";
+  tabletext = "]";
+  httpServer->sendContent(tabletext);  
+  //1wire data in json
+  tabletext =  ",\"1wire\":" + dallasJsonOutput(actDallasData);
+  httpServer->sendContent(tabletext);    
+  //end json string  
+  tabletext = "}";
   httpServer->sendContent(tabletext);  
   httpServer->sendContent("");
   httpServer->client().stop();
