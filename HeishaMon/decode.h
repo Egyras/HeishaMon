@@ -424,7 +424,7 @@ static const char **topicDescription[] = {
   Celsius,         //TOP85
   Celsius,         //TOP86
   Celsius,         //TOP87
-  Celsius,         //TOP99
+  Celsius,         //TOP88
   Celsius,         //TOP89
   Hours,           //TOP90
   Hours,           //TOP91    
