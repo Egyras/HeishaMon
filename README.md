@@ -30,7 +30,7 @@ A json output of all received data (heatpump and 1wire) is available at the url 
 
 Within the 'integrations' folder you can find examples how to connect your automation platform to the HeishaMon.
 
-#Further information
+# Further information
 Below you can find some technical details about the project. How to build your own cables. How to build you own PCB etc.
 
 ## Connection details:
