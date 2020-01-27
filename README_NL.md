@@ -45,7 +45,7 @@ Pin-out (van onder naar boven) \
 5 - GND
 
 ## Waar kun je connectoren kopen
-[RS-Online orders](Connectors_RSO.md)
+[RS-Online orders](Connectors_RSO.md) \
 [Conrad orders](Connectors_Conrad.md)
 
 Gebruik  24 AWG afgeschermde 4 aderige kabel.
