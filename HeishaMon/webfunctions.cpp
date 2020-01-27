@@ -26,7 +26,7 @@ static const char webHeader[] PROGMEM  =
   "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
   "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
   "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">"
-  "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">"
+  "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-blue.css\">"
   "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
   "<style>"
   "	.w3-btn { margin-bottom:10px; }"
@@ -35,7 +35,7 @@ static const char webHeader[] PROGMEM  =
 static const char refreshMeta[] PROGMEM = "<meta http-equiv=\"refresh\" content=\"5; url=/\" />";
 static const char webBodyStart[] PROGMEM =
   "<body>"
-  "<button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button>"
+  "<button class=\"w3-button w3-blue w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button>"
   "<header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor</h1></header>";
 
 static const char webFooter[] PROGMEM  = "</body></html>";
@@ -281,7 +281,7 @@ void handleRoot(ESP8266WebServer *httpServer) {
   httptext = httptext + "<hr><div class=\"w3-text-grey\">Version: " + heishamon_version + "<br><a href=\"https://github.com/Egyras/HeishaMon\">Heishamon software</a></div><hr></div>";
 
 
-  httptext = httptext + "<div class=\"w3-bar w3-red\">";
+  httptext = httptext + "<div class=\"w3-bar w3-blue\">";
   httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Heatpump')\">Heatpump</button>";
   httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Dallas')\">Dallas 1-wire</button>";
   httptext = httptext + "</div>";
@@ -294,10 +294,10 @@ void handleRoot(ESP8266WebServer *httpServer) {
 
   httptext = httptext + "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
-  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
+  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-blue\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
   httptext = httptext + "<div id=\"Dallas\" class=\"w3-container w3-center heishatable\" style=\"display:none\">";
   httptext = httptext + "<h2>Current Dallas 1-wire values</h2>";
-  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Sensor</th><th>Temperature</th></tr></thead><tbody id=\"dallasvalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
+  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-blue\"><th>Sensor</th><th>Temperature</th></tr></thead><tbody id=\"dallasvalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
   httpServer->sendContent(httptext);
 
   httpServer->sendContent_P(menuJS);
@@ -541,7 +541,7 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
 
   httptext = httptext + "<br><br>";  httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
   httptext = httptext + "</form>";
-  httptext = httptext + "<br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\" >Factory reset</a>";
+  httptext = httptext + "<br><a href=\"/factoryreset\" class=\"w3-blue w3-button\" onclick=\"return confirm('Are you sure?')\" >Factory reset</a>";
   httptext = httptext + "</div>";
   httpServer->sendContent(httptext);
 
