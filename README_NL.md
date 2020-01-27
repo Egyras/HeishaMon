@@ -3,7 +3,7 @@
 
 # Panasonic H Series Aquarea lucht-water warmtepomp protocool
 
-Eine deutschsprachige [README_DE.md](README_DE.md) findest du hier.
+Eine deutschsprachige [README_DE.md](README_DE.md) findest du hier \
 Een Nederlandse [README_NL.md] (README_NL.md) kun je hier vinden
 
 Hulp bij het vertalen naar andere talen is zeer welkom.
