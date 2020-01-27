@@ -3,10 +3,10 @@
 
 # Panasonic H Series Aquarea lucht-water warmtepomp protocool
 
-Eine deutschsprachige [README_DE.md](README_DE.md) findest du hier. \
+Eine deutschsprachige [README_DE.md](README_DE.md) findest du hier.
 Een Nederlandse [README_NL.md] (README_NL.md) kun je hier vinden
 
-Hulp bij het vertalen naar andere talen is zeer welkom. \
+Hulp bij het vertalen naar andere talen is zeer welkom.
 Help on translation to other languages are welcome.
 
 ##Huidige releases
@@ -84,9 +84,13 @@ Om informatie te krijgen van de warmtepomp, moet het volgende "magic packet" ver
 [Huidige lijst van gedocumenteerde bytes decrypted kan hier gevonden worden]
 ## Integration Examples for Opensource automation systems
 
-[Openhab2
-Home Assistant
-IOBroker Manual
-Domoticz
+[Openhab2](Integrations/Openhab2)
+
+[Home Assistant](https://github.com/Egyras/HeishaMon/tree/master/Integrations/Home%20Assistant)
+
+[IOBroker Manual](Integrations/ioBroker_manual)
+
+[Domoticz](Integrations/Domoticz)
+
 
 
