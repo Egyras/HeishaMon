@@ -7,6 +7,28 @@
 # Aktuelle Version
 Die aktuelle Version findest du hier: [README.md](README.md)
 
+# Nutzung der aktuellen Software
+Die aktuelle Arduino Software liest die Daten der CN-CNT Schnittstelle der Panasonic Aquarea H-series Geräte. \
+Beim Build des Images must du darauf achten, dass du die Optionen für die Nutzung des Dateisystems auf dem ESP8266 für das Flashen in der IDE auswählst.
+
+Nach dem ersten Start wird ein offener WiFi-Hotspot angeboten. Verbinde dich mit diesem Hotspot und konfiguriere dein eigenes Netzwerk und die Daten (IP, Login) deines MQTT-Servers. \
+Wenn du dein Board auf die Werkseinstellungen zurücksetzen möchtest, drücke bitte innerhalb von 0,1 Sekunden den Reset Taster zwei mal. Dabei wird das lokale Filesystem formatiert und die Konfiguration für das WiFi Netz gelöscht. Danach startet das Gerät neu und du kannst es wie nach dem ersten Start über den offenen Hotspot neu konfigurieren. \
+Nach der Konfiguration und Neustart beginnt die Kommunikation mit deiner Wärmepumpe. GPIO13/GPIO15 werden für die serielle Verbindung benutzt, die USB Schnittstelle bleibt frei. \
+Serial 1 (GPIO2) ist ein serialer Port und kann genutzt werden, um Debug Meldungen auszulesen. (GND und TX vom Board)
+
+Alle von der Wärmepumpe empfangenen Daten werden an MQTT Topics gesendet. Die Auflistung aller verwendeten Topics findest du weiter unten. Zusätzlich werden in dem Topic 'panasonic_heat_pump/log' logging Daten und ein Hexdump der empfangenen Daten bereitgestellt. Diese Funktion kann auf dem Webportal von HeishaMon aktiviert werden.
+
+Du kannst darüber hinaus an GPIO4 1-wire Temperatursensoren anschließen. Die Messwerte der Temperatursensoren werden an die Topics 'panasonic_heat_pump/1wire/sensorid' gesendet.
+
+Ein Firmware Update ist sehr einfach über das Firmware Menü mit deinem Browser möglich. Nach der Anmeldung mit dem Benutzernamen 'admin' und dem von dir beim ersten Setup vergebenen Passwort kannst du die aktuelle Firmwaredatei auf das Gerät laden.
+
+Alle Daten kannst du auch unter http://heishamon.local/json als json Datei abrufen. Sollte bei dir MDNS nicht funktionieren, ersetze bitte heishamon.local durch die IP deines Gerätes.
+
+Im Bereich 'integrations' findest du Beispiele zur Integration von HeishMon in dein Hausautomatisierungs System.
+
+# Weitere Information
+Hier findest du technische Informationen zum Projekt um dir Kabel und Platine selbst anzufertigen.
+
 ## Verbindungsdetails:
 CN-CNT TTL UART 9600,8,E,1  \
 Pin-out (from top to bottom) \
@@ -32,14 +54,6 @@ Hier findest du die Platinen, die im Moment getestet werden. \
 [Picture Wemos D1 beta](WEMOSD1.JPG) \
 [Picture ESP12-F](New_PCB.jpeg)
 
-
-## Nutzung der aktuellen Software
-Die aktuelle Arduino Software liest die Daten der CN-CNT Schnittstelle der Panasonic Aquarea H-series Geräte. \
-Beim Build des Images muss darauf geachtet werden, dass die Optionen für die Nutzung des Dateisystems auf dem ESP8266 für das Flashen in der IDE gewählt werden. \
-Nach dem ersten Start wird ein offener WiFi-Hotspot angeboten. Verbinde dich mit diesem Hotspot und konfiguriere dein eigenes Netzwerk und die IP deines MQTT-Servers. \
-Wenn du dein Board auf die Werkseinstellungen zurücksetzen möchtest, drücke bitte innerhalb von 0,1 Sekunden den Reset Taster zwei mal. Dabei wird das lokale Filesystem formatiert und die Konfiguration für das WiFi Netz gelöscht. Danach startet das Gerät neu und du kannst es wie nach dem ersten Start über den offenen Hotspot neu konfigurieren. \
-Nach der Konfiguration und Neustart beginnt die Kommunikation mit deiner Wärmepumpe. GPIO13/GPIO15 werden für die serielle Verbindung benutzt, die USB Schnittstelle bleibt frei. \
-Serial 1 (GPIO2) ist ein serialer Port und kann genutzt werden, um Debug Meldungen zu erhalten. (GND und TX vom Board)
 
 
 ## Build und Test Arduino Image
