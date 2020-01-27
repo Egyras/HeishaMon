@@ -55,7 +55,7 @@ Voeg tevens wat 24 AWG afgeschermde 4 aderige kabel toe (lengte zelf te bepalen)
 
 Momenteel zijn de PCB's in (beta) productie. wij adviseren om nog even te wachten met bestellen omdat de testen nog lopen. Binnenkort kun je een van de PCB ontwerpen bestellen rechtstreeks bij de project eigenaren. Maar natuurlijk delen wij hier de schema's ook. De volgende mogelijke oplossingen zijn of worden momenteel getest.
 
-PCD Designs from the project members 
+
 [PCD Designs from the project members](PCB_Designs.md) \
 [Picture Wemos D1 beta](WEMOSD1.JPG) \
 [Picture ESP12-F](New_PCB.jpeg)
@@ -66,11 +66,11 @@ PCD Designs from the project members
 ## Het bouwen van de test arduino image
 boards: \
 esp8266 by esp8266 community version 2.6.3  Arduino  
-libs we use
+[libs we use](LIBSUSED.md)
 
 
 ## MQTT topics
-[Huidige lijst van gedocumenteerde MQTT onderwerpen kun je hier vinden]
+[Huidige lijst van gedocumenteerde MQTT onderwerpen kun je hier vinden](MQTT-Topics.md)
 
 ## DS18b20 1-wire support
 De software ondersteund ook ds18b20 1-wire temperatuur sensor uitlezing. Een standaard 1-wire configuratie (met 4.7kohm pull-up weerstand) aangesloten op GPIO4 leest iedere 30 secondende waarden en stuurt die naar de panasonic_heat_pump/1wire/"sensor-hex-address" topic.
@@ -83,7 +83,7 @@ Om informatie te krijgen van de warmtepomp, moet het volgende "magic packet" ver
 
 ## Protocol byte decrypt info:
 
-[Huidige lijst van gedocumenteerde bytes decrypted kan hier gevonden worden]
+[Huidige lijst van gedocumenteerde bytes decrypted kan hier gevonden worden](ProtocolByteDecrypt.md)
 ## Integration Examples for Opensource automation systems
 
 [Openhab2](Integrations/Openhab2)
