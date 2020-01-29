@@ -23,8 +23,8 @@
 |  TOP | 18 | 00 |   | 0 byte |
 |  TOP | 19 | 00 |   | 0 byte |
 |  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Optional PCB, Anti freezing, Colling Medium,External outdoor temp sensor |
-|  TOP | 21 | 15 |  (hex) 15 - 1 Zone and Z1 as room , 19 - 1 Zone and Z1 as pool, 16 - 2 Zones and Z2 as room, 26 - 2 Zones ,Z2 as pool| No. of Zones and Zone Destignation |
-|  TOP | 22 | 11 | (hex) 11 - water temperature, 13 - Internal Thermostat, 12 - External Thermostat, 14 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
+|  TOP | 21 | 15 |  (hex) 15 - 1 Zone and Z1 as room , 19 - 1 Zone and Z1 as pool, 16 - 2 Zones and Z2 as room, 26 - 2 Zones ,Z2 as pool| No. of Zones and Zone Destination |
+|  TOP | 22 | 11 |First digit -Z2 ,Second digit Z1 (hex) 1 - water temperature,2 - External Thermostat, 3 - Internal Thermostat, , 4 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
 |  TOP | 24 | 16 | (hex) DHW connected (no solar) =16, DHW not connected=15, no buffer(DHW connected)=16, DHW+Buffer=1A, DHW as buffer for Solar=26, Buffer tank as Buffer for solar=36  | DHW Connection and Buffer + Solar status |
 |  TOP | 25 | 5e | (hex) DHW Heater internal and 3kW=95, DHW Heater external and 3kW=96, DHW Heater internal and 6kW=99, DHW Heater external and 6kW=9A, DHW Heater internal and 9kW=9D, DHW Heater External and 9KW -9E, DHW Heater external and 9KW + Heater pad Type A on=AE, DHW Heater external and 9KW + Heater pad Type B on=BE  | Power of internal heater + DHW heater Internal/External + Heater for external pad |
@@ -183,16 +183,16 @@
 |  TOP | 178 | 01 | Convert to DEC -1  | ? Posible Time for Mixing vave 2 Zone2 [seconds] |
 |  TOP12 | 179 | c3 | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
 |  TOP12 | 180 | 02 |  look at 179 | number of operations |
-|  TOP | 181 | 00 |   | ? |
+|  TOP | 181 | 00 |   | 0 byte |
 |  TOP11 | 182 | dd | combine both bytes (183) 0b  (182) 25 = 2853 - 1 = 2852  | Operating time in h |
 |  TOP11 | 183 | 02 | look at 182  | Operating time in h |
-|  TOP | 184 | 00 |   | ? |
+|  TOP | 184 | 00 |   | 0 byte |
 |  TOP90 | 185 | 05 | combine both bytes (186) 00  (185) 0005 = 5 - 1 = 4  | Room Heater operation time in h |
 |  TOP90 | 186 | 00 |  look at 185   | Room Heater operation time in h |
-|  TOP | 187 | 00 |   | ? |
+|  TOP | 187 | 00 |   | 0 byte |
 |  TOP91 | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
 |  TOP91 | 189 | 00 | look at 188 | DHW Heater operation time in h |
-|  TOP | 190 | 00 |   | ? |
+|  TOP | 190 | 00 |   | 0 byte |
 |  TOP | 191 | 06 | Convert to DEC X-1  | ? Possible heat pump power in Kw |
 |  TOP | 192 | 01 | (hex) simple model=1, T-CAP=2  | ? Possible Heat pump indicator for T-CAP  |
 |  TOP16 | 193 | 01 | Convert to DEC (x-1) / 5   | Energy Consumption for Heat in [kw]  |
