@@ -179,7 +179,7 @@ bool readSerial()
       log_message((char*)"Checksum received ok!");
       data_length = 0; //for next attempt
       goodreads++;
-      float percentage = ((goodreads/totalreads)*100);
+      float percentage = (((float)goodreads/(float)totalreads)*100);
       sprintf(log_msg, "Total reads : %u and total good reads : %u (%.2f %%)", totalreads, goodreads, percentage ); log_message(log_msg);
       return true;
     }
