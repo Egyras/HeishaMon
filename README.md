@@ -44,7 +44,8 @@ CN-CNT Pin-out (from top to bottom) \
 4 - +12V (250mA) \
 5 - GND \
  \
-CN-NMODE Pin-out (from left to right) Warning! Pins on PCB are marked opposide  \
+CN-NMODE Pin-out (from left to right) \
+"Warning! As printed on the PCB, the left pin is pin 4 and right pin is pin 1. Do not count 1 to 4 from left!  \
 4 - +5V (250mA)  \
 3 - 0-5V TX  \
 2 - 0-5V RX  \
