@@ -40,15 +40,15 @@ Comunication parameters: TTL 5V UART 9600,8,E,1  \
 CN-CNT Pin-out (from top to bottom) \
 1 - +5V (250mA)  \
 2 - 0-5V TX  \
-3 - 0-5 RX  \
+3 - 0-5V RX  \
 4 - +12V (250mA) \
 5 - GND \
  \
-CN-NMODE Pin-out (from left to right) \
-1 - +5V (250mA)  \
-2 - 0-5V TX  \
-3 - 0-5 RX  \
-4 - GND
+CN-NMODE Pin-out (from left to right) Warning! Pins on PCB are marked opposide  \
+4 - +5V (250mA)  \
+3 - 0-5V TX  \
+2 - 0-5V RX  \
+1 - GND
 
 
 
