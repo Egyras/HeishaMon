@@ -122,7 +122,7 @@ String getUptime() {
   return String(uptime);
 }
 
-void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire) {
+void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &listenonly) {
 
   //first get total memory before we do anything
   getFreeMemory();
@@ -171,6 +171,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
             strncpy(mqtt_username, jsonDoc["mqtt_username"], 39); mqtt_username[39] = '\0';
             strncpy(mqtt_password, jsonDoc["mqtt_password"], 39); mqtt_password[39] = '\0';
             if ( jsonDoc["use_1wire"] == "enabled" ) use_1wire = true;
+            if ( jsonDoc["listenonly"] == "enabled" ) listenonly = true;
           } else {
             Serial.println("Failed to load json config, forcing config reset.");
             wifiManager.resetSettings();
@@ -266,7 +267,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   Serial.println(WiFi.localIP());
 }
 
-void handleRoot(ESP8266WebServer *httpServer) {
+void handleRoot(ESP8266WebServer *httpServer,float readpercentage) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -289,6 +290,7 @@ void handleRoot(ESP8266WebServer *httpServer) {
   httptext = httptext + "<div class=\"w3-container w3-left\">";
   httptext = httptext + "<br>Wifi signal: " + String(getWifiQuality()) + "%";
   httptext = httptext + "<br>Memory free: " + String(getFreeMemory()) + "%";
+  httptext = httptext + "<br>Correct received data: " + String(readpercentage) + "%";
   httptext = httptext + "<br>Uptime: " + getUptime();
   httptext = httptext + "</div>";
 
@@ -419,7 +421,7 @@ void handleReboot(ESP8266WebServer *httpServer) {
   resetFunc();
 }
 
-void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire) {
+void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &listenonly) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -448,6 +450,11 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
     } else {
       jsonDoc["use_1wire"] = "disabled";
     }
+    if (listenonly) {
+      jsonDoc["listenonly"] = "enabled";
+    } else {
+      jsonDoc["listenonly"] = "disabled";
+    }    
     if (httpServer->hasArg("wifi_hostname")) {
       jsonDoc["wifi_hostname"] = httpServer->arg("wifi_hostname");
     }
@@ -485,7 +492,12 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
     } else {
       jsonDoc["use_1wire"] = "disabled";
     }
-
+    if (httpServer->hasArg("listenonly")) {
+      jsonDoc["listenonly"] = "enabled";
+    } else {
+      jsonDoc["listenonly"] = "disabled";
+    }
+    
     if (SPIFFS.begin()) {
       File configFile = SPIFFS.open("/config.json", "w");
       if (configFile) {
@@ -538,7 +550,13 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
   } else {
     httptext = httptext + "<input type=\"checkbox\" name=\"use_1wire\" value=\"enabled\">";
   }
-
+  httptext = httptext + "<br><br>";  
+  httptext = httptext + "Listen only mode: ";
+  if (listenonly) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\" checked >";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">";
+  }
   httptext = httptext + "<br><br>";  httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
   httptext = httptext + "</form>";
   httptext = httptext + "<br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\" >Factory reset</a>";

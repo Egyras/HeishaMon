@@ -7,7 +7,7 @@
 
 #define MQTT_RETAIN_VALUES 1 // do we retain 1wire values?
 
-#define FETCHTEMPSTIME 30000 // how often Dallas temps are read
+#define FETCHTEMPSTIME 5000 // how often Dallas temps are read in msec
 #define MAXTEMPDIFFPERSEC 0.5 // what is the allowed temp difference per second which is allowed (to filter bad values)
 
 #define ONE_WIRE_BUS 4  // DS18B20 pin
@@ -53,10 +53,12 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
       if ((actDallasData[i].temperature != -127) and ((temp > (actDallasData[i].temperature + allowedtempdiff)) or (temp < (actDallasData[i].temperature - allowedtempdiff)))) {
         sprintf(log_msg, "Filtering 1wire sensor temperature (%s). Delta to high. Current: %s Last: %s", actDallasData[i].address.c_str(), String(temp).c_str(), String(actDallasData[i].temperature).c_str()); log_message(log_msg);
       } else {
-        actDallasData[i].temperature = temp;
         actDallasData[i].lastgoodtime = millis();
-        sprintf(log_msg, "Received 1wire sensor temperature (%s): %s", actDallasData[i].address.c_str(), String(actDallasData[i].temperature).c_str()); log_message(log_msg);
-        sprintf(mqtt_topic, "%s/%s", mqtt_topic_1wire, actDallasData[i].address.c_str()); mqtt_client.publish(mqtt_topic, String(actDallasData[i].temperature).c_str(), MQTT_RETAIN_VALUES);
+        if (actDallasData[i].temperature != temp ) {  //only update mqtt topic if temp changed 
+          actDallasData[i].temperature = temp;
+          sprintf(log_msg, "Received 1wire sensor temperature (%s): %s", actDallasData[i].address.c_str(), String(actDallasData[i].temperature).c_str()); log_message(log_msg);
+          sprintf(mqtt_topic, "%s/%s", mqtt_topic_1wire, actDallasData[i].address.c_str()); mqtt_client.publish(mqtt_topic, String(actDallasData[i].temperature).c_str(), MQTT_RETAIN_VALUES);
+        }
       }
     }
   }

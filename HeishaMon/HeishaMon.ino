@@ -46,6 +46,7 @@ unsigned long nexttime = 0;
 unsigned long readtime = 0;
 unsigned long goodreads = 0;
 unsigned long totalreads = 0;
+float readpercentage = 0;
 
 
 //useful for debugging, outputs info to a separate mqtt topic
@@ -55,6 +56,9 @@ bool outputHexDump = false;
 // toggle to dump  extralog to serial1
 // *needs implementation in this code and in the webpage*
 bool outputSerial1 = true;
+
+//listen only so heishamon can be installed parallel to cz-taw1, set commands will not work though
+bool listenonly = false;
 
 
 //1wire enabled?
@@ -179,8 +183,8 @@ bool readSerial()
       log_message((char*)"Checksum received ok!");
       data_length = 0; //for next attempt
       goodreads++;
-      float percentage = (((float)goodreads/(float)totalreads)*100);
-      sprintf(log_msg, "Total reads : %u and total good reads : %u (%.2f %%)", totalreads, goodreads, percentage ); log_message(log_msg);
+      readpercentage = (((float)goodreads/(float)totalreads)*100);
+      sprintf(log_msg, "Total reads : %u and total good reads : %u (%.2f %%)", totalreads, goodreads, readpercentage ); log_message(log_msg);
       return true;
     }
     else {
@@ -221,6 +225,10 @@ void pushCommandBuffer(byte* command, int length) {
 
 bool send_command(byte* command, int length)
 {
+  if ( listenonly ) {
+    log_message((char*)"Not sending this command. Heishamon in listen only mode!");
+    return false;
+  }
   if ( sending ) {
     log_message((char*)"Already sending data. Buffering this send request");
     pushCommandBuffer(command, length);
@@ -281,7 +289,7 @@ void setupOTA() {
 void setupHttp() {
   httpUpdater.setup(&httpServer, update_path, update_username, ota_password);
   httpServer.on("/", [] {
-    handleRoot(&httpServer);
+    handleRoot(&httpServer, readpercentage);
   });
   httpServer.on("/tablerefresh", [] {
     handleTableRefresh(&httpServer, actData, actDallasData);
@@ -296,7 +304,7 @@ void setupHttp() {
     handleReboot(&httpServer);
   });
   httpServer.on("/settings", [] {
-    handleSettings(&httpServer, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire);
+    handleSettings(&httpServer, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire, listenonly);
   });
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
@@ -348,7 +356,7 @@ void setupMqtt() {
 
 void setup() {
   setupSerial();
-  setupWifi(drd, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire);
+  setupWifi(drd, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire, listenonly);
   MDNS.begin(wifi_hostname);
   setupOTA();
   setupMqtt();
@@ -377,7 +385,7 @@ void read_panasonic_data() {
     data_length = 0; //clear any data in array
     sending = false; //receiving the answer from the send command timeout, so we are allowed to send a new command
   }
-  if (sending && (Serial.available() > 0)) { //only read data if we have sent a command so we expect an answer
+  if ( (listenonly || sending) && (Serial.available() > 0)) { //only read data if we have sent a command so we expect an answer or in listen only mode
     // read the serial and decode if data is valid
     if ( readSerial() ) decode_heatpump_data(data, actData, mqtt_client, log_message);
   }
@@ -404,7 +412,7 @@ void loop() {
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
     nexttime = millis() + WAITTIME;
-    send_panasonic_query();
+    if (!listenonly) send_panasonic_query();
     MDNS.announce();
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
     mqtt_client.publish(mqtt_willtopic, "Online");
