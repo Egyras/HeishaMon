@@ -44,6 +44,8 @@ bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
 unsigned long nexttime = 0;
 unsigned long readtime = 0;
+unsigned long goodreads = 0;
+unsigned long totalreads = 0;
 
 
 //useful for debugging, outputs info to a separate mqtt topic
@@ -54,10 +56,16 @@ bool outputHexDump = false;
 // *needs implementation in this code and in the webpage*
 bool outputSerial1 = true;
 
+
 //1wire enabled?
 bool use_1wire = false;
 //global array for 1wire data
 dallasData actDallasData[MAX_DALLAS_SENSORS];
+
+//s0 enabled?
+bool use_s0 = false;
+//global array for s0 data
+s0Data acS0Data[MAX_S0_COUNTERS]; 
 
 
 // instead of passing array pointers between functions we just define this in the global scope
@@ -125,10 +133,11 @@ void log_message(char* string)
 }
 
 void logHex(char *hex, int hex_len) {
-  char buffer [48];
-  buffer[47] = 0;
-  for (int i = 0; i < hex_len; i += 16) {
-    for (int j = 0; ((j < 16) && ((i + j) < hex_len)); j++) {
+#define LOGHEXBYTESPERLINE 16  // please be aware of max mqtt message size - 32 bytes per line does not work
+  for (int i = 0; i < hex_len; i += LOGHEXBYTESPERLINE) {
+    char buffer [(LOGHEXBYTESPERLINE*3)+1];
+    buffer[LOGHEXBYTESPERLINE*3] = 0;
+    for (int j = 0; ((j < LOGHEXBYTESPERLINE) && ((i + j) < hex_len)); j++) {
       sprintf(&buffer[3 * j], "%02X ", hex[i + j]);
     }
     sprintf(log_msg, "data: %s", buffer ); log_message(log_msg);
@@ -147,6 +156,8 @@ byte calcChecksum(byte* command, int length) {
 
 bool readSerial()
 {
+  if (data_length == 0 ) totalreads++; //this is the start of a new read
+  
   while (Serial.available()) {
     data[data_length] = Serial.read(); //read available data and place it after the last received data
     data_length++;
@@ -167,6 +178,9 @@ bool readSerial()
     if ( chk == 0 ) {
       log_message((char*)"Checksum received ok!");
       data_length = 0; //for next attempt
+      goodreads++;
+      float percentage = (((float)goodreads/(float)totalreads)*100);
+      sprintf(log_msg, "Total reads : %u and total good reads : %u (%.2f %%)", totalreads, goodreads, percentage ); log_message(log_msg);
       return true;
     }
     else {
@@ -287,12 +301,16 @@ void setupHttp() {
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
     outputMqttLog ^= true;
-    handleRoot(&httpServer);
+    httpServer.sendHeader("Location", String("/"), true);
+    httpServer.send ( 302, "text/plain", "");
+    httpServer.client().stop(); 
   });
   httpServer.on("/togglehexdump", [] {
     log_message((char*)"Toggled hexdump log flag");
     outputHexDump ^= true;
-    handleRoot(&httpServer);
+    httpServer.sendHeader("Location", String("/"), true);
+    httpServer.send ( 302, "text/plain", "");
+    httpServer.client().stop(); 
   });
   httpServer.begin();
 }

@@ -11,6 +11,15 @@ struct dallasData {
   String address = "";
 };
 
+
+#define MAX_S0_COUNTERS 2
+struct s0Data {
+  byte gpiopin = 255; 
+  unsigned int watt = 0;
+  unsigned long lastBlink = 0;
+};
+
+
 void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*));
 void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*));
 String dallasJsonOutput(dallasData actDallasData[]);
