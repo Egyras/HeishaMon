@@ -12,7 +12,7 @@ Een nederlandse vertaling [README_NL.md](README_NL.md) vind je hier.
 Current beta release is version 0.5b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.5.bin) can be installed on a Wemos D1 mini(and generally on any ESP8266 based board - but without guarantee ). Or download the code compile it yourself (see required libraries below).
 
 # Using the software
-The current arduino beta image is able to read from the Panasonic Aquarea H-series CN-CNT connector. \
+The current arduino beta image is able to communicate with  the Panasonic Aquarea H-series (and most probably from new J-series as well ,since PCB look identical). \
 If you want to compile this image yourself be sure to use the mentioned libraries and support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that.
 
 When starting for the first time a open-wifi-hotspot will be visible allowing you to config your wifi network and your mqtt server. \
@@ -34,13 +34,24 @@ Within the 'integrations' folder you can find examples how to connect your autom
 Below you can find some technical details about the project. How to build your own cables. How to build you own PCB etc.
 
 ## Connection details:
-CN-CNT TTL UART 9600,8,E,1  \
-Pin-out (from top to bottom) \
+Comunication can be established thru one of sockets: CN-CNT or CN-NMODE, with are hardwired/shortcuted ,so there is no possible to use them booth at the same time for more then one device (except sniffing). \
+Comunication parameters: TTL 5V UART 9600,8,E,1  \
+ \
+CN-CNT Pin-out (from top to bottom) \
 1 - +5V (250mA)  \
 2 - 0-5V TX  \
-3 - 0-5 RX  \
+3 - 0-5V RX  \
 4 - +12V (250mA) \
-5 - GND
+5 - GND \
+ \
+CN-NMODE Pin-out (from left to right) \
+"Warning! As printed on the PCB, the left pin is pin 4 and right pin is pin 1. Do not count 1 to 4 from left!  \
+4 - +5V (250mA)  \
+3 - 0-5V TX  \
+2 - 0-5V RX  \
+1 - GND
+
+
 
 ## Where to get connectors
 [RS-Online orders](Connectors_RSO.md)
