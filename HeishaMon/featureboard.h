@@ -2,8 +2,9 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-
+#define UPDATEALLTIME_DALLAS 300000 // how often all dallas data is cleared and so resend to mqtt
 #define MAX_DALLAS_SENSORS 15
+
 struct dallasData {
   float temperature = -127;
   unsigned long lastgoodtime = 0;
