@@ -18,8 +18,8 @@ In this way Optional PCB comunicate with HP in similar way to CZ-TAW1 - Next to(
 | 07 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Pool  |
 | 08 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Buffer  |
 | 09 | E5 |   | ?  |
-| 10 | FF |  NTC 6,5kOhm resistance characteristic value | Possible Temp. Z2_Room   |
-| 11 | FF |  NTC 6,5kOhm resistance characteristic value | Possible Temp. Z1_Room   |
+| 10 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Room   |
+| 11 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Room   |
 | 12 | 00 |   | 0 byte  |
 | 13 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Solar  |
 | 14 | EA | HEX:  EB-100% ,B8 - 75% ,85 -50%,52 - 25% ,2B - 5% (proportional values should works) | Demand Control  |
