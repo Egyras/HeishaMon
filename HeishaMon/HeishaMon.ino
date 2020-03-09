@@ -69,7 +69,7 @@ dallasData actDallasData[MAX_DALLAS_SENSORS];
 //s0 enabled?
 bool use_s0 = false;
 //global array for s0 data
-s0Data acS0Data[MAX_S0_COUNTERS];
+s0Data actS0Data[MAX_S0_COUNTERS];
 
 
 // instead of passing array pointers between functions we just define this in the global scope
@@ -122,7 +122,7 @@ void mqtt_reconnect()
     mqtt_client.subscribe(mqtt_set_holiday_topic);
     mqtt_client.subscribe(mqtt_set_powerful_topic);
     mqtt_client.subscribe(mqtt_set_dhw_temp_topic);
-
+    mqtt_client.subscribe(mqtt_send_raw_value_topic);
     mqtt_client.publish(mqtt_willtopic, "Online");
   }
 }
@@ -158,10 +158,6 @@ byte calcChecksum(byte* command, int length) {
   return chk;
 }
 
-bool isValidReceiveHeader() {
-  return ((data[0] == 0x71) && (data[1] == 0xC8) && (data[2] == 0x01) && (data[3] == 0x10) );
-}
-
 bool isValidReceiveChecksum() {
   byte chk = 0;
   for ( int i = 0; i < data_length; i++)  {
@@ -181,32 +177,37 @@ bool readSerial()
   //only enable this if you really want to see how the data is gathered in multiple tries
   //sprintf(log_msg, "received size : %d", data_length); log_message(log_msg);
 
-  if (data_length > 203) {
-    log_message((char*)"Received more than 203 bytes data! Ignoring this as this is bad data.");
-    data_length = 0;
-    return false; //panasonic never returns more than 203 bytes, so this is bad data
-  }
+  if (data_length > 1) { //should have received length part of header now
 
-  if (data_length == 203) { //panasonic read is always 203 on valid receive, if not yet there wait for next read
-    log_message((char*)"Received 203 bytes data");
-    sending = false; //we received an answer after our last command so from now on we can start a new send request again
-    if (outputHexDump) logHex(data, data_length);
-    if (! isValidReceiveHeader()) {
-      log_message((char*)"Received wrong header!");
-      data_length = 0; //for next attempt;
+    if (data_length > (data[1] + 3)) {
+      log_message((char*)"Received more data than header suggests! Ignoring this as this is bad data.");
+      data_length = 0;
       return false;
     }
-    if (! isValidReceiveChecksum() ) {
-      log_message((char*)"Checksum received false!");
-      data_length = 0; //for next attempt
-      return false;
+
+    if (data_length == (data[1] + 3)) { //we received all data (data[1] is header length field)
+      sprintf(log_msg, "Received %d bytes data", data_length); log_message(log_msg);
+      sending = false; //we received an answer after our last command so from now on we can start a new send request again
+      if (outputHexDump) logHex(data, data_length);
+      if (! isValidReceiveChecksum() ) {
+        log_message((char*)"Checksum received false!");
+        data_length = 0; //for next attempt
+        return false;
+      }
+      log_message((char*)"Checksum and header received ok!");
+      goodreads++;
+      readpercentage = (((float)goodreads / (float)totalreads) * 100);
+      sprintf(log_msg, "Total reads : %u and total good reads : %u (%.2f %%)", totalreads, goodreads, readpercentage ); log_message(log_msg);
+      if (data_length == 203) { //for now only return true for this datagram because we can not decode the shorter datagram yet
+        data_length = 0;
+        return true;
+      }
+      else {
+        log_message((char*)"Received the shorter datagram. Can't decode this yet.");
+        data_length = 0;
+        return false;
+      }
     }
-    log_message((char*)"Checksum and header received ok!");
-    data_length = 0; //for next attempt
-    goodreads++;
-    readpercentage = (((float)goodreads / (float)totalreads) * 100);
-    sprintf(log_msg, "Total reads : %u and total good reads : %u (%.2f %%)", totalreads, goodreads, readpercentage ); log_message(log_msg);
-    return true;
   }
   return false;
 }
@@ -254,8 +255,8 @@ bool send_command(byte* command, int length)
   byte chk = calcChecksum(command, length);
   int bytesSent = Serial.write(command, length); //first send command
   bytesSent += Serial.write(chk); //then calculcated checksum byte afterwards
-  sprintf(log_msg, "sent bytes: %d with checksum: %d ", bytesSent, int(chk)); log_message(log_msg);
-  
+  sprintf(log_msg, "sent bytes: %d including checksum value: %d ", bytesSent, int(chk)); log_message(log_msg);
+
   if (outputHexDump) logHex((char*)command, length);
   allowreadtime = millis() + SERIALTIMEOUT; //set allowreadtime when to timeout the answer of this command
   return true;
@@ -273,7 +274,19 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       msg[i] = (char)payload[i];
     }
     msg[length] = '\0';
-    send_heatpump_command(topic, msg, send_command, log_message);
+
+    if (strcmp(topic, mqtt_send_raw_value_topic) == 0)
+    { // send a raw hex string
+      byte *rawcommand;
+      rawcommand = (byte *) malloc(length);
+      memcpy(rawcommand, msg, length);
+
+      sprintf(log_msg, "sending raw value"); log_message(log_msg);
+      send_command(rawcommand, length);
+    } else {
+      send_heatpump_command(topic, msg, send_command, log_message);
+
+    }
     mqttcallbackinprogress = false;
   }
 }
@@ -401,7 +414,7 @@ void read_panasonic_data() {
   }
   if ( (listenonly || sending) && (Serial.available() > 0)) { //only read data if we have sent a command so we expect an answer or in listen only mode
     // read the serial and decode if data is complete and valid
-    if ( readSerial() ) decode_heatpump_data(data, actData, mqtt_client, log_message);
+    if ( readSerial()) decode_heatpump_data(data, actData, mqtt_client, log_message);
   }
 }
 

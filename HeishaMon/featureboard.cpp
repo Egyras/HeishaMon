@@ -10,7 +10,7 @@
 #define FETCHTEMPSTIME 5000 // how often Dallas temps are read in msec
 #define MAXTEMPDIFFPERSEC 0.5 // what is the allowed temp difference per second which is allowed (to filter bad values)
 
-#define ONE_WIRE_BUS 4  // DS18B20 pin
+
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
@@ -103,4 +103,23 @@ String dallasTableOutput(dallasData actDallasData[]) {
     output = output + "</tr>";
   }
   return output;
+}
+
+void onS0Pulse1(){
+
+}
+
+void onS0Pulse2() {
+
+}
+
+void initS0Sensors(s0Data actS0Data[], void (*log_message)(char*)) {
+  actS0Data[0].gpiopin = 12;
+  pinMode(actS0Data[0].gpiopin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(actS0Data[0].gpiopin), onS0Pulse1, RISING);
+  
+  actS0Data[1].gpiopin = 14;
+  pinMode(actS0Data[1].gpiopin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(actS0Data[1].gpiopin), onS0Pulse2, RISING);
+    
 }
