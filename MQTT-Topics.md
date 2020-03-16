@@ -18,7 +18,7 @@ ID | Topic | Response/Description
 :--- | --- | ---
 TOP0 | sdc/Heatpump_State | Heatpump state (0=off, 1=on)
 TOP1 | sdc/Pump_Flow | Pump flow (l/min)
-TOP2 | sdc/Force_DHW_State | DHW status (0=off, 1=on -1=unknown)
+TOP2 | sdc/Force_DHW_State | DHW status (0=off, 1=on)
 TOP3 | sdc/Quiet_Mode_Schedule | Quiet mode schedule (0=inactive, 1=active)
 TOP4 | sdc/Operating_Mode_State | Operating mode (0=Heat only, 1=Cool only, 2=Auto, 3=DHW only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW)
 TOP5 | sdc/Main_Inlet_Temp | Main inlet water temperature (°C)
@@ -109,6 +109,7 @@ TOP89 | sdc/Z2_Cool_Curve_Outside_Low_Temp | Highest outside temperature on the 
 TOP90 | sdc/Room_Heater_Operations_Hours | Electric heater operating time for Room (Hour)
 TOP91 | sdc/DHW_Heater_Operations_Hours | Electric heater operating time for DHW (Hour)
 
+All Topics realated with state can have also value -1 - unknown - but only in ubnormal situations.
 
 ## Command Topics:
 
