@@ -239,7 +239,7 @@ sensor:
   #TOP4 - Heat mode (Hot water, Heat or Hot water + heat)
   - platform: mqtt
     name: Heishamon Aquarea Mode
-    state_topic: "heishamon_heat_pump/sdc/OperatingMode_State"
+    state_topic: "heishamon_heat_pump/sdc/Operating_Mode_State"
     value_template: >-
       {%- if value == "0" -%}
         Heat
@@ -255,6 +255,10 @@ sensor:
         Cool+DHW
       {%- elif value == "6" -%}
         Auto+DHW
+      {%- elif value == "7" -%}
+        Auto(Cool)
+      {%- elif value == "8" -%}
+        Auto(Cool)+DHW
       {%- endif -%}
       
   #TOP5 - Water inlet temp
