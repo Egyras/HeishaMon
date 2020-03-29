@@ -67,7 +67,7 @@ bool use_1wire = false;
 dallasData actDallasData[MAX_DALLAS_SENSORS];
 
 //s0 enabled?
-bool use_s0 = true;
+bool use_s0 = false;
 
 // instead of passing array pointers between functions we just define this in the global scope
 #define MAXDATASIZE 256

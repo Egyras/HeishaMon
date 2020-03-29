@@ -8,5 +8,5 @@
 |PAP-05V-1| 1426227 | Cable connector on CN-CNT side | 
 |BXA-01T-P0.6| 741295 |Connector pins on CZ-TAW1/PCB side|
 |SPHD-002T-P0.5| 1426240 | Connector pins on CN-CNT side |
-| | 740614 | CN-NMode 4-pin connector housing |
-| | 741135 | CN-NMode connector pins |
+|PHR-4| 740614 | CN-NMode 4-pin connector housing |
+|SPH-002T-P0.5S| 741135 | CN-NMode connector pins |
