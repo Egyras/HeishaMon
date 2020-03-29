@@ -136,7 +136,7 @@ void initS0Sensors() {
   attachInterrupt(digitalPinToInterrupt(actS0Data[0].gpiopin), onS0Pulse1, RISING);
   actS0Data[0].lastBlink = millis();
 
-  actS0Data[1].gpiopin = S0_PIN_1;
+  actS0Data[1].gpiopin = S0_PIN_2;
   pinMode(actS0Data[1].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Data[1].gpiopin), onS0Pulse2, RISING);
   actS0Data[1].lastBlink = millis();

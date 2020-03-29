@@ -7,7 +7,7 @@
 #define ONE_WIRE_BUS 4  // DS18B20 pin, for now a static config - should be in config menu later
 #define NUM_S0_COUNTERS 2
 #define S0_PIN_1 12  // S0_1 pin, for now a static config - should be in config menu later
-#define S0_PIN_1 14  // S0_2 pin, for now a static config - should be in config menu later
+#define S0_PIN_2 14  // S0_2 pin, for now a static config - should be in config menu later
 
 struct dallasData {
   float temperature = -127;
