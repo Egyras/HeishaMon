@@ -67,7 +67,7 @@ Soon you will be cable to order one of the PCB design directly from the project 
 we will share the schematics also. For now these are some schematics we are testing or have tested. \
 [PCD Designs from the project members](PCB_Designs.md) \
 [Picture Wemos D1 beta](WEMOSD1.JPG) \
-[Picture ESP12-F](New_PCB.jpeg)
+[Picture ESP12-F](NewHeishamon.JPG)
 
 
 
