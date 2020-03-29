@@ -5,6 +5,7 @@ byte panasonicQuery[] = {0x71, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0
 
 const char* mqtt_topic_base = "panasonic_heat_pump/sdc";
 const char* mqtt_topic_1wire = "panasonic_heat_pump/1wire";
+const char* mqtt_topic_s0 = "panasonic_heat_pump/s0";
 const char* mqtt_logtopic = "panasonic_heat_pump/log";
 const char* mqtt_willtopic = "panasonic_heat_pump/LWT";
 const char* mqtt_set_heatpump_state_topic = "panasonic_heat_pump/SetHeatpump";
