@@ -67,7 +67,9 @@ bool use_1wire = false;
 dallasData actDallasData[MAX_DALLAS_SENSORS];
 
 //s0 enabled?
-bool use_s0 = true;
+bool use_s0 = false;
+//global array for s0 data
+s0Data actS0Data[NUM_S0_COUNTERS];
 
 // instead of passing array pointers between functions we just define this in the global scope
 #define MAXDATASIZE 256
@@ -314,13 +316,13 @@ void setupOTA() {
 void setupHttp() {
   httpUpdater.setup(&httpServer, update_path, update_username, ota_password);
   httpServer.on("/", [] {
-    handleRoot(&httpServer, readpercentage);
+    handleRoot(&httpServer, readpercentage, use_1wire, use_s0);
   });
   httpServer.on("/tablerefresh", [] {
-    handleTableRefresh(&httpServer, actData, actDallasData);
+    handleTableRefresh(&httpServer, actData, actDallasData, actS0Data);
   });
   httpServer.on("/json", [] {
-    handleJsonOutput(&httpServer, actData, actDallasData);
+    handleJsonOutput(&httpServer, actData, actDallasData, actS0Data);
   });
   httpServer.on("/factoryreset", [] {
     handleFactoryReset(&httpServer);
@@ -329,7 +331,7 @@ void setupHttp() {
     handleReboot(&httpServer);
   });
   httpServer.on("/settings", [] {
-    handleSettings(&httpServer, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire, listenonly);
+    handleSettings(&httpServer, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire, use_s0, listenonly, actS0Data);
   });
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
@@ -382,13 +384,13 @@ void setupMqtt() {
 
 void setup() {
   setupSerial();
-  setupWifi(drd, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire, listenonly);
+  setupWifi(drd, wifi_hostname, ota_password, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire, use_s0, listenonly, actS0Data);
   MDNS.begin(wifi_hostname);
   setupOTA();
   setupMqtt();
   setupHttp();
   if (use_1wire) initDallasSensors(actDallasData, log_message);
-  if (use_s0) initS0Sensors();
+  if (use_s0) initS0Sensors(actS0Data);
   switchSerial();
 
 }
@@ -431,7 +433,7 @@ void loop() {
 
   if (use_1wire) dallasLoop(actDallasData, mqtt_client, log_message);
 
-  if (use_s0) s0Loop(mqtt_client, log_message);
+  if (use_s0) s0Loop(actS0Data,mqtt_client, log_message);
 
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
