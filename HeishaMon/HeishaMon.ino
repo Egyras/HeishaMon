@@ -67,10 +67,7 @@ bool use_1wire = false;
 dallasData actDallasData[MAX_DALLAS_SENSORS];
 
 //s0 enabled?
-bool use_s0 = false;
-//global array for s0 data
-s0Data actS0Data[MAX_S0_COUNTERS];
-
+bool use_s0 = true;
 
 // instead of passing array pointers between functions we just define this in the global scope
 #define MAXDATASIZE 256
@@ -354,6 +351,7 @@ void setupHttp() {
 void setupSerial() {
   //debug line on serial1 (D4, GPIO2)
   Serial1.begin(115200);
+  Serial1.println("Starting debugging");
 
   //boot issue's first on normal serial
   Serial.begin(115200);
@@ -390,6 +388,7 @@ void setup() {
   setupMqtt();
   setupHttp();
   if (use_1wire) initDallasSensors(actDallasData, log_message);
+  if (use_s0) initS0Sensors();
   switchSerial();
 
 }
@@ -426,18 +425,20 @@ void loop() {
   // Allow MDNS processing
   MDNS.update();
 
-  if (!mqtt_client.connected())
-  {
-    mqtt_reconnect();
-  }
   mqtt_client.loop();
 
   read_panasonic_data();
 
   if (use_1wire) dallasLoop(actDallasData, mqtt_client, log_message);
 
+  if (use_s0) s0Loop(mqtt_client, log_message);
+
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
+    if (!mqtt_client.connected())
+    {
+      mqtt_reconnect();
+    }
     nexttime = millis() + WAITTIME;
     if (!listenonly) send_panasonic_query();
     MDNS.announce();
