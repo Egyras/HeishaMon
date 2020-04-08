@@ -158,7 +158,7 @@ void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_clien
     if ((updatenow) || ( actData[Topic_Number] != Topic_Value )) {
       actData[Topic_Number] = Topic_Value;
       sprintf(log_msg, "received TOP%d %s: %s", Topic_Number, topics[Topic_Number], Topic_Value.c_str()); log_message(log_msg);
-      sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, topics[Topic_Number]); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
+      sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_values, topics[Topic_Number]); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
     }
   }
 
