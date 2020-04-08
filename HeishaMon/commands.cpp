@@ -3,25 +3,29 @@
 //removed checksum from default query, is calculated in send_command
 byte panasonicQuery[] = {0x71, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-const char* mqtt_topic_base = "panasonic_heat_pump/sdc";
-const char* mqtt_topic_1wire = "panasonic_heat_pump/1wire";
-const char* mqtt_topic_s0 = "panasonic_heat_pump/s0";
-const char* mqtt_logtopic = "panasonic_heat_pump/log";
-const char* mqtt_willtopic = "panasonic_heat_pump/LWT";
-const char* mqtt_set_heatpump_state_topic = "panasonic_heat_pump/SetHeatpump";
-const char* mqtt_set_quiet_mode_topic = "panasonic_heat_pump/SetQuietMode";
-const char* mqtt_set_z1_heat_request_temperature_topic = "panasonic_heat_pump/SetZ1HeatRequestTemperature";
-const char* mqtt_set_z1_cool_request_temperature_topic = "panasonic_heat_pump/SetZ1CoolRequestTemperature";
-const char* mqtt_set_z2_heat_request_temperature_topic = "panasonic_heat_pump/SetZ2HeatRequestTemperature";
-const char* mqtt_set_z2_cool_request_temperature_topic = "panasonic_heat_pump/SetZ2CoolRequestTemperature";
-const char* mqtt_set_operationmode_topic = "panasonic_heat_pump/SetOperationMode";
-const char* mqtt_set_force_DHW_topic = "panasonic_heat_pump/SetForceDHW";
-const char* mqtt_set_force_defrost_topic = "panasonic_heat_pump/SetForceDefrost";
-const char* mqtt_set_force_sterilization_topic = "panasonic_heat_pump/SetForceSterilization";
-const char* mqtt_set_holiday_topic = "panasonic_heat_pump/SetHolidayMode";
-const char* mqtt_set_powerful_topic = "panasonic_heat_pump/SetPowerfulMode";
-const char* mqtt_set_dhw_temp_topic = "panasonic_heat_pump/SetDHWTemp";
-const char* mqtt_send_raw_value_topic = "panasonic_heat_pump/SendRawValue";
+char mqtt_topic_base[40] = "panasonic_heat_pump";
+
+const char* mqtt_topic_values = "sdc";
+const char* mqtt_topic_1wire = "1wire";
+const char* mqtt_topic_s0 = "s0";
+const char* mqtt_logtopic = "log";
+
+const char* mqtt_willtopic = "LWT";
+
+const char* mqtt_set_heatpump_state_topic = "SetHeatpump";
+const char* mqtt_set_quiet_mode_topic = "SetQuietMode";
+const char* mqtt_set_z1_heat_request_temperature_topic = "SetZ1HeatRequestTemperature";
+const char* mqtt_set_z1_cool_request_temperature_topic = "SetZ1CoolRequestTemperature";
+const char* mqtt_set_z2_heat_request_temperature_topic = "SetZ2HeatRequestTemperature";
+const char* mqtt_set_z2_cool_request_temperature_topic = "SetZ2CoolRequestTemperature";
+const char* mqtt_set_operationmode_topic = "SetOperationMode";
+const char* mqtt_set_force_DHW_topic = "SetForceDHW";
+const char* mqtt_set_force_defrost_topic = "SetForceDefrost";
+const char* mqtt_set_force_sterilization_topic = "SetForceSterilization";
+const char* mqtt_set_holiday_topic = "SetHolidayMode";
+const char* mqtt_set_powerful_topic = "SetPowerfulMode";
+const char* mqtt_set_dhw_temp_topic = "SetDHWTemp";
+const char* mqtt_send_raw_value_topic = "SendRawValue";
 
 void send_heatpump_command(char* topic, char *msg,bool (*send_command)(byte*, int),void (*log_message)(char*)){
   char log_msg[256];

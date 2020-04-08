@@ -22,7 +22,9 @@ Serial 1 (GPIO2) can be used to connect another serial line (GND and TX from the
 
 All received data will be sent to different mqtt topics (see below for topic descriptions). There is also a 'panasonic_heat_pump/log' mqtt topic which provides debug logging and a hexdump of the received packets (if enabled in the web portal).
 
-You can connect a 1wire network on GPIO4 which will report in seperate mqtt topics (panasonic_heat_pump/1wire/sensorid). See more information below. 
+You can connect a 1wire network on GPIO4 which will report in seperate mqtt topics (panasonic_heat_pump/1wire/sensorid).
+
+The software is also able to measure Watt on a S0 port of two kWh meters. You only need to connect GPIO12 and GND to the S0 of one kWh meter and if you need a second kWh meter use GPIO14 and GND. It will report on mqtt topic panasonic_heat_pump/s0/1 and panasonic_heat_pump/s0/2 and also in the JSON output.
 
 Updating the firmware is as easy as going to the firmware menu and, after authentication with username 'admin' and password you provided during setup, uploading the binary there.
 

@@ -83,8 +83,6 @@ static const char s0SettingsJS[] PROGMEM =
   "</script>";
 
 
-void(* resetFunc) (void) = 0;
-
 //callback notifying us of the need to save config
 void saveConfigCallback () {
   Serial.println("Should save config");
@@ -132,7 +130,7 @@ String getUptime() {
   return String(uptime);
 }
 
-void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &use_s0, bool &listenonly, s0Data actS0Data[]) {
+void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, char* mqtt_topic_base, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &use_s0, bool &listenonly, s0Data actS0Data[]) {
 
   //first get total memory before we do anything
   getFreeMemory();
@@ -176,6 +174,9 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
             //read updated parameters, make sure no overflow
             strncpy(wifi_hostname, jsonDoc["wifi_hostname"], 39); wifi_hostname[39] = '\0';
             strncpy(ota_password, jsonDoc["ota_password"], 39); ota_password[39] = '\0';
+            if ( jsonDoc["mqtt_topic_base"] ) {
+              strncpy(mqtt_topic_base, jsonDoc["mqtt_topic_base"], 39); mqtt_topic_base[39] = '\0';
+            }
             strncpy(mqtt_server, jsonDoc["mqtt_server"], 39); mqtt_server[39] = '\0';
             strncpy(mqtt_port, jsonDoc["mqtt_port"], 5); mqtt_port[5] = '\0';
             strncpy(mqtt_username, jsonDoc["mqtt_username"], 39); mqtt_username[39] = '\0';
@@ -215,6 +216,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   WiFiManagerParameter custom_wifi_hostname("wifi_hostname", "wifi hostname", wifi_hostname, 39);
   WiFiManagerParameter custom_ota_password("ota_password", "ota password", ota_password, 39);
   WiFiManagerParameter custom_text2("<p>Configure MQTT settings</p>");
+  WiFiManagerParameter custom_mqtt_topic_base("mqtt topic base", "mqtt topic base", mqtt_topic_base, 39);
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 39);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 5);
   WiFiManagerParameter custom_mqtt_username("username", "mqtt username", mqtt_username, 39);
@@ -230,13 +232,14 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   wifiManager.addParameter(&custom_wifi_hostname);
   wifiManager.addParameter(&custom_ota_password);
   wifiManager.addParameter(&custom_text2);
+  wifiManager.addParameter(&custom_mqtt_topic_base);
   wifiManager.addParameter(&custom_mqtt_server);
   wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_mqtt_username);
   wifiManager.addParameter(&custom_mqtt_password);
 
 
-  wifiManager.setConfigPortalTimeout(180);
+  wifiManager.setConfigPortalTimeout(120);
   wifiManager.setConnectTimeout(10);
   if (!wifiManager.autoConnect("HeishaMon-Setup")) {
     Serial.println("failed to connect and hit timeout");
@@ -252,6 +255,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   //read updated parameters, make sure no overflow
   strncpy(wifi_hostname, custom_wifi_hostname.getValue(), 39); wifi_hostname[39] = '\0';
   strncpy(ota_password, custom_ota_password.getValue(), 39); ota_password[39] = '\0';
+  strncpy(mqtt_topic_base, custom_mqtt_topic_base.getValue(), 39); mqtt_topic_base[39] = '\0';
   strncpy(mqtt_server, custom_mqtt_server.getValue(), 39); mqtt_server[39] = '\0';
   strncpy(mqtt_port, custom_mqtt_port.getValue(), 5); mqtt_port[5] = '\0';
   strncpy(mqtt_username, custom_mqtt_username.getValue(), 39); mqtt_username[39] = '\0';
@@ -266,6 +270,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
     DynamicJsonDocument jsonDoc(1024);
     jsonDoc["wifi_hostname"] = wifi_hostname;
     jsonDoc["ota_password"] = ota_password;
+    jsonDoc["mqtt_topic_base"] = mqtt_topic_base;
     jsonDoc["mqtt_server"] = mqtt_server;
     jsonDoc["mqtt_port"] = mqtt_port;
     jsonDoc["mqtt_username"] = mqtt_username;
@@ -281,7 +286,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
     configFile.close();
     //end save
   }
-
+  Serial.println("==========");
   Serial.println("local ip");
   Serial.println(WiFi.localIP());
 }
@@ -432,7 +437,7 @@ void handleFactoryReset(ESP8266WebServer *httpServer) {
   SPIFFS.format();
   WiFi.disconnect(true);
   delay(1000);
-  resetFunc();
+  ESP.restart();
 }
 
 void handleReboot(ESP8266WebServer *httpServer) {
@@ -451,10 +456,10 @@ void handleReboot(ESP8266WebServer *httpServer) {
   httpServer->sendContent("");
   httpServer->client().stop();
   delay(1000);
-  resetFunc();
+  ESP.restart();
 }
 
-void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &use_s0, bool &listenonly, s0Data actS0Data[]) {
+void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_topic_base, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &use_s0, bool &listenonly, s0Data actS0Data[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -474,6 +479,7 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
     DynamicJsonDocument jsonDoc(1024);
     jsonDoc["wifi_hostname"] = wifi_hostname;
     jsonDoc["ota_password"] = ota_password;
+    jsonDoc["mqtt_topic_base"] = mqtt_topic_base;
     jsonDoc["mqtt_server"] = mqtt_server;
     jsonDoc["mqtt_port"] = mqtt_port;
     jsonDoc["mqtt_username"] = mqtt_username;
@@ -513,6 +519,9 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
         return;
       }
     }
+     if (httpServer->hasArg("mqtt_topic_base")) {
+      jsonDoc["mqtt_topic_base"] = httpServer->arg("mqtt_topic_base");
+    }   
     if (httpServer->hasArg("mqtt_server")) {
       jsonDoc["mqtt_server"] = httpServer->arg("mqtt_server");
     }
@@ -564,7 +573,7 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
         httpServer->sendContent("");
         httpServer->client().stop();
         delay(1000);
-        resetFunc();
+        ESP.restart();
       }
     }
   }
@@ -581,6 +590,9 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
   httptext = httptext + "New update password:<br>";
   httptext = httptext + "<input type=\"password\" name=\"new_ota_password\" value=\"\">";
   httptext = httptext + "<br><br>";
+  httptext = httptext + "Mqtt topic base:<br>";
+  httptext = httptext + "<input type=\"text\" name=\"mqtt_topic_base\" value=\"" + mqtt_topic_base + "\">";
+  httptext = httptext + "<br><br>";  
   httptext = httptext + "Mqtt server:<br>";
   httptext = httptext + "<input type=\"text\" name=\"mqtt_server\" value=\"" + mqtt_server + "\">";
   httptext = httptext + "<br><br>";
