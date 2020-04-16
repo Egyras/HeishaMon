@@ -292,8 +292,8 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       msg[i] = (char)payload[i];
     }
     msg[length] = '\0';
-
-    if (strcmp(topic, mqtt_send_raw_value_topic) == 0)
+    char* topic_command = topic + strlen(mqtt_topic_base) + 1; //strip base plus seperator from topic
+    if (strcmp(topic_command, mqtt_send_raw_value_topic) == 0)
     { // send a raw hex string
       byte *rawcommand;
       rawcommand = (byte *) malloc(length);
@@ -302,7 +302,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       sprintf(log_msg, "sending raw value"); log_message(log_msg);
       send_command(rawcommand, length);
     } else {
-      char* topic_command = topic + strlen(mqtt_topic_base) + 1; //strip base plus seperator from topic
       send_heatpump_command(topic_command, msg, send_command, log_message);
 
     }

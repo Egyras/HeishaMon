@@ -21,10 +21,11 @@ struct dallasData {
 struct s0Data {
   byte gpiopin = 255; 
   unsigned int ppkwh = 1000; //pulses per Wh of the connected meter
-  unsigned int watt = 0;
-  unsigned int minWatt = MIN_S0_WATT;
-  unsigned long lastBlink = 0;
-  unsigned long pulseInterval = 0;
+  unsigned int pulses = 0; //number of pulses since last report
+  unsigned int watt = 0; //calculated average power
+  unsigned int minWatt = MIN_S0_WATT; //report 0 Watt below this filter
+  unsigned long lastPulse = 0; //last pulse in millis
+  unsigned long pulseInterval = 0; //interval in between last two pulses in millis
 };
 
 
