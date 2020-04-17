@@ -121,24 +121,25 @@ ICACHE_RAM_ATTR void onS0Pulse2() {
 }
 
 void initS0Sensors(s0Data actS0Data[]) {
-  
+
   pinMode(actS0Data[0].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Data[0].gpiopin), onS0Pulse1, RISING);
-  actS0Data[0].lastBlink = millis();
+  actS0Data[0].lastPulse = millis();
 
-  
+
   pinMode(actS0Data[1].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Data[1].gpiopin), onS0Pulse2, RISING);
-  actS0Data[1].lastBlink = millis();
+  actS0Data[1].lastPulse = millis();
 }
 
 void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(char*)) {
   //first handle new detected pulses
   for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
     if (new_pulse_s0[i] > 0) {
-      actS0Data[i].pulseInterval = new_pulse_s0[i] - actS0Data[i].lastBlink;
+      actS0Data[i].pulseInterval = new_pulse_s0[i] - actS0Data[i].lastPulse;
       actS0Data[i].watt = (3600000000.0 / actS0Data[i].pulseInterval) / actS0Data[i].ppkwh;
-      actS0Data[i].lastBlink = new_pulse_s0[i];
+      actS0Data[i].lastPulse = new_pulse_s0[i];
+      actS0Data[i].pulses++; Serial1.println(actS0Data[i].pulses);
       new_pulse_s0[i] = 0;
     }
   }
@@ -148,17 +149,21 @@ void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(c
   if (millis() > s0Timer) {
     s0Timer = millis() + FETCHS0TIME;
     for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
-      unsigned long interval = millis() - actS0Data[i].lastBlink;
+      unsigned long interval = millis() - actS0Data[i].lastPulse;
       unsigned long calcMaxWatt = (3600000000.0 / interval) / actS0Data[i].ppkwh;
-     
+
       if (actS0Data[i].watt > calcMaxWatt) { // If last known watt is bigger then calculated max watt then last known watt is invalid, report halve of calculated max
         actS0Data[i].watt = calcMaxWatt / 2;
       }
-      if (actS0Data[i].watt < actS0Data[i].minWatt) { // below this we report 0 watt 
+      if (actS0Data[i].watt < actS0Data[i].minWatt) { // below this we report 0 watt
         actS0Data[i].watt = 0;
       }
-      sprintf(log_msg, "Measured Watt on S0 port %d: %lu", (i + 1), actS0Data[i].watt); log_message(log_msg);
-      sprintf(mqtt_topic, "%s/%s/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, String(actS0Data[i].watt).c_str(), MQTT_RETAIN_VALUES);
+      float Watthour = (actS0Data[i].pulses * ( 1000 / actS0Data[i].ppkwh));
+      sprintf(log_msg, "Measured Watthour on S0 port %d: %.2f", (i + 1),  Watthour ); log_message(log_msg);
+      sprintf(mqtt_topic, "%s/%s/Watthour/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, String(Watthour).c_str(), MQTT_RETAIN_VALUES);
+      actS0Data[i].pulses = 0;
+      sprintf(log_msg, "Calculated Watt on S0 port %d: %lu", (i + 1), actS0Data[i].watt); log_message(log_msg);
+      sprintf(mqtt_topic, "%s/%s/Watt/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, String(actS0Data[i].watt).c_str(), MQTT_RETAIN_VALUES);
     }
   }
 }
