@@ -67,7 +67,7 @@ Use some 24 AWG shielded 4-conductors cable.
 The PCB's needed to connect to the heatpump are designed by project members and are listed below. \
 [PCD Designs from the project members](PCB_Designs.md) \
 [Picture Wemos D1 beta](WEMOSD1.JPG) \
-[Picture ESP12-F](NewHeishamon.JPG) \
+[Picture ESP12-F](NewHeishamon.JPG)
 
 You can order completed PCB from some project members also. \
 [Tindie shop from TheHogNL](https://www.tindie.com/stores/thehognl/) based in the Netherlands \
