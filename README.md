@@ -70,7 +70,7 @@ The PCB's needed to connect to the heatpump are designed by project members and 
 [Picture ESP12-F](NewHeishamon.JPG) \
 
 You can order completed PCB from some project members also. \
-[Tindie shop from TheHogNL](https://www.tindie.com/stores/thehognl/) based in the Netherlands
+[Tindie shop from TheHogNL](https://www.tindie.com/stores/thehognl/) based in the Netherlands \
 [Trab.dk shop from Morten Trab](https://www.trab.dk/en/)  based in Denmark
 
 
