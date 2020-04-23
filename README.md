@@ -64,12 +64,15 @@ Use some 24 AWG shielded 4-conductors cable.
 
 
 ## How to connect
-Currently the PCB's are in (beta) production. We suggest to wait a while for them to be tested. \
-Soon you will be cable to order one of the PCB design directly from the project owners but ofcourse \
-we will share the schematics also. For now these are some schematics we are testing or have tested. \
+The PCB's needed to connect to the heatpump are designed by project members and are listed below. \
 [PCD Designs from the project members](PCB_Designs.md) \
 [Picture Wemos D1 beta](WEMOSD1.JPG) \
 [Picture ESP12-F](NewHeishamon.JPG)
+
+You can order completed PCB from some project members also. \
+[Tindie shop](https://www.tindie.com/stores/thehognl/) from Igor Ybema (aka TheHogNL) based in the Netherlands \
+[Trab.dk shop](https://www.trab.dk/en/search?controller=search&orderby=position&orderway=desc&search_query=panasonic&submit_search=)  from Morten Trab based in Denmark
+
 
 
 
