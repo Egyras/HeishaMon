@@ -14,7 +14,7 @@ In this way Optional PCB comunicate with HP in similar way to CZ-TAW1 - Next to(
 | 03 | 50 |   | Header  |
 | 04 | 00 |   | 0 byte  |
 | 05 | 00 |   | 0 byte  |
-| 06 | 40 | HEX:  40 - SG Mode 0,0 (Normal) , 60 - SG Mode 1,0 ( HP and DHW off) ,50 - SG Mode 0,1(Capacity 1) ,70 - SG Mode 1,1(Capacity 2)  ,00 - Compressor external SW on  | SG ready values , External Compressor SW  |
+| 06 | 40 | HEX:  40 - SG Mode 0,0 (Normal) , 60 - SG Mode 1,0 ( HP and DHW off) , 50 - SG Mode 0,1(Capacity 1) , 70 - SG Mode 1,1(Capacity 2)   ,00 - Compressor external SW on , F0 - Cool mode (for Heat/Cool SW) | SG ready values , External Compressor SW , Heat/Cool SW |
 | 07 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Pool  |
 | 08 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Buffer  |
 | 09 | E5 |   | ?  |
@@ -110,6 +110,5 @@ It can be aproximate by function : ?????
 
 ### To do:
 
-- Heat/Cool Switch 
-
 - Optional Thermostat 1 &2 ( Cool / Heat)
+- Issues with Zones ( mixing valves , pump flows )
