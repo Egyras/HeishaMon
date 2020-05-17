@@ -134,7 +134,7 @@
 |  TOP | 129 | e2 |   | ? |
 |  TOP | 130 | ce |   | ? |
 |  TOP | 131 | 0d |   | ? |
-|  TOP | 132 | 71 |   | ? |
+|  TOP | 132 | 71 |  look in HeatPumpType.md | Heat pump model |
 |  TOP | 133 | 81 |   | ? |
 |  TOP | 134 | 72 |   | ? |
 |  TOP | 135 | ce |   | ? |
