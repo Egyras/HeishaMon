@@ -1,5 +1,5 @@
 ################################################################
-## Packages / Heishamon Aquarea
+## Packages / Heishamon
 ################################################################
 
 ################################################################
@@ -14,8 +14,10 @@
 ##   Added
 ##   - Added power switch and Fan RPM sensors
 ##
-## 1.2.0 (22-01-2020)
-##   Updated topics to reflect latest version
+## 1.2.0 (17-05-2020)
+##   Fixed
+##   - New/changed topics
+
 
 # Automations #
 ###############
@@ -24,11 +26,11 @@ automation:
   - alias: Set quiet level selector
     trigger:
       platform: mqtt
-      topic: "heishamon_heat_pump/sdc/QuietMode_Level"
+      topic: "heishamon_heat_pump/sdc/Quiet_Mode_Level"
     action:
       service: input_select.select_option
       data_template:
-        entity_id: input_select.heishamon_aquarea_quietmode
+        entity_id: input_select.heishamon_quietmode
         option: >-
           {%- if trigger.payload == "0" -%}
             Off
@@ -40,17 +42,17 @@ automation:
   - alias: Set quiet level
     trigger:
       platform: state
-      entity_id: input_select.heishamon_aquarea_quietmode
+      entity_id: input_select.heishamon_quietmode
     action:
       service: mqtt.publish
       data_template:
         topic: heishamon_heat_pump/SetQuietMode
         retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
         payload_template: >-
-          {%- if states('input_select.heishamon_aquarea_quietmode') == "Off" -%}
+          {%- if states('input_select.heishamon_quietmode') == "Off" -%}
             0
           {%- else -%}
-            {{ states('input_select.heishamon_aquarea_quietmode') }}
+            {{ states('input_select.heishamon_quietmode') }}
           {%- endif -%}
 
   #Fetches powerfull level from status and sets the selector accordingly
@@ -61,7 +63,7 @@ automation:
     action:
       service: input_select.select_option
       data_template:
-        entity_id: input_select.heishamon_aquarea_powermode
+        entity_id: input_select.heishamon_powermode
         option: >-
           {%- if trigger.payload == "0" -%}
             Off
@@ -73,28 +75,28 @@ automation:
   - alias: Set powerfull level
     trigger:
       platform: state
-      entity_id: input_select.heishamon_aquarea_powermode
+      entity_id: input_select.heishamon_powermode
     action:
       service: mqtt.publish
       data_template:
         topic: heishamon_heat_pump/SetPowerfull
         retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
         payload_template: >-
-          {%- if states('input_select.heishamon_aquarea_powermode') == "Off" -%}
+          {%- if states('input_select.heishamon_powermode') == "Off" -%}
             0
           {%- else -%}
-            {{ "%.0f" % ((states('input_select.heishamon_aquarea_powermode') | replace("min", "") | int) / 30) }}
+            {{ "%.0f" % ((states('input_select.heishamon_powermode') | replace("min", "") | int) / 30) }}
           {%- endif -%}
 
   #Fetches heatmode from status and sets the selector accordingly
   - alias: Set heatmode selector
     trigger:
       platform: mqtt
-      topic: "heishamon_heat_pump/sdc/OperatingMode_State"
+      topic: "heishamon_heat_pump/sdc/Operating_Mode_State"
     action:
       service: input_select.select_option
       data_template:
-        entity_id: input_select.heishamon_aquarea_heatmode
+        entity_id: input_select.heishamon_heatmode
         option: >-
           {%- if trigger.payload == "0" -%}
             Heat
@@ -108,18 +110,18 @@ automation:
   - alias: Set heatmode
     trigger:
       platform: state
-      entity_id: input_select.heishamon_aquarea_heatmode
+      entity_id: input_select.heishamon_heatmode
     action:
       service: mqtt.publish
       data_template:
         topic: heishamon_heat_pump/SetOperationMode
         retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
         payload_template: >-
-          {%- if states('input_select.heishamon_aquarea_heatmode') == "Heat" -%}
+          {%- if states('input_select.heishamon_heatmode') == "Heat" -%}
             0
-          {%- elif states('input_select.heishamon_aquarea_heatmode') == "DHW" -%}
+          {%- elif states('input_select.heishamon_heatmode') == "DHW" -%}
             3
-          {%- elif states('input_select.heishamon_aquarea_heatmode') == "Heat+DHW" -%}
+          {%- elif states('input_select.heishamon_heatmode') == "Heat+DHW" -%}
             4
           {%- endif -%}
 
@@ -127,11 +129,11 @@ automation:
   - alias: Set heatshift selector
     trigger:
       platform: mqtt
-      topic: "heishamon_heat_pump/sdc/Z1_HeatRequest_Temp"
+      topic: "heishamon_heat_pump/sdc/Z1_Heat_Request_Temp"
     action:
       service: input_number.set_value
       data_template:
-        entity_id: input_number.heishamon_aquarea_heatshift
+        entity_id: input_number.heishamon_heatshift
         value: >-
           {{ "%.1f" % (trigger.payload | int) }}
 
@@ -139,14 +141,14 @@ automation:
   - alias: Set heatshift
     trigger:
       platform: state
-      entity_id: input_number.heishamon_aquarea_heatshift
+      entity_id: input_number.heishamon_heatshift
     action:
       service: mqtt.publish
       data_template:
         topic: heishamon_heat_pump/SetZ1HeatRequestTemperature
         retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
         payload_template: >-
-          {{ "%.0f" % (states('input_number.heishamon_aquarea_heatshift') | int) }}
+          {{ "%.0f" % (states('input_number.heishamon_heatshift') | int) }}
 
   #Fetches tank target temperature from status and sets the selector accordingly
   - alias: Set tank target temperature selector
@@ -156,7 +158,7 @@ automation:
     action:
       service: input_number.set_value
       data_template:
-        entity_id: input_number.heishamon_aquarea_tank_temp
+        entity_id: input_number.heishamon_tank_temp
         value: >-
           {{ "%.1f" % (trigger.payload | int) }}
 
@@ -164,26 +166,26 @@ automation:
   - alias: Set tank target temperature
     trigger:
       platform: state
-      entity_id: input_number.heishamon_aquarea_tank_temp
+      entity_id: input_number.heishamon_tank_temp
     action:
       service: mqtt.publish
       data_template:
         topic: heishamon_heat_pump/SetDHWTemp
         retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
         payload_template: >-
-          {{ "%.0f" % (states('input_number.heishamon_aquarea_tank_temp') | int) }}
+          {{ "%.0f" % (states('input_number.heishamon_tank_temp') | int) }}
 
 
 # input_number #
 ################
 input_number:
-  heishamon_aquarea_tank_temp:
+  heishamon_tank_temp:
     name: Set Tank Temperature
     min: 40
     max: 75
     step: 1
 
-  heishamon_aquarea_heatshift:
+  heishamon_heatshift:
     name: Set Heatshift Temperature
     min: -5
     max: 5
@@ -193,7 +195,7 @@ input_number:
 # input_select #
 ################
 input_select:
-  heishamon_aquarea_quietmode:
+  heishamon_quietmode:
     name: Set Quiet Mode
     options:
       - 'Off'
@@ -201,7 +203,7 @@ input_select:
       - 2
       - 3
 
-  heishamon_aquarea_powermode:
+  heishamon_powermode:
     name: Set Power Mode
     options:
       - 'Off'
@@ -209,7 +211,7 @@ input_select:
       - 60 min
       - 90 min
 
-  heishamon_aquarea_heatmode:
+  heishamon_heatmode:
     name: Set Heat Mode
     options:
       - Heat+DHW
@@ -255,28 +257,24 @@ sensor:
         Cool+DHW
       {%- elif value == "6" -%}
         Auto+DHW
-      {%- elif value == "7" -%}
-        Auto(Cool)
-      {%- elif value == "8" -%}
-        Auto(Cool)+DHW
       {%- endif -%}
       
   #TOP5 - Water inlet temp
   - platform: mqtt
     name: Heishamon Aquarea Inlet Temperature
-    state_topic: "heishamon_heat_pump/sdc/Water_Inlet_Temp"
+    state_topic: "heishamon_heat_pump/sdc/Main_Inlet_Temp"
     unit_of_measurement: '°C'
 
   #TOP6 - Water outlet temp
   - platform: mqtt
     name: Heishamon Aquarea Outlet Temperature
-    state_topic: "heishamon_heat_pump/sdc/Water_Outlet_Temp"
+    state_topic: "heishamon_heat_pump/sdc/Main_Outlet_Temp"
     unit_of_measurement: '°C'
 
   #TOP7 - Water outlet target temp
   - platform: mqtt
     name: Heishamon Aquarea Outlet Target Temperature
-    state_topic: "heishamon_heat_pump/sdc/Water_Target_Temp"
+    state_topic: "heishamon_heat_pump/sdc/Main_Target_Temp"
     unit_of_measurement: '°C'
 
   #TOP8 - Compressor frequency
@@ -359,7 +357,7 @@ sensor:
   #TOP20 - 3-way valve state
   - platform: mqtt
     name: Heishamon Aquarea 3-way Valve
-    state_topic: "heishamon_heat_pump/sdc/ThreeWayValve_State"
+    state_topic: "heishamon_heat_pump/sdc/ThreeWay_Valve_State"
     value_template: >-
       {%- if value == "0" -%}
         Room
@@ -387,7 +385,7 @@ sensor:
   #TOP27 - Heatshift Temperature
   - platform: mqtt
     name: Heishamon Aquarea Heatshift Temperature
-    state_topic: "heishamon_heat_pump/sdc/Z1_HeatRequest_Temp"
+    state_topic: "heishamon_heat_pump/sdc/Z1_Heat_Request_Temp"
     unit_of_measurement: '°C'
 
   #TOP40 - DHW power produced
@@ -472,13 +470,13 @@ sensor:
   #TOP62 - Fan1 speed
   - platform: mqtt
     name: Heishamon Aquarea Fan 1 Speed
-    state_topic: "heishamon_heat_pump/sdc/Fan1Motor_Speed"
+    state_topic: "heishamon_heat_pump/sdc/Fan1_Motor_Speed"
     unit_of_measurement: "R/min"
 
   #TOP63 - Fan2 speed
   - platform: mqtt
     name: Heishamon Aquarea Fan 2 Speed
-    state_topic: "heishamon_heat_pump/sdc/Fan2Motor_Speed"
+    state_topic: "heishamon_heat_pump/sdc/Fan2_Motor_Speed"
     unit_of_measurement: "R/min"
 
   #TOP64 - High pressure
@@ -509,13 +507,13 @@ sensor:
   #COP Calculations
   - platform: template
     sensors:
-      heishamon_aquarea_cop:
+      heishamon_cop:
         friendly_name: "Heishamon Aquarea COP"
         unit_of_measurement: "x"
         value_template: >-
-          {%- if states('sensor.heishamon_aquarea_w_production') != "Unknown" -%}
-            {%- if states('sensor.heishamon_aquarea_w_consumption') > "0" -%}
-              {{ '%0.1f' % ((states('sensor.heishamon_aquarea_w_production') | float ) / (states('sensor.heishamon_aquarea_w_consumption') | float)) }}
+          {%- if states('sensor.heishamon_w_production') != "Unknown" -%}
+            {%- if states('sensor.heishamon_w_consumption') > "0" -%}
+              {{ '%0.1f' % ((states('sensor.heishamon_w_production') | float ) / (states('sensor.heishamon_w_consumption') | float)) }}
             {%- else -%}
               0.0
             {%- endif -%}
@@ -526,23 +524,23 @@ sensor:
   #Energy use/production
   - platform: template
     sensors:
-      heishamon_aquarea_w_production:
+      heishamon_w_production:
         friendly_name: "Heishamon Energy Production"
         unit_of_measurement: 'W'
         value_template: >-
-          {%- if states('sensor.heishamon_aquarea_dhw_power_produced') != "0" -%}
-            {{ states('sensor.heishamon_aquarea_dhw_power_produced') }}
+          {%- if states('sensor.heishamon_dhw_power_produced') != "0" -%}
+            {{ states('sensor.heishamon_dhw_power_produced') }}
           {%- else -%}
-            {{ states('sensor.heishamon_aquarea_power_produced') }}
+            {{ states('sensor.heishamon_power_produced') }}
           {%- endif -%}
-      heishamon_aquarea_w_consumption:
+      heishamon_w_consumption:
         friendly_name: "Heishamon Energy Consumption"
         unit_of_measurement: 'W'
         value_template: >-
-          {%- if states('sensor.heishamon_aquarea_dhw_power_consumed') != "0" -%}
-            {{ states('sensor.heishamon_aquarea_dhw_power_consumed') }}
+          {%- if states('sensor.heishamon_dhw_power_consumed') != "0" -%}
+            {{ states('sensor.heishamon_dhw_power_consumed') }}
           {%- else -%}
-            {{ states('sensor.heishamon_aquarea_power_consumed') }}
+            {{ states('sensor.heishamon_power_consumed') }}
           {%- endif -%}
 
 
