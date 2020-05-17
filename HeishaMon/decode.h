@@ -339,7 +339,7 @@ static const char *ErrorState[] = {"value", "Error"};
 static const char *Ampere[] = {"value", "Ampere"};
 static const char *Minutes[] = {"value", "Minutes"};
 static const char *HeatCoolModeDesc[] = {"Comp. Curve", "Direct"};
-static const char *Model[] = {"WH-MDC05H3E5", "WH-MDC07H3E5", "IDU:WH-UX09HE5 ODU:WXC09H3E5", "IDU:WH-UD09HE8 ODU:ADC09HE8", "IDU:WH-UX12HE8 ODU:WXC12H9E8", "IDU:WH-UX16HE8 ODU:WXC16H9E8", "IDU:WH-UD05HE5	ODU:WC05H3E5", "IDU:WH-UD09JE5	ODU:WC09J3E5"};
+static const char *Model[] = {"WH-MDC05H3E5", "WH-MDC07H3E5", "IDU:WH-UX09HE5, ODU:WXC09H3E5", "IDU:WH-UD09HE8, ODU:ADC09HE8", "IDU:WH-UX12HE8, ODU:WXC12H9E8", "IDU:WH-UX16HE8, ODU:WXC16H9E8", "IDU:WH-UD05HE5, ODU:WC05H3E5", "IDU:WH-UD09JE5, ODU:WC09J3E5"};
 static const char **topicDescription[] = {
   OffOn,           //TOP0
   LitersPerMin,    //TOP1
