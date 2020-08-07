@@ -96,14 +96,16 @@ String getModel(byte input) {
       return "2";
     case 136:
       return "3";
-    case 134:
+    case 133:
       return "4";
-    case 135:
+    case 134:
       return "5";
-    case 113:
+    case 135:
       return "6";
-    case 67:
+    case 113:
       return "7";
+    case 67:
+      return "8";
     default:
       return "-1";
   }
