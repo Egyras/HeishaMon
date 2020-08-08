@@ -55,11 +55,11 @@ automation:
             {{ states('input_select.heishamon_quietmode') }}
           {%- endif -%}
 
-  #Fetches powerfull level from status and sets the selector accordingly
-  - alias: Set powerfull level selector
+  #Fetches powerful level from status and sets the selector accordingly
+  - alias: Set powerful level selector
     trigger:
       platform: mqtt
-      topic: "heishamon_heat_pump/sdc/Powerfullmode_Time"
+      topic: "heishamon_heat_pump/sdc/Powerful_Mode_Time"
     action:
       service: input_select.select_option
       data_template:
@@ -71,15 +71,15 @@ automation:
             {{ (trigger.payload | int) * 30 }} min
           {%- endif -%}
 
-  #Sets powerfull level to the selected value
-  - alias: Set powerfull level
+  #Sets powerful level to the selected value
+  - alias: Set powerful level
     trigger:
       platform: state
       entity_id: input_select.heishamon_powermode
     action:
       service: mqtt.publish
       data_template:
-        topic: heishamon_heat_pump/SetPowerfull
+        topic: heishamon_heat_pump/SetPowerfulMode
         retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
         payload_template: >-
           {%- if states('input_select.heishamon_powermode') == "Off" -%}
@@ -204,7 +204,7 @@ input_select:
       - 3
 
   heishamon_powermode:
-    name: Set Power Mode
+    name: Set Powerful Mode
     options:
       - 'Off'
       - 30 min
@@ -236,7 +236,18 @@ sensor:
   - platform: mqtt
     name: Heishamon Aquarea Pump Flow
     state_topic: "heishamon_heat_pump/sdc/Pump_Flow"
-    unit_of_measurement: 'L/m'
+    unit_of_measurement: 'L/min'
+
+  #TOP2 - Force DHW State
+  - platform: mqtt
+    name: Heishamon Aquarea Force DHW Mode
+    state_topic: "heishamon_heat_pump/sdc/Force_DHW_State"
+    value_template: >-
+      {%- if value == "0" -%}
+        Off
+      {%- elif value == "1" -%}
+        On
+      {%- endif -%}
 
   #TOP4 - Heat mode (Hot water, Heat or Hot water + heat)
   - platform: mqtt
@@ -326,8 +337,8 @@ sensor:
 
   #TOP17 - Heating powerfull mode
   - platform: mqtt
-    name: Heishamon Aquarea Powerfull Mode
-    state_topic: "heishamon_heat_pump/sdc/Powerfullmode_Time"
+    name: Heishamon Aquarea Powerful Mode
+    state_topic: "heishamon_heat_pump/sdc/Powerful_Mode_Time"
     unit_of_measurement: 'Min'
     value_template: >-
       {{ (value | int) * 30 }}
@@ -335,7 +346,7 @@ sensor:
   #TOP18 - Heating quiet mode
   - platform: mqtt
     name: Heishamon Aquarea Quiet Mode
-    state_topic: "heishamon_heat_pump/sdc/QuietMode_Level"
+    state_topic: "heishamon_heat_pump/sdc/Quiet_Mode_Level"
     value_template: >-
       {%- if value == "4" -%}
         Scheduled
@@ -346,7 +357,7 @@ sensor:
   #TOP19 - Holiday Mode
   - platform: mqtt
     name: Heishamon Aquarea Holiday Mode
-    state_topic: "heishamon_heat_pump/sdc/HolidayMode_State"
+    state_topic: "heishamon_heat_pump/sdc/Holiday_Mode_State"
     value_template: >-
       {%- if value == "0" -%}
         Off
@@ -407,8 +418,8 @@ sensor:
 
   #TOP49 - Water HEX Outlet temp
   - platform: mqtt
-    name: Heishamon Aquarea Water HEX Outlet Temperature
-    state_topic: "heishamon_heat_pump/sdc/Water_HEX_Outlet_Temp"
+    name: Heishamon Aquarea Main HEX Outlet Temperature
+    state_topic: "heishamon_heat_pump/sdc/Main_Hex_Outlet_Temp"
     unit_of_measurement: '°C'
 
   #TOP50 - Discharge temp
@@ -451,21 +462,45 @@ sensor:
   - platform: mqtt
     name: Heishamon Aquarea Tank Heater Enabled
     state_topic: "heishamon_heat_pump/sdc/DHW_Heater_State"
+    value_template: >-
+      {%- if value == "0" -%}
+        Off
+      {%- elif value == "1" -%}
+        On
+      {%- endif -%}
 
   #TOP59 - Water electric heater allowed state
   - platform: mqtt
-    name: Heishamon Aquarea Water Heater Enabled
-    state_topic: "heishamon_heat_pump/sdc/WaterHeater_State"
+    name: Heishamon Aquarea Room Heater Enabled
+    state_topic: "heishamon_heat_pump/sdc/Room_Heater_State"
+    value_template: >-
+      {%- if value == "0" -%}
+        Off
+      {%- elif value == "1" -%}
+        On
+      {%- endif -%}
 
   #TOP60 - Internal heater state
   - platform: mqtt
     name: Heishamon Aquarea Internal Heater State
-    state_topic: "heishamon_heat_pump/sdc/InternalHeater_State"
+    state_topic: "heishamon_heat_pump/sdc/Internal_Heater_State"
+    value_template: >-
+      {%- if value == "0" -%}
+        Off
+      {%- elif value == "1" -%}
+        On
+      {%- endif -%}
 
   #TOP61 - External heater state
   - platform: mqtt
     name: Heishamon Aquarea External Heater State
-    state_topic: "heishamon_heat_pump/sdc/ExternalHeater_State"
+    state_topic: "heishamon_heat_pump/sdc/External_Heater_State"
+    value_template: >-
+      {%- if value == "0" -%}
+        Off
+      {%- elif value == "1" -%}
+        On
+      {%- endif -%}
 
   #TOP62 - Fan1 speed
   - platform: mqtt
@@ -550,8 +585,8 @@ switch:
 #Turn on/off holiday mode
   - platform: mqtt
     name: Heishamon Aquarea Holiday Mode
-    command_topic: "heishamon_heat_pump/SetHoliday"
-    state_topic: "heishamon_heat_pump/sdc/HolidayMode_State"
+    command_topic: "heishamon_heat_pump/SetHolidayMode"
+    state_topic: "heishamon_heat_pump/sdc/Holiday_Mode_State"
     qos: 0
     payload_on: "1"
     payload_off: "0"
@@ -566,3 +601,13 @@ switch:
     payload_on: "1"
     payload_off: "0"
     retain: false
+
+  - platform: mqtt
+    name: Heishamon Aquarea Force DHW Mode
+    command_topic: "heishamon_heat_pump/SetForceDHW"
+    state_topic: "heishamon_heat_pump/sdc/Force_DHW_State"
+    qos: 0
+    payload_on: "1"
+    payload_off: "0"
+    retain: false
+
