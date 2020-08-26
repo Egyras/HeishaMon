@@ -11,8 +11,7 @@ sitemap panasonic label="Panasonic" icon="House" {
                Switch item=panasonic_heat_pump_PowerMode label="Set Power Mode" mappings=[0="OFF", 1="30", 2="60", 3="90"]
                Setpoint item=panasonic_heat_pump_Shift_mode step=1 minValue=-5 maxValue=5
 
-      }            
-                                
+    }                    
             
     Frame {
                 Switch item=panasonic_heat_pump_HeatPumpStatus label="Heat Pump Status" mappings=[0="OFF", 1="ON"]

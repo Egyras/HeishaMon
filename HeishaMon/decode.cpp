@@ -86,6 +86,29 @@ String getOpMode(byte input) {
   }
 }
 
+String getModel(byte input) {
+  switch ((int)input) {
+    case 19:
+      return "0";
+    case 20:
+      return "1";
+    case 119:
+      return "2";
+    case 136:
+      return "3";
+    case 134:
+      return "4";
+    case 135:
+      return "5";
+    case 113:
+      return "6";
+    case 67:
+      return "7";
+    default:
+      return "-1";
+  }
+}
+
 String getEnergy(byte input)
     {
       int value = ((int)input - 1) * 200;

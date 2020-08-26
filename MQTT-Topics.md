@@ -108,6 +108,7 @@ TOP88 | sdc/Z2_Cool_Curve_Outside_High_Temp | Lowest outside temperature on the 
 TOP89 | sdc/Z2_Cool_Curve_Outside_Low_Temp | Highest outside temperature on the cooling curve (°C)
 TOP90 | sdc/Room_Heater_Operations_Hours | Electric heater operating time for Room (Hour)
 TOP91 | sdc/DHW_Heater_Operations_Hours | Electric heater operating time for DHW (Hour)
+TOP92 | sdc/Heat_Pump_Model | Heat pump model, all values in HeatPumpType.md
 
 All Topics realated with state can have also value -1 - unknown - but only in ubnormal situations.
 

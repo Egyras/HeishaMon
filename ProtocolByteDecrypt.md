@@ -6,7 +6,7 @@
 |   | 01 | c8 | Data length ( Packet length = Data length + 3 )  |  Header |
 |   | 02 | 01|   | Header  |
 |   | 03 | 10 |   | Header   |
-|  TOP0+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on | Force dhw status + Heat pump on/off status|
+|  TOP0+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on, Service Setup: Water pump on=65, Air Purge=75, Pump Down=F0?| Force dhw, Heat pump on/off, Service setup (Water Flow, Air Purge , Pump Down) |
 |  TOP19+TOP13+TOP68 | 05 | 55 | Holiday mode off/on (bit3and4), weekly shedule off/on (bit 1and2) force heater off/on (bit5and6) Dry Concrete off/on (bit7and8) | Holiday mode, Sheduler status, force heater state , Dry Concrete |
 |  TOP4 | 06 | 62 | 52 Heat, 53 Cool, 59 Auto(Heat), 5A Auto(Cool), 61 DHW, 62 Heat+DHW, 63 Cool+DHW, 69 Auto(Heat)+DHW, 6A Auto(Cool)+DHW  | Mode status   |
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerful mode status |
@@ -48,7 +48,7 @@
 |  TOP45 | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode [°K]  |
 |  TOP25 | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for DHW mode [°K] |
 |  TOP | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
-|  TOP | 46 | 99 |   | ? |
+|  TOP | 46 | 99 | Convert to DEC 153-128 = 25  | Dry concrete target temperature for actual stage [°C] |
 |  TOP | 47 | 00 |   | 0 byte |
 |  TOP | 48 | 00 |   | 0 byte |
 |  TOP | 49 | 00 |   | 0 byte |
@@ -134,7 +134,7 @@
 |  TOP | 129 | e2 |   | ? |
 |  TOP | 130 | ce |   | ? |
 |  TOP | 131 | 0d |   | ? |
-|  TOP | 132 | 71 |   | ? |
+|  TOP92 | 132 | 71 |  look in HeatPumpType.md | Heat pump model |
 |  TOP | 133 | 81 |   | ? |
 |  TOP | 134 | 72 |   | ? |
 |  TOP | 135 | ce |   | ? |
@@ -143,7 +143,7 @@
 |  TOP | 138 | 81 |   | ? |
 |  TOP56 | 139 | b0 |  Convert to DEC-128 | Zone1: Actual (Zone 1) Temperature [°C] |
 |  TOP57 | 140 | 00 |  Convert to DEC-128 |  Zone2: Actual (Zone 2) Temperature [°C] |
-|  TOP10 | 141 | aa |  Convert to DEC-128 | Actual DHW Temperature [°C] \ |
+|  TOP10 | 141 | aa |  Convert to DEC-128 | Actual DHW Temperature [°C] |
 |  TOP14 | 142 | 7c |  Convert to DEC-128 | Actual Outdoor Temperature [°C] |
 |  TOP5 | 143 | ab |  Convert to DEC-128 | Inlet Water Temperature [°C] |
 |  TOP6 | 144 | b0 |  Convert to DEC-128 | Outlet Water Temperature [°C] |
@@ -154,7 +154,7 @@
 |  TOP46 | 149 | 32 |  Convert to DEC-128 | Buffer: Water Temperature [°C] |
 |  TOP47 | 150 | 32 |  Convert to DEC-128 | Solar: Water Temperature [°C]  |
 |  TOP48 | 151 | 32 |  Convert to DEC-128| Pool: Water Temperature [°C] |
-|  TOP | 152 | 80 |   | ? |
+|  TOP | 152 | 80 | Convert to DEC 128-128 = 0  | Water shift set or direct mode value Temperature For Heat Mode [°C] including Delta T for Buffer |
 |  TOP7 | 153 | b7 |  Convert to DEC-128 | Outlet Water Temperature (Target) [°C] |
 |  TOP49 | 154 | af |  Convert to DEC-128 | Outlet 2 heat exchanger water temperature [°C] |
 |  TOP50 | 155 | cd |  Convert to DEC-128 | Discharge Temperature [°C] |

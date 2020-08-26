@@ -23,8 +23,9 @@ String getIntMinus1Times50(byte input);
 String getOpMode(byte input);
 String getEnergy(byte input);
 String getHeatMode(byte input);
+String getModel(byte input);
 
-#define NUMBER_OF_TOPICS 92 //last topic number + 1
+#define NUMBER_OF_TOPICS 93 //last topic number + 1
 
 static const char * topics[] = {
   "Heatpump_State",          //TOP0
@@ -119,6 +120,7 @@ static const char * topics[] = {
   "Z2_Cool_Curve_Outside_Low_Temp",      //TOP89
   "Room_Heater_Operations_Hours", //TOP90
   "DHW_Heater_Operations_Hours",  //TOP91
+  "Heat_Pump_Model", //TOP92
 };
 
 static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
@@ -214,6 +216,7 @@ static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned
   93,     //TOP89
   0,      //TOP90
   0,      //TOP91
+  132,    //TOP92
 };
 
 typedef String (*topicFP)(byte);
@@ -310,7 +313,8 @@ static const topicFP topicFunctions[] = {
   getIntMinus128,      //TOP88
   getIntMinus128,      //TOP89
   unknown,             //TOP90
-  unknown,             //TOP91    
+  unknown,             //TOP91
+  getModel,			       //TOP92
 };
 
 static const char *DisabledEnabled[] = {"Disabled", "Enabled"};
@@ -335,6 +339,7 @@ static const char *ErrorState[] = {"value", "Error"};
 static const char *Ampere[] = {"value", "Ampere"};
 static const char *Minutes[] = {"value", "Minutes"};
 static const char *HeatCoolModeDesc[] = {"Comp. Curve", "Direct"};
+static const char *Model[] = {"WH-MDC05H3E5", "WH-MDC07H3E5", "IDU:WH-UX09HE5, ODU:WXC09H3E5", "IDU:WH-UD09HE8, ODU:ADC09HE8", "IDU:WH-UX12HE8, ODU:WXC12H9E8", "IDU:WH-UX16HE8, ODU:WXC16H9E8", "IDU:WH-UD05HE5, ODU:WC05H3E5", "IDU:WH-UD09JE5, ODU:WC09J3E5"};
 static const char **topicDescription[] = {
   OffOn,           //TOP0
   LitersPerMin,    //TOP1
@@ -427,5 +432,6 @@ static const char **topicDescription[] = {
   Celsius,         //TOP88
   Celsius,         //TOP89
   Hours,           //TOP90
-  Hours,           //TOP91    
+  Hours,           //TOP91
+  Model,		       //TOP92
 };

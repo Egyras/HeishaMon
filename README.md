@@ -9,7 +9,7 @@ Een nederlandse vertaling [README_NL.md](README_NL.md) vind je hier.
 *Help on translation to other languages are welcome.*
 
 # Current releases
-Current beta release is version 0.5b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.5.bin) can be installed on a Wemos D1 mini(and generally on any ESP8266 based board - but without guarantee ). Or download the code compile it yourself (see required libraries below).
+Current beta release is version 0.6b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.6.bin) can be installed on a Wemos D1 mini(and generally on any ESP8266 based board - but without guarantee ). Or download the code compile it yourself (see required libraries below).
 
 # Using the software
 The current arduino beta image is able to communicate with  the Panasonic Aquarea H-series (and most probably from new J-series as well ,since PCB look identical). \
@@ -67,11 +67,11 @@ Use some 24 AWG shielded 4-conductors cable.
 The PCB's needed to connect to the heatpump are designed by project members and are listed below. \
 [PCD Designs from the project members](PCB_Designs.md) \
 [Picture Wemos D1 beta](WEMOSD1.JPG) \
-[Picture ESP12-F](NewHeishamon.JPG) \
+[Picture ESP12-F](NewHeishamon.JPG)
 
 You can order completed PCB from some project members also. \
-[Tindie shop from TheHogNL](https://www.tindie.com/stores/thehognl/) based in the Netherlands
-[Trab.dk shop from Morten Trab](https://www.trab.dk/en/)  based in Denmark
+[Tindie shop](https://www.tindie.com/stores/thehognl/) from Igor Ybema (aka TheHogNL) based in the Netherlands \
+[Trab.dk shop](https://www.trab.dk/en/search?controller=search&orderby=position&orderway=desc&search_query=panasonic&submit_search=)  from Morten Trab based in Denmark
 
 
 
