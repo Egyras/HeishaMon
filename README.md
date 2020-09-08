@@ -73,8 +73,7 @@ The PCB's needed to connect to the heatpump are designed by project members and 
 [Picture ESP12-F](NewHeishamon.JPG)
 
 To make things easy you can order a completed PCB from some project members: \
-[Tindie shop](https://www.tindie.com/stores/thehognl/) from Igor Ybema (aka TheHogNL) based in the Netherlands \
-[Trab.dk shop](https://www.trab.dk/en/search?controller=search&orderby=position&orderway=desc&search_query=panasonic&submit_search=)  from Morten Trab based in Denmark
+[Tindie shop](https://www.tindie.com/stores/thehognl/) from Igor Ybema (aka TheHogNL) based in the Netherlands
 
 If you have an existing Panasonic CZ-TAW1 WiFi interface that you want to replace with HeishaMon, it is only a matter of plugging the cable out from CZ-TAW1 and reconnecting to your HeishaMon device.
 

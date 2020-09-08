@@ -429,6 +429,8 @@ void send_panasonic_query() {
 void read_panasonic_data() {
   if (sending && (millis() > allowreadtime)) {
     log_message((char*)"Previous read data attempt failed due to timeout!");
+    sprintf(log_msg, "Received %d bytes data", data_length); log_message(log_msg);
+    if (outputHexDump) logHex(data, data_length);
     data_length = 0; //clear any data in array
     sending = false; //receiving the answer from the send command timed out, so we are allowed to send a new command
   }
