@@ -563,19 +563,19 @@ sensor:
         friendly_name: "Heishamon Energy Production"
         unit_of_measurement: 'W'
         value_template: >-
-          {%- if states('sensor.heishamon_dhw_power_produced') != "0" -%}
-            {{ states('sensor.heishamon_dhw_power_produced') }}
+          {%- if states('sensor.heishamon_aquarea_hw_power_produced') != "0" -%}
+            {{ states('sensor.heishamon_aquarea_dhw_power_produced') }}
           {%- else -%}
-            {{ states('sensor.heishamon_power_produced') }}
+            {{ states('sensor.heishamon_aquarea_power_produced') }}
           {%- endif -%}
       heishamon_w_consumption:
         friendly_name: "Heishamon Energy Consumption"
         unit_of_measurement: 'W'
         value_template: >-
-          {%- if states('sensor.heishamon_dhw_power_consumed') != "0" -%}
-            {{ states('sensor.heishamon_dhw_power_consumed') }}
+          {%- if states('sensor.heishamon_aquarea_dhw_power_consumed') != "0" -%}
+            {{ states('sensor.heishamon_aquarea_dhw_power_consumed') }}
           {%- else -%}
-            {{ states('sensor.heishamon_power_consumed') }}
+            {{ states('sensor.heishamon_aquarea_power_consumed') }}
           {%- endif -%}
 
 
