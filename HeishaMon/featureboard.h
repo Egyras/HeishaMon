@@ -23,9 +23,12 @@ struct s0Data {
   unsigned int ppkwh = 1000; //pulses per Wh of the connected meter
   unsigned int pulses = 0; //number of pulses since last report
   unsigned int watt = 0; //calculated average power
-  unsigned int minWatt = MIN_S0_WATT; //report 0 Watt below this filter
+  unsigned int reportInterval = 60; //configurabel report interval
   unsigned long lastPulse = 0; //last pulse in millis
   unsigned long pulseInterval = 0; //interval in between last two pulses in millis
+  unsigned long nextReport = 0 ; //next time we reported the s0 value in millis
+  bool inStandby = false; // true if we believe connected device is in standby mode
+  unsigned long startStandby = 0 ; //time when power went below min watt value
 };
 
 
