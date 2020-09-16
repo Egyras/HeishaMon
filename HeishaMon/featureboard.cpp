@@ -140,8 +140,9 @@ void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(c
       actS0Data[i].pulseInterval = new_pulse_s0[i] - actS0Data[i].lastPulse;
       actS0Data[i].watt = (3600000000.0 / actS0Data[i].pulseInterval) / actS0Data[i].ppkwh;
       actS0Data[i].lastPulse = new_pulse_s0[i];
-      actS0Data[i].pulses++; Serial1.print("S0 port "); Serial1.print(i); Serial1.print(" detected pulse. Watthours since last report: "); Serial1.println(actS0Data[i].pulses);
+      actS0Data[i].pulses++; 
       new_pulse_s0[i] = 0;
+      //Serial1.print("S0 port "); Serial1.print(i); Serial1.print(" detected pulse. Pulses since last report: "); Serial1.println(actS0Data[i].pulses);
     }
 
     //then report after each reportInterval
