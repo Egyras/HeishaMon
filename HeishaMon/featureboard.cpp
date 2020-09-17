@@ -133,35 +133,68 @@ void initS0Sensors(s0Data actS0Data[]) {
 }
 
 void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(char*)) {
-  //first handle new detected pulses
+
   for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
+    //first handle new detected pulses
     if (new_pulse_s0[i] > 0) {
       actS0Data[i].pulseInterval = new_pulse_s0[i] - actS0Data[i].lastPulse;
       actS0Data[i].watt = (3600000000.0 / actS0Data[i].pulseInterval) / actS0Data[i].ppkwh;
       actS0Data[i].lastPulse = new_pulse_s0[i];
-      actS0Data[i].pulses++; Serial1.println(actS0Data[i].pulses);
+      actS0Data[i].pulses++; 
       new_pulse_s0[i] = 0;
+      //Serial1.print("S0 port "); Serial1.print(i); Serial1.print(" detected pulse. Pulses since last report: "); Serial1.println(actS0Data[i].pulses);
     }
-  }
-  //then report after each FETCHS0TIME
-  char log_msg[256];
-  char mqtt_topic[256];
-  if (millis() > s0Timer) {
-    s0Timer = millis() + FETCHS0TIME;
-    for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
-      unsigned long interval = millis() - actS0Data[i].lastPulse;
-      unsigned long calcMaxWatt = (3600000000.0 / interval) / actS0Data[i].ppkwh;
 
+    //then report after each reportInterval
+    if (millis() > actS0Data[i].nextReport) {
+      actS0Data[i].nextReport = millis() + 1000 * actS0Data[i].reportInterval; // reportInterval per s0 port depends on imp/kwh and minimal watt value)
+
+      //check if new pulse is too late for the current measured watt so we need to artificially lower the reported watt
+      unsigned long lastePulseInterval = millis() - actS0Data[i].lastPulse;
+      unsigned long calcMaxWatt = (3600000000.0 / lastePulseInterval) / actS0Data[i].ppkwh;
       if (actS0Data[i].watt > calcMaxWatt) { // If last known watt is bigger then calculated max watt then last known watt is invalid, report halve of calculated max
+        //Serial1.println("===Previous watt is too high. Dividing by two now===");
         actS0Data[i].watt = calcMaxWatt / 2;
       }
-      if (actS0Data[i].watt < actS0Data[i].minWatt) { // below this we report 0 watt
-        actS0Data[i].watt = 0;
+
+      //check if watt is lower than which was possible during this period, so we we assume connected device is in standby
+      if (actS0Data[i].watt < ((3600 * 1000 / actS0Data[i].ppkwh) / actS0Data[i].reportInterval) ) {
+        //Serial1.println("===In standby mode===");
+        if (!actS0Data[i].inStandby) {
+          //Serial1.println("===For the first time standby mode===");
+          actS0Data[i].inStandby = true;
+          actS0Data[i].startStandby = actS0Data[i].lastPulse;
+        }
+        if (actS0Data[i].startStandby < actS0Data[i].lastPulse) { //during standby a pulse was received so we know now the exact standby usage
+          //Serial1.println("===Standby watt is known===");
+          unsigned long standbyInterval = actS0Data[i].lastPulse - actS0Data[i].startStandby;
+          actS0Data[i].watt = (3600000000.0 / standbyInterval) / actS0Data[i].ppkwh;
+          actS0Data[i].startStandby = actS0Data[i].lastPulse;
+        }
+        else { // we must guess the standby watt
+          //Serial1.println("===Standby watt is guessed===");
+          unsigned long standbyInterval = millis() - actS0Data[i].startStandby;
+          unsigned long standbyWatt = (3600000000.0 / standbyInterval) / actS0Data[i].ppkwh;
+          if (standbyWatt < actS0Data[i].watt) { //update the last known watt with the now lower calculated standby watt
+            //Serial1.println("===Standby watt guessed is updated===");
+            actS0Data[i].watt = standbyWatt;
+          }
+        }
       }
+      else {
+        actS0Data[i].inStandby = false;
+        actS0Data[i].startStandby = 0;
+      }
+
+      //calculate the watthour since last message
       float Watthour = (actS0Data[i].pulses * ( 1000 / actS0Data[i].ppkwh));
+      actS0Data[i].pulses = 0; //per message we report new wattHour, so pulses should be zero at start new message
+
+      //report using mqtt
+      char log_msg[256];
+      char mqtt_topic[256];
       sprintf(log_msg, "Measured Watthour on S0 port %d: %.2f", (i + 1),  Watthour ); log_message(log_msg);
       sprintf(mqtt_topic, "%s/%s/Watthour/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, String(Watthour).c_str(), MQTT_RETAIN_VALUES);
-      actS0Data[i].pulses = 0;
       sprintf(log_msg, "Calculated Watt on S0 port %d: %lu", (i + 1), actS0Data[i].watt); log_message(log_msg);
       sprintf(mqtt_topic, "%s/%s/Watt/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, String(actS0Data[i].watt).c_str(), MQTT_RETAIN_VALUES);
     }

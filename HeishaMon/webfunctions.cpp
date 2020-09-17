@@ -57,8 +57,8 @@ static const char refreshJS[] PROGMEM =
   "	$(document).ready(function(){refreshTable();});"
   "	function refreshTable(){"
   "		$('#heishavalues').load('/tablerefresh', function(){setTimeout(refreshTable, 30000);});"
-  "   $('#dallasvalues').load('/tablerefresh?1wire', function(){setTimeout(refreshTable, 30000);});"
-  "   $('#s0values').load('/tablerefresh?s0', function(){setTimeout(refreshTable, 30000);});"
+  "   $('#dallasvalues').load('/tablerefresh?1wire', function(){});"
+  "   $('#s0values').load('/tablerefresh?s0', function(){});"
   "	}"
   "</script>";
 
@@ -79,6 +79,11 @@ static const char s0SettingsJS[] PROGMEM =
   "    function ShowHideS0Div(s0enabled) {"
   "        var s0settings = document.getElementById(\"s0settings\");"
   "        s0settings.style.display = s0enabled.checked ? \"block\" : \"none\";"
+  "    }"
+  "    function changeMinWatt(port) {"
+  "        var ppkwh = document.getElementById('s0_ppkwh_'+port).value;"
+  "        var interval = document.getElementById('s0_interval_'+port).value;"
+  "        document.getElementById('s0_minwatt_'+port).innerHTML = Math.round((3600 * 1000 / ppkwh) / interval);"
   "    }"
   "</script>";
 
@@ -174,9 +179,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
             //read updated parameters, make sure no overflow
             strncpy(wifi_hostname, jsonDoc["wifi_hostname"], 39); wifi_hostname[39] = '\0';
             strncpy(ota_password, jsonDoc["ota_password"], 39); ota_password[39] = '\0';
-            if ( jsonDoc["mqtt_topic_base"] ) {
-              strncpy(mqtt_topic_base, jsonDoc["mqtt_topic_base"], 39); mqtt_topic_base[39] = '\0';
-            }
+            if ( jsonDoc["mqtt_topic_base"] ) strncpy(mqtt_topic_base, jsonDoc["mqtt_topic_base"], 39); mqtt_topic_base[39] = '\0';
             strncpy(mqtt_server, jsonDoc["mqtt_server"], 39); mqtt_server[39] = '\0';
             strncpy(mqtt_port, jsonDoc["mqtt_port"], 5); mqtt_port[5] = '\0';
             strncpy(mqtt_username, jsonDoc["mqtt_username"], 39); mqtt_username[39] = '\0';
@@ -184,12 +187,12 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
             if ( jsonDoc["use_1wire"] == "enabled" ) use_1wire = true;
             if ( jsonDoc["use_s0"] == "enabled" ) {
               use_s0 = true;
-              actS0Data[0].gpiopin = jsonDoc["s0_1_gpio"];
-              actS0Data[0].ppkwh = jsonDoc["s0_1_ppkwh"];
-              actS0Data[0].minWatt = jsonDoc["s0_1_minwatt"];
-              actS0Data[1].gpiopin = jsonDoc["s0_2_gpio"];
-              actS0Data[1].ppkwh = jsonDoc["s0_2_ppkwh"];
-              actS0Data[1].minWatt = jsonDoc["s0_2_minwatt"];              
+              if (jsonDoc["s0_1_gpio"]) actS0Data[0].gpiopin = jsonDoc["s0_1_gpio"];
+              if (jsonDoc["s0_1_ppkwh"]) actS0Data[0].ppkwh = jsonDoc["s0_1_ppkwh"];
+              if (jsonDoc["s0_1_interval"]) actS0Data[0].reportInterval = jsonDoc["s0_1_interval"];
+              if (jsonDoc["s0_2_gpio"]) actS0Data[1].gpiopin = jsonDoc["s0_2_gpio"];
+              if (jsonDoc["s0_2_ppkwh"]) actS0Data[1].ppkwh = jsonDoc["s0_2_ppkwh"];
+              if (jsonDoc["s0_2_interval"] ) actS0Data[1].reportInterval = jsonDoc["s0_2_interval"];   
             }
             if ( jsonDoc["listenonly"] == "enabled" ) listenonly = true;
           } else {
@@ -543,10 +546,10 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
       jsonDoc["use_s0"] = "enabled";
       if (httpServer->hasArg("s0_1_gpio")) jsonDoc["s0_1_gpio"] = httpServer->arg("s0_1_gpio");
       if (httpServer->hasArg("s0_1_ppkwh")) jsonDoc["s0_1_ppkwh"] = httpServer->arg("s0_1_ppkwh");
-      if (httpServer->hasArg("s0_1_minwatt")) jsonDoc["s0_1_minwatt"] = httpServer->arg("s0_1_minwatt");
+      if (httpServer->hasArg("s0_1_interval")) jsonDoc["s0_1_interval"] = httpServer->arg("s0_1_interval");
       if (httpServer->hasArg("s0_2_gpio")) jsonDoc["s0_2_gpio"] = httpServer->arg("s0_2_gpio");
       if (httpServer->hasArg("s0_2_ppkwh")) jsonDoc["s0_2_ppkwh"] = httpServer->arg("s0_2_ppkwh");
-      if (httpServer->hasArg("s0_2_minwatt")) jsonDoc["s0_2_minwatt"] = httpServer->arg("s0_2_minwatt");
+      if (httpServer->hasArg("s0_2_interval")) jsonDoc["s0_2_interval"] = httpServer->arg("s0_2_interval");
     } else {
       jsonDoc["use_s0"] = "disabled";
     }
@@ -630,11 +633,13 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
     httptext = httptext + "<input type=\"number\" name=\"s0_" + (i + 1) + "_gpio\" value=\"" + actS0Data[i].gpiopin + "\">";
     httptext = httptext + "<br><br>";
     httptext = httptext + "S0 port " + (i + 1) + " imp/kwh:<br>";
-    httptext = httptext + "<input type=\"number\" name=\"s0_" + (i + 1) + "_ppkwh\" value=\"" + (actS0Data[i].ppkwh) + "\">";
+    httptext = httptext + "<input type=\"number\" id=\"s0_ppkwh_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_ppkwh\" value=\"" + (actS0Data[i].ppkwh) + "\">";
     httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " minimal Watt:<br>";
-    httptext = httptext + "<input type=\"number\" name=\"s0_" + (i + 1) + "_minwatt\" value=\"" + (actS0Data[i].minWatt) + "\">";
-  }
+    httptext = httptext + "S0 port " + (i + 1) + " reporting interval:<br>";
+    httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (actS0Data[i].reportInterval) + "\">";
+    httptext = httptext + "<br><br>";
+    httptext = httptext + "S0 port " + (i + 1) + " minimal power measured: <label id=\"s0_minwatt_" + (i+1) + "\">"+(int) round((3600 * 1000 / actS0Data[i].ppkwh)/ actS0Data[i].reportInterval)+"</label> Watt";
+   }
   httptext = httptext + "</div>";
 
   httptext = httptext + "<br><br>";
