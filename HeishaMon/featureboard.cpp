@@ -10,7 +10,7 @@
 #define FETCHTEMPSTIME 5000 // how often Dallas temps are read in msec
 #define MAXTEMPDIFFPERSEC 0.5 // what is the allowed temp difference per second which is allowed (to filter bad values)
 
-#define FETCHS0TIME 5000 // how often s0 Watts are reported
+#define MINREPORTEDS0TIME 5000 // how often s0 Watts are reported (not faster than this)
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
@@ -118,31 +118,35 @@ ICACHE_RAM_ATTR void onS0Pulse1() {
 
 ICACHE_RAM_ATTR void onS0Pulse2() {
   new_pulse_s0[1] = millis();
+
 }
 
 void initS0Sensors(s0Data actS0Data[]) {
-
   pinMode(actS0Data[0].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Data[0].gpiopin), onS0Pulse1, RISING);
-  actS0Data[0].lastPulse = millis();
-
+  actS0Data[0].nextReport = millis() + 1000 * actS0Data[0].reportInterval; //initial report after interval, not directly at boot
 
   pinMode(actS0Data[1].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Data[1].gpiopin), onS0Pulse2, RISING);
-  actS0Data[1].lastPulse = millis();
+  actS0Data[1].nextReport = millis() + 1000 * actS0Data[1].reportInterval; //initial report after interval, not directly at boot
 }
 
 void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(char*)) {
 
   for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
     //first handle new detected pulses
-    if (new_pulse_s0[i] > 0) {
+    if ((new_pulse_s0[i] > 0) && ((new_pulse_s0[i] - actS0Data[i].lastPulse) > 50L)){ //50ms debounce filter, this also prevents division by zero to occur a few lines further down the road if pulseInterval = 0
       actS0Data[i].pulseInterval = new_pulse_s0[i] - actS0Data[i].lastPulse;
-      actS0Data[i].watt = (3600000000.0 / actS0Data[i].pulseInterval) / actS0Data[i].ppkwh;
+      if (actS0Data[i].lastPulse > 0) { //Do not calculate watt for the first pulse since reboot because we will always report a too high watt. Better to show 0 watt at first pulse.
+        actS0Data[i].watt = (3600000000.0 / actS0Data[i].pulseInterval) / actS0Data[i].ppkwh;
+      }
       actS0Data[i].lastPulse = new_pulse_s0[i];
       actS0Data[i].pulses++; 
       new_pulse_s0[i] = 0;
-      //Serial1.print("S0 port "); Serial1.print(i); Serial1.print(" detected pulse. Pulses since last report: "); Serial1.println(actS0Data[i].pulses);
+      if ((actS0Data[i].nextReport - millis()) < (( 1000 * actS0Data[i].reportInterval) - MINREPORTEDS0TIME )) { //it is already MINREPORTEDS0TIME millis ago since last report
+        actS0Data[i].nextReport = millis(); // report now 
+      }
+      Serial1.print("S0 port "); Serial1.print(i); Serial1.print(" detected pulse. Pulses since last report: "); Serial1.println(actS0Data[i].pulses);
     }
 
     //then report after each reportInterval
