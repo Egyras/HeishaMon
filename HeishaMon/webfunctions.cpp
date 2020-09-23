@@ -635,10 +635,10 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
     httptext = httptext + "S0 port " + (i + 1) + " imp/kwh:<br>";
     httptext = httptext + "<input type=\"number\" id=\"s0_ppkwh_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_ppkwh\" value=\"" + (actS0Data[i].ppkwh) + "\">";
     httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " reporting interval:<br>";
+    httptext = httptext + "S0 port " + (i + 1) + " reporting interval during standby/low power usage:<br>";
     httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (actS0Data[i].reportInterval) + "\">";
     httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " minimal power measured: <label id=\"s0_minwatt_" + (i+1) + "\">"+(int) round((3600 * 1000 / actS0Data[i].ppkwh)/ actS0Data[i].reportInterval)+"</label> Watt";
+    httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold: <label id=\"s0_minwatt_" + (i+1) + "\">"+(int) round((3600 * 1000 / actS0Data[i].ppkwh)/ actS0Data[i].reportInterval)+"</label> Watt";
    }
   httptext = httptext + "</div>";
 
