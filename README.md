@@ -1,7 +1,7 @@
 [![Join us on Slack chat room](https://img.shields.io/badge/Slack-Join%20the%20chat%20room-orange)](https://join.slack.com/t/panasonic-wemos/shared_invite/enQtODg2MDY0NjE1OTI3LTgzYjkwMzIwNTAwZTMyYzgwNDQ1Y2QxYjkwODg3NjMyN2MyM2ViMDM3Yjc3OGE3MGRiY2FkYzI4MzZiZDVkNGE)
 
 
-# Panasonic H Series Aquarea air-water heat pump protocol
+# Panasonic H & J Series Aquarea air-water heat pump protocol
 
 This project makes it possible to read information from Panasonic Aquarea heat pump and report the data either to an MQTT server or as JSON format over HTTP.
 
@@ -17,7 +17,7 @@ Changed from 0.6 to 0.7 is a bug fix for the webinterface which resulted in the 
 
 
 # Using the software
-The current arduino beta image is able to communicate with the Panasonic Aquarea H-series (and most probably with the new J-series as well, since PCB looks identical). \
+The current arduino beta image is able to communicate with the Panasonic Aquarea H & J-series. \
 If you want to compile this image yourself be sure to use the mentioned libraries and support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that.
 
 When starting for the first time an open-wifi-hotspot will be visible allowing you to configure your wifi network and your MQTT server. Configuration page will be located at http://192.168.4.1 . \
@@ -111,4 +111,6 @@ To get information from heat pump, "magic" packet should be send to CN-CNT:
 [IOBroker Manual](Integrations/ioBroker_manual)
 
 [Domoticz](Integrations/Domoticz)
+
+[Domoticz plugin](Integrations/Domoticz plugin)
 
