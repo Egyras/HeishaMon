@@ -17,7 +17,7 @@ Changed from 0.6 to 0.7 is a bug fix for the webinterface which resulted in the 
 
 
 # Using the software
-The current arduino beta image is able to communicate with the Panasonic Aquarea H & J-series. Confirmed by users types of HP : [HeatPumpType.md](HeatPumpType.md) \
+The current arduino beta image is able to communicate with the Panasonic Aquarea H & J-series. [Confirmed by users types of HP you can find here](HeatPumpType.md) \
 If you want to compile this image yourself be sure to use the mentioned libraries and support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that.
 
 When starting for the first time an open-wifi-hotspot will be visible allowing you to configure your wifi network and your MQTT server. Configuration page will be located at http://192.168.4.1 . \
