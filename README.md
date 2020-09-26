@@ -106,11 +106,11 @@ To get information from heat pump, "magic" packet should be send to CN-CNT:
 ## Integration Examples for Opensource automation systems
 [Openhab2](Integrations/Openhab2)
 
-[Home Assistant](https://github.com/Egyras/HeishaMon/tree/master/Integrations/Home%20Assistant)
+[Home Assistant](Integrations/Home%20Assistant)
 
 [IOBroker Manual](Integrations/ioBroker_manual)
 
 [Domoticz](Integrations/Domoticz)
 
-[Domoticz plugin](Integrations/Domoticz plugin)
+[Domoticz plugin](Integrations/Domoticz%20plugin)
 
