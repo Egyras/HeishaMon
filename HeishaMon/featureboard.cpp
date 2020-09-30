@@ -124,70 +124,53 @@ ICACHE_RAM_ATTR void onS0Pulse2() {
 void initS0Sensors(s0Data actS0Data[]) {
   pinMode(actS0Data[0].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Data[0].gpiopin), onS0Pulse1, RISING);
-  actS0Data[0].nextReport = millis() + 1000 * actS0Data[0].reportInterval; //initial report after interval, not directly at boot
+  actS0Data[0].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
 
   pinMode(actS0Data[1].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Data[1].gpiopin), onS0Pulse2, RISING);
-  actS0Data[1].nextReport = millis() + 1000 * actS0Data[1].reportInterval; //initial report after interval, not directly at boot
+  actS0Data[1].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
 }
 
 void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(char*)) {
 
+  unsigned long millisThisLoop = millis();
+
   for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
     //first handle new detected pulses
-    if ((new_pulse_s0[i] > 0) && ((new_pulse_s0[i] - actS0Data[i].lastPulse) > 50L)){ //50ms debounce filter, this also prevents division by zero to occur a few lines further down the road if pulseInterval = 0
-      actS0Data[i].pulseInterval = new_pulse_s0[i] - actS0Data[i].lastPulse;
+    if ((new_pulse_s0[i] > 0) && ((new_pulse_s0[i] - actS0Data[i].lastPulse) > 50L)) { //50ms debounce filter, this also prevents division by zero to occur a few lines further down the road if pulseInterval = 0
+      unsigned long pulseInterval = new_pulse_s0[i] - actS0Data[i].lastPulse;
       if (actS0Data[i].lastPulse > 0) { //Do not calculate watt for the first pulse since reboot because we will always report a too high watt. Better to show 0 watt at first pulse.
-        actS0Data[i].watt = (3600000000.0 / actS0Data[i].pulseInterval) / actS0Data[i].ppkwh;
+        actS0Data[i].watt = (3600000000.0 / pulseInterval) / actS0Data[i].ppkwh;
       }
       actS0Data[i].lastPulse = new_pulse_s0[i];
-      actS0Data[i].pulses++; 
+      actS0Data[i].pulses++;
       new_pulse_s0[i] = 0;
-      if ((actS0Data[i].nextReport - millis()) < (( 1000 * actS0Data[i].reportInterval) - MINREPORTEDS0TIME )) { //it is already MINREPORTEDS0TIME millis ago since last report
-        actS0Data[i].nextReport = millis(); // report now 
+      if ((actS0Data[i].nextReport - millisThisLoop) > MINREPORTEDS0TIME) { //loop was in standby interval
+        actS0Data[i].nextReport = 0; // report now
       }
       Serial1.print("S0 port "); Serial1.print(i); Serial1.print(" detected pulse. Pulses since last report: "); Serial1.println(actS0Data[i].pulses);
     }
 
-    //then report after each reportInterval
-    if (millis() > actS0Data[i].nextReport) {
-      actS0Data[i].nextReport = millis() + 1000 * actS0Data[i].reportInterval; // reportInterval per s0 port depends on imp/kwh and minimal watt value)
-
-      //check if new pulse is too late for the current measured watt so we need to artificially lower the reported watt
-      unsigned long lastePulseInterval = millis() - actS0Data[i].lastPulse;
+    //then report after nextReport
+    if (millisThisLoop > actS0Data[i].nextReport) {
+      
+      unsigned long lastePulseInterval = millisThisLoop - actS0Data[i].lastPulse;
       unsigned long calcMaxWatt = (3600000000.0 / lastePulseInterval) / actS0Data[i].ppkwh;
-      if (actS0Data[i].watt > calcMaxWatt) { // If last known watt is bigger then calculated max watt then last known watt is invalid, report halve of calculated max
-        //Serial1.println("===Previous watt is too high. Dividing by two now===");
-        actS0Data[i].watt = calcMaxWatt / 2;
-      }
 
-      //check if watt is lower than which was possible during this period, so we we assume connected device is in standby
-      if (actS0Data[i].watt < ((3600 * 1000 / actS0Data[i].ppkwh) / actS0Data[i].reportInterval) ) {
+      if (actS0Data[i].watt < ((3600 * 1000 / actS0Data[i].ppkwh) / actS0Data[i].lowerPowerInterval) ) { //watt is lower than possible in lower power interval time
         //Serial1.println("===In standby mode===");
-        if (!actS0Data[i].inStandby) {
-          //Serial1.println("===For the first time standby mode===");
-          actS0Data[i].inStandby = true;
-          actS0Data[i].startStandby = actS0Data[i].lastPulse;
-        }
-        if (actS0Data[i].startStandby < actS0Data[i].lastPulse) { //during standby a pulse was received so we know now the exact standby usage
-          //Serial1.println("===Standby watt is known===");
-          unsigned long standbyInterval = actS0Data[i].lastPulse - actS0Data[i].startStandby;
-          actS0Data[i].watt = (3600000000.0 / standbyInterval) / actS0Data[i].ppkwh;
-          actS0Data[i].startStandby = actS0Data[i].lastPulse;
-        }
-        else { // we must guess the standby watt
-          //Serial1.println("===Standby watt is guessed===");
-          unsigned long standbyInterval = millis() - actS0Data[i].startStandby;
-          unsigned long standbyWatt = (3600000000.0 / standbyInterval) / actS0Data[i].ppkwh;
-          if (standbyWatt < actS0Data[i].watt) { //update the last known watt with the now lower calculated standby watt
-            //Serial1.println("===Standby watt guessed is updated===");
-            actS0Data[i].watt = standbyWatt;
-          }
+        actS0Data[i].nextReport = millisThisLoop + 1000 * actS0Data[i].lowerPowerInterval;
+        if ((actS0Data[i].watt)/2 > calcMaxWatt) {
+          //Serial1.println("===Previous standby watt is too high. Lowering watt, divide by two===");
+          actS0Data[i].watt = calcMaxWatt / 2;
         }
       }
       else {
-        actS0Data[i].inStandby = false;
-        actS0Data[i].startStandby = 0;
+        actS0Data[i].nextReport = millisThisLoop + MINREPORTEDS0TIME;
+        if (actS0Data[i].watt > calcMaxWatt) { 
+          //Serial1.println("===Previous watt is too high. Setting watt to max possible watt===");
+          actS0Data[i].watt = calcMaxWatt;
+        }
       }
 
       //calculate the watthour since last message

@@ -189,10 +189,10 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
               use_s0 = true;
               if (jsonDoc["s0_1_gpio"]) actS0Data[0].gpiopin = jsonDoc["s0_1_gpio"];
               if (jsonDoc["s0_1_ppkwh"]) actS0Data[0].ppkwh = jsonDoc["s0_1_ppkwh"];
-              if (jsonDoc["s0_1_interval"]) actS0Data[0].reportInterval = jsonDoc["s0_1_interval"];
+              if (jsonDoc["s0_1_interval"]) actS0Data[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
               if (jsonDoc["s0_2_gpio"]) actS0Data[1].gpiopin = jsonDoc["s0_2_gpio"];
               if (jsonDoc["s0_2_ppkwh"]) actS0Data[1].ppkwh = jsonDoc["s0_2_ppkwh"];
-              if (jsonDoc["s0_2_interval"] ) actS0Data[1].reportInterval = jsonDoc["s0_2_interval"];   
+              if (jsonDoc["s0_2_interval"] ) actS0Data[1].lowerPowerInterval = jsonDoc["s0_2_interval"];   
             }
             if ( jsonDoc["listenonly"] == "enabled" ) listenonly = true;
           } else {
@@ -636,9 +636,9 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
     httptext = httptext + "<input type=\"number\" id=\"s0_ppkwh_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_ppkwh\" value=\"" + (actS0Data[i].ppkwh) + "\">";
     httptext = httptext + "<br><br>";
     httptext = httptext + "S0 port " + (i + 1) + " reporting interval during standby/low power usage:<br>";
-    httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (actS0Data[i].reportInterval) + "\">";
+    httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (actS0Data[i].lowerPowerInterval) + "\">";
     httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold: <label id=\"s0_minwatt_" + (i+1) + "\">"+(int) round((3600 * 1000 / actS0Data[i].ppkwh)/ actS0Data[i].reportInterval)+"</label> Watt";
+    httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold: <label id=\"s0_minwatt_" + (i+1) + "\">"+(int) round((3600 * 1000 / actS0Data[i].ppkwh)/ actS0Data[i].lowerPowerInterval)+"</label> Watt";
    }
   httptext = httptext + "</div>";
 
