@@ -11,6 +11,7 @@ const char* mqtt_topic_s0 = "s0";
 const char* mqtt_logtopic = "log";
 
 const char* mqtt_willtopic = "LWT";
+const char* mqtt_iptopic = "ip";
 
 const char* mqtt_set_heatpump_state_topic = "SetHeatpump";
 const char* mqtt_set_quiet_mode_topic = "SetQuietMode";

@@ -10,6 +10,7 @@ extern const char* mqtt_topic_1wire;
 extern const char* mqtt_topic_s0;
 extern const char* mqtt_logtopic;
 extern const char* mqtt_willtopic;
+extern const char* mqtt_iptopic;
 extern const char* mqtt_set_heatpump_state_topic;
 extern const char* mqtt_set_quiet_mode_topic;
 extern const char* mqtt_set_z1_heat_request_temperature_topic;

@@ -140,6 +140,8 @@ void mqtt_reconnect()
     mqtt_client.subscribe(topic);
     sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_willtopic);
     mqtt_client.publish(topic, "Online");
+    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_iptopic);
+    mqtt_client.publish(topic, WiFi.localIP().toString().c_str());    
   }
 }
 
