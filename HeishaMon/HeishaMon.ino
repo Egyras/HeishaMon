@@ -217,7 +217,7 @@ bool readSerial()
       log_message((char*)"Checksum and header received ok!");
       goodreads++;
       readpercentage = (((float)goodreads / (float)totalreads) * 100);
-      sprintf(log_msg, "Total reads : %u and total good reads : %u (%.2f %%)", totalreads, goodreads, readpercentage ); log_message(log_msg);
+      sprintf(log_msg, "Total reads : %lu and total good reads : %lu (%.2f %%)", totalreads, goodreads, readpercentage ); log_message(log_msg);
       if (data_length == 203) { //for now only return true for this datagram because we can not decode the shorter datagram yet
         data_length = 0;
         return true;

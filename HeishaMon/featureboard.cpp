@@ -182,7 +182,7 @@ void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(c
       char mqtt_topic[256];
       sprintf(log_msg, "Measured Watthour on S0 port %d: %.2f", (i + 1),  Watthour ); log_message(log_msg);
       sprintf(mqtt_topic, "%s/%s/Watthour/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, String(Watthour).c_str(), MQTT_RETAIN_VALUES);
-      sprintf(log_msg, "Calculated Watt on S0 port %d: %lu", (i + 1), actS0Data[i].watt); log_message(log_msg);
+      sprintf(log_msg, "Calculated Watt on S0 port %d: %u", (i + 1), actS0Data[i].watt); log_message(log_msg);
       sprintf(mqtt_topic, "%s/%s/Watt/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, String(actS0Data[i].watt).c_str(), MQTT_RETAIN_VALUES);
     }
   }
