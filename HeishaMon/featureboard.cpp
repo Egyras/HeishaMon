@@ -48,7 +48,7 @@ void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*)) {
   }
 }
 
-void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*)) {
+void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
   char log_msg[256];
   char mqtt_topic[256];
   bool updatenow = false;
@@ -79,11 +79,11 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
   }
 }
 
-void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*)) {
+void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
   if (millis() > dallasTimer) {
     log_message((char*)"Requesting new 1wire temperatures");
     dallasTimer = millis() + FETCHTEMPSTIME;
-    readNewDallasTemp(actDallasData, mqtt_client, log_message);
+    readNewDallasTemp(actDallasData, mqtt_client, log_message, mqtt_topic_base);
   }
 }
 
@@ -131,7 +131,7 @@ void initS0Sensors(s0Data actS0Data[]) {
   actS0Data[1].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
 }
 
-void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(char*)) {
+void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
 
   unsigned long millisThisLoop = millis();
 

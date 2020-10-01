@@ -8,7 +8,7 @@
 #define NUM_S0_COUNTERS 2
 #define DEFAULT_S0_PIN_1 12  // S0_1 pin, for now a static config - should be in config menu later
 #define DEFAULT_S0_PIN_2 14  // S0_2 pin, for now a static config - should be in config menu later
-#define MIN_S0_WATT 100 //below this, the s0 reports 0 watt
+
 
 struct dallasData {
   float temperature = -127;
@@ -29,11 +29,11 @@ struct s0Data {
 };
 
 
-void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*));
+void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base);
 void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*));
 String dallasJsonOutput(dallasData actDallasData[]);
 String dallasTableOutput(dallasData actDallasData[]);
 void initS0Sensors(s0Data actS0Data[]);
-void s0Loop(s0Data actS0Data[],PubSubClient &mqtt_client, void (*log_message)(char*));
+void s0Loop(s0Data actS0Data[],PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base);
 String s0TableOutput(s0Data actS0Data[]);
 String s0JsonOutput(s0Data actS0Data[]);

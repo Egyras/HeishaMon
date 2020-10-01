@@ -30,15 +30,8 @@
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
-// Default settings if config does not exists
-const char* update_path = "/firmware";
-const char* update_username = "admin";
-char wifi_hostname[40] = "HeishaMon";
-char ota_password[40] = "heisha";
-char mqtt_server[40];
-char mqtt_port[6] = "1883";
-char mqtt_username[40];
-char mqtt_password[40];
+settingsStruct heishamonSettings;
+
 
 bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
@@ -57,17 +50,11 @@ bool outputHexDump = false;
 // *needs implementation in this code and in the webpage*
 bool outputSerial1 = true;
 
-//listen only so heishamon can be installed parallel to cz-taw1, set commands will not work though
-bool listenonly = false;
 
-
-//1wire enabled?
-bool use_1wire = false;
 //global array for 1wire data
 dallasData actDallasData[MAX_DALLAS_SENSORS];
 
-//s0 enabled?
-bool use_s0 = false;
+
 //global array for s0 data
 s0Data actS0Data[NUM_S0_COUNTERS];
 
@@ -107,41 +94,41 @@ void mqtt_reconnect()
 {
   Serial1.println("Reconnecting to mqtt server ...");
   char topic[256];
-  sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_willtopic);
-  if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password, topic, 1, true, "Offline"))
+  sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
+  if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
   {
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_quiet_mode_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_quiet_mode_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_operationmode_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_operationmode_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_heatpump_state_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_heatpump_state_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_z1_heat_request_temperature_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z1_heat_request_temperature_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_z1_cool_request_temperature_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z1_cool_request_temperature_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_z2_heat_request_temperature_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z2_heat_request_temperature_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_z2_cool_request_temperature_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z2_cool_request_temperature_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_force_DHW_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_force_DHW_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_force_defrost_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_force_defrost_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_force_sterilization_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_force_sterilization_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_holiday_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_holiday_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_powerful_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_powerful_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_dhw_temp_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_dhw_temp_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_send_raw_value_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_willtopic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
     mqtt_client.publish(topic, "Online");
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_iptopic);
-    mqtt_client.publish(topic, WiFi.localIP().toString().c_str());    
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_iptopic);
+    mqtt_client.publish(topic, WiFi.localIP().toString().c_str());
   }
 }
 
@@ -151,7 +138,7 @@ void log_message(char* string)
   if (outputMqttLog)
   {
     char log_topic[256];
-    sprintf(log_topic, "%s/%s", mqtt_topic_base, mqtt_logtopic);
+    sprintf(log_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_logtopic);
     mqtt_client.publish(log_topic, string);
   }
 }
@@ -261,7 +248,7 @@ void pushCommandBuffer(byte* command, int length) {
 
 bool send_command(byte* command, int length)
 {
-  if ( listenonly ) {
+  if ( heishamonSettings.listenonly ) {
     log_message((char*)"Not sending this command. Heishamon in listen only mode!");
     return false;
   }
@@ -294,7 +281,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       msg[i] = (char)payload[i];
     }
     msg[length] = '\0';
-    char* topic_command = topic + strlen(mqtt_topic_base) + 1; //strip base plus seperator from topic
+    char* topic_command = topic + strlen(heishamonSettings.mqtt_topic_base) + 1; //strip base plus seperator from topic
     if (strcmp(topic_command, mqtt_send_raw_value_topic) == 0)
     { // send a raw hex string
       byte *rawcommand;
@@ -316,10 +303,10 @@ void setupOTA() {
   ArduinoOTA.setPort(8266);
 
   // Hostname defaults to esp8266-[ChipID]
-  ArduinoOTA.setHostname(wifi_hostname);
+  ArduinoOTA.setHostname(heishamonSettings.wifi_hostname);
 
   // Set authentication
-  ArduinoOTA.setPassword(ota_password);
+  ArduinoOTA.setPassword(heishamonSettings.ota_password);
 
   ArduinoOTA.onStart([]() {
   });
@@ -335,9 +322,9 @@ void setupOTA() {
 }
 
 void setupHttp() {
-  httpUpdater.setup(&httpServer, update_path, update_username, ota_password);
+  httpUpdater.setup(&httpServer, heishamonSettings.update_path, heishamonSettings.update_username, heishamonSettings.ota_password);
   httpServer.on("/", [] {
-    handleRoot(&httpServer, readpercentage, use_1wire, use_s0);
+    handleRoot(&httpServer, readpercentage, &heishamonSettings);
   });
   httpServer.on("/tablerefresh", [] {
     handleTableRefresh(&httpServer, actData, actDallasData, actS0Data);
@@ -352,7 +339,7 @@ void setupHttp() {
     handleReboot(&httpServer);
   });
   httpServer.on("/settings", [] {
-    handleSettings(&httpServer, wifi_hostname, ota_password, mqtt_topic_base, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire, use_s0, listenonly, actS0Data);
+    handleSettings(&httpServer, &heishamonSettings, actS0Data);
   });
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
@@ -398,20 +385,20 @@ void switchSerial() {
 
 
 void setupMqtt() {
-  mqtt_client.setServer(mqtt_server, atoi(mqtt_port));
+  mqtt_client.setServer(heishamonSettings.mqtt_server, atoi(heishamonSettings.mqtt_port));
   mqtt_client.setCallback(mqtt_callback);
   mqtt_reconnect();
 }
 
 void setup() {
   setupSerial();
-  setupWifi(drd, wifi_hostname, ota_password, mqtt_topic_base, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire, use_s0, listenonly, actS0Data);
-  MDNS.begin(wifi_hostname);
+  setupWifi(drd, &heishamonSettings, actS0Data);
+  MDNS.begin(heishamonSettings.wifi_hostname);
   setupOTA();
   setupMqtt();
   setupHttp();
-  if (use_1wire) initDallasSensors(actDallasData, log_message);
-  if (use_s0) initS0Sensors(actS0Data);
+  if (heishamonSettings.use_1wire) initDallasSensors(actDallasData, log_message);
+  if (heishamonSettings.use_s0) initS0Sensors(actS0Data);
   switchSerial();
 
 }
@@ -436,9 +423,9 @@ void read_panasonic_data() {
     data_length = 0; //clear any data in array
     sending = false; //receiving the answer from the send command timed out, so we are allowed to send a new command
   }
-  if ( (listenonly || sending) && (Serial.available() > 0)) { //only read data if we have sent a command so we expect an answer or in listen only mode
+  if ( (heishamonSettings.listenonly || sending) && (Serial.available() > 0)) { //only read data if we have sent a command so we expect an answer or in listen only mode
     // read the serial and decode if data is complete and valid
-    if ( readSerial()) decode_heatpump_data(data, actData, mqtt_client, log_message);
+    if ( readSerial()) decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
   }
 }
 
@@ -454,9 +441,9 @@ void loop() {
 
   read_panasonic_data();
 
-  if (use_1wire) dallasLoop(actDallasData, mqtt_client, log_message);
+  if (heishamonSettings.use_1wire) dallasLoop(actDallasData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
 
-  if (use_s0) s0Loop(actS0Data, mqtt_client, log_message);
+  if (heishamonSettings.use_s0) s0Loop(actS0Data, mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
 
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
@@ -476,10 +463,10 @@ void loop() {
       mqtt_reconnect();
     }
     nexttime = millis() + WAITTIME;
-    if (!listenonly) send_panasonic_query();
+    if (!heishamonSettings.listenonly) send_panasonic_query();
     MDNS.announce();
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, mqtt_willtopic);
+    sprintf(mqtt_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
     mqtt_client.publish(mqtt_topic, "Online");
   }
 }

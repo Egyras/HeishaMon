@@ -4,7 +4,6 @@
 #define PANASONICQUERYSIZE 110
 extern byte panasonicQuery[PANASONICQUERYSIZE];
 
-extern char mqtt_topic_base[40];
 extern const char* mqtt_topic_values;
 extern const char* mqtt_topic_1wire;
 extern const char* mqtt_topic_s0;

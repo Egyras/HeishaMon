@@ -135,7 +135,7 @@ String getUptime() {
   return String(uptime);
 }
 
-void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, char* mqtt_topic_base, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &use_s0, bool &listenonly, s0Data actS0Data[]) {
+void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, s0Data actS0Data[]) {
 
   //first get total memory before we do anything
   getFreeMemory();
@@ -177,16 +177,16 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
           if (!error) {
             Serial.println("\nparsed json");
             //read updated parameters, make sure no overflow
-            strncpy(wifi_hostname, jsonDoc["wifi_hostname"], 39); wifi_hostname[39] = '\0';
-            strncpy(ota_password, jsonDoc["ota_password"], 39); ota_password[39] = '\0';
-            if ( jsonDoc["mqtt_topic_base"] ) strncpy(mqtt_topic_base, jsonDoc["mqtt_topic_base"], 39); mqtt_topic_base[39] = '\0';
-            strncpy(mqtt_server, jsonDoc["mqtt_server"], 39); mqtt_server[39] = '\0';
-            strncpy(mqtt_port, jsonDoc["mqtt_port"], 5); mqtt_port[5] = '\0';
-            strncpy(mqtt_username, jsonDoc["mqtt_username"], 39); mqtt_username[39] = '\0';
-            strncpy(mqtt_password, jsonDoc["mqtt_password"], 39); mqtt_password[39] = '\0';
-            if ( jsonDoc["use_1wire"] == "enabled" ) use_1wire = true;
+            strncpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], 39); heishamonSettings->wifi_hostname[39] = '\0';
+            strncpy(heishamonSettings->ota_password, jsonDoc["ota_password"], 39); heishamonSettings->ota_password[39] = '\0';
+            if ( jsonDoc["mqtt_topic_base"] ) strncpy(heishamonSettings->mqtt_topic_base, jsonDoc["mqtt_topic_base"], 39); heishamonSettings->mqtt_topic_base[39] = '\0';
+            strncpy(heishamonSettings->mqtt_server, jsonDoc["mqtt_server"], 39); heishamonSettings->mqtt_server[39] = '\0';
+            strncpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], 5); heishamonSettings->mqtt_port[5] = '\0';
+            strncpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], 39); heishamonSettings->mqtt_username[39] = '\0';
+            strncpy(heishamonSettings->mqtt_password, jsonDoc["mqtt_password"], 39); heishamonSettings->mqtt_password[39] = '\0';
+            if ( jsonDoc["use_1wire"] == "enabled" ) heishamonSettings->use_1wire = true;
             if ( jsonDoc["use_s0"] == "enabled" ) {
-              use_s0 = true;
+              heishamonSettings->use_s0 = true;
               if (jsonDoc["s0_1_gpio"]) actS0Data[0].gpiopin = jsonDoc["s0_1_gpio"];
               if (jsonDoc["s0_1_ppkwh"]) actS0Data[0].ppkwh = jsonDoc["s0_1_ppkwh"];
               if (jsonDoc["s0_1_interval"]) actS0Data[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
@@ -194,7 +194,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
               if (jsonDoc["s0_2_ppkwh"]) actS0Data[1].ppkwh = jsonDoc["s0_2_ppkwh"];
               if (jsonDoc["s0_2_interval"] ) actS0Data[1].lowerPowerInterval = jsonDoc["s0_2_interval"];   
             }
-            if ( jsonDoc["listenonly"] == "enabled" ) listenonly = true;
+            if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
           } else {
             Serial.println("Failed to load json config, forcing config reset.");
             wifiManager.resetSettings();
@@ -216,14 +216,14 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   // After connecting, parameter.getValue() will get you the configured value
   // id/name placeholder/prompt default length
   WiFiManagerParameter custom_text1("<p>My hostname and OTA password</p>");
-  WiFiManagerParameter custom_wifi_hostname("wifi_hostname", "wifi hostname", wifi_hostname, 39);
-  WiFiManagerParameter custom_ota_password("ota_password", "ota password", ota_password, 39);
+  WiFiManagerParameter custom_wifi_hostname("wifi_hostname", "wifi hostname", heishamonSettings->wifi_hostname, 39);
+  WiFiManagerParameter custom_ota_password("ota_password", "ota password", heishamonSettings->ota_password, 39);
   WiFiManagerParameter custom_text2("<p>Configure MQTT settings</p>");
-  WiFiManagerParameter custom_mqtt_topic_base("mqtt topic base", "mqtt topic base", mqtt_topic_base, 39);
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 39);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 5);
-  WiFiManagerParameter custom_mqtt_username("username", "mqtt username", mqtt_username, 39);
-  WiFiManagerParameter custom_mqtt_password("password", "mqtt password", mqtt_password, 39);
+  WiFiManagerParameter custom_mqtt_topic_base("mqtt topic base", "mqtt topic base", heishamonSettings->mqtt_topic_base, 39);
+  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", heishamonSettings->mqtt_server, 39);
+  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", heishamonSettings->mqtt_port, 5);
+  WiFiManagerParameter custom_mqtt_username("username", "mqtt username", heishamonSettings->mqtt_username, 39);
+  WiFiManagerParameter custom_mqtt_password("password", "mqtt password", heishamonSettings->mqtt_password, 39);
 
 
   //set config save notify callback
@@ -256,28 +256,28 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   Serial.println("Wifi connected...yeey :)");
 
   //read updated parameters, make sure no overflow
-  strncpy(wifi_hostname, custom_wifi_hostname.getValue(), 39); wifi_hostname[39] = '\0';
-  strncpy(ota_password, custom_ota_password.getValue(), 39); ota_password[39] = '\0';
-  strncpy(mqtt_topic_base, custom_mqtt_topic_base.getValue(), 39); mqtt_topic_base[39] = '\0';
-  strncpy(mqtt_server, custom_mqtt_server.getValue(), 39); mqtt_server[39] = '\0';
-  strncpy(mqtt_port, custom_mqtt_port.getValue(), 5); mqtt_port[5] = '\0';
-  strncpy(mqtt_username, custom_mqtt_username.getValue(), 39); mqtt_username[39] = '\0';
-  strncpy(mqtt_password, custom_mqtt_password.getValue(), 39); mqtt_password[39] = '\0';
+  strncpy(heishamonSettings->wifi_hostname, custom_wifi_hostname.getValue(), 39); heishamonSettings->wifi_hostname[39] = '\0';
+  strncpy(heishamonSettings->ota_password, custom_ota_password.getValue(), 39); heishamonSettings->ota_password[39] = '\0';
+  strncpy(heishamonSettings->mqtt_topic_base, custom_mqtt_topic_base.getValue(), 39); heishamonSettings->mqtt_topic_base[39] = '\0';
+  strncpy(heishamonSettings->mqtt_server, custom_mqtt_server.getValue(), 39); heishamonSettings->mqtt_server[39] = '\0';
+  strncpy(heishamonSettings->mqtt_port, custom_mqtt_port.getValue(), 5); heishamonSettings->mqtt_port[5] = '\0';
+  strncpy(heishamonSettings->mqtt_username, custom_mqtt_username.getValue(), 39); heishamonSettings->mqtt_username[39] = '\0';
+  strncpy(heishamonSettings->mqtt_password, custom_mqtt_password.getValue(), 39); heishamonSettings->mqtt_password[39] = '\0';
 
   //Set hostname on wifi rather than ESP_xxxxx
-  WiFi.hostname(wifi_hostname);
+  WiFi.hostname(heishamonSettings->wifi_hostname);
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {
     Serial.println("saving config");
     DynamicJsonDocument jsonDoc(1024);
-    jsonDoc["wifi_hostname"] = wifi_hostname;
-    jsonDoc["ota_password"] = ota_password;
-    jsonDoc["mqtt_topic_base"] = mqtt_topic_base;
-    jsonDoc["mqtt_server"] = mqtt_server;
-    jsonDoc["mqtt_port"] = mqtt_port;
-    jsonDoc["mqtt_username"] = mqtt_username;
-    jsonDoc["mqtt_password"] = mqtt_password;
+    jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
+    jsonDoc["ota_password"] = heishamonSettings->ota_password;
+    jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
+    jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
+    jsonDoc["mqtt_port"] = heishamonSettings->mqtt_port;
+    jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
+    jsonDoc["mqtt_password"] = heishamonSettings->mqtt_password;
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
@@ -294,7 +294,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   Serial.println(WiFi.localIP());
 }
 
-void handleRoot(ESP8266WebServer *httpServer, float readpercentage, bool &use_1wire, bool &use_s0) {
+void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStruct *heishamonSettings) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -311,8 +311,8 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, bool &use_1w
 
   httptext = httptext + "<div class=\"w3-bar w3-red\">";
   httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Heatpump')\">Heatpump</button>";
-  if (use_1wire) httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Dallas')\">Dallas 1-wire</button>";
-  if (use_s0) httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('S0')\">S0 kWh meters</button>";
+  if (heishamonSettings->use_1wire) httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Dallas')\">Dallas 1-wire</button>";
+  if (heishamonSettings->use_s0) httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('S0')\">S0 kWh meters</button>";
   httptext = httptext + "</div>";
 
   httptext = httptext + "<div class=\"w3-container w3-left\">";
@@ -325,12 +325,12 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, bool &use_1w
   httptext = httptext + "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">";
   httptext = httptext + "<h2>Current heatpump values</h2>";
   httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></r></tbody></table></div>";
-  if (use_1wire) {
+  if (heishamonSettings->use_1wire) {
     httptext = httptext + "<div id=\"Dallas\" class=\"w3-container w3-center heishatable\" style=\"display:none\">";
     httptext = httptext + "<h2>Current Dallas 1-wire values</h2>";
     httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Sensor</th><th>Temperature</th></tr></thead><tbody id=\"dallasvalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
   }
-  if (use_s0) {
+  if (heishamonSettings->use_s0) {
     httptext = httptext + "<div id=\"S0\" class=\"w3-container w3-center heishatable\" style=\"display:none\">";
     httptext = httptext + "<h2>Current S0 kWh meters values</h2>";
     httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>S0 port</th><th>Watt</th></tr></thead><tbody id=\"s0values\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
@@ -462,7 +462,7 @@ void handleReboot(ESP8266WebServer *httpServer) {
   ESP.restart();
 }
 
-void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_topic_base, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &use_s0, bool &listenonly, s0Data actS0Data[]) {
+void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, s0Data actS0Data[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -480,24 +480,24 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
   //check if POST was made with save settings, if yes then save and reboot
   if (httpServer->args()) {
     DynamicJsonDocument jsonDoc(1024);
-    jsonDoc["wifi_hostname"] = wifi_hostname;
-    jsonDoc["ota_password"] = ota_password;
-    jsonDoc["mqtt_topic_base"] = mqtt_topic_base;
-    jsonDoc["mqtt_server"] = mqtt_server;
-    jsonDoc["mqtt_port"] = mqtt_port;
-    jsonDoc["mqtt_username"] = mqtt_username;
-    jsonDoc["mqtt_password"] = mqtt_password;
-    if (use_1wire) {
+    jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
+    jsonDoc["ota_password"] = heishamonSettings->ota_password;
+    jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
+    jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
+    jsonDoc["mqtt_port"] = heishamonSettings->mqtt_port;
+    jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
+    jsonDoc["mqtt_password"] = heishamonSettings->mqtt_password;
+    if (heishamonSettings->use_1wire) {
       jsonDoc["use_1wire"] = "enabled";
     } else {
       jsonDoc["use_1wire"] = "disabled";
     }
-    if (use_s0) {
+    if (heishamonSettings->use_s0) {
       jsonDoc["use_s0"] = "enabled";
     } else {
       jsonDoc["use_s0"] = "disabled";
     }
-    if (listenonly) {
+    if (heishamonSettings->listenonly) {
       jsonDoc["listenonly"] = "enabled";
     } else {
       jsonDoc["listenonly"] = "disabled";
@@ -506,7 +506,7 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
       jsonDoc["wifi_hostname"] = httpServer->arg("wifi_hostname");
     }
     if (httpServer->hasArg("new_ota_password") && (httpServer->arg("new_ota_password") != NULL) && (httpServer->arg("current_ota_password") != NULL) ) {
-      if (httpServer->hasArg("current_ota_password") && (strcmp(ota_password, httpServer->arg("current_ota_password").c_str()) == 0 )) {
+      if (httpServer->hasArg("current_ota_password") && (strcmp(heishamonSettings->ota_password, httpServer->arg("current_ota_password").c_str()) == 0 )) {
         jsonDoc["ota_password"] = httpServer->arg("new_ota_password");
       }
       else {
@@ -585,7 +585,7 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
   httptext = httptext + "<h2>Settings</h2>";
   httptext = httptext + "<form action=\"/settings\" method=\"POST\">";
   httptext = httptext + "Hostname:<br>";
-  httptext = httptext + "<input type=\"text\" name=\"wifi_hostname\" value=\"" + wifi_hostname + "\">";
+  httptext = httptext + "<input type=\"text\" name=\"wifi_hostname\" value=\"" + heishamonSettings->wifi_hostname + "\">";
   httptext = httptext + "<br><br>";
   httptext = httptext + "Current update password:<br>";
   httptext = httptext + "<input type=\"password\" name=\"current_ota_password\" value=\"\">";
@@ -594,29 +594,29 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
   httptext = httptext + "<input type=\"password\" name=\"new_ota_password\" value=\"\">";
   httptext = httptext + "<br><br>";
   httptext = httptext + "Mqtt topic base:<br>";
-  httptext = httptext + "<input type=\"text\" name=\"mqtt_topic_base\" value=\"" + mqtt_topic_base + "\">";
+  httptext = httptext + "<input type=\"text\" name=\"mqtt_topic_base\" value=\"" + heishamonSettings->mqtt_topic_base + "\">";
   httptext = httptext + "<br><br>";  
   httptext = httptext + "Mqtt server:<br>";
-  httptext = httptext + "<input type=\"text\" name=\"mqtt_server\" value=\"" + mqtt_server + "\">";
+  httptext = httptext + "<input type=\"text\" name=\"mqtt_server\" value=\"" + heishamonSettings->mqtt_server + "\">";
   httptext = httptext + "<br><br>";
   httptext = httptext + "Mqtt port:<br>";
-  httptext = httptext + "<input type=\"number\" name=\"mqtt_port\" value=\"" + mqtt_port + "\">";
+  httptext = httptext + "<input type=\"number\" name=\"mqtt_port\" value=\"" + heishamonSettings->mqtt_port + "\">";
   httptext = httptext + "<br><br>";
   httptext = httptext + "Mqtt username:<br>";
-  httptext = httptext + "<input type=\"text\" name=\"mqtt_username\" value=\"" + mqtt_username + "\">";
+  httptext = httptext + "<input type=\"text\" name=\"mqtt_username\" value=\"" + heishamonSettings->mqtt_username + "\">";
   httptext = httptext + "<br><br>";
   httptext = httptext + "Mqtt password:<br>";
-  httptext = httptext + "<input type=\"password\" name=\"mqtt_password\" value=\"" + mqtt_password + "\">";
+  httptext = httptext + "<input type=\"password\" name=\"mqtt_password\" value=\"" + heishamonSettings->mqtt_password + "\">";
   httptext = httptext + "<br><br>";
   httptext = httptext + "Use 1wire DS18b20: ";
-  if (use_1wire) {
+  if (heishamonSettings->use_1wire) {
     httptext = httptext + "<input type=\"checkbox\" name=\"use_1wire\" value=\"enabled\" checked >";
   } else {
     httptext = httptext + "<input type=\"checkbox\" name=\"use_1wire\" value=\"enabled\">";
   }
   httptext = httptext + "<br><br>";
   httptext = httptext + "Use s0 kWh metering: ";
-  if (use_s0) {
+  if (heishamonSettings->use_s0) {
     httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideS0Div(this)\" name=\"use_s0\" value=\"enabled\" checked >";
     httptext = httptext + "<div id=\"s0settings\" class=\"w3-container w3-center\" style=\"display: block;\">";
   } else {
@@ -644,7 +644,7 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
 
   httptext = httptext + "<br><br>";
   httptext = httptext + "Listen only mode: ";
-  if (listenonly) {
+  if (heishamonSettings->listenonly) {
     httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\" checked >";
   } else {
     httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">";

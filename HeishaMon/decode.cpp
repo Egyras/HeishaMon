@@ -143,7 +143,7 @@ String getErrorInfo(char* data){ // TOP44 //
 }
 
 // Decode ////////////////////////////////////////////////////////////////////////////
-void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_client, void (*log_message)(char*)) {
+void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
   char log_msg[256];
   char mqtt_topic[256];
   bool updatenow = false;
