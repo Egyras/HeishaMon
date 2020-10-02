@@ -129,6 +129,8 @@ SET10 | SetForceDHW | Forces DHW (Operating mode should be firstly set to one wi
 SET11 | SetDHWTemp | Set DHW target temperature | 40 - 75
 SET12 | SetForceDefrost | Forces defrost routine | 0, 1
 SET13 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
+SET14 | SetPump | Set pump on or off in service menu | 0, 1
+SET15 | SetPumpSpeed | Set max pump speed in service menu | decimal value translate to hexadecimal in service menu (100 - 255)
 
 
 
