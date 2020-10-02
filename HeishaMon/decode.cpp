@@ -105,6 +105,8 @@ String getModel(byte input) {
       return "7";
     case 67:
       return "8";
+    case 51:
+      return "9";
     default:
       return "-1";
   }
