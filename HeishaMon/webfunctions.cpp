@@ -76,9 +76,13 @@ static const char selectJS[] PROGMEM =
 
 static const char s0SettingsJS[] PROGMEM =
   "<script type=\"text/javascript\">"
-  "    function ShowHideS0Div(s0enabled) {"
+  "    function ShowHideDallasTable(dallasEnabled) {"
+  "        var dallassettings = document.getElementById(\"dallassettings\");"
+  "        dallassettings.style.display = dallasEnabled.checked ? \"table\" : \"none\";"
+  "    }"
+  "    function ShowHideS0Table(s0enabled) {"
   "        var s0settings = document.getElementById(\"s0settings\");"
-  "        s0settings.style.display = s0enabled.checked ? \"block\" : \"none\";"
+  "        s0settings.style.display = s0enabled.checked ? \"table\" : \"none\";"
   "    }"
   "    function changeMinWatt(port) {"
   "        var ppkwh = document.getElementById('s0_ppkwh_'+port).value;"
@@ -192,9 +196,13 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, s0Data
               if (jsonDoc["s0_1_interval"]) actS0Data[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
               if (jsonDoc["s0_2_gpio"]) actS0Data[1].gpiopin = jsonDoc["s0_2_gpio"];
               if (jsonDoc["s0_2_ppkwh"]) actS0Data[1].ppkwh = jsonDoc["s0_2_ppkwh"];
-              if (jsonDoc["s0_2_interval"] ) actS0Data[1].lowerPowerInterval = jsonDoc["s0_2_interval"];   
+              if (jsonDoc["s0_2_interval"] ) actS0Data[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
             }
             if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
+            if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
+            if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
+            if ( jsonDoc["updateAllTime"]) heishamonSettings->updateAllTime = jsonDoc["updateAllTime"];
+            if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
           } else {
             Serial.println("Failed to load json config, forcing config reset.");
             wifiManager.resetSettings();
@@ -480,6 +488,7 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   //check if POST was made with save settings, if yes then save and reboot
   if (httpServer->args()) {
     DynamicJsonDocument jsonDoc(1024);
+    //set jsonDoc with current settings
     jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
     jsonDoc["ota_password"] = heishamonSettings->ota_password;
     jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
@@ -502,6 +511,12 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     } else {
       jsonDoc["listenonly"] = "disabled";
     }
+    jsonDoc["waitTime"] = heishamonSettings->waitTime;
+    jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
+    jsonDoc["updateAllTime"] = heishamonSettings->updateAllTime;
+    jsonDoc["updataAllDallasTime"] = heishamonSettings->updataAllDallasTime;
+
+    //then overwrite with new settings
     if (httpServer->hasArg("wifi_hostname")) {
       jsonDoc["wifi_hostname"] = httpServer->arg("wifi_hostname");
     }
@@ -522,9 +537,9 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
         return;
       }
     }
-     if (httpServer->hasArg("mqtt_topic_base")) {
+    if (httpServer->hasArg("mqtt_topic_base")) {
       jsonDoc["mqtt_topic_base"] = httpServer->arg("mqtt_topic_base");
-    }   
+    }
     if (httpServer->hasArg("mqtt_server")) {
       jsonDoc["mqtt_server"] = httpServer->arg("mqtt_server");
     }
@@ -558,6 +573,18 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     } else {
       jsonDoc["listenonly"] = "disabled";
     }
+    if (httpServer->hasArg("waitTime")) {
+      jsonDoc["waitTime"] = httpServer->arg("waitTime");
+    }
+    if (httpServer->hasArg("waitDallasTime")) {
+      jsonDoc["waitDallasTime"] = httpServer->arg("waitDallasTime");
+    }
+    if (httpServer->hasArg("updateAllTime")) {
+      jsonDoc["updateAllTime"] = httpServer->arg("updateAllTime");
+    }
+    if (httpServer->hasArg("updataAllDallasTime")) {
+      jsonDoc["updataAllDallasTime"] = httpServer->arg("updataAllDallasTime");
+    }
 
     if (SPIFFS.begin()) {
       File configFile = SPIFFS.open("/config.json", "w");
@@ -584,71 +611,107 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httptext = "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Settings</h2>";
   httptext = httptext + "<form action=\"/settings\" method=\"POST\">";
-  httptext = httptext + "Hostname:<br>";
+  httptext = httptext + "<table style=\"width:100%\">";
+  httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Hostname:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"text\" name=\"wifi_hostname\" value=\"" + heishamonSettings->wifi_hostname + "\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Current update password:<br>";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Current update password:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"password\" name=\"current_ota_password\" value=\"\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "New update password:<br>";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "New update password:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"password\" name=\"new_ota_password\" value=\"\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Mqtt topic base:<br>";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Mqtt topic base:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"text\" name=\"mqtt_topic_base\" value=\"" + heishamonSettings->mqtt_topic_base + "\">";
-  httptext = httptext + "<br><br>";  
-  httptext = httptext + "Mqtt server:<br>";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Mqtt server:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"text\" name=\"mqtt_server\" value=\"" + heishamonSettings->mqtt_server + "\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Mqtt port:<br>";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Mqtt port:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"number\" name=\"mqtt_port\" value=\"" + heishamonSettings->mqtt_port + "\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Mqtt username:<br>";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Mqtt username:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"text\" name=\"mqtt_username\" value=\"" + heishamonSettings->mqtt_username + "\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Mqtt password:<br>";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Mqtt password:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"password\" name=\"mqtt_password\" value=\"" + heishamonSettings->mqtt_password + "\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Use 1wire DS18b20: ";
-  if (heishamonSettings->use_1wire) {
-    httptext = httptext + "<input type=\"checkbox\" name=\"use_1wire\" value=\"enabled\" checked >";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "How often new values are collected from heatpump:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"number\" name=\"waitTime\" value=\"" + heishamonSettings->waitTime + "\"> seconds";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "How often all heatpump values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"number\" name=\"updateAllTime\" value=\"" + heishamonSettings->updateAllTime + "\"> seconds";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Listen only mode:</td><td style=\"text-align:left\">";
+  if (heishamonSettings->listenonly) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\" checked >";
   } else {
-    httptext = httptext + "<input type=\"checkbox\" name=\"use_1wire\" value=\"enabled\">";
+    httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">";
   }
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Use s0 kWh metering: ";
-  if (heishamonSettings->use_s0) {
-    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideS0Div(this)\" name=\"use_s0\" value=\"enabled\" checked >";
-    httptext = httptext + "<div id=\"s0settings\" class=\"w3-container w3-center\" style=\"display: block;\">";
+  httptext = httptext + "</td></tr>";
+  httptext = httptext + "</table>";
+  
+  // 1wire
+  httptext = httptext + "<table style=\"width:100%\">";
+  httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Use 1wire DS18b20:</td><td style=\"text-align:left\">";
+  if (heishamonSettings->use_1wire) {
+    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\" checked >";
+    httptext = httptext + "</td></tr>";
+    httptext = httptext + "</table>";
+    httptext = httptext + "<table id=\"dallassettings\" style=\"display: table; width:100%\">";    
   } else {
-    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideS0Div(this)\" name=\"use_s0\" value=\"enabled\">";
-    httptext = httptext + "<div id=\"s0settings\" class=\"w3-container w3-center\" style=\"display: none;\">";
+    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\">";
+    httptext = httptext + "</td></tr>";
+    httptext = httptext + "</table>";
+    httptext = httptext + "<table id=\"dallassettings\" style=\"display: table; width:100%\">";    
+  }
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "How often new values are collected from 1wire:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"number\" name=\"waitDallasTime\" value=\"" + heishamonSettings->waitDallasTime + "\"> seconds";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "How often all 1wire values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"number\" name=\"updataAllDallasTime\" value=\"" + heishamonSettings->updataAllDallasTime + "\"> seconds";
+  httptext = httptext + "</td></tr>";
+  httptext = httptext + "</table>";
+  
+  // s0
+  httptext = httptext + "<table style=\"width:100%\">";
+  httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Use s0 kWh metering:</td><td style=\"text-align:left\">";
+  if (heishamonSettings->use_s0) {
+    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideS0Table(this)\" name=\"use_s0\" value=\"enabled\" checked >";
+    httptext = httptext + "</td></tr>";
+    httptext = httptext + "</table>";
+    httptext = httptext + "<table id=\"s0settings\" style=\"display: table; width:100%\">";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideS0Table(this)\" name=\"use_s0\" value=\"enabled\">";
+    httptext = httptext + "</td></tr>";
+    httptext = httptext + "</table>";
+    httptext = httptext + "<table id=\"s0settings\" style=\"display: none; width:100%\">";
   }
   //begin default S0 pins hack
   if (actS0Data[0].gpiopin == 255) actS0Data[0].gpiopin = DEFAULT_S0_PIN_1;
   if (actS0Data[1].gpiopin == 255) actS0Data[1].gpiopin = DEFAULT_S0_PIN_2;
   //end default S0 pins hack
   for (int i = 0; i < NUM_S0_COUNTERS; i++) {
-    httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " GPIO:<br>";
+    httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
+    httptext = httptext + "S0 port " + (i + 1) + " GPIO:</td><td style=\"text-align:left\">";
     httptext = httptext + "<input type=\"number\" name=\"s0_" + (i + 1) + "_gpio\" value=\"" + actS0Data[i].gpiopin + "\">";
-    httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " imp/kwh:<br>";
-    httptext = httptext + "<input type=\"number\" id=\"s0_ppkwh_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_ppkwh\" value=\"" + (actS0Data[i].ppkwh) + "\">";
-    httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " reporting interval during standby/low power usage:<br>";
-    httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (actS0Data[i].lowerPowerInterval) + "\">";
-    httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold: <label id=\"s0_minwatt_" + (i+1) + "\">"+(int) round((3600 * 1000 / actS0Data[i].ppkwh)/ actS0Data[i].lowerPowerInterval)+"</label> Watt";
-   }
-  httptext = httptext + "</div>";
-
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Listen only mode: ";
-  if (heishamonSettings->listenonly) {
-    httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\" checked >";
-  } else {
-    httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">";
+    httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+    httptext = httptext + "S0 port " + (i + 1) + " imp/kwh:</td><td style=\"text-align:left\">";
+    httptext = httptext + "<input type=\"number\" id=\"s0_ppkwh_" + (i + 1) + "\" onchange=\"changeMinWatt(" + (i + 1) + ")\" name=\"s0_" + (i + 1) + "_ppkwh\" value=\"" + (actS0Data[i].ppkwh) + "\">";
+    httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+    httptext = httptext + "S0 port " + (i + 1) + " reporting interval during standby/low power usage:</td><td style=\"text-align:left\">";
+    httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i + 1) + "\" onchange=\"changeMinWatt(" + (i + 1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (actS0Data[i].lowerPowerInterval) + "\"> seconds";
+    httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+    httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold:</td><td style=\"text-align:left\"><label id=\"s0_minwatt_" + (i + 1) + "\">" + (int) round((3600 * 1000 / actS0Data[i].ppkwh) / actS0Data[i].lowerPowerInterval) + "</label> Watt";
+    httptext = httptext + "</td></tr>";
   }
+  httptext = httptext + "</table>";
+
+
   httptext = httptext + "<br><br>";  httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
   httptext = httptext + "</form>";
   httptext = httptext + "<br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\" >Factory reset</a>";

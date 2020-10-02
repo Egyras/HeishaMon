@@ -7,7 +7,6 @@
 
 #define MQTT_RETAIN_VALUES 1 // do we retain 1wire values?
 
-#define FETCHTEMPSTIME 5000 // how often Dallas temps are read in msec
 #define MAXTEMPDIFFPERSEC 0.5 // what is the allowed temp difference per second which is allowed (to filter bad values)
 
 #define MINREPORTEDS0TIME 5000 // how often s0 Watts are reported (not faster than this)
@@ -20,6 +19,8 @@ int dallasDevicecount = 0;
 unsigned long nextalldatatime_dallas = 0;
 
 unsigned long dallasTimer = 0;
+unsigned int updateAllDallasTime = 30000; // will be set using heishmonSettings
+unsigned int dallasTimerWait = 30000; // will be set using heishmonSettings
 
 //volatile pulse detectors for s0
 volatile unsigned long new_pulse_s0[2];
@@ -27,8 +28,10 @@ volatile unsigned long new_pulse_s0[2];
 
 unsigned long s0Timer = 0;
 
-void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*)) {
+void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*), unsigned int updateAllDallasTimeSettings, unsigned int dallasTimerWaitSettings) {
   char log_msg[256];
+  updateAllDallasTime = updateAllDallasTimeSettings;
+  dallasTimerWait = dallasTimerWaitSettings;
   DS18B20.begin();
   dallasDevicecount  = DS18B20.getDeviceCount();
   sprintf(log_msg, "Number of 1wire sensors on bus: %d", dallasDevicecount); log_message(log_msg);
@@ -55,7 +58,7 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
 
   if (millis() > nextalldatatime_dallas) {
     updatenow = true;
-    nextalldatatime_dallas = millis() + UPDATEALLTIME_DALLAS;
+    nextalldatatime_dallas = millis() + (1000 * updateAllDallasTime);
   }
 
   DS18B20.requestTemperatures();
@@ -82,7 +85,7 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
 void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
   if (millis() > dallasTimer) {
     log_message((char*)"Requesting new 1wire temperatures");
-    dallasTimer = millis() + FETCHTEMPSTIME;
+    dallasTimer = millis() + (1000*dallasTimerWait);
     readNewDallasTemp(actDallasData, mqtt_client, log_message, mqtt_topic_base);
   }
 }

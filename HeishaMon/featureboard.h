@@ -2,7 +2,6 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-#define UPDATEALLTIME_DALLAS 300000 // how often all dallas data is cleared and so resend to mqtt
 #define MAX_DALLAS_SENSORS 15
 #define ONE_WIRE_BUS 4  // DS18B20 pin, for now a static config - should be in config menu later
 #define NUM_S0_COUNTERS 2
@@ -30,7 +29,7 @@ struct s0Data {
 
 
 void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base);
-void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*));
+void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*), unsigned int updataAllDallasTimeSettings, unsigned int dallasTimerWaitSettings);
 String dallasJsonOutput(dallasData actDallasData[]);
 String dallasTableOutput(dallasData actDallasData[]);
 void initS0Sensors(s0Data actS0Data[]);

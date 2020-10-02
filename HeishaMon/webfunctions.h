@@ -6,9 +6,10 @@
 #include "featureboard.h"
 
 struct settingsStruct {
-  unsigned int waitTime; // how often data is read from heatpump
-  unsigned int updateAllTime; // how often all data is resend to mqtt
-  unsigned int updataAllDallasTime; //how often all 1wire data is resent to mqtt
+  unsigned int waitTime = 5; // how often data is read from heatpump
+  unsigned int waitDallasTime = 5; // how often temps are read from 1wire
+  unsigned int updateAllTime = 300; // how often all data is resend to mqtt
+  unsigned int updataAllDallasTime = 300; //how often all 1wire data is resent to mqtt
   
   const char* update_path = "/firmware";
   const char* update_username = "admin";

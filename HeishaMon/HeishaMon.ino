@@ -24,7 +24,7 @@
 // of the address block
 #define DRD_ADDRESS 0x00
 
-#define WAITTIME 5000 // wait before next data read from heatpump
+
 #define SERIALTIMEOUT 2000 // wait until all 203 bytes are read, must not be too long to avoid blocking the code
 
 ESP8266WebServer httpServer(80);
@@ -125,6 +125,10 @@ void mqtt_reconnect()
     mqtt_client.subscribe(topic);
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
     mqtt_client.subscribe(topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_pump_topic);
+    mqtt_client.subscribe(topic);    
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_pumpspeed_topic);
+    mqtt_client.subscribe(topic);    
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
     mqtt_client.publish(topic, "Online");
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_iptopic);
@@ -397,7 +401,7 @@ void setup() {
   setupOTA();
   setupMqtt();
   setupHttp();
-  if (heishamonSettings.use_1wire) initDallasSensors(actDallasData, log_message);
+  if (heishamonSettings.use_1wire) initDallasSensors(actDallasData, log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
   if (heishamonSettings.use_s0) initS0Sensors(actS0Data);
   switchSerial();
 
@@ -425,7 +429,7 @@ void read_panasonic_data() {
   }
   if ( (heishamonSettings.listenonly || sending) && (Serial.available() > 0)) { //only read data if we have sent a command so we expect an answer or in listen only mode
     // read the serial and decode if data is complete and valid
-    if ( readSerial()) decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
+    if ( readSerial()) decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
   }
 }
 
@@ -462,7 +466,7 @@ void loop() {
       }
       mqtt_reconnect();
     }
-    nexttime = millis() + WAITTIME;
+    nexttime = millis() + (1000 * heishamonSettings.waitTime);
     if (!heishamonSettings.listenonly) send_panasonic_query();
     MDNS.announce();
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
