@@ -147,14 +147,16 @@ void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(c
 
   for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
     //first handle new detected pulses
-    if ((new_pulse_s0[i] > 0) && ((new_pulse_s0[i] - actS0Data[i].lastPulse) > 50L)) { //50ms debounce filter, this also prevents division by zero to occur a few lines further down the road if pulseInterval = 0
-      unsigned long pulseInterval = new_pulse_s0[i] - actS0Data[i].lastPulse;
+    noInterrupts();
+    unsigned long new_pulse = new_pulse_s0[i];
+    interrupts();
+    unsigned long pulseInterval = new_pulse - actS0Data[i].lastPulse;
+    if (pulseInterval > 50L) { //50ms debounce filter, this also prevents division by zero to occur a few lines further down the road if pulseInterval = 0
       if (actS0Data[i].lastPulse > 0) { //Do not calculate watt for the first pulse since reboot because we will always report a too high watt. Better to show 0 watt at first pulse.
         actS0Data[i].watt = (3600000000.0 / pulseInterval) / actS0Data[i].ppkwh;
       }
-      actS0Data[i].lastPulse = new_pulse_s0[i];
+      actS0Data[i].lastPulse = new_pulse;
       actS0Data[i].pulses++;
-      new_pulse_s0[i] = 0;
       if ((actS0Data[i].nextReport - millisThisLoop) > MINREPORTEDS0TIME) { //loop was in standby interval
         actS0Data[i].nextReport = 0; // report now
       }
