@@ -53,6 +53,7 @@ void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*), u
     }
     sprintf(log_msg, "Found 1wire sensor: %s", actDallasData[i].address.c_str() ); log_message(log_msg);
   }
+  DS18B20.setWaitForConversion(false); //async 1wire during next loops
 }
 
 void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
@@ -65,7 +66,6 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
     nextalldatatime_dallas = millis() + (1000 * updateAllDallasTime);
   }
 
-  DS18B20.requestTemperatures();
   for (int i = 0; i < dallasDevicecount; i++) {
     float temp = DS18B20.getTempC(actDallasData[i].sensor);
     if (temp < -120) {
@@ -87,6 +87,9 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
 }
 
 void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
+  if (millis() > (dallasTimer - 1000)) {
+    DS18B20.requestTemperatures(); // get temperatures for next run 1 second before getting the temperatures (async)
+  }
   if (millis() > dallasTimer) {
     log_message((char*)"Requesting new 1wire temperatures");
     dallasTimer = millis() + (1000*dallasTimerWait);
