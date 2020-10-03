@@ -169,7 +169,7 @@ void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(c
       unsigned long lastePulseInterval = millisThisLoop - actS0Data[i].lastPulse;
       unsigned long calcMaxWatt = (3600000000.0 / lastePulseInterval) / actS0Data[i].ppkwh;
 
-      if (actS0Data[i].watt < ((3600 * 1000 / actS0Data[i].ppkwh) / actS0Data[i].lowerPowerInterval) ) { //watt is lower than possible in lower power interval time
+      if (actS0Data[i].watt < ((3600000.0 / actS0Data[i].ppkwh) / actS0Data[i].lowerPowerInterval) ) { //watt is lower than possible in lower power interval time
         //Serial1.println("===In standby mode===");
         actS0Data[i].nextReport = millisThisLoop + 1000 * actS0Data[i].lowerPowerInterval;
         if ((actS0Data[i].watt)/2 > calcMaxWatt) {
@@ -185,8 +185,7 @@ void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(c
         }
       }
 
-      //calculate the watthour since last message
-      float Watthour = (actS0Data[i].pulses * ( 1000 / actS0Data[i].ppkwh));
+      float Watthour = (actS0Data[i].pulses * ( 1000.0 / actS0Data[i].ppkwh));
       actS0Data[i].pulses = 0; //per message we report new wattHour, so pulses should be zero at start new message
 
       //report using mqtt
