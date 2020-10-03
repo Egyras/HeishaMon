@@ -387,6 +387,7 @@ void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], dallasDa
 
 void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[], s0Data actS0Data[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->sendHeader("Access-Control-Allow-Origin", "*");
   httpServer->send(200, "application/json", "");
   //begin json
   String tabletext = "{";
