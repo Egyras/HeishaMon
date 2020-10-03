@@ -35,6 +35,10 @@ void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*), u
   DS18B20.begin();
   dallasDevicecount  = DS18B20.getDeviceCount();
   sprintf(log_msg, "Number of 1wire sensors on bus: %d", dallasDevicecount); log_message(log_msg);
+  if ( dallasDevicecount > MAX_DALLAS_SENSORS) {
+    dallasDevicecount = MAX_DALLAS_SENSORS;
+    sprintf(log_msg, "Reached max 1wire sensor count. Only %d sensors will provide data.", dallasDevicecount); log_message(log_msg);
+  }
 
   for (int j = 0 ; j < dallasDevicecount; j++) {
     DS18B20.getAddress(actDallasData[j].sensor, j);
