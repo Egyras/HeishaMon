@@ -59,6 +59,7 @@ void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*), u
 void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
   char log_msg[256];
   char mqtt_topic[256];
+  char valueStr[20];
   bool updatenow = false;
 
   if (millis() > nextalldatatime_dallas) {
@@ -73,13 +74,14 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
     } else {
       int allowedtempdiff = (((millis() - actDallasData[i].lastgoodtime)) / 1000) * MAXTEMPDIFFPERSEC;
       if ((actDallasData[i].temperature != -127) and ((temp > (actDallasData[i].temperature + allowedtempdiff)) or (temp < (actDallasData[i].temperature - allowedtempdiff)))) {
-        sprintf(log_msg, "Filtering 1wire sensor temperature (%s). Delta to high. Current: %s Last: %s", actDallasData[i].address.c_str(), String(temp).c_str(), String(actDallasData[i].temperature).c_str()); log_message(log_msg);
+        sprintf(log_msg, "Filtering 1wire sensor temperature (%s). Delta to high. Current: %.2f Last: %.2f", actDallasData[i].address.c_str(), temp, actDallasData[i].temperature); log_message(log_msg);
       } else {
         actDallasData[i].lastgoodtime = millis();
         if ((updatenow) || (actDallasData[i].temperature != temp )) {  //only update mqtt topic if temp changed or after each update timer
           actDallasData[i].temperature = temp;
-          sprintf(log_msg, "Received 1wire sensor temperature (%s): %s", actDallasData[i].address.c_str(), String(actDallasData[i].temperature).c_str()); log_message(log_msg);
-          sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address.c_str()); mqtt_client.publish(mqtt_topic, String(actDallasData[i].temperature).c_str(), MQTT_RETAIN_VALUES);
+          sprintf(log_msg, "Received 1wire sensor temperature (%s): %.2f", actDallasData[i].address.c_str(), actDallasData[i].temperature); log_message(log_msg);
+          sprintf(valueStr, "%.2f", actDallasData[i].temperature);
+          sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address.c_str()); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
         }
       }
     }
@@ -191,10 +193,13 @@ void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(c
       //report using mqtt
       char log_msg[256];
       char mqtt_topic[256];
+      char valueStr[20];
       sprintf(log_msg, "Measured Watthour on S0 port %d: %.2f", (i + 1),  Watthour ); log_message(log_msg);
-      sprintf(mqtt_topic, "%s/%s/Watthour/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, String(Watthour).c_str(), MQTT_RETAIN_VALUES);
+      sprintf(valueStr, "%.2f", Watthour);
+      sprintf(mqtt_topic, "%s/%s/Watthour/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
       sprintf(log_msg, "Calculated Watt on S0 port %d: %u", (i + 1), actS0Data[i].watt); log_message(log_msg);
-      sprintf(mqtt_topic, "%s/%s/Watt/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, String(actS0Data[i].watt).c_str(), MQTT_RETAIN_VALUES);
+      sprintf(valueStr, "%u",  actS0Data[i].watt);
+      sprintf(mqtt_topic, "%s/%s/Watt/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
     }
   }
 }
