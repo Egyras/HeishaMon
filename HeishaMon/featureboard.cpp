@@ -10,6 +10,7 @@
 #define MAXTEMPDIFFPERSEC 0.5 // what is the allowed temp difference per second which is allowed (to filter bad values)
 
 #define MINREPORTEDS0TIME 5000 // how often s0 Watts are reported (not faster than this)
+#define DALLASASYNC 0 //async dallas yes or no (default no, because async seems to break 1wire sometimes with current code)
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
@@ -53,7 +54,7 @@ void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*), u
     }
     sprintf(log_msg, "Found 1wire sensor: %s", actDallasData[i].address.c_str() ); log_message(log_msg);
   }
-  DS18B20.setWaitForConversion(false); //async 1wire during next loops
+  if (DALLASASYNC) DS18B20.setWaitForConversion(false); //async 1wire during next loops
 }
 
 void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
@@ -66,7 +67,7 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
     updatenow = true;
     nextalldatatime_dallas = millis() + (1000 * updateAllDallasTime);
   }
-
+  if (!(DALLASASYNC)) DS18B20.requestTemperatures();
   for (int i = 0; i < dallasDevicecount; i++) {
     float temp = DS18B20.getTempC(actDallasData[i].sensor);
     if (temp < -120) {
@@ -89,7 +90,7 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
 }
 
 void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
-  if (millis() > (dallasTimer - 1000)) {
+  if ((DALLASASYNC) && (millis() > (dallasTimer - 1000))) {
     DS18B20.requestTemperatures(); // get temperatures for next run 1 second before getting the temperatures (async)
   }
   if (millis() > dallasTimer) {
