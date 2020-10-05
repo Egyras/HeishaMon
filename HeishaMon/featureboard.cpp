@@ -47,12 +47,12 @@ void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*), u
 
   DS18B20.requestTemperatures();
   for (int i = 0 ; i < dallasDevicecount; i++) {
-    for (uint8_t x = 0; x < 8; x++)  {
+    actDallasData[i].address[17] = '\0';
+    for (int x = 0; x < 8; x++)  {
       // zero pad the address if necessary
-      if (actDallasData[i].sensor[x] < 16) actDallasData[i].address = actDallasData[i].address + "0";
-      actDallasData[i].address = actDallasData[i].address  + String(actDallasData[i].sensor[x], HEX);
+      sprintf(&actDallasData[i].address[x*2],"%02x",actDallasData[i].sensor[x]);
     }
-    sprintf(log_msg, "Found 1wire sensor: %s", actDallasData[i].address.c_str() ); log_message(log_msg);
+    sprintf(log_msg, "Found 1wire sensor: %s", actDallasData[i].address ); log_message(log_msg);
   }
   if (DALLASASYNC) DS18B20.setWaitForConversion(false); //async 1wire during next loops
 }
@@ -71,18 +71,18 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
   for (int i = 0; i < dallasDevicecount; i++) {
     float temp = DS18B20.getTempC(actDallasData[i].sensor);
     if (temp < -120) {
-      sprintf(log_msg, "Error 1wire sensor offline: %s", actDallasData[i].address.c_str()); log_message(log_msg);
+      sprintf(log_msg, "Error 1wire sensor offline: %s", actDallasData[i].address); log_message(log_msg);
     } else {
       int allowedtempdiff = (((millis() - actDallasData[i].lastgoodtime)) / 1000) * MAXTEMPDIFFPERSEC;
       if ((actDallasData[i].temperature != -127) and ((temp > (actDallasData[i].temperature + allowedtempdiff)) or (temp < (actDallasData[i].temperature - allowedtempdiff)))) {
-        sprintf(log_msg, "Filtering 1wire sensor temperature (%s). Delta to high. Current: %.2f Last: %.2f", actDallasData[i].address.c_str(), temp, actDallasData[i].temperature); log_message(log_msg);
+        sprintf(log_msg, "Filtering 1wire sensor temperature (%s). Delta to high. Current: %.2f Last: %.2f", actDallasData[i].address, temp, actDallasData[i].temperature); log_message(log_msg);
       } else {
         actDallasData[i].lastgoodtime = millis();
         if ((updatenow) || (actDallasData[i].temperature != temp )) {  //only update mqtt topic if temp changed or after each update timer
           actDallasData[i].temperature = temp;
-          sprintf(log_msg, "Received 1wire sensor temperature (%s): %.2f", actDallasData[i].address.c_str(), actDallasData[i].temperature); log_message(log_msg);
+          sprintf(log_msg, "Received 1wire sensor temperature (%s): %.2f", actDallasData[i].address, actDallasData[i].temperature); log_message(log_msg);
           sprintf(valueStr, "%.2f", actDallasData[i].temperature);
-          sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address.c_str()); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+          sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
         }
       }
     }

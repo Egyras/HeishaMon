@@ -181,13 +181,13 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, s0Data
           if (!error) {
             Serial.println("\nparsed json");
             //read updated parameters, make sure no overflow
-            strncpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], 39); heishamonSettings->wifi_hostname[39] = '\0';
-            strncpy(heishamonSettings->ota_password, jsonDoc["ota_password"], 39); heishamonSettings->ota_password[39] = '\0';
-            if ( jsonDoc["mqtt_topic_base"] ) strncpy(heishamonSettings->mqtt_topic_base, jsonDoc["mqtt_topic_base"], 39); heishamonSettings->mqtt_topic_base[39] = '\0';
-            strncpy(heishamonSettings->mqtt_server, jsonDoc["mqtt_server"], 39); heishamonSettings->mqtt_server[39] = '\0';
-            strncpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], 5); heishamonSettings->mqtt_port[5] = '\0';
-            strncpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], 39); heishamonSettings->mqtt_username[39] = '\0';
-            strncpy(heishamonSettings->mqtt_password, jsonDoc["mqtt_password"], 39); heishamonSettings->mqtt_password[39] = '\0';
+            if ( jsonDoc["wifi_hostname"] ) strlcpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], sizeof(heishamonSettings->wifi_hostname));
+            if ( jsonDoc["ota_password"] ) strlcpy(heishamonSettings->ota_password, jsonDoc["ota_password"], sizeof(heishamonSettings->ota_password));
+            if ( jsonDoc["mqtt_topic_base"] ) strlcpy(heishamonSettings->mqtt_topic_base, jsonDoc["mqtt_topic_base"], sizeof(heishamonSettings->mqtt_topic_base));
+            if ( jsonDoc["mqtt_server"] ) strlcpy(heishamonSettings->mqtt_server, jsonDoc["mqtt_server"], sizeof(heishamonSettings->mqtt_server));
+            if ( jsonDoc["mqtt_port"] ) strlcpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], sizeof(heishamonSettings->mqtt_port));
+            if ( jsonDoc["mqtt_username"] ) strlcpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], sizeof(heishamonSettings->mqtt_username));
+            if ( jsonDoc["mqtt_password"] ) strlcpy(heishamonSettings->mqtt_password, jsonDoc["mqtt_password"], sizeof(heishamonSettings->mqtt_password));
             if ( jsonDoc["use_1wire"] == "enabled" ) heishamonSettings->use_1wire = true;
             if ( jsonDoc["use_s0"] == "enabled" ) {
               heishamonSettings->use_s0 = true;
