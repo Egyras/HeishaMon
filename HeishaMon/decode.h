@@ -25,7 +25,7 @@ String getEnergy(byte input);
 String getHeatMode(byte input);
 String getModel(byte input);
 
-#define NUMBER_OF_TOPICS 93 //last topic number + 1
+#define NUMBER_OF_TOPICS 94 //last topic number + 1
 
 static const char * topics[] = {
   "Heatpump_State",          //TOP0

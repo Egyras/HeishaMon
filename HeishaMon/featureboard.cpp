@@ -24,10 +24,7 @@ unsigned int updateAllDallasTime = 30000; // will be set using heishmonSettings
 unsigned int dallasTimerWait = 30000; // will be set using heishmonSettings
 
 //volatile pulse detectors for s0
-volatile unsigned long new_pulse_s0[2];
-
-
-unsigned long s0Timer = 0;
+volatile unsigned long new_pulse_s0[2] = {0,0};
 
 void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*), unsigned int updateAllDallasTimeSettings, unsigned int dallasTimerWaitSettings) {
   char log_msg[256];
@@ -131,7 +128,6 @@ ICACHE_RAM_ATTR void onS0Pulse1() {
 
 ICACHE_RAM_ATTR void onS0Pulse2() {
   new_pulse_s0[1] = millis();
-
 }
 
 void initS0Sensors(s0Data actS0Data[]) {
