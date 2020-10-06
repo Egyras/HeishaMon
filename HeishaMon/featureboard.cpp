@@ -15,7 +15,15 @@
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
 
+//global array for 1wire data
+dallasDataStruct* actDallasData = 0;
 int dallasDevicecount = 0;
+
+//global array for s0 data
+s0DataStruct actS0Data[NUM_S0_COUNTERS];
+
+//global array for s0 Settings
+s0SettingsStruct actS0Settings[NUM_S0_COUNTERS];
 
 unsigned long nextalldatatime_dallas = 0;
 
@@ -24,9 +32,9 @@ unsigned int updateAllDallasTime = 30000; // will be set using heishmonSettings
 unsigned int dallasTimerWait = 30000; // will be set using heishmonSettings
 
 //volatile pulse detectors for s0
-volatile unsigned long new_pulse_s0[2] = {0,0};
+volatile unsigned long new_pulse_s0[2] = {0, 0};
 
-void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*), unsigned int updateAllDallasTimeSettings, unsigned int dallasTimerWaitSettings) {
+void initDallasSensors(void (*log_message)(char*), unsigned int updateAllDallasTimeSettings, unsigned int dallasTimerWaitSettings) {
   char log_msg[256];
   updateAllDallasTime = updateAllDallasTimeSettings;
   dallasTimerWait = dallasTimerWaitSettings;
@@ -38,23 +46,25 @@ void initDallasSensors(dallasData actDallasData[], void (*log_message)(char*), u
     sprintf(log_msg, "Reached max 1wire sensor count. Only %d sensors will provide data.", dallasDevicecount); log_message(log_msg);
   }
 
+  //init array
+  actDallasData = new dallasDataStruct [dallasDevicecount];
   for (int j = 0 ; j < dallasDevicecount; j++) {
     DS18B20.getAddress(actDallasData[j].sensor, j);
   }
 
   DS18B20.requestTemperatures();
   for (int i = 0 ; i < dallasDevicecount; i++) {
-    actDallasData[i].address[17] = '\0';
+    actDallasData[i].address[16] = '\0';
     for (int x = 0; x < 8; x++)  {
       // zero pad the address if necessary
-      sprintf(&actDallasData[i].address[x*2],"%02x",actDallasData[i].sensor[x]);
+      sprintf(&actDallasData[i].address[x * 2], "%02x", actDallasData[i].sensor[x]);
     }
     sprintf(log_msg, "Found 1wire sensor: %s", actDallasData[i].address ); log_message(log_msg);
   }
   if (DALLASASYNC) DS18B20.setWaitForConversion(false); //async 1wire during next loops
 }
 
-void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
+void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
   char log_msg[256];
   char mqtt_topic[256];
   char valueStr[20];
@@ -86,18 +96,18 @@ void readNewDallasTemp(dallasData actDallasData[], PubSubClient &mqtt_client, vo
   }
 }
 
-void dallasLoop(dallasData actDallasData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
+void dallasLoop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
   if ((DALLASASYNC) && (millis() > (dallasTimer - 1000))) {
     DS18B20.requestTemperatures(); // get temperatures for next run 1 second before getting the temperatures (async)
   }
   if (millis() > dallasTimer) {
     log_message((char*)"Requesting new 1wire temperatures");
-    dallasTimer = millis() + (1000*dallasTimerWait);
-    readNewDallasTemp(actDallasData, mqtt_client, log_message, mqtt_topic_base);
+    dallasTimer = millis() + (1000 * dallasTimerWait);
+    readNewDallasTemp(mqtt_client, log_message, mqtt_topic_base);
   }
 }
 
-String dallasJsonOutput(dallasData actDallasData[]) {
+String dallasJsonOutput() {
   String output = "[";
   for (int i = 0; i < dallasDevicecount; i++) {
     output = output + "{";
@@ -110,7 +120,7 @@ String dallasJsonOutput(dallasData actDallasData[]) {
   return output;
 }
 
-String dallasTableOutput(dallasData actDallasData[]) {
+String dallasTableOutput() {
   String output = "";
   for (int i = 0; i < dallasDevicecount; i++) {
     output = output + "<tr>";
@@ -130,18 +140,40 @@ ICACHE_RAM_ATTR void onS0Pulse2() {
   new_pulse_s0[1] = millis();
 }
 
-void initS0Sensors(s0Data actS0Data[]) {
-  pinMode(actS0Data[0].gpiopin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(actS0Data[0].gpiopin), onS0Pulse1, RISING);
+void initS0Sensors(s0SettingsStruct s0Settings[]) {
+  //setup s0 port 1
+  actS0Settings[0].gpiopin = s0Settings[0].gpiopin;
+  actS0Settings[0].ppkwh = s0Settings[0].ppkwh;
+  actS0Settings[0].lowerPowerInterval = s0Settings[0].lowerPowerInterval;
+  pinMode(actS0Settings[0].gpiopin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(actS0Settings[0].gpiopin), onS0Pulse1, RISING);
   actS0Data[0].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
 
-  pinMode(actS0Data[1].gpiopin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(actS0Data[1].gpiopin), onS0Pulse2, RISING);
+  //setup s0 port 2
+  actS0Settings[1].gpiopin = s0Settings[1].gpiopin;
+  actS0Settings[1].ppkwh = s0Settings[1].ppkwh;
+  actS0Settings[1].lowerPowerInterval = s0Settings[1].lowerPowerInterval;
+  pinMode(actS0Settings[1].gpiopin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(actS0Settings[1].gpiopin), onS0Pulse2, RISING);
   actS0Data[1].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
 }
 
-void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
+void s0SettingsCorrupt(s0SettingsStruct s0Settings[], void (*log_message)(char*)) {
+  for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
+    if ((s0Settings[i].gpiopin != actS0Settings[i].gpiopin) || (s0Settings[i].ppkwh != actS0Settings[i].ppkwh) || (s0Settings[i].lowerPowerInterval != actS0Settings[i].lowerPowerInterval)) {
+      char log_msg[256];
+      sprintf(log_msg, "S0 settings got corrupted, rebooting!" ); log_message(log_msg);
+      delay(1000);
+      ESP.restart();
+    }
+  }
+}
 
+void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, s0SettingsStruct s0Settings[]) {
+
+  //check for corruption
+  s0SettingsCorrupt(s0Settings, log_message);
+  
   unsigned long millisThisLoop = millis();
 
   for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
@@ -152,7 +184,7 @@ void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(c
     unsigned long pulseInterval = new_pulse - actS0Data[i].lastPulse;
     if (pulseInterval > 50L) { //50ms debounce filter, this also prevents division by zero to occur a few lines further down the road if pulseInterval = 0
       if (actS0Data[i].lastPulse > 0) { //Do not calculate watt for the first pulse since reboot because we will always report a too high watt. Better to show 0 watt at first pulse.
-        actS0Data[i].watt = (3600000000.0 / pulseInterval) / actS0Data[i].ppkwh;
+        actS0Data[i].watt = (3600000000.0 / pulseInterval) / actS0Settings[i].ppkwh;
       }
       actS0Data[i].lastPulse = new_pulse;
       actS0Data[i].pulses++;
@@ -164,27 +196,27 @@ void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(c
 
     //then report after nextReport
     if (millisThisLoop > actS0Data[i].nextReport) {
-      
-      unsigned long lastePulseInterval = millisThisLoop - actS0Data[i].lastPulse;
-      unsigned long calcMaxWatt = (3600000000.0 / lastePulseInterval) / actS0Data[i].ppkwh;
 
-      if (actS0Data[i].watt < ((3600000.0 / actS0Data[i].ppkwh) / actS0Data[i].lowerPowerInterval) ) { //watt is lower than possible in lower power interval time
+      unsigned long lastePulseInterval = millisThisLoop - actS0Data[i].lastPulse;
+      unsigned long calcMaxWatt = (3600000000.0 / lastePulseInterval) / actS0Settings[i].ppkwh;
+
+      if (actS0Data[i].watt < ((3600000.0 / actS0Settings[i].ppkwh) / actS0Settings[i].lowerPowerInterval) ) { //watt is lower than possible in lower power interval time
         //Serial1.println("===In standby mode===");
-        actS0Data[i].nextReport = millisThisLoop + 1000 * actS0Data[i].lowerPowerInterval;
-        if ((actS0Data[i].watt)/2 > calcMaxWatt) {
+        actS0Data[i].nextReport = millisThisLoop + 1000 * actS0Settings[i].lowerPowerInterval;
+        if ((actS0Data[i].watt) / 2 > calcMaxWatt) {
           //Serial1.println("===Previous standby watt is too high. Lowering watt, divide by two===");
           actS0Data[i].watt = calcMaxWatt / 2;
         }
       }
       else {
         actS0Data[i].nextReport = millisThisLoop + MINREPORTEDS0TIME;
-        if (actS0Data[i].watt > calcMaxWatt) { 
+        if (actS0Data[i].watt > calcMaxWatt) {
           //Serial1.println("===Previous watt is too high. Setting watt to max possible watt===");
           actS0Data[i].watt = calcMaxWatt;
         }
       }
 
-      float Watthour = (actS0Data[i].pulses * ( 1000.0 / actS0Data[i].ppkwh));
+      float Watthour = (actS0Data[i].pulses * ( 1000.0 / actS0Settings[i].ppkwh));
       actS0Data[i].pulses = 0; //per message we report new wattHour, so pulses should be zero at start new message
 
       //report using mqtt
@@ -201,7 +233,7 @@ void s0Loop(s0Data actS0Data[], PubSubClient &mqtt_client, void (*log_message)(c
   }
 }
 
-String s0TableOutput(s0Data actS0Data[]) {
+String s0TableOutput() {
   String output = "";
   for (int i = 0; i < NUM_S0_COUNTERS; i++) {
     output = output + "<tr>";
@@ -212,7 +244,7 @@ String s0TableOutput(s0Data actS0Data[]) {
   return output;
 }
 
-String s0JsonOutput(s0Data actS0Data[]) {
+String s0JsonOutput() {
   String output = "[";
   for (int i = 0; i < NUM_S0_COUNTERS; i++) {
     output = output + "{";

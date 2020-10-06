@@ -115,6 +115,8 @@ int getFreeMemory() {
   if ( 0 == total_memory ) total_memory = ESP.getFreeHeap();
 
   uint32_t free_memory   = ESP.getFreeHeap();
+  Serial1.println(total_memory);
+  Serial1.println(free_memory);
   return (100 * free_memory / total_memory ) ; // as a %
 }
 
@@ -139,7 +141,7 @@ String getUptime() {
   return String(uptime);
 }
 
-void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, s0Data actS0Data[]) {
+void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   //first get total memory before we do anything
   getFreeMemory();
@@ -191,12 +193,12 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, s0Data
             if ( jsonDoc["use_1wire"] == "enabled" ) heishamonSettings->use_1wire = true;
             if ( jsonDoc["use_s0"] == "enabled" ) {
               heishamonSettings->use_s0 = true;
-              if (jsonDoc["s0_1_gpio"]) actS0Data[0].gpiopin = jsonDoc["s0_1_gpio"];
-              if (jsonDoc["s0_1_ppkwh"]) actS0Data[0].ppkwh = jsonDoc["s0_1_ppkwh"];
-              if (jsonDoc["s0_1_interval"]) actS0Data[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
-              if (jsonDoc["s0_2_gpio"]) actS0Data[1].gpiopin = jsonDoc["s0_2_gpio"];
-              if (jsonDoc["s0_2_ppkwh"]) actS0Data[1].ppkwh = jsonDoc["s0_2_ppkwh"];
-              if (jsonDoc["s0_2_interval"] ) actS0Data[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
+              if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
+              if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
+              if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
+              if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
+              if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
+              if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
             }
             if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
             if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
@@ -354,13 +356,13 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStru
   httpServer->client().stop();
 }
 
-void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[], s0Data actS0Data[]) {
+void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   if (httpServer->hasArg("1wire")) {
-    httpServer->sendContent(dallasTableOutput(actDallasData));
+    httpServer->sendContent(dallasTableOutput());
   } else if (httpServer->hasArg("s0")) {
-    httpServer->sendContent(s0TableOutput(actS0Data));
+    httpServer->sendContent(s0TableOutput());
   } else {
     for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
       String topicdesc;
@@ -385,7 +387,7 @@ void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], dallasDa
   httpServer->client().stop();
 }
 
-void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[], s0Data actS0Data[]) {
+void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->sendHeader("Access-Control-Allow-Origin", "*");
   httpServer->send(200, "application/json", "");
@@ -416,10 +418,10 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData
   tabletext = "]";
   httpServer->sendContent(tabletext);
   //1wire data in json
-  tabletext =  ",\"1wire\":" + dallasJsonOutput(actDallasData);
+  tabletext =  ",\"1wire\":" + dallasJsonOutput();
   httpServer->sendContent(tabletext);
   //s0 data in json
-  tabletext =  ",\"s0\":" + s0JsonOutput(actS0Data);
+  tabletext =  ",\"s0\":" + s0JsonOutput();
   httpServer->sendContent(tabletext);
   //end json string
   tabletext = "}";
@@ -471,7 +473,7 @@ void handleReboot(ESP8266WebServer *httpServer) {
   ESP.restart();
 }
 
-void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, s0Data actS0Data[]) {
+void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -693,21 +695,21 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     httptext = httptext + "<table id=\"s0settings\" style=\"display: none; width:100%\">";
   }
   //begin default S0 pins hack
-  if (actS0Data[0].gpiopin == 255) actS0Data[0].gpiopin = DEFAULT_S0_PIN_1;
-  if (actS0Data[1].gpiopin == 255) actS0Data[1].gpiopin = DEFAULT_S0_PIN_2;
+  if (heishamonSettings->s0Settings[0].gpiopin == 255) heishamonSettings->s0Settings[0].gpiopin = DEFAULT_S0_PIN_1;
+  if (heishamonSettings->s0Settings[1].gpiopin == 255) heishamonSettings->s0Settings[1].gpiopin = DEFAULT_S0_PIN_2;
   //end default S0 pins hack
   for (int i = 0; i < NUM_S0_COUNTERS; i++) {
     httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
     httptext = httptext + "S0 port " + (i + 1) + " GPIO:</td><td style=\"text-align:left\">";
-    httptext = httptext + "<input type=\"number\" name=\"s0_" + (i + 1) + "_gpio\" value=\"" + actS0Data[i].gpiopin + "\">";
+    httptext = httptext + "<input type=\"number\" name=\"s0_" + (i + 1) + "_gpio\" value=\"" + heishamonSettings->s0Settings[i].gpiopin + "\">";
     httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
     httptext = httptext + "S0 port " + (i + 1) + " imp/kwh:</td><td style=\"text-align:left\">";
-    httptext = httptext + "<input type=\"number\" id=\"s0_ppkwh_" + (i + 1) + "\" onchange=\"changeMinWatt(" + (i + 1) + ")\" name=\"s0_" + (i + 1) + "_ppkwh\" value=\"" + (actS0Data[i].ppkwh) + "\">";
+    httptext = httptext + "<input type=\"number\" id=\"s0_ppkwh_" + (i + 1) + "\" onchange=\"changeMinWatt(" + (i + 1) + ")\" name=\"s0_" + (i + 1) + "_ppkwh\" value=\"" + (heishamonSettings->s0Settings[i].ppkwh) + "\">";
     httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
     httptext = httptext + "S0 port " + (i + 1) + " reporting interval during standby/low power usage:</td><td style=\"text-align:left\">";
-    httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i + 1) + "\" onchange=\"changeMinWatt(" + (i + 1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (actS0Data[i].lowerPowerInterval) + "\"> seconds";
+    httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i + 1) + "\" onchange=\"changeMinWatt(" + (i + 1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (heishamonSettings->s0Settings[i].lowerPowerInterval) + "\"> seconds";
     httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
-    httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold:</td><td style=\"text-align:left\"><label id=\"s0_minwatt_" + (i + 1) + "\">" + (int) round((3600 * 1000 / actS0Data[i].ppkwh) / actS0Data[i].lowerPowerInterval) + "</label> Watt";
+    httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold:</td><td style=\"text-align:left\"><label id=\"s0_minwatt_" + (i + 1) + "\">" + (int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval) + "</label> Watt";
     httptext = httptext + "</td></tr>";
   }
   httptext = httptext + "</table>";

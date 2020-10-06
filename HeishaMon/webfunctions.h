@@ -24,14 +24,16 @@ struct settingsStruct {
   bool listenonly = false; //listen only so heishamon can be installed parallel to cz-taw1, set commands will not work though
   bool use_1wire = false; //1wire enabled?
   bool use_s0 = false; //s0 enabled?
+
+  s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
 };
 
 
 String getUptime(void);
-void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, s0Data actS0Data[]);
+void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings);
 void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStruct *heishamonSettings);
-void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[], s0Data actS0Data[]);
-void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[], s0Data actS0Data[]);
+void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]);
+void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]);
 void handleFactoryReset(ESP8266WebServer *httpServer);
 void handleReboot(ESP8266WebServer *httpServer);
-void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, s0Data actS0Data[]);
+void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);

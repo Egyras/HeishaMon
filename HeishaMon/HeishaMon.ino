@@ -32,7 +32,6 @@ ESP8266HTTPUpdateServer httpUpdater;
 
 settingsStruct heishamonSettings;
 
-
 bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
 unsigned long nexttime = 0;
@@ -51,12 +50,6 @@ bool outputHexDump = false;
 bool outputSerial1 = true;
 
 
-//global array for 1wire data
-dallasData actDallasData[MAX_DALLAS_SENSORS];
-
-
-//global array for s0 data
-s0Data actS0Data[NUM_S0_COUNTERS];
 
 // instead of passing array pointers between functions we just define this in the global scope
 #define MAXDATASIZE 256
@@ -331,10 +324,10 @@ void setupHttp() {
     handleRoot(&httpServer, readpercentage, &heishamonSettings);
   });
   httpServer.on("/tablerefresh", [] {
-    handleTableRefresh(&httpServer, actData, actDallasData, actS0Data);
+    handleTableRefresh(&httpServer, actData);
   });
   httpServer.on("/json", [] {
-    handleJsonOutput(&httpServer, actData, actDallasData, actS0Data);
+    handleJsonOutput(&httpServer, actData);
   });
   httpServer.on("/factoryreset", [] {
     handleFactoryReset(&httpServer);
@@ -343,7 +336,7 @@ void setupHttp() {
     handleReboot(&httpServer);
   });
   httpServer.on("/settings", [] {
-    handleSettings(&httpServer, &heishamonSettings, actS0Data);
+    handleSettings(&httpServer, &heishamonSettings);
   });
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
@@ -396,13 +389,13 @@ void setupMqtt() {
 
 void setup() {
   setupSerial();
-  setupWifi(drd, &heishamonSettings, actS0Data);
+  setupWifi(drd, &heishamonSettings);
   MDNS.begin(heishamonSettings.wifi_hostname);
   setupOTA();
   setupMqtt();
   setupHttp();
-  if (heishamonSettings.use_1wire) initDallasSensors(actDallasData, log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
-  if (heishamonSettings.use_s0) initS0Sensors(actS0Data);
+  if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
+  if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings);
   switchSerial();
 
 }
@@ -445,9 +438,9 @@ void loop() {
 
   read_panasonic_data();
 
-  if (heishamonSettings.use_1wire) dallasLoop(actDallasData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
+  if (heishamonSettings.use_1wire) dallasLoop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
 
-  if (heishamonSettings.use_s0) s0Loop(actS0Data, mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
+  if (heishamonSettings.use_s0) s0Loop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.s0Settings);
 
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
