@@ -40,7 +40,6 @@ unsigned long goodreads = 0;
 unsigned long totalreads = 0;
 float readpercentage = 0;
 
-
 //useful for debugging, outputs info to a separate mqtt topic
 bool outputMqttLog = false;
 //toggle to dump received hex data in log
@@ -375,6 +374,12 @@ void switchSerial() {
   //swap to gpio13 (D7) and gpio15 (D8)
   Serial.swap();
 
+  //turn on GPIO's on tx/rx for later use
+  pinMode(1, FUNCTION_3);
+  pinMode(3, FUNCTION_3);
+  pinMode(1, OUTPUT);
+  pinMode(3, OUTPUT);  
+
   //enable gpio15 after boot using gpio5 (D1)
   pinMode(5, OUTPUT);
   digitalWrite(5, HIGH);
@@ -446,7 +451,6 @@ void loop() {
   if (millis() > nexttime) {
     if (!mqtt_client.connected())
     {
-
       if (WiFi.status() != WL_CONNECTED) {
         log_message((char *)"Lost WiFi connection, rebooting...");
         delay(1000);

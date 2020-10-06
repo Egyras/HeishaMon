@@ -74,7 +74,7 @@ static const char selectJS[] PROGMEM =
   "}"
   "</script>";
 
-static const char s0SettingsJS[] PROGMEM =
+static const char settingsJS[] PROGMEM =
   "<script type=\"text/javascript\">"
   "    function ShowHideDallasTable(dallasEnabled) {"
   "        var dallassettings = document.getElementById(\"dallassettings\");"
@@ -115,8 +115,6 @@ int getFreeMemory() {
   if ( 0 == total_memory ) total_memory = ESP.getFreeHeap();
 
   uint32_t free_memory   = ESP.getFreeHeap();
-  Serial1.println(total_memory);
-  Serial1.println(free_memory);
   return (100 * free_memory / total_memory ) ; // as a %
 }
 
@@ -668,7 +666,7 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\">";
     httptext = httptext + "</td></tr>";
     httptext = httptext + "</table>";
-    httptext = httptext + "<table id=\"dallassettings\" style=\"display: table; width:100%\">";    
+    httptext = httptext + "<table id=\"dallassettings\" style=\"display: none; width:100%\">";    
   }
   httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
   httptext = httptext + "How often new values are collected from 1wire:</td><td style=\"text-align:left\">";
@@ -722,7 +720,7 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httpServer->sendContent(httptext);
 
   httpServer->sendContent_P(menuJS);
-  httpServer->sendContent_P(s0SettingsJS);
+  httpServer->sendContent_P(settingsJS);
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
   httpServer->client().stop();
