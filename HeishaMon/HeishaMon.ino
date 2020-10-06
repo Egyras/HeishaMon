@@ -84,7 +84,7 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 
 void mqtt_reconnect()
 {
-  Serial1.println("Reconnecting to mqtt server ...");
+  Serial1.println(F("Reconnecting to mqtt server ..."));
   char topic[256];
   sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
   if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
@@ -357,7 +357,7 @@ void setupHttp() {
 void setupSerial() {
   //debug line on serial1 (D4, GPIO2)
   Serial1.begin(115200);
-  Serial1.println("Starting debugging");
+  Serial1.println(F("Starting debugging"));
 
   //boot issue's first on normal serial
   Serial.begin(115200);
@@ -365,7 +365,7 @@ void setupSerial() {
 }
 
 void switchSerial() {
-  Serial.println("Switching serial to connect to heatpump. Look for debug on serial1 (GPIO2) and mqtt log topic.");
+  Serial.println(F("Switching serial to connect to heatpump. Look for debug on serial1 (GPIO2) and mqtt log topic."));
   //serial to cn-cnt
   Serial.flush();
   Serial.end();
@@ -440,7 +440,7 @@ void loop() {
   MDNS.update();
 
   mqtt_client.loop();
-
+  
   read_panasonic_data();
 
   if (heishamonSettings.use_1wire) dallasLoop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base);

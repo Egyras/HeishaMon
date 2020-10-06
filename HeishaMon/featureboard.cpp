@@ -191,7 +191,7 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
       if ((actS0Data[i].nextReport - millisThisLoop) > MINREPORTEDS0TIME) { //loop was in standby interval
         actS0Data[i].nextReport = 0; // report now
       }
-      Serial1.print("S0 port "); Serial1.print(i); Serial1.print(" detected pulse. Pulses since last report: "); Serial1.println(actS0Data[i].pulses);
+      Serial1.print(F("S0 port ")); Serial1.print(i); Serial1.print(F(" detected pulse. Pulses since last report: ")); Serial1.println(actS0Data[i].pulses);
     }
 
     //then report after nextReport
@@ -201,17 +201,17 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
       unsigned long calcMaxWatt = (3600000000.0 / lastePulseInterval) / actS0Settings[i].ppkwh;
 
       if (actS0Data[i].watt < ((3600000.0 / actS0Settings[i].ppkwh) / actS0Settings[i].lowerPowerInterval) ) { //watt is lower than possible in lower power interval time
-        //Serial1.println("===In standby mode===");
+        //Serial1.println(F("===In standby mode==="));
         actS0Data[i].nextReport = millisThisLoop + 1000 * actS0Settings[i].lowerPowerInterval;
         if ((actS0Data[i].watt) / 2 > calcMaxWatt) {
-          //Serial1.println("===Previous standby watt is too high. Lowering watt, divide by two===");
+          //Serial1.println(F("===Previous standby watt is too high. Lowering watt, divide by two==="));
           actS0Data[i].watt = calcMaxWatt / 2;
         }
       }
       else {
         actS0Data[i].nextReport = millisThisLoop + MINREPORTEDS0TIME;
         if (actS0Data[i].watt > calcMaxWatt) {
-          //Serial1.println("===Previous watt is too high. Setting watt to max possible watt===");
+          //Serial1.println(F("===Previous watt is too high. Setting watt to max possible watt==="));
           actS0Data[i].watt = calcMaxWatt;
         }
       }

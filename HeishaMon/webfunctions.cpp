@@ -153,23 +153,23 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
   wifiManager.setDebugOutput(true); //this is debugging on serial port, because serial swap is done after full startup this is ok
 
   if (drd.detect()) {
-    Serial.println("Double reset detected, clearing config.");
+    Serial.println(F("Double reset detected, clearing config."));
     SPIFFS.begin();
     SPIFFS.format();
     wifiManager.resetSettings();
-    Serial.println("Config cleared. Please open the Wifi portal to configure this device...");
+    Serial.println(F("Config cleared. Please open the Wifi portal to configure this device..."));
   } else {
     //read configuration from FS json
-    Serial.println("mounting FS...");
+    Serial.println(F("mounting FS..."));
 
     if (SPIFFS.begin()) {
-      Serial.println("mounted file system");
+      Serial.println(F("mounted file system"));
       if (SPIFFS.exists("/config.json")) {
         //file exists, reading and loading
-        Serial.println("reading config file");
+        Serial.println(F("reading config file"));
         File configFile = SPIFFS.open("/config.json", "r");
         if (configFile) {
-          Serial.println("opened config file");
+          Serial.println(F("opened config file"));
           size_t size = configFile.size();
           // Allocate a buffer to store contents of the file.
           std::unique_ptr<char[]> buf(new char[size]);
@@ -179,7 +179,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
           DeserializationError error = deserializeJson(jsonDoc, buf.get());
           serializeJson(jsonDoc, Serial);
           if (!error) {
-            Serial.println("\nparsed json");
+            Serial.println(F("\nparsed json"));
             //read updated parameters, make sure no overflow
             if ( jsonDoc["wifi_hostname"] ) strlcpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], sizeof(heishamonSettings->wifi_hostname));
             if ( jsonDoc["ota_password"] ) strlcpy(heishamonSettings->ota_password, jsonDoc["ota_password"], sizeof(heishamonSettings->ota_password));
@@ -204,18 +204,18 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
             if ( jsonDoc["updateAllTime"]) heishamonSettings->updateAllTime = jsonDoc["updateAllTime"];
             if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
           } else {
-            Serial.println("Failed to load json config, forcing config reset.");
+            Serial.println(F("Failed to load json config, forcing config reset."));
             wifiManager.resetSettings();
           }
           configFile.close();
         }
       }
       else {
-        Serial.println("No config.json exists! Forcing a config reset.");
+        Serial.println(F("No config.json exists! Forcing a config reset."));
         wifiManager.resetSettings();
       }
     } else {
-      Serial.println("failed to mount FS");
+      Serial.println(F("failed to mount FS"));
     }
     //end read
   }
@@ -253,7 +253,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
   wifiManager.setConfigPortalTimeout(120);
   wifiManager.setConnectTimeout(10);
   if (!wifiManager.autoConnect("HeishaMon-Setup")) {
-    Serial.println("failed to connect and hit timeout");
+    Serial.println(F("failed to connect and hit timeout"));
     delay(3000);
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
@@ -261,7 +261,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
   }
 
   //if you get here you have connected to the WiFi
-  Serial.println("Wifi connected...yeey :)");
+  Serial.println(F("Wifi connected...yeey :)"));
 
   //read updated parameters, make sure no overflow
   strncpy(heishamonSettings->wifi_hostname, custom_wifi_hostname.getValue(), 39); heishamonSettings->wifi_hostname[39] = '\0';
@@ -277,7 +277,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {
-    Serial.println("saving config");
+    Serial.println(F("saving config"));
     DynamicJsonDocument jsonDoc(1024);
     jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
     jsonDoc["ota_password"] = heishamonSettings->ota_password;
@@ -289,7 +289,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
-      Serial.println("failed to open config file for writing");
+      Serial.println(F("failed to open config file for writing"));
     }
 
     serializeJson(jsonDoc, Serial);
@@ -297,8 +297,8 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
     configFile.close();
     //end save
   }
-  Serial.println("==========");
-  Serial.println("local ip");
+  Serial.println(F("=========="));
+  Serial.println(F("local ip"));
   Serial.println(WiFi.localIP());
 }
 
@@ -370,7 +370,12 @@ void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]) {
       }
       else {
         int value = actData[topic].toInt();
-        topicdesc = topicDescription[topic][value];
+        if (value < 0) {
+          topicdesc = "unknown";
+        }
+        else {
+          topicdesc = topicDescription[topic][value];
+        }
       }
       String tabletext = "<tr>";
       tabletext = tabletext + "<td>TOP" + topic + "</td>";
@@ -402,7 +407,12 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]) {
     }
     else {
       int value = actData[topic].toInt();
-      topicdesc = topicDescription[topic][value];
+      if (value < 0) {
+        topicdesc = "unknown";
+      }
+      else {
+        topicdesc = topicDescription[topic][value];
+      }
     }
     tabletext = "{";
     tabletext = tabletext + "\"Topic\": \"TOP" + topic + "\",";
@@ -652,7 +662,7 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   }
   httptext = httptext + "</td></tr>";
   httptext = httptext + "</table>";
-  
+
   // 1wire
   httptext = httptext + "<table style=\"width:100%\">";
   httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
@@ -661,12 +671,12 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\" checked >";
     httptext = httptext + "</td></tr>";
     httptext = httptext + "</table>";
-    httptext = httptext + "<table id=\"dallassettings\" style=\"display: table; width:100%\">";    
+    httptext = httptext + "<table id=\"dallassettings\" style=\"display: table; width:100%\">";
   } else {
     httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\">";
     httptext = httptext + "</td></tr>";
     httptext = httptext + "</table>";
-    httptext = httptext + "<table id=\"dallassettings\" style=\"display: none; width:100%\">";    
+    httptext = httptext + "<table id=\"dallassettings\" style=\"display: none; width:100%\">";
   }
   httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
   httptext = httptext + "How often new values are collected from 1wire:</td><td style=\"text-align:left\">";
@@ -676,7 +686,7 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httptext = httptext + "<input type=\"number\" name=\"updataAllDallasTime\" value=\"" + heishamonSettings->updataAllDallasTime + "\"> seconds";
   httptext = httptext + "</td></tr>";
   httptext = httptext + "</table>";
-  
+
   // s0
   httptext = httptext + "<table style=\"width:100%\">";
   httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
