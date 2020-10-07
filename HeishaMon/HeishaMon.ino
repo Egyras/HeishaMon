@@ -239,9 +239,7 @@ void pushCommandBuffer(byte* command, int length) {
   }
 }
 
-
-bool send_command(byte* command, int length)
-{
+bool send_command(byte* command, int length) {
   if ( heishamonSettings.listenonly ) {
     log_message((char*)"Not sending this command. Heishamon in listen only mode!");
     return false;
@@ -382,7 +380,6 @@ void switchSerial() {
   pinMode(5, OUTPUT);
   digitalWrite(5, HIGH);
 }
-
 
 void setupMqtt() {
   mqtt_client.setServer(heishamonSettings.mqtt_server, atoi(heishamonSettings.mqtt_port));
