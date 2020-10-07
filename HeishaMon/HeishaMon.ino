@@ -51,9 +51,9 @@ bool outputSerial1 = true;
 
 
 // instead of passing array pointers between functions we just define this in the global scope
-#define MAXDATASIZE 256
+#define MAXDATASIZE 255
 char data[MAXDATASIZE];
-int data_length = 0;
+byte  data_length = 0;
 
 // store actual data in an String array
 String actData[NUMBER_OF_TOPICS];
@@ -139,7 +139,7 @@ void log_message(char* string)
   }
 }
 
-void logHex(char *hex, int hex_len) {
+void logHex(char *hex, byte hex_len) {
 #define LOGHEXBYTESPERLINE 16  // please be aware of max mqtt message size - 32 bytes per line does not work
   for (int i = 0; i < hex_len; i += LOGHEXBYTESPERLINE) {
     char buffer [(LOGHEXBYTESPERLINE * 3) + 1];
@@ -173,16 +173,14 @@ bool readSerial()
 {
   if (data_length == 0 ) totalreads++; //this is the start of a new read
 
-  while (Serial.available()) {
+  while ((Serial.available()) && (data_length < MAXDATASIZE)) {
     data[data_length] = Serial.read(); //read available data and place it after the last received data
     data_length++;
   }
-  //only enable this if you really want to see how the data is gathered in multiple tries
-  //sprintf(log_msg, "received size : %d", data_length); log_message(log_msg);
 
   if (data_length > 1) { //should have received length part of header now
 
-    if (data_length > (data[1] + 3)) {
+    if ((data_length > (data[1] + 3)) || (data_length >= MAXDATASIZE) ) {
       log_message((char*)"Received more data than header suggests! Ignoring this as this is bad data.");
       data_length = 0;
       return false;
