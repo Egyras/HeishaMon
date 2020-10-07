@@ -10,7 +10,7 @@
 
 
 struct dallasDataStruct {
-  float temperature = -127;
+  float temperature = -127.0;
   unsigned long lastgoodtime = 0;
   DeviceAddress sensor;
   char address[17];

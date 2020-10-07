@@ -77,11 +77,11 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
   if (!(DALLASASYNC)) DS18B20.requestTemperatures();
   for (int i = 0; i < dallasDevicecount; i++) {
     float temp = DS18B20.getTempC(actDallasData[i].sensor);
-    if (temp < -120) {
+    if (temp < -120.0) {
       sprintf(log_msg, "Error 1wire sensor offline: %s", actDallasData[i].address); log_message(log_msg);
     } else {
-      int allowedtempdiff = (((millis() - actDallasData[i].lastgoodtime)) / 1000) * MAXTEMPDIFFPERSEC;
-      if ((actDallasData[i].temperature != -127) and ((temp > (actDallasData[i].temperature + allowedtempdiff)) or (temp < (actDallasData[i].temperature - allowedtempdiff)))) {
+      float allowedtempdiff = (((millis() - actDallasData[i].lastgoodtime)) / 1000.0) * MAXTEMPDIFFPERSEC;
+      if ((actDallasData[i].temperature != -127.0) and ((temp > (actDallasData[i].temperature + allowedtempdiff)) or (temp < (actDallasData[i].temperature - allowedtempdiff)))) {
         sprintf(log_msg, "Filtering 1wire sensor temperature (%s). Delta to high. Current: %.2f Last: %.2f", actDallasData[i].address, temp, actDallasData[i].temperature); log_message(log_msg);
       } else {
         actDallasData[i].lastgoodtime = millis();
