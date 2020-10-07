@@ -370,11 +370,12 @@ void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]) {
       }
       else {
         int value = actData[topic].toInt();
-        if (value < 0) {
+        int maxvalue = atoi(topicDescription[topic][0]);
+        if ((value < 0) || (value > maxvalue)) {
           topicdesc = "unknown";
         }
         else {
-          topicdesc = topicDescription[topic][value];
+          topicdesc = topicDescription[topic][value + 1]; //plus one, because 0 is the maxvalue container
         }
       }
       String tabletext = "<tr>";
@@ -407,11 +408,12 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]) {
     }
     else {
       int value = actData[topic].toInt();
-      if (value < 0) {
+      int maxvalue = atoi(topicDescription[topic][0]);
+      if ((value < 0) || (value > maxvalue)) {
         topicdesc = "unknown";
       }
       else {
-        topicdesc = topicDescription[topic][value];
+        topicdesc = topicDescription[topic][value + 1]; //plus one, because 0 is the maxvalue container
       }
     }
     tabletext = "{";
