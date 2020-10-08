@@ -32,7 +32,8 @@ In this way Optional PCB comunicate with HP in similar way to CZ-TAW1 - Next to(
 ## NTC 6,5kOhm characteristic:
 
 Values are direct measurement of NTC thermistor conected to Optional PCB.
-It can be aproximate by function : ?????
+It can be aproximate by function : -0.00000001 x^(5)+0.000001 x^(4)+0.0002 x^(3)-0.0151 x^(2)-2.3098 x+190.66 (there is probably an arctan function matching it better, but haven't found an match yet)
+
 
 #### Exact values table 
 
