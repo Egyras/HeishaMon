@@ -26,7 +26,7 @@ Kaikki vastaanotettu tieto raportoidaan eri MQTT-aiheiden alle (katso koko lista
 
 Voit myös liittää 1-wire sensorin GPIO4-liitäntään ja sen arvo raporoidaan omassa MQTT-aiheessaan (panasonic_heat_pump/1wire/sensorid).
 
-HeishaMon voi myös lukea kahden kWh-mittarin S0-portista sähkönkulutusta. Kytke GPIO12 ja GND kWh-mittarin S0-liitäntään ja jos tarvitset vielä toisen liitännän käytä GPIO14:ta siihen. Kulutus raportoidaan MQTT-aiheiden 'panasonic_heat_pump/s0/1' ja 'panasonic_heat_pump/s0/2' alla sekä JSON-tulosteessa.
+HeishaMon voi myös lukea kahden kWh-mittarin S0-portista sähkönkulutusta. Kytke GPIO12 ja GND kWh-mittarin S0-liitäntään ja jos tarvitset vielä toisen liitännän käytä GPIO14:ta siihen. Kulutus raportoidaan MQTT-aiheiden 'panasonic_heat_pump/s0/Watt/1' ja 'panasonic_heat_pump/s0/Watt/2' alla sekä JSON-tulosteessa. Hetkellisen tehon sijasta näet kulutuksen (kWh), jos vaihdat topiciin 'Watt'in sijasta 'Watthour'.
 
 Firmwaren voi päivittää laitteen konfigurointisivun kautta kirjautumalla tunnuksella 'admin' ja valitsemallasi salasanalla (oletus on heisha).
 

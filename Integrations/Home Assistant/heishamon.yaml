@@ -541,6 +541,30 @@ sensor:
     state_topic: "panasonic_heat_pump/sdc/Compressor_Current"
     unit_of_measurement: "A"
 
+  # The following S0 topics are only available if S0 is enabled.
+  #
+  #S0 kWh Meter 1 - Assumed to measure the heat pump consumption
+  - platform: mqtt
+    name: Aquarea Metered Power Consumption
+    state_topic: "panasonic_heat_pump/s0/Watt/1"
+    unit_of_measurement: 'W'
+
+  - platform: mqtt
+    name: Aquarea Metered Power Consumption Total
+    state_topic: "panasonit_heat_pump/s0/Watthour/1"
+    unit_of_measurement: 'kWh'
+
+  #S0 kWh Meter 2 - Assumed to measure the backup heater consumption
+  - platform: mqtt
+    name: Aquarea Metered Backup Heater Power Consumption
+    state_topic: "panasonic_heat_pump/s0/Watt/2"
+    unit_of_measurement: 'W'
+
+  - platform: mqtt
+    name: Aquarea Metered Backup Heater Power Consumption Total
+    state_topic: "panasonit_heat_pump/s0/Watthour/2"
+    unit_of_measurement: 'kWh'
+
   #### SENSORS BELOW ARE NOT IN FIRMWARE ####
   #COP Calculations
   - platform: template
