@@ -3,31 +3,33 @@
 Optional PCB is also connected to HP via the CN-CNT ( in case using it and CZ-TAW1 ,Optional PCB is conected to HP , and on Optional PCB there is another CN-CNT to connect CZ-TAW1).
 In this way Optional PCB comunicate with HP in similar way to CZ-TAW1 - Next to(between) standard Magic Packets there specific commands from Optional PCB to HP ,and next to (beetwen) answers from HP there is a answer/confirmation to Optional PCB.
 
+### Set command byte decrypt:
+Recent firmware allows (experimental) support for optional PCB emulation. You can publish mqtt messages towards the 'topic base/pcb/pcb topic', so for example "panasonic_heat_pump/pcb/Solar_temp". For temperatures you just send the real temperature (the hexadecimal value will be calculated for your). For SmartGrid and Demand control you send the decimal representation of the hex value you want to send (see below for the possible hex values).
 
 ### Set command byte decrypt:
 
-| Byte# | Possible Value | Value decrypt | Value Description |
-|:---- | ---- | ----- | ----:|
-| 00 | F1 |   | Header  |
-| 01 | 11 | Data length ( Packet length = Data length + 3 ) |  Header |
-| 02 | 01 |   | Header  |
-| 03 | 50 |   | Header  |
-| 04 | 00 |   | 0 byte  |
-| 05 | 00 |   | 0 byte  |
-| 06 | 40 | HEX:  40 - SG Mode 0,0 (Normal) , 60 - SG Mode 1,0 ( HP and DHW off) , 50 - SG Mode 0,1(Capacity 1) , 70 - SG Mode 1,1(Capacity 2)   ,00 - Compressor external SW on , F0 - Cool mode (for Heat/Cool SW) | SG ready values , External Compressor SW , Heat/Cool SW |
-| 07 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Pool  |
-| 08 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Buffer  |
-| 09 | E5 |   | ?  |
-| 10 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Room   |
-| 11 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Room   |
-| 12 | 00 |   | 0 byte  |
-| 13 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Solar  |
-| 14 | EA | HEX:  EB-100% ,B8 - 75% ,85 -50%,52 - 25% ,2B - 5% (proportional values should works) | Demand Control  |
-| 15 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Water   |
-| 16 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Water   |
-| 17 | 00 |   | 0 byte  |
-| 18 | 00 |   | 0 byte  |
-| 19 | 2C |  CHECKSUM |  |
+| PCB Topic | Byte# | Possible Value | Value decrypt | Value Description |
+|:---- | ---- | ---- | ----- | ----:|
+| | 00 | F1 |   | Header  |
+| | 01 | 11 | Data length ( Packet length = Data length + 3 ) |  Header |
+| | 02 | 01 |   | Header  |
+| | 03 | 50 |   | Header  |
+| | 04 | 00 |   | 0 byte  |
+| | 05 | 00 |   | 0 byte  |
+| SmartGrid_Mode | 06 | 40 | HEX:  40 - SG Mode 0,0 (Normal) , 60 - SG Mode 1,0 ( HP and DHW off) , 50 - SG Mode 0,1(Capacity 1) , 70 - SG Mode 1,1(Capacity 2)   ,00 - Compressor external SW on , F0 - Cool mode (for Heat/Cool SW) | SG ready values , External Compressor SW , Heat/Cool SW |
+| Pool_Temp | 07 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Pool  |
+| Buffer_Temp | 08 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Buffer  |
+| | 09 | E5 |   | ?  |
+| Z1_Room_Temp | 10 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Room   |
+| Z2_Room_Temp | 11 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Room   |
+| | 12 | 00 |   | 0 byte  |
+| Solar_Temp | 13 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Solar  |
+| Demand_Control | 14 | EA | HEX:  EB-100% ,B8 - 75% ,85 -50%,52 - 25% ,2B - 5% (proportional values should works) | Demand Control  |
+| Z2_Water_Temp | 15 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Water   |
+| Z1_Water_Temp | 16 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Water   |
+| | 17 | 00 |   | 0 byte  |
+| | 18 | 00 |   | 0 byte  |
+| | 19 | 2C |  CHECKSUM |  |
 
 ## NTC 6,5kOhm characteristic:
 
