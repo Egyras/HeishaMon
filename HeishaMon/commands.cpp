@@ -230,15 +230,33 @@ void set_optionalpcb(char* topic, char *msg, void (*log_message)(char*)) {
     if (strcmp(topic, optionalPcbTopics[i]) == 0) {
       char log_msg[256];
       String set_pcb_string(msg);
-      byte set_pcb_value = set_pcb_string.toInt();
       if (strstr(topic, "Temp")) {
-        float hextemp = 0.00000001 * pow(set_pcb_value, 5) + 0.000001 * pow(set_pcb_value, 4) + 0.0002 * pow(set_pcb_value, 3) - 0.0151 * pow(set_pcb_value, 2) - 2.3098 * set_pcb_value + 190.66;
+        float temp = set_pcb_string.toFloat();
+        float hextemp;
+        if (temp > 120) {
+          hextemp = 0;
+        } else if (temp < -78) {
+          hextemp = 255;
+        }
+        else {
+          byte Uref = 255;
+          int constant = 3695;
+          int R25 = 6340;
+          byte T25 = 25;
+          int Rf = 6480;
+          float K = 273.15;
+          float RT = R25 * exp(constant * (1 / (temp + K) - 1 / (T25 + K)));
+          hextemp = Uref * (RT / (Rf + RT));
+        }
         optionalPCBQuery[optionalPcbBytes[i]] = (int)hextemp;
+        sprintf(log_msg, "set optional pcb %s to temp %.2f, hextemp DEC %.2f = HEX %x", optionalPcbTopics[i], temp, hextemp, (int)hextemp); log_message(log_msg);
       }
       else {
+        byte set_pcb_value = set_pcb_string.toInt();
         optionalPCBQuery[optionalPcbBytes[i]] = set_pcb_value;
+        sprintf(log_msg, "set optional pcb %s to %s", optionalPcbTopics[i], msg); log_message(log_msg);
       }
-      sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value); log_message(log_msg);
+
     }
   }
 }
