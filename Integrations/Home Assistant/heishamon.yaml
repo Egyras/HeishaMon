@@ -541,6 +541,13 @@ sensor:
     state_topic: "panasonic_heat_pump/sdc/Compressor_Current"
     unit_of_measurement: "A"
 
+  ##1-Wire - Example, replace with correct sensor ID
+  #- platform: mqtt
+  #  name: 1-wire sensor temperature
+  #  state_topic: "panasonic_heat_pump/1wire/1234567890abcdef"
+  #  unit_of_measurement: '°C'
+  #  value_template: '{{value | round(1) }}'
+
   # The following S0 topics are only available if S0 is enabled.
   #
   #S0 kWh Meter 1 - Assumed to measure the heat pump consumption
