@@ -36,8 +36,7 @@ You can publish mqtt messages towards the 'topic base/pcb/pcb topic', so for exa
 ## NTC 6,5kOhm characteristic:
 
 Values are direct measurement of NTC thermistor conected to Optional PCB.
-It can be aproximate by function : -0.00000001 x^(5)+0.000001 x^(4)+0.0002 x^(3)-0.0151 x^(2)-2.3098 x+190.66 (there is probably an arctan function matching it better, but haven't found an match yet)
-
+It can be aproximate by function : Uref * (RT / (Rf + RT)) where Uref = 255 and Rf=6480. RT is calculated as R25 * exp(constant * (1 / (temp + K) - 1 / (T25 + K))) where R25 = 6340, T25=25, K=273.15, constant=3695 and temp the input temperature.
 
 #### Exact values table 
 
