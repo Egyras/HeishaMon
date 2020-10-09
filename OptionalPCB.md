@@ -6,7 +6,7 @@ In this way Optional PCB comunicate with HP in similar way to CZ-TAW1 - Next to(
 ### Optional PCB emulation support:
 Recent firmware allows (experimental) support for optional PCB emulation. This allows you to set SmartGrid or Demand Control values without having the optional pcb installed. Also you can send the temperatures normally connected to that board to the heatpump.
 
-You can publish mqtt messages towards the 'topic base/pcb/pcb topic', so for example "panasonic_heat_pump/pcb/Solar_temp". For temperatures you just send the real temperature (the hexadecimal value will be calculated for your). For SmartGrid and Demand control you send the decimal representation of the hex value you want to send (see below for the possible hex values).
+You can publish mqtt messages towards the 'topic base/pcb/pcb topic', so for example "panasonic_heat_pump/pcb/Solar_Temp". For temperatures you just send the real temperature (the hexadecimal value will be calculated for your). For SmartGrid and Demand control you send the decimal representation of the hex value you want to send (see below for the possible hex values).
 
 ### Set command byte decrypt:
 
