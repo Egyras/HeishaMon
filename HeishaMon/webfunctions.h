@@ -22,6 +22,7 @@ struct settingsStruct {
   char mqtt_topic_base[40] = "panasonic_heat_pump";
 
   bool listenonly = false; //listen only so heishamon can be installed parallel to cz-taw1, set commands will not work though
+  bool optionalPCB = false; //do we emulate an optional PCB?
   bool use_1wire = false; //1wire enabled?
   bool use_s0 = false; //s0 enabled?
 

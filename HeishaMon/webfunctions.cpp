@@ -124,6 +124,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
               if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
             }
             if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
+            if ( jsonDoc["optionalPCB"] == "enabled" ) heishamonSettings->optionalPCB = true;
             if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
             if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
             if ( jsonDoc["updateAllTime"]) heishamonSettings->updateAllTime = jsonDoc["updateAllTime"];
@@ -417,6 +418,11 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     } else {
       jsonDoc["listenonly"] = "disabled";
     }
+    if (heishamonSettings->optionalPCB) {
+      jsonDoc["optionalPCB"] = "enabled";
+    } else {
+      jsonDoc["optionalPCB"] = "disabled";
+    }    
     jsonDoc["waitTime"] = heishamonSettings->waitTime;
     jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
     jsonDoc["updateAllTime"] = heishamonSettings->updateAllTime;
@@ -476,6 +482,11 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     } else {
       jsonDoc["listenonly"] = "disabled";
     }
+    if (httpServer->hasArg("optionalPCB")) {
+      jsonDoc["optionalPCB"] = "enabled";
+    } else {
+      jsonDoc["optionalPCB"] = "disabled";
+    }    
     if (httpServer->hasArg("waitTime")) {
       jsonDoc["waitTime"] = httpServer->arg("waitTime");
     }
@@ -548,6 +559,13 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   } else {
     httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">";
   }
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Emulate optional PCB (experimental):</td><td style=\"text-align:left\">";  
+  if (heishamonSettings->optionalPCB) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\" checked >";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">";
+  }  
   httptext = httptext + "</td></tr>";
   httptext = httptext + "</table>";
 

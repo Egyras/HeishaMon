@@ -118,9 +118,11 @@ void mqtt_reconnect()
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
     mqtt_client.subscribe(topic);
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_pump_topic);
-    mqtt_client.subscribe(topic);    
+    mqtt_client.subscribe(topic);
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_pumpspeed_topic);
-    mqtt_client.subscribe(topic);    
+    mqtt_client.subscribe(topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_pcb);
+    mqtt_client.subscribe(topic);
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
     mqtt_client.publish(topic, "Online");
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_iptopic);
@@ -203,8 +205,13 @@ bool readSerial()
         data_length = 0;
         return true;
       }
+      else if (data_length == 20 ) { //optional pcb acknowledge answer
+        log_message((char*)"Received optional PCB ack answer, no need to decode this.");
+        data_length = 0;
+        return false;
+      }      
       else {
-        log_message((char*)"Received the shorter datagram. Can't decode this yet.");
+        log_message((char*)"Received a shorter datagram. Can't decode this yet.");
         data_length = 0;
         return false;
       }
@@ -214,7 +221,7 @@ bool readSerial()
 }
 
 void popCommandBuffer() {
-  if (commandBuffer) { //to make sure we can pop a command from the buffer
+  if ((!sending) && (commandBuffer)) { //to make sure we can pop a command from the buffer
     send_command(commandBuffer->value, commandBuffer->length);
     command_struct* nextCommand = commandBuffer->next;
     free(commandBuffer);
@@ -282,7 +289,12 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 
       sprintf(log_msg, "sending raw value"); log_message(log_msg);
       send_command(rawcommand, length);
-    } else {
+    } else if (strncmp(topic_command, mqtt_topic_pcb, 4) == 0)  // check for optional pcb commands
+    {
+      char* topic_pcb = &topic_command[4]; //strip the first 4 "pcb/" from the topic to get what we need
+      set_optionalpcb(topic_pcb, msg, log_message);   
+    }
+    else {
       send_heatpump_command(topic_command, msg, send_command, log_message);
 
     }
@@ -374,7 +386,7 @@ void switchSerial() {
   pinMode(1, FUNCTION_3);
   pinMode(3, FUNCTION_3);
   pinMode(1, OUTPUT);
-  pinMode(3, OUTPUT);  
+  pinMode(3, OUTPUT);
 
   //enable gpio15 after boot using gpio5 (D1)
   pinMode(5, OUTPUT);
@@ -412,6 +424,13 @@ void send_panasonic_query() {
   }
 }
 
+void send_optionalpcb_query() {
+  String message = "Sending optional PCB data";
+  log_message((char*)message.c_str());
+  send_command(optionalPCBQuery, OPTIONALPCBQUERYSIZE);
+}
+
+
 void read_panasonic_data() {
   if (sending && (millis() > allowreadtime)) {
     log_message((char*)"Previous read data attempt failed due to timeout!");
@@ -435,8 +454,13 @@ void loop() {
   MDNS.update();
 
   mqtt_client.loop();
-  
+
   read_panasonic_data();
+
+  if ((!sending) && (commandsInBuffer > 0)) { //check if there is a send command in the buffer
+    log_message((char *)"Sending command from buffer");
+    popCommandBuffer();
+  }
 
   if (heishamonSettings.use_1wire) dallasLoop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
 
@@ -460,6 +484,7 @@ void loop() {
     }
     nexttime = millis() + (1000 * heishamonSettings.waitTime);
     if (!heishamonSettings.listenonly) send_panasonic_query();
+    if ((!heishamonSettings.listenonly) && (heishamonSettings.optionalPCB)) send_optionalpcb_query();
     MDNS.announce();
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
     sprintf(mqtt_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
