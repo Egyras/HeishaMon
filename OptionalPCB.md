@@ -6,7 +6,7 @@ In this way Optional PCB comunicate with HP in similar way to CZ-TAW1 - Next to(
 ### Optional PCB emulation support:
 Recent firmware allows (experimental) support for optional PCB emulation. This allows you to set SmartGrid or Demand Control values without having the optional pcb installed. Also you can send the temperatures normally connected to that board to the heatpump.
 
-You can publish mqtt messages towards the 'topic base/pcb/pcb topic', so for example "panasonic_heat_pump/pcb/Solar_temp". For temperatures you just send the real temperature (the hexadecimal value will be calculated for your). For SmartGrid and Demand control you send the decimal representation of the hex value you want to send (see below for the possible hex values).
+You can publish mqtt messages towards the 'topic base/pcb/pcb topic', so for example "panasonic_heat_pump/pcb/Solar_Temp". For temperatures you just send the real temperature (the hexadecimal value will be calculated for your). For SmartGrid and Demand control you send the decimal representation of the hex value you want to send (see below for the possible hex values).
 
 ### Set command byte decrypt:
 
@@ -36,8 +36,7 @@ You can publish mqtt messages towards the 'topic base/pcb/pcb topic', so for exa
 ## NTC 6,5kOhm characteristic:
 
 Values are direct measurement of NTC thermistor conected to Optional PCB.
-It can be aproximate by function : -0.00000001 x^(5)+0.000001 x^(4)+0.0002 x^(3)-0.0151 x^(2)-2.3098 x+190.66 (there is probably an arctan function matching it better, but haven't found an match yet)
-
+It can be aproximate by function : Uref * (RT / (Rf + RT)) where Uref = 255 and Rf=6480. RT is calculated as R25 * exp(constant * (1 / (temp + K) - 1 / (T25 + K))) where R25 = 6340, T25=25, K=273.15, constant=3695 and temp the input temperature.
 
 #### Exact values table 
 
