@@ -18,7 +18,7 @@ You can publish mqtt messages towards the 'topic base/pcb/pcb topic', so for exa
 | | 03 | 50 |   | Header  |
 | | 04 | 00 |   | 0 byte  |
 | | 05 | 00 |   | 0 byte  |
-| Heat_Cool_Mode  Compressor_State  SmartGrid_Mode  External_Thermostat_1_State  External_Thermostat_2_State | 06 | 40 | 1st bit = Heat/Cool  2nd bit = Compressor state  3rd/4th bit == SmartGrid Mode (00 = normal, 10 = HP/DHW off, 01 = Capacity 1, 11 = Capacity 2)  5th/6th bit = Thermostat 1 (00 = no demand, 10 = heat demand, 01 = cool demand, 11 = heat and cool demand)  7th/8th bit = Thermostat 2 (00 = no demand, 10 = heat demand, 01 = cool demand, 11 = heat and cool demand)  | SG ready values , External Compressor SW , Heat/Cool SW, Thermostat 1/2 |
+| Heat_Cool_Mode<br/>Compressor_State<br/>SmartGrid_Mode<br/>External_Thermostat_1_State<br/>External_Thermostat_2_State | 06 | 40 | 1st bit = Heat/Cool<br/>2nd bit = Compressor state<br/>3rd/4th bit == SmartGrid Mode (00 = normal, 10 = HP/DHW off, 01 = Capacity 1, 11 = Capacity 2)<br/>5th/6th bit = Thermostat 1 (00 = no demand, 10 = heat demand, 01 = cool demand, 11 = heat and cool demand)<br/>7th/8th bit = Thermostat 2 (00 = no demand, 10 = heat demand, 01 = cool demand, 11 = heat and cool demand)  | SG ready values , External Compressor SW , Heat/Cool SW, Thermostat 1/2 |
 | Pool_Temp | 07 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Pool  |
 | Buffer_Temp | 08 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Buffer  |
 | | 09 | E5 |   | ?  |
