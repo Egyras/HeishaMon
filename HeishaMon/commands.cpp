@@ -32,6 +32,7 @@ const char* mqtt_send_raw_value_topic = "SendRawValue";
 const char* mqtt_set_pump_topic = "SetPump";
 const char* mqtt_set_pumpspeed_topic = "SetPumpSpeed";
 
+
 void send_heatpump_command(char* topic, char *msg, bool (*send_command)(byte*, int), void (*log_message)(char*)) {
   char log_msg[256];
 
@@ -250,6 +251,38 @@ void set_optionalpcb(char* topic, char *msg, void (*log_message)(char*)) {
         }
         optionalPCBQuery[optionalPcbBytes[i]] = (int)hextemp;
         sprintf(log_msg, "set optional pcb %s to temp %.2f, hextemp DEC %.2f = HEX %x", optionalPcbTopics[i], temp, hextemp, (int)hextemp); log_message(log_msg);
+      }
+      else if (strcmp(topic, "Heat_Cool_Mode") == 0) {
+        bool set_pcb_value = (set_pcb_string.toInt() == 1);
+        optionalPCBQuery[optionalPcbBytes[i]] = (optionalPCBQuery[optionalPcbBytes[i]] & ~(0b1 << 7)) | ( set_pcb_value << 7 );
+        sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value); log_message(log_msg);        
+      }
+      else if (strcmp(topic, "Compressor_State") == 0) {
+        bool set_pcb_value = (set_pcb_string.toInt() == 1);
+        optionalPCBQuery[optionalPcbBytes[i]] = (optionalPCBQuery[optionalPcbBytes[i]] & ~(0b1 << 6)) | ( set_pcb_value << 6 );
+        sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value); log_message(log_msg);             
+      }
+      else if (strcmp(topic, "SmartGrid_Mode") == 0) {
+        byte set_pcb_value = set_pcb_string.toInt();
+        if ((set_pcb_value >=0) && (set_pcb_value < 4)) {
+           optionalPCBQuery[optionalPcbBytes[i]] = (optionalPCBQuery[optionalPcbBytes[i]] & ~(0b11 << 4)) | ( set_pcb_value << 4 );
+           sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value, optionalPCBQuery[optionalPcbBytes[i]]); log_message(log_msg);    
+        }
+      }
+      else if (strcmp(topic, "External_Thermostat_1_State") == 0) {
+        byte set_pcb_value = set_pcb_string.toInt();
+        if ((set_pcb_value >=0) && (set_pcb_value < 4)) {
+           optionalPCBQuery[optionalPcbBytes[i]] = (optionalPCBQuery[optionalPcbBytes[i]] & ~(0b11 << 2)) | ( set_pcb_value << 2 );
+           sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value, optionalPCBQuery[optionalPcbBytes[i]]); log_message(log_msg);    
+        }
+        
+      }
+      else if (strcmp(topic, "External_Thermostat_2_State") == 0) {
+        byte set_pcb_value = set_pcb_string.toInt();
+        if ((set_pcb_value >=0) && (set_pcb_value < 4)) {
+           optionalPCBQuery[optionalPcbBytes[i]] = (optionalPCBQuery[optionalPcbBytes[i]] & ~(0b11 << 0)) | ( set_pcb_value << 0 );
+           sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value, optionalPCBQuery[optionalPcbBytes[i]]); log_message(log_msg);    
+        }
       }
       else {
         byte set_pcb_value = set_pcb_string.toInt();

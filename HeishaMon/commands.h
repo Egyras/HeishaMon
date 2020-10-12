@@ -5,11 +5,15 @@
 extern byte panasonicQuery[PANASONICQUERYSIZE];
 
 #define OPTIONALPCBQUERYSIZE 19
-extern byte optionalPCBQuery[PANASONICQUERYSIZE];
-#define NUMBER_OF_OPTIONALPCB_TOPICS 9
+extern byte optionalPCBQuery[OPTIONALPCBQUERYSIZE];
+#define NUMBER_OF_OPTIONALPCB_TOPICS 13
 
 static const char * optionalPcbTopics[] = {
+  "Heat_Cool_Mode",
+  "Compressor_State",
   "SmartGrid_Mode",
+  "External_Thermostat_1_State",
+  "External_Thermostat_2_State",
   "Demand_Control",
   "Pool_Temp",
   "Buffer_Temp",
@@ -21,6 +25,10 @@ static const char * optionalPcbTopics[] = {
 };
 
 static const byte optionalPcbBytes[] = {
+  6,
+  6,
+  6,
+  6,
   6,
   14,
   7,
