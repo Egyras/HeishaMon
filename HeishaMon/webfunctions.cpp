@@ -126,9 +126,13 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
             if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
             if ( jsonDoc["optionalPCB"] == "enabled" ) heishamonSettings->optionalPCB = true;
             if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
+            if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
             if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
+            if (heishamonSettings->waitDallasTime < 5) heishamonSettings->waitDallasTime = 5;
             if ( jsonDoc["updateAllTime"]) heishamonSettings->updateAllTime = jsonDoc["updateAllTime"];
+            if (heishamonSettings->updateAllTime < heishamonSettings->waitTime) heishamonSettings->updateAllTime = heishamonSettings->waitTime;
             if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
+            if (heishamonSettings->updataAllDallasTime < heishamonSettings->waitDallasTime) heishamonSettings->updataAllDallasTime = heishamonSettings->waitDallasTime;
           } else {
             Serial.println(F("Failed to load json config, forcing config reset."));
             wifiManager.resetSettings();
@@ -548,7 +552,7 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httptext = httptext + "<input type=\"password\" name=\"mqtt_password\" value=\"" + heishamonSettings->mqtt_password + "\">";
   httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
   httptext = httptext + "How often new values are collected from heatpump:</td><td style=\"text-align:left\">";
-  httptext = httptext + "<input type=\"number\" name=\"waitTime\" value=\"" + heishamonSettings->waitTime + "\"> seconds";
+  httptext = httptext + "<input type=\"number\" name=\"waitTime\" value=\"" + heishamonSettings->waitTime + "\"> seconds  (min 5 sec)";
   httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
   httptext = httptext + "How often all heatpump values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"number\" name=\"updateAllTime\" value=\"" + heishamonSettings->updateAllTime + "\"> seconds";
@@ -586,7 +590,7 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   }
   httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
   httptext = httptext + "How often new values are collected from 1wire:</td><td style=\"text-align:left\">";
-  httptext = httptext + "<input type=\"number\" name=\"waitDallasTime\" value=\"" + heishamonSettings->waitDallasTime + "\"> seconds";
+  httptext = httptext + "<input type=\"number\" name=\"waitDallasTime\" value=\"" + heishamonSettings->waitDallasTime + "\"> seconds (min 5 sec)";
   httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
   httptext = httptext + "How often all 1wire values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"number\" name=\"updataAllDallasTime\" value=\"" + heishamonSettings->updataAllDallasTime + "\"> seconds";
