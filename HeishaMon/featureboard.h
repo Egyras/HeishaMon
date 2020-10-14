@@ -20,6 +20,7 @@ struct s0SettingsStruct {
   byte gpiopin = 255; 
   unsigned int ppkwh = 1000; //pulses per Wh of the connected meter
   unsigned int lowerPowerInterval = 60; //configurabel low power interval
+  bool sum_s0_watthour = false; //count watthour upwards, do not reset between messages
 };
 
 struct s0DataStruct {
@@ -34,7 +35,8 @@ void dallasLoop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqt
 void initDallasSensors(void (*log_message)(char*), unsigned int updataAllDallasTimeSettings, unsigned int dallasTimerWaitSettings);
 String dallasJsonOutput(void);
 String dallasTableOutput(void);
-void initS0Sensors(s0SettingsStruct s0Settings[]);
+void initS0Sensors(s0SettingsStruct s0Settings[], PubSubClient &mqtt_client, char* mqtt_topic_base);
+void restore_s0_Watthour(int s0Port,float watthour);
 void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, s0SettingsStruct s0Settings[]);
 String s0TableOutput(void);
 String s0JsonOutput(void);

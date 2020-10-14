@@ -25,7 +25,7 @@ struct settingsStruct {
   bool optionalPCB = false; //do we emulate an optional PCB?
   bool use_1wire = false; //1wire enabled?
   bool use_s0 = false; //s0 enabled?
-
+  
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
 };
 

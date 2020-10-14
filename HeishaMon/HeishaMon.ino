@@ -293,6 +293,16 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     {
       char* topic_pcb = &topic_command[4]; //strip the first 4 "pcb/" from the topic to get what we need
       set_optionalpcb(topic_pcb, msg, log_message);   
+    } else if (strncmp(topic_command, mqtt_topic_s0, 2) == 0)  // this is a s0 topic, check for watthour topic and restore it
+    {
+      char* topic_s0_watthour_port = &topic_command[12]; //strip the first 12 "s0/Watthour/" from the topic to get the s0 port
+      int s0Port = String(topic_s0_watthour_port).toInt();
+      float watthour = String(msg).toFloat();
+      restore_s0_Watthour(s0Port,watthour);
+      //unsubscribe after restoring the watthour values
+      char mqtt_topic[256];
+      sprintf(mqtt_topic, "%s", topic);
+      if (mqtt_client.unsubscribe(mqtt_topic)) Serial1.println("Unsubscribed topic");
     }
     else {
       send_heatpump_command(topic_command, msg, send_command, log_message);
@@ -407,9 +417,8 @@ void setup() {
   setupMqtt();
   setupHttp();
   if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
-  if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings);
+  if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings, mqtt_client, heishamonSettings.mqtt_topic_base);
   switchSerial();
-
 }
 
 void send_panasonic_query() {
@@ -452,6 +461,8 @@ void loop() {
   httpServer.handleClient();
   // Allow MDNS processing
   MDNS.update();
+
+
 
   mqtt_client.loop();
 

@@ -140,23 +140,42 @@ ICACHE_RAM_ATTR void onS0Pulse2() {
   new_pulse_s0[1] = millis();
 }
 
-void initS0Sensors(s0SettingsStruct s0Settings[]) {
+void initS0Sensors(s0SettingsStruct s0Settings[], PubSubClient &mqtt_client, char* mqtt_topic_base) {
   //setup s0 port 1
   actS0Settings[0].gpiopin = s0Settings[0].gpiopin;
   actS0Settings[0].ppkwh = s0Settings[0].ppkwh;
   actS0Settings[0].lowerPowerInterval = s0Settings[0].lowerPowerInterval;
+  actS0Settings[0].sum_s0_watthour = s0Settings[0].sum_s0_watthour;
+  if (actS0Settings[0].sum_s0_watthour) {
+    char mqtt_topic[256];
+    sprintf(mqtt_topic, "%s/%s/Watthour/1", mqtt_topic_base, mqtt_topic_s0);
+    mqtt_client.subscribe(mqtt_topic);
+  }
   pinMode(actS0Settings[0].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Settings[0].gpiopin), onS0Pulse1, RISING);
   actS0Data[0].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
+
 
   //setup s0 port 2
   actS0Settings[1].gpiopin = s0Settings[1].gpiopin;
   actS0Settings[1].ppkwh = s0Settings[1].ppkwh;
   actS0Settings[1].lowerPowerInterval = s0Settings[1].lowerPowerInterval;
+  actS0Settings[1].sum_s0_watthour = s0Settings[1].sum_s0_watthour;
   pinMode(actS0Settings[1].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Settings[1].gpiopin), onS0Pulse2, RISING);
   actS0Data[1].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
+  if (actS0Settings[1].sum_s0_watthour) {
+    char mqtt_topic[256];
+    sprintf(mqtt_topic, "%s/%s/Watthour/2", mqtt_topic_base, mqtt_topic_s0);
+    mqtt_client.subscribe(mqtt_topic);
+  }  
 }
+
+void restore_s0_Watthour(int s0Port,float watthour) {
+  Serial1.print(F("Restoring watthour from MQTT on s0 port: ")); Serial1.print(s0Port); Serial1.print(F(" with value: ")); Serial1.println(watthour);
+  if ((s0Port = 0) || (s0Port = 1)) actS0Data[s0Port-1].pulses = int(watthour * (actS0Settings[s0Port-1].ppkwh / 1000.0));
+}
+
 
 void s0SettingsCorrupt(s0SettingsStruct s0Settings[], void (*log_message)(char*)) {
   for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
@@ -173,7 +192,7 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
 
   //check for corruption
   s0SettingsCorrupt(s0Settings, log_message);
-  
+
   unsigned long millisThisLoop = millis();
 
   for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
@@ -191,7 +210,7 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
       if ((actS0Data[i].nextReport - millisThisLoop) > MINREPORTEDS0TIME) { //loop was in standby interval
         actS0Data[i].nextReport = 0; // report now
       }
-      Serial1.print(F("S0 port ")); Serial1.print(i); Serial1.print(F(" detected pulse. Pulses since last report: ")); Serial1.println(actS0Data[i].pulses);
+      Serial1.print(F("S0 port ")); Serial1.print(i); Serial1.print(F(" detected pulse. Pulses since last reset: ")); Serial1.println(actS0Data[i].pulses);
     }
 
     //then report after nextReport
@@ -217,7 +236,7 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
       }
 
       float Watthour = (actS0Data[i].pulses * ( 1000.0 / actS0Settings[i].ppkwh));
-      actS0Data[i].pulses = 0; //per message we report new wattHour, so pulses should be zero at start new message
+      if (!actS0Settings[i].sum_s0_watthour) actS0Data[i].pulses = 0; //per message we report new wattHour, so pulses should be zero at start new message
 
       //report using mqtt
       char log_msg[256];
@@ -239,6 +258,7 @@ String s0TableOutput() {
     output = output + "<tr>";
     output = output + "<td>" + (i + 1) + "</td>";
     output = output + "<td>" + actS0Data[i].watt + "</td>";
+    output = output + "<td>" + (actS0Data[i].pulses * ( 1000.0 / actS0Settings[i].ppkwh)) + "</td>";
     output = output + "</tr>";
   }
   return output;
@@ -249,7 +269,8 @@ String s0JsonOutput() {
   for (int i = 0; i < NUM_S0_COUNTERS; i++) {
     output = output + "{";
     output = output + "\"S0 port\": \"" + (i + 1) + "\",";
-    output = output + "\"Watt\": \"" + actS0Data[i].watt + "\"";
+    output = output + "\"Watt\": \"" + actS0Data[i].watt + "\",";
+    output = output + "\"Watthour\": \"" + (actS0Data[i].pulses * ( 1000.0 / actS0Settings[i].ppkwh)) + "\"";
     output = output + "}";
     if (i < NUM_S0_COUNTERS - 1) output = output + ",";
   }
