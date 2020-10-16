@@ -24,21 +24,13 @@
 // of the address block
 #define DRD_ADDRESS 0x00
 
-#define WAITTIME 5000 // wait before next data read from heatpump
+
 #define SERIALTIMEOUT 2000 // wait until all 203 bytes are read, must not be too long to avoid blocking the code
 
 ESP8266WebServer httpServer(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
-// Default settings if config does not exists
-const char* update_path = "/firmware";
-const char* update_username = "admin";
-char wifi_hostname[40] = "HeishaMon";
-char ota_password[40] = "heisha";
-char mqtt_server[40];
-char mqtt_port[6] = "1883";
-char mqtt_username[40];
-char mqtt_password[40];
+settingsStruct heishamonSettings;
 
 bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
@@ -48,7 +40,6 @@ unsigned long goodreads = 0;
 unsigned long totalreads = 0;
 float readpercentage = 0;
 
-
 //useful for debugging, outputs info to a separate mqtt topic
 bool outputMqttLog = false;
 //toggle to dump received hex data in log
@@ -57,24 +48,12 @@ bool outputHexDump = false;
 // *needs implementation in this code and in the webpage*
 bool outputSerial1 = true;
 
-//listen only so heishamon can be installed parallel to cz-taw1, set commands will not work though
-bool listenonly = false;
 
-
-//1wire enabled?
-bool use_1wire = false;
-//global array for 1wire data
-dallasData actDallasData[MAX_DALLAS_SENSORS];
-
-//s0 enabled?
-bool use_s0 = false;
-//global array for s0 data
-s0Data actS0Data[NUM_S0_COUNTERS];
 
 // instead of passing array pointers between functions we just define this in the global scope
-#define MAXDATASIZE 256
+#define MAXDATASIZE 255
 char data[MAXDATASIZE];
-int data_length = 0;
+byte  data_length = 0;
 
 // store actual data in an String array
 String actData[NUMBER_OF_TOPICS];
@@ -105,41 +84,49 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 
 void mqtt_reconnect()
 {
-  Serial1.println("Reconnecting to mqtt server ...");
+  Serial1.println(F("Reconnecting to mqtt server ..."));
   char topic[256];
-  sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_willtopic);
-  if (mqtt_client.connect(wifi_hostname, mqtt_username, mqtt_password, topic, 1, true, "Offline"))
+  sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
+  if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
   {
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_quiet_mode_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_quiet_mode_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_operationmode_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_operationmode_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_heatpump_state_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_heatpump_state_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_z1_heat_request_temperature_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z1_heat_request_temperature_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_z1_cool_request_temperature_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z1_cool_request_temperature_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_z2_heat_request_temperature_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z2_heat_request_temperature_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_z2_cool_request_temperature_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z2_cool_request_temperature_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_force_DHW_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_force_DHW_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_force_defrost_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_force_defrost_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_force_sterilization_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_force_sterilization_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_holiday_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_holiday_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_powerful_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_powerful_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_set_dhw_temp_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_dhw_temp_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_send_raw_value_topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
     mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", mqtt_topic_base, mqtt_willtopic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_pump_topic);
+    mqtt_client.subscribe(topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_pumpspeed_topic);
+    mqtt_client.subscribe(topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_pcb);
+    mqtt_client.subscribe(topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
     mqtt_client.publish(topic, "Online");
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_iptopic);
+    mqtt_client.publish(topic, WiFi.localIP().toString().c_str(), true);
   }
 }
 
@@ -149,12 +136,12 @@ void log_message(char* string)
   if (outputMqttLog)
   {
     char log_topic[256];
-    sprintf(log_topic, "%s/%s", mqtt_topic_base, mqtt_logtopic);
+    sprintf(log_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_logtopic);
     mqtt_client.publish(log_topic, string);
   }
 }
 
-void logHex(char *hex, int hex_len) {
+void logHex(char *hex, byte hex_len) {
 #define LOGHEXBYTESPERLINE 16  // please be aware of max mqtt message size - 32 bytes per line does not work
   for (int i = 0; i < hex_len; i += LOGHEXBYTESPERLINE) {
     char buffer [(LOGHEXBYTESPERLINE * 3) + 1];
@@ -188,16 +175,14 @@ bool readSerial()
 {
   if (data_length == 0 ) totalreads++; //this is the start of a new read
 
-  while (Serial.available()) {
+  while ((Serial.available()) && (data_length < MAXDATASIZE)) {
     data[data_length] = Serial.read(); //read available data and place it after the last received data
     data_length++;
   }
-  //only enable this if you really want to see how the data is gathered in multiple tries
-  //sprintf(log_msg, "received size : %d", data_length); log_message(log_msg);
 
   if (data_length > 1) { //should have received length part of header now
 
-    if (data_length > (data[1] + 3)) {
+    if ((data_length > (data[1] + 3)) || (data_length >= MAXDATASIZE) ) {
       log_message((char*)"Received more data than header suggests! Ignoring this as this is bad data.");
       data_length = 0;
       return false;
@@ -215,13 +200,18 @@ bool readSerial()
       log_message((char*)"Checksum and header received ok!");
       goodreads++;
       readpercentage = (((float)goodreads / (float)totalreads) * 100);
-      sprintf(log_msg, "Total reads : %u and total good reads : %u (%.2f %%)", totalreads, goodreads, readpercentage ); log_message(log_msg);
+      sprintf(log_msg, "Total reads : %lu and total good reads : %lu (%.2f %%)", totalreads, goodreads, readpercentage ); log_message(log_msg);
       if (data_length == 203) { //for now only return true for this datagram because we can not decode the shorter datagram yet
         data_length = 0;
         return true;
       }
+      else if (data_length == 20 ) { //optional pcb acknowledge answer
+        log_message((char*)"Received optional PCB ack answer, no need to decode this.");
+        data_length = 0;
+        return false;
+      }      
       else {
-        log_message((char*)"Received the shorter datagram. Can't decode this yet.");
+        log_message((char*)"Received a shorter datagram. Can't decode this yet.");
         data_length = 0;
         return false;
       }
@@ -231,7 +221,7 @@ bool readSerial()
 }
 
 void popCommandBuffer() {
-  if (commandBuffer) { //to make sure we can pop a command from the buffer
+  if ((!sending) && (commandBuffer)) { //to make sure we can pop a command from the buffer
     send_command(commandBuffer->value, commandBuffer->length);
     command_struct* nextCommand = commandBuffer->next;
     free(commandBuffer);
@@ -256,10 +246,8 @@ void pushCommandBuffer(byte* command, int length) {
   }
 }
 
-
-bool send_command(byte* command, int length)
-{
-  if ( listenonly ) {
+bool send_command(byte* command, int length) {
+  if ( heishamonSettings.listenonly ) {
     log_message((char*)"Not sending this command. Heishamon in listen only mode!");
     return false;
   }
@@ -292,7 +280,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       msg[i] = (char)payload[i];
     }
     msg[length] = '\0';
-    char* topic_command = topic + strlen(mqtt_topic_base) + 1; //strip base plus seperator from topic
+    char* topic_command = topic + strlen(heishamonSettings.mqtt_topic_base) + 1; //strip base plus seperator from topic
     if (strcmp(topic_command, mqtt_send_raw_value_topic) == 0)
     { // send a raw hex string
       byte *rawcommand;
@@ -301,7 +289,22 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 
       sprintf(log_msg, "sending raw value"); log_message(log_msg);
       send_command(rawcommand, length);
-    } else {
+    } else if (strncmp(topic_command, mqtt_topic_pcb, 4) == 0)  // check for optional pcb commands
+    {
+      char* topic_pcb = &topic_command[4]; //strip the first 4 "pcb/" from the topic to get what we need
+      set_optionalpcb(topic_pcb, msg, log_message);   
+    } else if (strncmp(topic_command, mqtt_topic_s0, 2) == 0)  // this is a s0 topic, check for watthour topic and restore it
+    {
+      char* topic_s0_watthour_port = &topic_command[12]; //strip the first 12 "s0/Watthour/" from the topic to get the s0 port
+      int s0Port = String(topic_s0_watthour_port).toInt();
+      float watthour = String(msg).toFloat();
+      restore_s0_Watthour(s0Port,watthour);
+      //unsubscribe after restoring the watthour values
+      char mqtt_topic[256];
+      sprintf(mqtt_topic, "%s", topic);
+      if (mqtt_client.unsubscribe(mqtt_topic)) Serial1.println("Unsubscribed topic");
+    }
+    else {
       send_heatpump_command(topic_command, msg, send_command, log_message);
 
     }
@@ -314,10 +317,10 @@ void setupOTA() {
   ArduinoOTA.setPort(8266);
 
   // Hostname defaults to esp8266-[ChipID]
-  ArduinoOTA.setHostname(wifi_hostname);
+  ArduinoOTA.setHostname(heishamonSettings.wifi_hostname);
 
   // Set authentication
-  ArduinoOTA.setPassword(ota_password);
+  ArduinoOTA.setPassword(heishamonSettings.ota_password);
 
   ArduinoOTA.onStart([]() {
   });
@@ -333,15 +336,15 @@ void setupOTA() {
 }
 
 void setupHttp() {
-  httpUpdater.setup(&httpServer, update_path, update_username, ota_password);
+  httpUpdater.setup(&httpServer, heishamonSettings.update_path, heishamonSettings.update_username, heishamonSettings.ota_password);
   httpServer.on("/", [] {
-    handleRoot(&httpServer, readpercentage, use_1wire, use_s0);
+    handleRoot(&httpServer, readpercentage, &heishamonSettings);
   });
   httpServer.on("/tablerefresh", [] {
-    handleTableRefresh(&httpServer, actData, actDallasData, actS0Data);
+    handleTableRefresh(&httpServer, actData);
   });
   httpServer.on("/json", [] {
-    handleJsonOutput(&httpServer, actData, actDallasData, actS0Data);
+    handleJsonOutput(&httpServer, actData);
   });
   httpServer.on("/factoryreset", [] {
     handleFactoryReset(&httpServer);
@@ -350,7 +353,7 @@ void setupHttp() {
     handleReboot(&httpServer);
   });
   httpServer.on("/settings", [] {
-    handleSettings(&httpServer, wifi_hostname, ota_password, mqtt_topic_base, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire, use_s0, listenonly, actS0Data);
+    handleSettings(&httpServer, &heishamonSettings);
   });
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
@@ -372,7 +375,7 @@ void setupHttp() {
 void setupSerial() {
   //debug line on serial1 (D4, GPIO2)
   Serial1.begin(115200);
-  Serial1.println("Starting debugging");
+  Serial1.println(F("Starting debugging"));
 
   //boot issue's first on normal serial
   Serial.begin(115200);
@@ -380,7 +383,7 @@ void setupSerial() {
 }
 
 void switchSerial() {
-  Serial.println("Switching serial to connect to heatpump. Look for debug on serial1 (GPIO2) and mqtt log topic.");
+  Serial.println(F("Switching serial to connect to heatpump. Look for debug on serial1 (GPIO2) and mqtt log topic."));
   //serial to cn-cnt
   Serial.flush();
   Serial.end();
@@ -389,29 +392,33 @@ void switchSerial() {
   //swap to gpio13 (D7) and gpio15 (D8)
   Serial.swap();
 
+  //turn on GPIO's on tx/rx for later use
+  pinMode(1, FUNCTION_3);
+  pinMode(3, FUNCTION_3);
+  pinMode(1, OUTPUT);
+  pinMode(3, OUTPUT);
+
   //enable gpio15 after boot using gpio5 (D1)
   pinMode(5, OUTPUT);
   digitalWrite(5, HIGH);
 }
 
-
 void setupMqtt() {
-  mqtt_client.setServer(mqtt_server, atoi(mqtt_port));
+  mqtt_client.setServer(heishamonSettings.mqtt_server, atoi(heishamonSettings.mqtt_port));
   mqtt_client.setCallback(mqtt_callback);
   mqtt_reconnect();
 }
 
 void setup() {
   setupSerial();
-  setupWifi(drd, wifi_hostname, ota_password, mqtt_topic_base, mqtt_server, mqtt_port, mqtt_username, mqtt_password, use_1wire, use_s0, listenonly, actS0Data);
-  MDNS.begin(wifi_hostname);
+  setupWifi(drd, &heishamonSettings);
+  MDNS.begin(heishamonSettings.wifi_hostname);
   setupOTA();
   setupMqtt();
   setupHttp();
-  if (use_1wire) initDallasSensors(actDallasData, log_message);
-  if (use_s0) initS0Sensors(actS0Data);
+  if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
+  if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings, mqtt_client, heishamonSettings.mqtt_topic_base);
   switchSerial();
-
 }
 
 void send_panasonic_query() {
@@ -426,6 +433,13 @@ void send_panasonic_query() {
   }
 }
 
+void send_optionalpcb_query() {
+  String message = "Sending optional PCB data";
+  log_message((char*)message.c_str());
+  send_command(optionalPCBQuery, OPTIONALPCBQUERYSIZE);
+}
+
+
 void read_panasonic_data() {
   if (sending && (millis() > allowreadtime)) {
     log_message((char*)"Previous read data attempt failed due to timeout!");
@@ -434,9 +448,9 @@ void read_panasonic_data() {
     data_length = 0; //clear any data in array
     sending = false; //receiving the answer from the send command timed out, so we are allowed to send a new command
   }
-  if ( (listenonly || sending) && (Serial.available() > 0)) { //only read data if we have sent a command so we expect an answer or in listen only mode
+  if ( (heishamonSettings.listenonly || sending) && (Serial.available() > 0)) { //only read data if we have sent a command so we expect an answer or in listen only mode
     // read the serial and decode if data is complete and valid
-    if ( readSerial()) decode_heatpump_data(data, actData, mqtt_client, log_message);
+    if ( readSerial()) decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
   }
 }
 
@@ -448,19 +462,25 @@ void loop() {
   // Allow MDNS processing
   MDNS.update();
 
+
+
   mqtt_client.loop();
 
   read_panasonic_data();
 
-  if (use_1wire) dallasLoop(actDallasData, mqtt_client, log_message);
+  if ((!sending) && (commandsInBuffer > 0)) { //check if there is a send command in the buffer
+    log_message((char *)"Sending command from buffer");
+    popCommandBuffer();
+  }
 
-  if (use_s0) s0Loop(actS0Data, mqtt_client, log_message);
+  if (heishamonSettings.use_1wire) dallasLoop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
+
+  if (heishamonSettings.use_s0) s0Loop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.s0Settings);
 
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
     if (!mqtt_client.connected())
     {
-
       if (WiFi.status() != WL_CONNECTED) {
         log_message((char *)"Lost WiFi connection, rebooting...");
         delay(1000);
@@ -473,11 +493,12 @@ void loop() {
       }
       mqtt_reconnect();
     }
-    nexttime = millis() + WAITTIME;
-    if (!listenonly) send_panasonic_query();
+    nexttime = millis() + (1000 * heishamonSettings.waitTime);
+    if (!heishamonSettings.listenonly) send_panasonic_query();
+    if ((!heishamonSettings.listenonly) && (heishamonSettings.optionalPCB)) send_optionalpcb_query();
     MDNS.announce();
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
-    sprintf(mqtt_topic, "%s/%s", mqtt_topic_base, mqtt_willtopic);
+    sprintf(mqtt_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
     mqtt_client.publish(mqtt_topic, "Online");
   }
 }

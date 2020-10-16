@@ -3,6 +3,7 @@
 #include "webfunctions.h"
 #include "decode.h"
 #include "version.h"
+#include "htmlcode.h"
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -15,78 +16,6 @@
 
 //flag for saving data
 bool shouldSaveConfig = false;
-
-
-
-
-static const char webHeader[] PROGMEM  =
-  "<!DOCTYPE html>"
-  "<html>"
-  "<title>Heisha monitor</title>"
-  "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
-  "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
-  "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3pro.css\">"
-  "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/lib/w3-theme-red.css\">"
-  "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
-  "<style>"
-  "	.w3-btn { margin-bottom:10px; }"
-  "</style>";
-
-static const char refreshMeta[] PROGMEM = "<meta http-equiv=\"refresh\" content=\"5; url=/\" />";
-static const char webBodyStart[] PROGMEM =
-  "<body>"
-  "<button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button>"
-  "<header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor</h1></header>";
-
-static const char webFooter[] PROGMEM  = "</body></html>";
-static const char menuJS[] PROGMEM =
-  "<script>"
-  "	function openLeftMenu() {"
-  "		var x = document.getElementById(\"leftMenu\");"
-  "		if (x.style.display === \"none\") {"
-  "			x.style.display = \"block\";"
-  "		} else {"
-  "			x.style.display = \"none\";"
-  "		}"
-  "	}"
-  "</script>";
-
-static const char refreshJS[] PROGMEM =
-  "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js\"></script>"
-  "<script>"
-  "	$(document).ready(function(){refreshTable();});"
-  "	function refreshTable(){"
-  "		$('#heishavalues').load('/tablerefresh', function(){setTimeout(refreshTable, 30000);});"
-  "   $('#dallasvalues').load('/tablerefresh?1wire', function(){});"
-  "   $('#s0values').load('/tablerefresh?s0', function(){});"
-  "	}"
-  "</script>";
-
-static const char selectJS[] PROGMEM =
-  "<script>"
-  "function openTable(tableName) {"
-  "  var i;"
-  "  var x = document.getElementsByClassName(\"heishatable\");"
-  "  for (i = 0; i < x.length; i++) {"
-  "    x[i].style.display = \"none\";"
-  "  }"
-  "  document.getElementById(tableName).style.display = \"block\";"
-  "}"
-  "</script>";
-
-static const char s0SettingsJS[] PROGMEM =
-  "<script type=\"text/javascript\">"
-  "    function ShowHideS0Div(s0enabled) {"
-  "        var s0settings = document.getElementById(\"s0settings\");"
-  "        s0settings.style.display = s0enabled.checked ? \"block\" : \"none\";"
-  "    }"
-  "    function changeMinWatt(port) {"
-  "        var ppkwh = document.getElementById('s0_ppkwh_'+port).value;"
-  "        var interval = document.getElementById('s0_interval_'+port).value;"
-  "        document.getElementById('s0_minwatt_'+port).innerHTML = Math.round((3600 * 1000 / ppkwh) / interval);"
-  "    }"
-  "</script>";
-
 
 //callback notifying us of the need to save config
 void saveConfigCallback () {
@@ -135,7 +64,7 @@ String getUptime() {
   return String(uptime);
 }
 
-void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, char* mqtt_topic_base, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &use_s0, bool &listenonly, s0Data actS0Data[]) {
+void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   //first get total memory before we do anything
   getFreeMemory();
@@ -149,23 +78,23 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   wifiManager.setDebugOutput(true); //this is debugging on serial port, because serial swap is done after full startup this is ok
 
   if (drd.detect()) {
-    Serial.println("Double reset detected, clearing config.");
+    Serial.println(F("Double reset detected, clearing config."));
     SPIFFS.begin();
     SPIFFS.format();
     wifiManager.resetSettings();
-    Serial.println("Config cleared. Please open the Wifi portal to configure this device...");
+    Serial.println(F("Config cleared. Please open the Wifi portal to configure this device..."));
   } else {
     //read configuration from FS json
-    Serial.println("mounting FS...");
+    Serial.println(F("mounting FS..."));
 
     if (SPIFFS.begin()) {
-      Serial.println("mounted file system");
+      Serial.println(F("mounted file system"));
       if (SPIFFS.exists("/config.json")) {
         //file exists, reading and loading
-        Serial.println("reading config file");
+        Serial.println(F("reading config file"));
         File configFile = SPIFFS.open("/config.json", "r");
         if (configFile) {
-          Serial.println("opened config file");
+          Serial.println(F("opened config file"));
           size_t size = configFile.size();
           // Allocate a buffer to store contents of the file.
           std::unique_ptr<char[]> buf(new char[size]);
@@ -175,39 +104,50 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
           DeserializationError error = deserializeJson(jsonDoc, buf.get());
           serializeJson(jsonDoc, Serial);
           if (!error) {
-            Serial.println("\nparsed json");
+            Serial.println(F("\nparsed json"));
             //read updated parameters, make sure no overflow
-            strncpy(wifi_hostname, jsonDoc["wifi_hostname"], 39); wifi_hostname[39] = '\0';
-            strncpy(ota_password, jsonDoc["ota_password"], 39); ota_password[39] = '\0';
-            if ( jsonDoc["mqtt_topic_base"] ) strncpy(mqtt_topic_base, jsonDoc["mqtt_topic_base"], 39); mqtt_topic_base[39] = '\0';
-            strncpy(mqtt_server, jsonDoc["mqtt_server"], 39); mqtt_server[39] = '\0';
-            strncpy(mqtt_port, jsonDoc["mqtt_port"], 5); mqtt_port[5] = '\0';
-            strncpy(mqtt_username, jsonDoc["mqtt_username"], 39); mqtt_username[39] = '\0';
-            strncpy(mqtt_password, jsonDoc["mqtt_password"], 39); mqtt_password[39] = '\0';
-            if ( jsonDoc["use_1wire"] == "enabled" ) use_1wire = true;
+            if ( jsonDoc["wifi_hostname"] ) strlcpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], sizeof(heishamonSettings->wifi_hostname));
+            if ( jsonDoc["ota_password"] ) strlcpy(heishamonSettings->ota_password, jsonDoc["ota_password"], sizeof(heishamonSettings->ota_password));
+            if ( jsonDoc["mqtt_topic_base"] ) strlcpy(heishamonSettings->mqtt_topic_base, jsonDoc["mqtt_topic_base"], sizeof(heishamonSettings->mqtt_topic_base));
+            if ( jsonDoc["mqtt_server"] ) strlcpy(heishamonSettings->mqtt_server, jsonDoc["mqtt_server"], sizeof(heishamonSettings->mqtt_server));
+            if ( jsonDoc["mqtt_port"] ) strlcpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], sizeof(heishamonSettings->mqtt_port));
+            if ( jsonDoc["mqtt_username"] ) strlcpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], sizeof(heishamonSettings->mqtt_username));
+            if ( jsonDoc["mqtt_password"] ) strlcpy(heishamonSettings->mqtt_password, jsonDoc["mqtt_password"], sizeof(heishamonSettings->mqtt_password));
+            if ( jsonDoc["use_1wire"] == "enabled" ) heishamonSettings->use_1wire = true;
             if ( jsonDoc["use_s0"] == "enabled" ) {
-              use_s0 = true;
-              if (jsonDoc["s0_1_gpio"]) actS0Data[0].gpiopin = jsonDoc["s0_1_gpio"];
-              if (jsonDoc["s0_1_ppkwh"]) actS0Data[0].ppkwh = jsonDoc["s0_1_ppkwh"];
-              if (jsonDoc["s0_1_interval"]) actS0Data[0].reportInterval = jsonDoc["s0_1_interval"];
-              if (jsonDoc["s0_2_gpio"]) actS0Data[1].gpiopin = jsonDoc["s0_2_gpio"];
-              if (jsonDoc["s0_2_ppkwh"]) actS0Data[1].ppkwh = jsonDoc["s0_2_ppkwh"];
-              if (jsonDoc["s0_2_interval"] ) actS0Data[1].reportInterval = jsonDoc["s0_2_interval"];   
+              heishamonSettings->use_s0 = true;
+              if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
+              if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
+              if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
+              if (jsonDoc["s0_1_sum_s0_watthour"] == "enabled") heishamonSettings->s0Settings[0].sum_s0_watthour = true;
+              if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
+              if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
+              if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
+              if (jsonDoc["s0_2_sum_s0_watthour"] == "enabled") heishamonSettings->s0Settings[1].sum_s0_watthour = true;
             }
-            if ( jsonDoc["listenonly"] == "enabled" ) listenonly = true;
+            if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
+            if ( jsonDoc["optionalPCB"] == "enabled" ) heishamonSettings->optionalPCB = true;
+            if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
+            if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
+            if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
+            if (heishamonSettings->waitDallasTime < 5) heishamonSettings->waitDallasTime = 5;
+            if ( jsonDoc["updateAllTime"]) heishamonSettings->updateAllTime = jsonDoc["updateAllTime"];
+            if (heishamonSettings->updateAllTime < heishamonSettings->waitTime) heishamonSettings->updateAllTime = heishamonSettings->waitTime;
+            if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
+            if (heishamonSettings->updataAllDallasTime < heishamonSettings->waitDallasTime) heishamonSettings->updataAllDallasTime = heishamonSettings->waitDallasTime;
           } else {
-            Serial.println("Failed to load json config, forcing config reset.");
+            Serial.println(F("Failed to load json config, forcing config reset."));
             wifiManager.resetSettings();
           }
           configFile.close();
         }
       }
       else {
-        Serial.println("No config.json exists! Forcing a config reset.");
+        Serial.println(F("No config.json exists! Forcing a config reset."));
         wifiManager.resetSettings();
       }
     } else {
-      Serial.println("failed to mount FS");
+      Serial.println(F("failed to mount FS"));
     }
     //end read
   }
@@ -216,14 +156,14 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   // After connecting, parameter.getValue() will get you the configured value
   // id/name placeholder/prompt default length
   WiFiManagerParameter custom_text1("<p>My hostname and OTA password</p>");
-  WiFiManagerParameter custom_wifi_hostname("wifi_hostname", "wifi hostname", wifi_hostname, 39);
-  WiFiManagerParameter custom_ota_password("ota_password", "ota password", ota_password, 39);
+  WiFiManagerParameter custom_wifi_hostname("wifi_hostname", "wifi hostname", heishamonSettings->wifi_hostname, 39);
+  WiFiManagerParameter custom_ota_password("ota_password", "ota password", heishamonSettings->ota_password, 39);
   WiFiManagerParameter custom_text2("<p>Configure MQTT settings</p>");
-  WiFiManagerParameter custom_mqtt_topic_base("mqtt topic base", "mqtt topic base", mqtt_topic_base, 39);
-  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 39);
-  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 5);
-  WiFiManagerParameter custom_mqtt_username("username", "mqtt username", mqtt_username, 39);
-  WiFiManagerParameter custom_mqtt_password("password", "mqtt password", mqtt_password, 39);
+  WiFiManagerParameter custom_mqtt_topic_base("mqtt topic base", "mqtt topic base", heishamonSettings->mqtt_topic_base, 39);
+  WiFiManagerParameter custom_mqtt_server("server", "mqtt server", heishamonSettings->mqtt_server, 39);
+  WiFiManagerParameter custom_mqtt_port("port", "mqtt port", heishamonSettings->mqtt_port, 5);
+  WiFiManagerParameter custom_mqtt_username("username", "mqtt username", heishamonSettings->mqtt_username, 39);
+  WiFiManagerParameter custom_mqtt_password("password", "mqtt password", heishamonSettings->mqtt_password, 39);
 
 
   //set config save notify callback
@@ -245,7 +185,7 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   wifiManager.setConfigPortalTimeout(120);
   wifiManager.setConnectTimeout(10);
   if (!wifiManager.autoConnect("HeishaMon-Setup")) {
-    Serial.println("failed to connect and hit timeout");
+    Serial.println(F("failed to connect and hit timeout"));
     delay(3000);
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
@@ -253,35 +193,35 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
   }
 
   //if you get here you have connected to the WiFi
-  Serial.println("Wifi connected...yeey :)");
+  Serial.println(F("Wifi connected...yeey :)"));
 
   //read updated parameters, make sure no overflow
-  strncpy(wifi_hostname, custom_wifi_hostname.getValue(), 39); wifi_hostname[39] = '\0';
-  strncpy(ota_password, custom_ota_password.getValue(), 39); ota_password[39] = '\0';
-  strncpy(mqtt_topic_base, custom_mqtt_topic_base.getValue(), 39); mqtt_topic_base[39] = '\0';
-  strncpy(mqtt_server, custom_mqtt_server.getValue(), 39); mqtt_server[39] = '\0';
-  strncpy(mqtt_port, custom_mqtt_port.getValue(), 5); mqtt_port[5] = '\0';
-  strncpy(mqtt_username, custom_mqtt_username.getValue(), 39); mqtt_username[39] = '\0';
-  strncpy(mqtt_password, custom_mqtt_password.getValue(), 39); mqtt_password[39] = '\0';
+  strncpy(heishamonSettings->wifi_hostname, custom_wifi_hostname.getValue(), 39); heishamonSettings->wifi_hostname[39] = '\0';
+  strncpy(heishamonSettings->ota_password, custom_ota_password.getValue(), 39); heishamonSettings->ota_password[39] = '\0';
+  strncpy(heishamonSettings->mqtt_topic_base, custom_mqtt_topic_base.getValue(), 39); heishamonSettings->mqtt_topic_base[39] = '\0';
+  strncpy(heishamonSettings->mqtt_server, custom_mqtt_server.getValue(), 39); heishamonSettings->mqtt_server[39] = '\0';
+  strncpy(heishamonSettings->mqtt_port, custom_mqtt_port.getValue(), 5); heishamonSettings->mqtt_port[5] = '\0';
+  strncpy(heishamonSettings->mqtt_username, custom_mqtt_username.getValue(), 39); heishamonSettings->mqtt_username[39] = '\0';
+  strncpy(heishamonSettings->mqtt_password, custom_mqtt_password.getValue(), 39); heishamonSettings->mqtt_password[39] = '\0';
 
   //Set hostname on wifi rather than ESP_xxxxx
-  WiFi.hostname(wifi_hostname);
+  WiFi.hostname(heishamonSettings->wifi_hostname);
 
   //save the custom parameters to FS
   if (shouldSaveConfig) {
-    Serial.println("saving config");
+    Serial.println(F("saving config"));
     DynamicJsonDocument jsonDoc(1024);
-    jsonDoc["wifi_hostname"] = wifi_hostname;
-    jsonDoc["ota_password"] = ota_password;
-    jsonDoc["mqtt_topic_base"] = mqtt_topic_base;
-    jsonDoc["mqtt_server"] = mqtt_server;
-    jsonDoc["mqtt_port"] = mqtt_port;
-    jsonDoc["mqtt_username"] = mqtt_username;
-    jsonDoc["mqtt_password"] = mqtt_password;
+    jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
+    jsonDoc["ota_password"] = heishamonSettings->ota_password;
+    jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
+    jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
+    jsonDoc["mqtt_port"] = heishamonSettings->mqtt_port;
+    jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
+    jsonDoc["mqtt_password"] = heishamonSettings->mqtt_password;
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
-      Serial.println("failed to open config file for writing");
+      Serial.println(F("failed to open config file for writing"));
     }
 
     serializeJson(jsonDoc, Serial);
@@ -289,55 +229,38 @@ void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, 
     configFile.close();
     //end save
   }
-  Serial.println("==========");
-  Serial.println("local ip");
+  Serial.println(F("=========="));
+  Serial.println(F("local ip"));
   Serial.println(WiFi.localIP());
 }
 
-void handleRoot(ESP8266WebServer *httpServer, float readpercentage, bool &use_1wire, bool &use_s0) {
+void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStruct *heishamonSettings) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(webBodyStart);
+  httpServer->sendContent_P(webBodyRoot1);
+  httpServer->sendContent(heishamon_version);
+  httpServer->sendContent_P(webBodyRoot2);
+ 
+  if (heishamonSettings->use_1wire) httpServer->sendContent_P(webBodyRootDallasTab);
+  if (heishamonSettings->use_s0) httpServer->sendContent_P(webBodyRootS0Tab);
+  httpServer->sendContent_P(webBodyEndDiv);
+   
+  httpServer->sendContent_P(webBodyRootStatusWifi);
+  httpServer->sendContent(String(getWifiQuality()));
+  httpServer->sendContent_P(webBodyRootStatusMemory);
+  httpServer->sendContent(String(getFreeMemory()));
+  httpServer->sendContent_P(webBodyRootStatusReceived);
+  httpServer->sendContent(String(readpercentage));
+  httpServer->sendContent_P(webBodyRootStatusUptime);
+  httpServer->sendContent(getUptime());
+  httpServer->sendContent_P(webBodyEndDiv);
 
-  String httptext = "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">";
-  httptext = httptext + "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>";
-  httptext = httptext + "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>";
-  httptext = httptext + "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>";
-  httptext = httptext + "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>";
-  httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
-  httptext = httptext + "<hr><div class=\"w3-text-grey\">Version: " + heishamon_version + "<br><a href=\"https://github.com/Egyras/HeishaMon\">Heishamon software</a></div><hr></div>";
-
-
-  httptext = httptext + "<div class=\"w3-bar w3-red\">";
-  httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Heatpump')\">Heatpump</button>";
-  if (use_1wire) httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Dallas')\">Dallas 1-wire</button>";
-  if (use_s0) httptext = httptext + "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('S0')\">S0 kWh meters</button>";
-  httptext = httptext + "</div>";
-
-  httptext = httptext + "<div class=\"w3-container w3-left\">";
-  httptext = httptext + "<br>Wifi signal: " + String(getWifiQuality()) + "%";
-  httptext = httptext + "<br>Memory free: " + String(getFreeMemory()) + "%";
-  httptext = httptext + "<br>Correct received data: " + String(readpercentage) + "%";
-  httptext = httptext + "<br>Uptime: " + getUptime();
-  httptext = httptext + "</div>";
-
-  httptext = httptext + "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">";
-  httptext = httptext + "<h2>Current heatpump values</h2>";
-  httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></r></tbody></table></div>";
-  if (use_1wire) {
-    httptext = httptext + "<div id=\"Dallas\" class=\"w3-container w3-center heishatable\" style=\"display:none\">";
-    httptext = httptext + "<h2>Current Dallas 1-wire values</h2>";
-    httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Sensor</th><th>Temperature</th></tr></thead><tbody id=\"dallasvalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
-  }
-  if (use_s0) {
-    httptext = httptext + "<div id=\"S0\" class=\"w3-container w3-center heishatable\" style=\"display:none\">";
-    httptext = httptext + "<h2>Current S0 kWh meters values</h2>";
-    httptext = httptext + "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>S0 port</th><th>Watt</th></tr></thead><tbody id=\"s0values\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
-  }
-  httpServer->sendContent(httptext);
-
-
+  httpServer->sendContent_P(webBodyRootHeatpumpValues);
+  if (heishamonSettings->use_1wire)httpServer->sendContent_P(webBodyRootDallasValues);
+  if (heishamonSettings->use_s0)  httpServer->sendContent_P(webBodyRootS0Values);
+ 
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(refreshJS);
   httpServer->sendContent_P(selectJS);
@@ -346,13 +269,13 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, bool &use_1w
   httpServer->client().stop();
 }
 
-void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[], s0Data actS0Data[]) {
+void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   if (httpServer->hasArg("1wire")) {
-    httpServer->sendContent(dallasTableOutput(actDallasData));
+    httpServer->sendContent(dallasTableOutput());
   } else if (httpServer->hasArg("s0")) {
-    httpServer->sendContent(s0TableOutput(actS0Data));
+    httpServer->sendContent(s0TableOutput());
   } else {
     for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
       String topicdesc;
@@ -362,7 +285,13 @@ void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], dallasDa
       }
       else {
         int value = actData[topic].toInt();
-        topicdesc = topicDescription[topic][value];
+        int maxvalue = atoi(topicDescription[topic][0]);
+        if ((value < 0) || (value > maxvalue)) {
+          topicdesc = "unknown";
+        }
+        else {
+          topicdesc = topicDescription[topic][value + 1]; //plus one, because 0 is the maxvalue container
+        }
       }
       String tabletext = "<tr>";
       tabletext = tabletext + "<td>TOP" + topic + "</td>";
@@ -377,8 +306,9 @@ void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], dallasDa
   httpServer->client().stop();
 }
 
-void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[], s0Data actS0Data[]) {
+void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->sendHeader("Access-Control-Allow-Origin", "*");
   httpServer->send(200, "application/json", "");
   //begin json
   String tabletext = "{";
@@ -393,7 +323,13 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData
     }
     else {
       int value = actData[topic].toInt();
-      topicdesc = topicDescription[topic][value];
+      int maxvalue = atoi(topicDescription[topic][0]);
+      if ((value < 0) || (value > maxvalue)) {
+        topicdesc = "unknown";
+      }
+      else {
+        topicdesc = topicDescription[topic][value + 1]; //plus one, because 0 is the maxvalue container
+      }
     }
     tabletext = "{";
     tabletext = tabletext + "\"Topic\": \"TOP" + topic + "\",";
@@ -407,10 +343,10 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData
   tabletext = "]";
   httpServer->sendContent(tabletext);
   //1wire data in json
-  tabletext =  ",\"1wire\":" + dallasJsonOutput(actDallasData);
+  tabletext =  ",\"1wire\":" + dallasJsonOutput();
   httpServer->sendContent(tabletext);
   //s0 data in json
-  tabletext =  ",\"s0\":" + s0JsonOutput(actS0Data);
+  tabletext =  ",\"s0\":" + s0JsonOutput();
   httpServer->sendContent(tabletext);
   //end json string
   tabletext = "}";
@@ -426,11 +362,7 @@ void handleFactoryReset(ESP8266WebServer *httpServer) {
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(refreshMeta);
   httpServer->sendContent_P(webBodyStart);
-
-  String httptext = "<div class=\"w3-container w3-center\">";
-  httptext = httptext + "<p>Removing configuration. To reconfigure please connect to WiFi hotspot after reset.</p>";
-  httptext = httptext + "</div>";
-  httpServer->sendContent(httptext);
+  httpServer->sendContent_P(webBodyFactoryResetWarning);
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
@@ -449,11 +381,7 @@ void handleReboot(ESP8266WebServer *httpServer) {
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(refreshMeta);
   httpServer->sendContent_P(webBodyStart);
-
-  String httptext = "<div class=\"w3-container w3-center\">";
-  httptext = httptext + "<p>Rebooting</p>";
-  httptext = httptext + "</div>";
-  httpServer->sendContent(httptext);
+  httpServer->sendContent_P(webBodyRebootWarning);
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
@@ -462,59 +390,61 @@ void handleReboot(ESP8266WebServer *httpServer) {
   ESP.restart();
 }
 
-void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_topic_base, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &use_s0, bool &listenonly, s0Data actS0Data[]) {
+void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(webBodyStart);
+  httpServer->sendContent_P(webBodySettings1);
 
-  String httptext = "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">";
-  httptext = httptext + "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>";
-  httptext = httptext + "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>";
-  httptext = httptext + "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>";
-  httptext = httptext + "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>";
-  httptext = httptext + "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>";
-  httptext = httptext + "</div>";
-  httpServer->sendContent(httptext);
 
   //check if POST was made with save settings, if yes then save and reboot
   if (httpServer->args()) {
     DynamicJsonDocument jsonDoc(1024);
-    jsonDoc["wifi_hostname"] = wifi_hostname;
-    jsonDoc["ota_password"] = ota_password;
-    jsonDoc["mqtt_topic_base"] = mqtt_topic_base;
-    jsonDoc["mqtt_server"] = mqtt_server;
-    jsonDoc["mqtt_port"] = mqtt_port;
-    jsonDoc["mqtt_username"] = mqtt_username;
-    jsonDoc["mqtt_password"] = mqtt_password;
-    if (use_1wire) {
+    //set jsonDoc with current settings
+    jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
+    jsonDoc["ota_password"] = heishamonSettings->ota_password;
+    jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
+    jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
+    jsonDoc["mqtt_port"] = heishamonSettings->mqtt_port;
+    jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
+    jsonDoc["mqtt_password"] = heishamonSettings->mqtt_password;
+    if (heishamonSettings->use_1wire) {
       jsonDoc["use_1wire"] = "enabled";
     } else {
       jsonDoc["use_1wire"] = "disabled";
     }
-    if (use_s0) {
+    if (heishamonSettings->use_s0) {
       jsonDoc["use_s0"] = "enabled";
     } else {
       jsonDoc["use_s0"] = "disabled";
     }
-    if (listenonly) {
+    if (heishamonSettings->listenonly) {
       jsonDoc["listenonly"] = "enabled";
     } else {
       jsonDoc["listenonly"] = "disabled";
     }
+    if (heishamonSettings->optionalPCB) {
+      jsonDoc["optionalPCB"] = "enabled";
+    } else {
+      jsonDoc["optionalPCB"] = "disabled";
+    }    
+    jsonDoc["waitTime"] = heishamonSettings->waitTime;
+    jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
+    jsonDoc["updateAllTime"] = heishamonSettings->updateAllTime;
+    jsonDoc["updataAllDallasTime"] = heishamonSettings->updataAllDallasTime;
+
+    //then overwrite with new settings
     if (httpServer->hasArg("wifi_hostname")) {
       jsonDoc["wifi_hostname"] = httpServer->arg("wifi_hostname");
     }
     if (httpServer->hasArg("new_ota_password") && (httpServer->arg("new_ota_password") != NULL) && (httpServer->arg("current_ota_password") != NULL) ) {
-      if (httpServer->hasArg("current_ota_password") && (strcmp(ota_password, httpServer->arg("current_ota_password").c_str()) == 0 )) {
+      if (httpServer->hasArg("current_ota_password") && (strcmp(heishamonSettings->ota_password, httpServer->arg("current_ota_password").c_str()) == 0 )) {
         jsonDoc["ota_password"] = httpServer->arg("new_ota_password");
       }
       else {
-        httptext = "<div class=\"w3-container w3-center\">";
-        httptext = httptext + "<h3>------- wrong current password -------</h3>";
-        httptext = httptext + "<h3>-- do factory reset if password lost --</h3>";
-        httptext = httptext + "</div>";
-        httpServer->sendContent(httptext);
+
+        httpServer->sendContent_P(webBodySettingsResetPasswordWarning);
         httpServer->sendContent_P(refreshMeta);
         httpServer->sendContent_P(webFooter);
         httpServer->sendContent("");
@@ -522,9 +452,9 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
         return;
       }
     }
-     if (httpServer->hasArg("mqtt_topic_base")) {
+    if (httpServer->hasArg("mqtt_topic_base")) {
       jsonDoc["mqtt_topic_base"] = httpServer->arg("mqtt_topic_base");
-    }   
+    }
     if (httpServer->hasArg("mqtt_server")) {
       jsonDoc["mqtt_server"] = httpServer->arg("mqtt_server");
     }
@@ -547,9 +477,11 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
       if (httpServer->hasArg("s0_1_gpio")) jsonDoc["s0_1_gpio"] = httpServer->arg("s0_1_gpio");
       if (httpServer->hasArg("s0_1_ppkwh")) jsonDoc["s0_1_ppkwh"] = httpServer->arg("s0_1_ppkwh");
       if (httpServer->hasArg("s0_1_interval")) jsonDoc["s0_1_interval"] = httpServer->arg("s0_1_interval");
+      if (httpServer->hasArg("s0_1_sum_s0_watthour")) jsonDoc["s0_1_sum_s0_watthour"] = "enabled";
       if (httpServer->hasArg("s0_2_gpio")) jsonDoc["s0_2_gpio"] = httpServer->arg("s0_2_gpio");
       if (httpServer->hasArg("s0_2_ppkwh")) jsonDoc["s0_2_ppkwh"] = httpServer->arg("s0_2_ppkwh");
       if (httpServer->hasArg("s0_2_interval")) jsonDoc["s0_2_interval"] = httpServer->arg("s0_2_interval");
+      if (httpServer->hasArg("s0_2_sum_s0_watthour")) jsonDoc["s0_2_sum_s0_watthour"] = "enabled";
     } else {
       jsonDoc["use_s0"] = "disabled";
     }
@@ -557,6 +489,23 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
       jsonDoc["listenonly"] = "enabled";
     } else {
       jsonDoc["listenonly"] = "disabled";
+    }
+    if (httpServer->hasArg("optionalPCB")) {
+      jsonDoc["optionalPCB"] = "enabled";
+    } else {
+      jsonDoc["optionalPCB"] = "disabled";
+    }    
+    if (httpServer->hasArg("waitTime")) {
+      jsonDoc["waitTime"] = httpServer->arg("waitTime");
+    }
+    if (httpServer->hasArg("waitDallasTime")) {
+      jsonDoc["waitDallasTime"] = httpServer->arg("waitDallasTime");
+    }
+    if (httpServer->hasArg("updateAllTime")) {
+      jsonDoc["updateAllTime"] = httpServer->arg("updateAllTime");
+    }
+    if (httpServer->hasArg("updataAllDallasTime")) {
+      jsonDoc["updataAllDallasTime"] = httpServer->arg("updataAllDallasTime");
     }
 
     if (SPIFFS.begin()) {
@@ -566,11 +515,7 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
         configFile.close();
         delay(1000);
 
-        httptext = "<div class=\"w3-container w3-center\">";
-        httptext = httptext + "<h3>--- saved ---</h3>";
-        httptext = httptext + "<h3>-- rebooting --</h3>";
-        httptext = httptext + "</div>";
-        httpServer->sendContent(httptext);
+        httpServer->sendContent_P(webBodySettingsSaveMessage);
         httpServer->sendContent_P(refreshMeta);
         httpServer->sendContent_P(webFooter);
         httpServer->sendContent("");
@@ -581,82 +526,133 @@ void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota
     }
   }
 
-  httptext = "<div class=\"w3-container w3-center\">";
+  String httptext = "<div class=\"w3-container w3-center\">";
   httptext = httptext + "<h2>Settings</h2>";
   httptext = httptext + "<form action=\"/settings\" method=\"POST\">";
-  httptext = httptext + "Hostname:<br>";
-  httptext = httptext + "<input type=\"text\" name=\"wifi_hostname\" value=\"" + wifi_hostname + "\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Current update password:<br>";
+  httptext = httptext + "<table style=\"width:100%\">";
+  httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Hostname:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"text\" name=\"wifi_hostname\" value=\"" + heishamonSettings->wifi_hostname + "\">";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Current update password:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"password\" name=\"current_ota_password\" value=\"\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "New update password:<br>";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "New update password:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"password\" name=\"new_ota_password\" value=\"\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Mqtt topic base:<br>";
-  httptext = httptext + "<input type=\"text\" name=\"mqtt_topic_base\" value=\"" + mqtt_topic_base + "\">";
-  httptext = httptext + "<br><br>";  
-  httptext = httptext + "Mqtt server:<br>";
-  httptext = httptext + "<input type=\"text\" name=\"mqtt_server\" value=\"" + mqtt_server + "\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Mqtt port:<br>";
-  httptext = httptext + "<input type=\"number\" name=\"mqtt_port\" value=\"" + mqtt_port + "\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Mqtt username:<br>";
-  httptext = httptext + "<input type=\"text\" name=\"mqtt_username\" value=\"" + mqtt_username + "\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Mqtt password:<br>";
-  httptext = httptext + "<input type=\"password\" name=\"mqtt_password\" value=\"" + mqtt_password + "\">";
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Use 1wire DS18b20: ";
-  if (use_1wire) {
-    httptext = httptext + "<input type=\"checkbox\" name=\"use_1wire\" value=\"enabled\" checked >";
-  } else {
-    httptext = httptext + "<input type=\"checkbox\" name=\"use_1wire\" value=\"enabled\">";
-  }
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Use s0 kWh metering: ";
-  if (use_s0) {
-    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideS0Div(this)\" name=\"use_s0\" value=\"enabled\" checked >";
-    httptext = httptext + "<div id=\"s0settings\" class=\"w3-container w3-center\" style=\"display: block;\">";
-  } else {
-    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideS0Div(this)\" name=\"use_s0\" value=\"enabled\">";
-    httptext = httptext + "<div id=\"s0settings\" class=\"w3-container w3-center\" style=\"display: none;\">";
-  }
-  //begin default S0 pins hack
-  if (actS0Data[0].gpiopin == 255) actS0Data[0].gpiopin = DEFAULT_S0_PIN_1;
-  if (actS0Data[1].gpiopin == 255) actS0Data[1].gpiopin = DEFAULT_S0_PIN_2;
-  //end default S0 pins hack
-  for (int i = 0; i < NUM_S0_COUNTERS; i++) {
-    httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " GPIO:<br>";
-    httptext = httptext + "<input type=\"number\" name=\"s0_" + (i + 1) + "_gpio\" value=\"" + actS0Data[i].gpiopin + "\">";
-    httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " imp/kwh:<br>";
-    httptext = httptext + "<input type=\"number\" id=\"s0_ppkwh_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_ppkwh\" value=\"" + (actS0Data[i].ppkwh) + "\">";
-    httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " reporting interval during standby/low power usage:<br>";
-    httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i+1) + "\" onchange=\"changeMinWatt(" + (i+1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (actS0Data[i].reportInterval) + "\">";
-    httptext = httptext + "<br><br>";
-    httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold: <label id=\"s0_minwatt_" + (i+1) + "\">"+(int) round((3600 * 1000 / actS0Data[i].ppkwh)/ actS0Data[i].reportInterval)+"</label> Watt";
-   }
-  httptext = httptext + "</div>";
-
-  httptext = httptext + "<br><br>";
-  httptext = httptext + "Listen only mode: ";
-  if (listenonly) {
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Mqtt topic base:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"text\" name=\"mqtt_topic_base\" value=\"" + heishamonSettings->mqtt_topic_base + "\">";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Mqtt server:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"text\" name=\"mqtt_server\" value=\"" + heishamonSettings->mqtt_server + "\">";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Mqtt port:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"number\" name=\"mqtt_port\" value=\"" + heishamonSettings->mqtt_port + "\">";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Mqtt username:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"text\" name=\"mqtt_username\" value=\"" + heishamonSettings->mqtt_username + "\">";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Mqtt password:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"password\" name=\"mqtt_password\" value=\"" + heishamonSettings->mqtt_password + "\">";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "How often new values are collected from heatpump:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"number\" name=\"waitTime\" value=\"" + heishamonSettings->waitTime + "\"> seconds  (min 5 sec)";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "How often all heatpump values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"number\" name=\"updateAllTime\" value=\"" + heishamonSettings->updateAllTime + "\"> seconds";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Listen only mode:</td><td style=\"text-align:left\">";
+  if (heishamonSettings->listenonly) {
     httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\" checked >";
   } else {
     httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">";
   }
-  httptext = httptext + "<br><br>";  httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Emulate optional PCB (experimental):</td><td style=\"text-align:left\">";  
+  if (heishamonSettings->optionalPCB) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\" checked >";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">";
+  }  
+  httptext = httptext + "</td></tr>";
+  httptext = httptext + "</table>";
+
+  // 1wire
+  httptext = httptext + "<table style=\"width:100%\">";
+  httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Use 1wire DS18b20:</td><td style=\"text-align:left\">";
+  if (heishamonSettings->use_1wire) {
+    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\" checked >";
+    httptext = httptext + "</td></tr>";
+    httptext = httptext + "</table>";
+    httptext = httptext + "<table id=\"dallassettings\" style=\"display: table; width:100%\">";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\">";
+    httptext = httptext + "</td></tr>";
+    httptext = httptext + "</table>";
+    httptext = httptext + "<table id=\"dallassettings\" style=\"display: none; width:100%\">";
+  }
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "How often new values are collected from 1wire:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"number\" name=\"waitDallasTime\" value=\"" + heishamonSettings->waitDallasTime + "\"> seconds (min 5 sec)";
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "How often all 1wire values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">";
+  httptext = httptext + "<input type=\"number\" name=\"updataAllDallasTime\" value=\"" + heishamonSettings->updataAllDallasTime + "\"> seconds";
+  httptext = httptext + "</td></tr>";
+  httptext = httptext + "</table>";
+
+  // s0
+  httptext = httptext + "<table style=\"width:100%\">";
+  httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Use s0 kWh metering:</td><td style=\"text-align:left\">";
+  if (heishamonSettings->use_s0) {
+    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideS0Table(this)\" name=\"use_s0\" value=\"enabled\" checked >";
+    httptext = httptext + "</td></tr>";
+    httptext = httptext + "</table>";
+    httptext = httptext + "<table id=\"s0settings\" style=\"display: table; width:100%\">";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" onclick=\"ShowHideS0Table(this)\" name=\"use_s0\" value=\"enabled\">";
+    httptext = httptext + "</td></tr>";
+    httptext = httptext + "</table>";
+    httptext = httptext + "<table id=\"s0settings\" style=\"display: none; width:100%\">";
+  }
+  //begin default S0 pins hack
+  if (heishamonSettings->s0Settings[0].gpiopin == 255) heishamonSettings->s0Settings[0].gpiopin = DEFAULT_S0_PIN_1;
+  if (heishamonSettings->s0Settings[1].gpiopin == 255) heishamonSettings->s0Settings[1].gpiopin = DEFAULT_S0_PIN_2;
+  //end default S0 pins hack
+  for (int i = 0; i < NUM_S0_COUNTERS; i++) {
+    httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
+    httptext = httptext + "S0 port " + (i + 1) + " GPIO:</td><td style=\"text-align:left\">";
+    httptext = httptext + "<input type=\"number\" name=\"s0_" + (i + 1) + "_gpio\" value=\"" + heishamonSettings->s0Settings[i].gpiopin + "\">";
+    httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+    httptext = httptext + "S0 port " + (i + 1) + " imp/kwh:</td><td style=\"text-align:left\">";
+    httptext = httptext + "<input type=\"number\" id=\"s0_ppkwh_" + (i + 1) + "\" onchange=\"changeMinWatt(" + (i + 1) + ")\" name=\"s0_" + (i + 1) + "_ppkwh\" value=\"" + (heishamonSettings->s0Settings[i].ppkwh) + "\">";
+    httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+    httptext = httptext + "S0 port " + (i + 1) + " reporting interval during standby/low power usage:</td><td style=\"text-align:left\">";
+    httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i + 1) + "\" onchange=\"changeMinWatt(" + (i + 1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (heishamonSettings->s0Settings[i].lowerPowerInterval) + "\"> seconds";
+    httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+    httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold:</td><td style=\"text-align:left\"><label id=\"s0_minwatt_" + (i + 1) + "\">" + (int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval) + "</label> Watt";
+    httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+    httptext = httptext + "S0 port " + (i + 1) + " incremental Watthour and restore from MQTT at boot:</td><td style=\"text-align:left\">";
+    if (heishamonSettings->s0Settings[i].sum_s0_watthour) {
+      httptext = httptext + "<input type=\"checkbox\"  name=\"s0_" + (i + 1) + "_sum_s0_watthour\" value=\"enabled\" checked >";
+    } else {
+      httptext = httptext + "<input type=\"checkbox\"  name=\"s0_" + (i + 1) + "_sum_s0_watthour\" value=\"enabled\" >";
+    }
+    httptext = httptext + "</td></tr>";
+  }
+  httptext = httptext + "</table>";
+
+
+  httptext = httptext + "<br><br>";
+  httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
   httptext = httptext + "</form>";
   httptext = httptext + "<br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\" >Factory reset</a>";
   httptext = httptext + "</div>";
   httpServer->sendContent(httptext);
 
   httpServer->sendContent_P(menuJS);
-  httpServer->sendContent_P(s0SettingsJS);
+  httpServer->sendContent_P(settingsJS);
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
   httpServer->client().stop();

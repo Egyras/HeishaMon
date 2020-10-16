@@ -109,6 +109,7 @@ TOP89 | sdc/Z2_Cool_Curve_Outside_Low_Temp | Highest outside temperature on the 
 TOP90 | sdc/Room_Heater_Operations_Hours | Electric heater operating time for Room (Hour)
 TOP91 | sdc/DHW_Heater_Operations_Hours | Electric heater operating time for DHW (Hour)
 TOP92 | sdc/Heat_Pump_Model | Heat pump model, all values in HeatPumpType.md
+TOP93 | sdc/Pump_Duty | Pump duty
 
 All Topics realated with state can have also value -1 - unknown - but only in ubnormal situations.
 
@@ -129,6 +130,8 @@ SET10 | SetForceDHW | Forces DHW (Operating mode should be firstly set to one wi
 SET11 | SetDHWTemp | Set DHW target temperature | 40 - 75
 SET12 | SetForceDefrost | Forces defrost routine | 0, 1
 SET13 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
+SET14 | SetPump | Set pump to service mode, max speed | 0, 1
+SET15 | SetPumpSpeed | Set max pump speed in service menu | decimal value translate to hexadecimal in service menu (100 - 255)
 
 
 

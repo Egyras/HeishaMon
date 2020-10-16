@@ -2,10 +2,10 @@
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 
-#define UPDATEALLTIME 300000 // how often all data is cleared and so resend to mqtt
+
 #define MQTT_RETAIN_VALUES 1
 
-void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_client, void (*log_message)(char*));
+void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime);
 
 String unknown(byte input);
 String getBit1and2(byte input);
@@ -25,7 +25,7 @@ String getEnergy(byte input);
 String getHeatMode(byte input);
 String getModel(byte input);
 
-#define NUMBER_OF_TOPICS 93 //last topic number + 1
+#define NUMBER_OF_TOPICS 94 //last topic number + 1
 
 static const char * topics[] = {
   "Heatpump_State",          //TOP0
@@ -120,7 +120,8 @@ static const char * topics[] = {
   "Z2_Cool_Curve_Outside_Low_Temp",      //TOP89
   "Room_Heater_Operations_Hours", //TOP90
   "DHW_Heater_Operations_Hours",  //TOP91
-  "Heat_Pump_Model", //TOP92
+  "Heat_Pump_Model", //TOP92,
+  "Pump_Duty", //TOP93
 };
 
 static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
@@ -217,6 +218,7 @@ static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned
   0,      //TOP90
   0,      //TOP91
   132,    //TOP92
+  172,    //TOP93
 };
 
 typedef String (*topicFP)(byte);
@@ -315,17 +317,18 @@ static const topicFP topicFunctions[] = {
   unknown,             //TOP90
   unknown,             //TOP91
   getModel,			       //TOP92
+  getIntMinus1,             //TOP93
 };
 
-static const char *DisabledEnabled[] = {"Disabled", "Enabled"};
-static const char *BlockedFree[] = {"Blocked", "Free"};
-static const char *OffOn[] = {"Off", "On"};
-static const char *InactiveActive[] = {"Inactive", "Active"};
-static const char *HolidayState[] = {"Off", "Scheduled", "Active"};
-static const char *OpModeDesc[] = {"Heat", "Cool", "Auto", "DHW", "Heat+DHW", "Cool+DHW", "Auto+DHW"};
-static const char *Powerfulmode[] = {"Off", "30min", "60min", "90min"};
-static const char *Quietmode[] = {"Off", "Level 1", "Level 2", "Level 3"};
-static const char *Valve[] = {"Room", "DHW"};
+static const char *DisabledEnabled[] = {"2", "Disabled", "Enabled"};
+static const char *BlockedFree[] = {"2", "Blocked", "Free"};
+static const char *OffOn[] = {"2", "Off", "On"};
+static const char *InactiveActive[] = {"2", "Inactive", "Active"};
+static const char *HolidayState[] = {"3", "Off", "Scheduled", "Active"};
+static const char *OpModeDesc[] = {"9", "Heat", "Cool", "Auto(heat)", "DHW", "Heat+DHW", "Cool+DHW", "Auto(heat)+DHW","Auto(cool)","Auto(cool)+DHW"};
+static const char *Powerfulmode[] = {"4", "Off", "30min", "60min", "90min"};
+static const char *Quietmode[] = {"4", "Off", "Level 1", "Level 2", "Level 3"};
+static const char *Valve[] = {"2", "Room", "DHW"};
 static const char *LitersPerMin[] = {"value", "l/min"};
 static const char *RotationsPerMin[] = {"value", "r/min"};
 static const char *Pressure[] = {"value", "Kgf/cm2"};
@@ -338,8 +341,9 @@ static const char *Watt[] = {"value", "Watt"};
 static const char *ErrorState[] = {"value", "Error"};
 static const char *Ampere[] = {"value", "Ampere"};
 static const char *Minutes[] = {"value", "Minutes"};
-static const char *HeatCoolModeDesc[] = {"Comp. Curve", "Direct"};
-static const char *Model[] = {"WH-MDC05H3E5", "WH-MDC07H3E5", "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8", "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8", "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8", "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8", "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5", "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5"};
+static const char *Duty[] = {"value", "Duty"};
+static const char *HeatCoolModeDesc[] = {"2", "Comp. Curve", "Direct"};
+static const char *Model[] = {"10", "WH-MDC05H3E5", "WH-MDC07H3E5", "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8", "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8", "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8", "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8", "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5", "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5", "WH-MDC05J3E5"};
 static const char **topicDescription[] = {
   OffOn,           //TOP0
   LitersPerMin,    //TOP1
@@ -434,4 +438,5 @@ static const char **topicDescription[] = {
   Hours,           //TOP90
   Hours,           //TOP91
   Model,		       //TOP92
+  Duty,            //TOP93
 };

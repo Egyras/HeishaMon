@@ -3,7 +3,6 @@
 
 unsigned long nextalldatatime = 0;
 
-
 String getBit1and2(byte input) {
   return String((input  >> 6)-1);
 }
@@ -106,6 +105,8 @@ String getModel(byte input) {
       return "7";
     case 67:
       return "8";
+    case 51:
+      return "9";
     default:
       return "-1";
   }
@@ -143,14 +144,14 @@ String getErrorInfo(char* data){ // TOP44 //
 }
 
 // Decode ////////////////////////////////////////////////////////////////////////////
-void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_client, void (*log_message)(char*)) {
+void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {
   char log_msg[256];
   char mqtt_topic[256];
   bool updatenow = false;
 
   if (millis() > nextalldatatime) {
     updatenow = true;
-    nextalldatatime = millis() + UPDATEALLTIME;
+    nextalldatatime = millis() + (1000 * updateAllTime);
   }
 
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS ; Topic_Number++) {

@@ -5,12 +5,36 @@
 #include <ArduinoJson.h>
 #include "featureboard.h"
 
+struct settingsStruct {
+  unsigned int waitTime = 5; // how often data is read from heatpump
+  unsigned int waitDallasTime = 5; // how often temps are read from 1wire
+  unsigned int updateAllTime = 300; // how often all data is resend to mqtt
+  unsigned int updataAllDallasTime = 300; //how often all 1wire data is resent to mqtt
+  
+  const char* update_path = "/firmware";
+  const char* update_username = "admin";
+  char wifi_hostname[40] = "HeishaMon";
+  char ota_password[40] = "heisha";
+  char mqtt_server[40];
+  char mqtt_port[6] = "1883";
+  char mqtt_username[40];
+  char mqtt_password[40];
+  char mqtt_topic_base[40] = "panasonic_heat_pump";
+
+  bool listenonly = false; //listen only so heishamon can be installed parallel to cz-taw1, set commands will not work though
+  bool optionalPCB = false; //do we emulate an optional PCB?
+  bool use_1wire = false; //1wire enabled?
+  bool use_s0 = false; //s0 enabled?
+  
+  s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
+};
+
 
 String getUptime(void);
-void setupWifi(DoubleResetDetect &drd, char* wifi_hostname, char* ota_password, char* mqtt_topic_base, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &use_s0, bool &listenonly, s0Data actS0Data[]);
-void handleRoot(ESP8266WebServer *httpServer, float readpercentage, bool &use_1wire, bool &use_s0);
-void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[], s0Data actS0Data[]);
-void handleJsonOutput(ESP8266WebServer *httpServer, String actData[], dallasData actDallasData[], s0Data actS0Data[]);
+void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings);
+void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStruct *heishamonSettings);
+void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]);
+void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]);
 void handleFactoryReset(ESP8266WebServer *httpServer);
 void handleReboot(ESP8266WebServer *httpServer);
-void handleSettings(ESP8266WebServer *httpServer, char* wifi_hostname, char* ota_password, char* mqtt_topic_base, char* mqtt_server, char* mqtt_port, char* mqtt_username, char* mqtt_password, bool &use_1wire, bool &use_s0, bool &listenonly, s0Data actS0Data[]);
+void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
