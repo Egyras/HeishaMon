@@ -1,7 +1,7 @@
 [![Join us on Slack chat room](https://img.shields.io/badge/Slack-Join%20the%20chat%20room-orange)](https://join.slack.com/t/panasonic-wemos/shared_invite/enQtODg2MDY0NjE1OTI3LTgzYjkwMzIwNTAwZTMyYzgwNDQ1Y2QxYjkwODg3NjMyN2MyM2ViMDM3Yjc3OGE3MGRiY2FkYzI4MzZiZDVkNGE)
 
 
-# Panasonic H Series Aquarea air-water heat pump protocol
+# Panasonic H & J Series Aquarea air-water heat pump protocol
 
 This project makes it possible to read information from Panasonic Aquarea heat pump and report the data either to an MQTT server or as JSON format over HTTP.
 
@@ -17,7 +17,7 @@ Changed from 0.6 to 0.7 is a bug fix for the webinterface which resulted in the 
 
 
 # Using the software
-The current arduino beta image is able to communicate with the Panasonic Aquarea H-series (and most probably with the new J-series as well, since PCB looks identical). \
+The current arduino beta image is able to communicate with the Panasonic Aquarea H & J-series. [Confirmed by users types of HP you can find here](HeatPumpType.md) \
 If you want to compile this image yourself be sure to use the mentioned libraries and support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that.
 
 When starting for the first time an open-wifi-hotspot will be visible allowing you to configure your wifi network and your MQTT server. Configuration page will be located at http://192.168.4.1 . \
@@ -29,7 +29,7 @@ All received data will be sent to different MQTT topics (see below for topic des
 
 You can connect a 1wire network on GPIO4 which will report in seperate MQTT topics (panasonic_heat_pump/1wire/sensorid).
 
-The software is also able to measure Watt on a S0 port of two kWh meters. You only need to connect GPIO12 and GND to the S0 of one kWh meter and if you need a second kWh meter use GPIO14 and GND. It will report on MQTT topic panasonic_heat_pump/s0/Watt/(s0port) and panasonic_heat_pump/s0/Watthour/(s0port) and also in the JSON output.
+The software is also able to measure Watt on a S0 port of two kWh meters. You only need to connect GPIO12 and GND to the S0 of one kWh meter and if you need a second kWh meter use GPIO14 and GND. It will report on MQTT topic panasonic_heat_pump/s0/Watt/1 and panasonic_heat_pump/s0/Watt/2 and also in the JSON output. You can replace 'Watt' in the previous topic with 'Watthour' to get consumption counter in kWh.
 
 Updating the firmware is as easy as going to the firmware menu and, after authentication with username 'admin' and password you provided during setup, uploading the binary there.
 
@@ -106,9 +106,11 @@ To get information from heat pump, "magic" packet should be send to CN-CNT:
 ## Integration Examples for Opensource automation systems
 [Openhab2](Integrations/Openhab2)
 
-[Home Assistant](https://github.com/Egyras/HeishaMon/tree/master/Integrations/Home%20Assistant)
+[Home Assistant](Integrations/Home%20Assistant)
 
 [IOBroker Manual](Integrations/ioBroker_manual)
 
 [Domoticz](Integrations/Domoticz)
+
+[Domoticz plugin](Integrations/Domoticz%20plugin)
 
