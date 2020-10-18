@@ -121,7 +121,7 @@ Answer/confirmation contains also steering parameters :
 
 | Byte# | Possible Value | Value decrypt | Value Description |
 |:---- | ---- | ----- | ----:|
-| 04 | C4 | 1st bit = Z2 Water pump <br/> 2nd bit = Pool Water pump <br/> 3rd bit = Z2 Mixing Valve - <br/> 4th bit = Z2 Mixing Valve + <br/> 6th bit = Z1 Mixing Valve - <br/> 7th bit = Z1 Mixing Valve + <br/> 8th bit = Z1 Water pump |  |
+| 04 | C4 | 1st bit = Solar Water pump <br/> 2nd bit = Pool Water pump <br/> 3rd bit = Z2 Mixing Valve - <br/> 4th bit = Z2 Mixing Valve + <br/> 5th bit = Z2 Water pump <br/> 6th bit = Z1 Mixing Valve - <br/> 7th bit = Z1 Mixing Valve + <br/> 8th bit = Z1 Water pump |  |
 | 05 | 01 | 00 - No Alarm </br> 01 - Alarm | |
 
 
