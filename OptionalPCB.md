@@ -8,30 +8,35 @@ Recent firmware allows (experimental) support for optional PCB emulation. This a
 
 You can publish mqtt messages towards the 'topic base/pcb/pcb topic', so for example "panasonic_heat_pump/pcb/Solar_Temp". For temperatures you just send the real temperature (the hexadecimal value will be calculated for your). For SmartGrid and Demand control you send the decimal representation of the hex value you want to send (see below for the possible hex values).
 
+Remark 1: You need to set in HP Optional PCB to YES ,and appropriate function as well to have effect in sending MQTT topics.
+
+Remark 2: Turning on Optional PCB in options will couse ,that Room Thermo 1 input will not work anymore. It is now possible to use topics "panasonic_heat_pump/pcb/External_Thermostat_1_State" (with substitute Room Thermo 1 now)  and "panasonic_heat_pump/pcb/External_Thermostat_2_State".
+
+
 ### Set command byte decrypt:
 
-| PCB Topic | Byte# | Possible Value | Value decrypt | Value Description |
-|:---- | ---- | ---- | ----- | ----:|
-| | 00 | F1 |   | Header  |
-| | 01 | 11 | Data length ( Packet length = Data length + 3 ) |  Header |
-| | 02 | 01 |   | Header  |
-| | 03 | 50 |   | Header  |
-| | 04 | 00 |   | 0 byte  |
-| | 05 | 00 |   | 0 byte  |
-| Heat_Cool_Mode<br/>Compressor_State<br/>SmartGrid_Mode<br/>External_Thermostat_1_State<br/>External_Thermostat_2_State | 06 | 40 | 1st bit = Heat/Cool<br/>2nd bit = Compressor state<br/>3rd/4th bit == SmartGrid Mode (00 = normal, 10 = HP/DHW off, 01 = Capacity 1, 11 = Capacity 2)<br/>5th/6th bit = Thermostat 1 (00 = no demand, 10 = heat demand, 01 = cool demand, 11 = heat and cool demand)<br/>7th/8th bit = Thermostat 2 (00 = no demand, 10 = heat demand, 01 = cool demand, 11 = heat and cool demand)  | SG ready values , External Compressor SW , Heat/Cool SW, Thermostat 1/2 |
-| Pool_Temp | 07 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Pool  |
-| Buffer_Temp | 08 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Buffer  |
-| | 09 | E5 |   | ?  |
-| Z1_Room_Temp | 10 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Room   |
-| Z2_Room_Temp | 11 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Room   |
-| | 12 | 00 |   | 0 byte  |
-| Solar_Temp | 13 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Solar  |
-| Demand_Control | 14 | EA | HEX:  EB-100% ,B8 - 75% ,85 -50%,52 - 25% ,2B - 5% (proportional values should works) | Demand Control  |
-| Z2_Water_Temp | 15 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Water   |
-| Z1_Water_Temp | 16 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Water   |
-| | 17 | 00 |   | 0 byte  |
-| | 18 | 00 |   | 0 byte  |
-| | 19 | 2C |  CHECKSUM |  |
+| PCB Topic |Topic value| Byte# | Possible Value | Value decrypt | Value Description |
+|:---- | ---- | ---- | ---- | ----- | ----:|
+| |-| 00 | F1 |   | Header  |
+| |-| 01 | 11 | Data length ( Packet length = Data length + 3 ) |  Header |
+| |-| 02 | 01 |   | Header  |
+| |-| 03 | 50 |   | Header  |
+| |-| 04 | 00 |   | Acknowledge for Z1/Z2/Pool Water Pump & Mixing valves state  |
+| |-| 05 | 00 |   | 0 byte  |
+| Heat_Cool_Mode<br/>Compressor_State<br/>SmartGrid_Mode<br/>External_Thermostat_1_State<br/>External_Thermostat_2_State |0/1<br/>0/1<br/>0/1/2/3<br/>0/1/2/3<br/>0/1/2/3<br/>| 06 | 40 | 1st bit = Heat/Cool<br/>2nd bit = Compressor state<br/>3rd/4th bit == SmartGrid Mode (00 = normal, 10 = HP/DHW off, 01 = Capacity 1, 11 = Capacity 2)<br/>5th/6th bit = Thermostat 1 (00 = no demand, 01 = cool demand, 10 = heat demand, 11 = heat and cool demand)<br/>7th/8th bit = Thermostat 2 (00 = no demand, 01 = cool demand, 10 = heat demand, 11 = heat and cool demand)  | SG ready values , External Compressor SW , Heat/Cool SW, Thermostat 1/2 |
+| Pool_Temp |Temp [C]| 07 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Pool  |
+| Buffer_Temp |Temp [C]| 08 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Buffer  |
+| |-| 09 | E5 but also93,92,91 (90) ,A2 |   | ?  |
+| Z1_Room_Temp |Temp [C]| 10 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Room   |
+| Z2_Room_Temp |Temp [C]| 11 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Room   |
+| |-| 12 | 00 |   | 0 byte  |
+| Solar_Temp |Temp [C]| 13 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Solar  |
+| Demand_Control |from 43 -5% to 234 - 100%| 14 | EA | HEX:  EB-100% ,B8 - 75% ,85 -50%,52 - 25% ,2B - 5% (proportional values should works) | Demand Control  |
+| Z2_Water_Temp |Temp [C]| 15 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Water   |
+| Z1_Water_Temp |Temp [C] | 16 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Water   |
+| |-| 17 | 00 |   | 0 byte  |
+| |-| 18 | 00 |   | 0 byte  |
+| |-| 19 | 2C |  CHECKSUM |  |
 
 ## NTC 6,5kOhm characteristic:
 
@@ -87,7 +92,7 @@ It can be aproximate by function : Uref * (RT / (Rf + RT)) where Uref = 255 and 
 | 29 | 70 | 69 | 33 | A9 | 9 | E9 | -23 |
 | 2A | 69 | 6A | 33 | AA | 9 | EA | -24 |
 | 2B | 68 | 6B | 32 | AB | 8 | EB | -25 |
-| 2C | 67 | 6C | 32 | AC | 8 | EC | -26 |
+| 2C | 67 | 6C | 32 | AC | 8 | EC | -26 | 
 | 2D | 66 | 6D | 32 | AD | 8 | ED | -27 |
 | 2E | 66 | 6E | 31 | AE | 7 | EE | -28 |
 | 2F | 65 | 6F | 31 | AF | 7 | EF | -29 |
@@ -108,11 +113,18 @@ It can be aproximate by function : Uref * (RT / (Rf + RT)) where Uref = 255 and 
 | 3E | 54 | 7E | 25 | BE | 1 | FE | -64 |
 | 3F | 54 | 7F | 25 | BF | 0 | FF | -78 |
 
-### Answer/confirmation from HP to Optional PCB is always the same:
+### Answer/confirmation from HP to Optional PCB 
+
+Answer/confirmation contains also steering parameters :
 
 `71 11 01 50 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2D`
 
+| Byte# | Possible Value | Value decrypt | Value Description |
+|:---- | ---- | ----- | ----:|
+| 04 | C4 | 1st bit = Solar Water pump <br/> 2nd bit = Pool Water pump <br/> 3rd bit = Z2 Mixing Valve - <br/> 4th bit = Z2 Mixing Valve + <br/> 5th bit = Z2 Water pump <br/> 6th bit = Z1 Mixing Valve - <br/> 7th bit = Z1 Mixing Valve + <br/> 8th bit = Z1 Water pump |  |
+| 05 | 01 | 00 - No Alarm </br> 01 - Alarm | |
+
+
 ### To do:
 
-- Optional Thermostat 1 &2 ( Cool / Heat)
 - Issues with Zones ( mixing valves , pump flows )
