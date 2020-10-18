@@ -21,12 +21,12 @@ Remark 2: Turning on Optional PCB in options will couse ,that Room Thermo 1 inpu
 | |-| 01 | 11 | Data length ( Packet length = Data length + 3 ) |  Header |
 | |-| 02 | 01 |   | Header  |
 | |-| 03 | 50 |   | Header  |
-| |-| 04 | 00 |   | ? Posible acknowledge for Z1/Z2/Pool Water Pump state  |
+| |-| 04 | 00 |   | Acknowledge for Z1/Z2/Pool Water Pump & Mixing valves state  |
 | |-| 05 | 00 |   | 0 byte  |
 | Heat_Cool_Mode<br/>Compressor_State<br/>SmartGrid_Mode<br/>External_Thermostat_1_State<br/>External_Thermostat_2_State |0/1<br/>0/1<br/>0/1/2/3<br/>0/1/2/3<br/>0/1/2/3<br/>| 06 | 40 | 1st bit = Heat/Cool<br/>2nd bit = Compressor state<br/>3rd/4th bit == SmartGrid Mode (00 = normal, 10 = HP/DHW off, 01 = Capacity 1, 11 = Capacity 2)<br/>5th/6th bit = Thermostat 1 (00 = no demand, 01 = cool demand, 10 = heat demand, 11 = heat and cool demand)<br/>7th/8th bit = Thermostat 2 (00 = no demand, 01 = cool demand, 10 = heat demand, 11 = heat and cool demand)  | SG ready values , External Compressor SW , Heat/Cool SW, Thermostat 1/2 |
 | Pool_Temp |Temp [C]| 07 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Pool  |
 | Buffer_Temp |Temp [C]| 08 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Buffer  |
-| |-| 09 | E5 |   | ?  |
+| |-| 09 | E5 but also93,92,91 (90) ,A2 |   | ?  |
 | Z1_Room_Temp |Temp [C]| 10 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Room   |
 | Z2_Room_Temp |Temp [C]| 11 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Room   |
 | |-| 12 | 00 |   | 0 byte  |
@@ -113,11 +113,17 @@ It can be aproximate by function : Uref * (RT / (Rf + RT)) where Uref = 255 and 
 | 3E | 54 | 7E | 25 | BE | 1 | FE | -64 |
 | 3F | 54 | 7F | 25 | BF | 0 | FF | -78 |
 
-### Answer/confirmation from HP to Optional PCB is :
+### Answer/confirmation from HP to Optional PCB 
+
+Answer/confirmation contains also steering parameters :
 
 `71 11 01 50 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2D`
 
-Looks like byte #04 in answer from HP have information about Z1/Z2/Pool Water Pump state. To be verified.
+| Byte# | Possible Value | Value decrypt | Value Description |
+|:---- | ---- | ----- | ----:|
+| 04 | C4 | 1st bit = Z2 Water pump <br/> 2nd bit = Pool Water pump <br/> 3rd bit = Z2 Mixing Valve - <br/> 4th bit = Z2 Mixing Valve + <br/> 6th bit = Z1 Mixing Valve - <br/> 7th bit = Z1 Mixing Valve + <br/> 8th bit = Z1 Water pump |  |
+| 05 | 01 | 00 - No Alarm </br> 01 - Alarm | |
+
 
 ### To do:
 
