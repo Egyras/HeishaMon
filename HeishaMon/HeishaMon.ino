@@ -209,7 +209,7 @@ bool readSerial()
         log_message((char*)"Received optional PCB ack answer, no need to decode this.");
         data_length = 0;
         return false;
-      }      
+      }
       else {
         log_message((char*)"Received a shorter datagram. Can't decode this yet.");
         data_length = 0;
@@ -292,13 +292,13 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     } else if (strncmp(topic_command, mqtt_topic_pcb, 4) == 0)  // check for optional pcb commands
     {
       char* topic_pcb = &topic_command[4]; //strip the first 4 "pcb/" from the topic to get what we need
-      set_optionalpcb(topic_pcb, msg, log_message);   
+      set_optionalpcb(topic_pcb, msg, log_message);
     } else if (strncmp(topic_command, mqtt_topic_s0, 2) == 0)  // this is a s0 topic, check for watthour topic and restore it
     {
       char* topic_s0_watthour_port = &topic_command[12]; //strip the first 12 "s0/Watthour/" from the topic to get the s0 port
       int s0Port = String(topic_s0_watthour_port).toInt();
       float watthour = String(msg).toFloat();
-      restore_s0_Watthour(s0Port,watthour);
+      restore_s0_Watthour(s0Port, watthour);
       //unsubscribe after restoring the watthour values
       char mqtt_topic[256];
       sprintf(mqtt_topic, "%s", topic);
@@ -424,13 +424,7 @@ void setup() {
 void send_panasonic_query() {
   String message = "Requesting new panasonic data (uptime: " + getUptime() + ")";
   log_message((char*)message.c_str());
-  if (commandBuffer) { //check if there is a send command in the buffer
-    log_message((char *)"Sending command from buffer");
-    popCommandBuffer();
-  }
-  else { //no command in buffer, so send the default empty query
-    send_command(panasonicQuery, PANASONICQUERYSIZE);
-  }
+  send_command(panasonicQuery, PANASONICQUERYSIZE);
 }
 
 void send_optionalpcb_query() {
