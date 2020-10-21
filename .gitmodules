@@ -1,0 +1,3 @@
+[submodule "Integrations/Domoticz/HeishamonMQTT"]
+	path = Integrations/Domoticz/HeishamonMQTT
+	url = https://github.com/MarFanNL/HeishamonMQTT
