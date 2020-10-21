@@ -64,6 +64,8 @@ char log_msg[256];
 // mqtt topic to sprintf and then publish to
 char mqtt_topic[256];
 
+int mqttReconnects = 0;
+
 //buffer for commands to send
 struct command_struct {
   byte value[128];
@@ -89,6 +91,7 @@ void mqtt_reconnect()
   sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
   if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
   {
+    mqttReconnects++;
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_quiet_mode_topic);
     mqtt_client.subscribe(topic);
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_operationmode_topic);
@@ -142,7 +145,7 @@ void log_message(char* string)
 }
 
 void logHex(char *hex, byte hex_len) {
-#define LOGHEXBYTESPERLINE 16  // please be aware of max mqtt message size - 32 bytes per line does not work
+#define LOGHEXBYTESPERLINE 32  // please be aware of max mqtt message size - 32 bytes per line does not work
   for (int i = 0; i < hex_len; i += LOGHEXBYTESPERLINE) {
     char buffer [(LOGHEXBYTESPERLINE * 3) + 1];
     buffer[LOGHEXBYTESPERLINE * 3] = '\0';
@@ -404,6 +407,7 @@ void switchSerial() {
 }
 
 void setupMqtt() {
+  mqtt_client.setBufferSize(1024);
   mqtt_client.setServer(heishamonSettings.mqtt_server, atoi(heishamonSettings.mqtt_port));
   mqtt_client.setCallback(mqtt_callback);
   mqtt_reconnect();
@@ -422,7 +426,7 @@ void setup() {
 }
 
 void send_panasonic_query() {
-  String message = "Requesting new panasonic data (uptime: " + getUptime() + ")";
+  String message = "Requesting new panasonic data";
   log_message((char*)message.c_str());
   send_command(panasonicQuery, PANASONICQUERYSIZE);
 }
@@ -473,6 +477,8 @@ void loop() {
 
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
+    String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects;
+    log_message((char*)message.c_str());
     if (!mqtt_client.connected())
     {
       if (WiFi.status() != WL_CONNECTED) {
