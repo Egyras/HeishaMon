@@ -8,10 +8,10 @@
 |   | 03 | 10 |   | Header   |
 |  TOP0+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on, Service Setup: Water pump on=65, Air Purge=75, Pump Down=F0?| Force dhw, Heat pump on/off, Service setup (Water Flow, Air Purge , Pump Down) |
 |  TOP19+TOP13+TOP68 | 05 | 55 | Holiday mode off/on (bit3and4), weekly shedule off/on (bit 1and2) force heater off/on (bit5and6) Dry Concrete off/on (bit7and8) | Holiday mode, Sheduler status, force heater state , Dry Concrete |
-|  TOP4 | 06 | 62 | 52 Heat, 53 Cool, 59 Auto(Heat), 5A Auto(Cool), 61 DHW, 62 Heat+DHW, 63 Cool+DHW, 69 Auto(Heat)+DHW, 6A Auto(Cool)+DHW  | Mode status   |
+|  TOP4 | 06 | 62 | 1st Bit = Zone2<br/> 2nd Bit = Zone1<br/>3rd & 4th bit = b01 DHW off ,b10 DHW on<br/> 5th ,6th,7th & 8th bit b0001 - only DHW , b0010 - Heat , b0011 - Cool , b1001 - Auto(Heat) , b1010 - Auto(Cool) | Zone on/off <br/>Mode status   |
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerful mode status |
 |  TOP | 08 | 00 |   | 0 byte |
-|  TOP58+TOP59 | 09 | 05 | HEX values - should be Low Byte (2nd value)Water heater off + DHW heater off=55, Water heater on + DHWs heater off=56, Water Heater off + DHW heater on=59, Weater heater on + DHW heater on=5A | Heaters enable allowed status|
+|  TOP58+TOP59 | 09 | 05 | HEX values - should be Low Byte (2nd value)Water heater off + DHW heater off=55, Water heater on + DHWs heater off=56, Water Heater off + DHW heater on=59, Water heater on + DHW heater on=5A | Heaters enable allowed status|
 |  TOP | 10 | 00 |   | 0 byte |
 |  TOP | 11 | 00 |   | 0 byte |
 |  TOP | 12 | 00 |   | 0 byte |
@@ -23,7 +23,7 @@
 |  TOP | 18 | 00 |   | 0 byte |
 |  TOP | 19 | 00 |   | 0 byte |
 |  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Optional PCB, Anti freezing, Colling Medium,External outdoor temp sensor |
-|  TOP | 21 | 15 |  (hex) 15 - 1 Zone and Z1 as room , 19 - 1 Zone and Z1 as pool, 16 - 2 Zones and Z2 as room, 26 - 2 Zones ,Z2 as pool| No. of Zones and Zone Destination |
+|  TOP | 21 | 15 |  (hex) 15 - One Zone and Z1 as room , 19 - One Zone and Z1 as pool, 16 - Two Zones and Z2 as room, 26 - Two Zones ,Z2 as pool| No. of Zones and Zone Destination |
 |  TOP | 22 | 11 |First digit -Z2 ,Second digit Z1 (hex) 1 - water temperature,2 - External Thermostat, 3 - Internal Thermostat, , 4 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
 |  TOP | 24 | 16 | (hex) DHW connected (no solar) =16, DHW not connected=15, no buffer(DHW connected)=16, DHW+Buffer=1A, DHW as buffer for Solar=26, Buffer tank as Buffer for solar=36  | DHW Connection and Buffer + Solar status |
