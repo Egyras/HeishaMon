@@ -1,4 +1,14 @@
-# Panasonic-Aquarea-NodeRed- Heishamon
+# Heishamon in Domoticz
+
+There are two options to integrate HeishaMon into Domoticz. You can choose for the domoticz plugin or a nodered flow. The domoticz plugin is plug-and-play but the nodered flow will allow you to more fine tune your system to your needs.
+
+
+## Plugin option
+
+A domoticz plugin (https://github.com/MarFanNL/HeishamonMQTT) is available which, once installed, will create the necessary device and will talk to mqtt for you.
+
+
+## Nodered option
 
 Prerequisite:
 - Domoticz with mqtt setup

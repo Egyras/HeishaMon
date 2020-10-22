@@ -64,6 +64,8 @@ char log_msg[256];
 // mqtt topic to sprintf and then publish to
 char mqtt_topic[256];
 
+int mqttReconnects = 0;
+
 //buffer for commands to send
 struct command_struct {
   byte value[128];
@@ -89,6 +91,7 @@ void mqtt_reconnect()
   sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
   if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
   {
+    mqttReconnects++;
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_quiet_mode_topic);
     mqtt_client.subscribe(topic);
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_operationmode_topic);
@@ -142,7 +145,7 @@ void log_message(char* string)
 }
 
 void logHex(char *hex, byte hex_len) {
-#define LOGHEXBYTESPERLINE 16  // please be aware of max mqtt message size - 32 bytes per line does not work
+#define LOGHEXBYTESPERLINE 32  // please be aware of max mqtt message size - 32 bytes per line does not work
   for (int i = 0; i < hex_len; i += LOGHEXBYTESPERLINE) {
     char buffer [(LOGHEXBYTESPERLINE * 3) + 1];
     buffer[LOGHEXBYTESPERLINE * 3] = '\0';
@@ -209,7 +212,7 @@ bool readSerial()
         log_message((char*)"Received optional PCB ack answer, no need to decode this.");
         data_length = 0;
         return false;
-      }      
+      }
       else {
         log_message((char*)"Received a shorter datagram. Can't decode this yet.");
         data_length = 0;
@@ -292,13 +295,13 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     } else if (strncmp(topic_command, mqtt_topic_pcb, 4) == 0)  // check for optional pcb commands
     {
       char* topic_pcb = &topic_command[4]; //strip the first 4 "pcb/" from the topic to get what we need
-      set_optionalpcb(topic_pcb, msg, log_message);   
+      set_optionalpcb(topic_pcb, msg, log_message);
     } else if (strncmp(topic_command, mqtt_topic_s0, 2) == 0)  // this is a s0 topic, check for watthour topic and restore it
     {
       char* topic_s0_watthour_port = &topic_command[12]; //strip the first 12 "s0/Watthour/" from the topic to get the s0 port
       int s0Port = String(topic_s0_watthour_port).toInt();
       float watthour = String(msg).toFloat();
-      restore_s0_Watthour(s0Port,watthour);
+      restore_s0_Watthour(s0Port, watthour);
       //unsubscribe after restoring the watthour values
       char mqtt_topic[256];
       sprintf(mqtt_topic, "%s", topic);
@@ -404,6 +407,7 @@ void switchSerial() {
 }
 
 void setupMqtt() {
+  mqtt_client.setBufferSize(1024);
   mqtt_client.setServer(heishamonSettings.mqtt_server, atoi(heishamonSettings.mqtt_port));
   mqtt_client.setCallback(mqtt_callback);
   mqtt_reconnect();
@@ -422,15 +426,9 @@ void setup() {
 }
 
 void send_panasonic_query() {
-  String message = "Requesting new panasonic data (uptime: " + getUptime() + ")";
+  String message = "Requesting new panasonic data";
   log_message((char*)message.c_str());
-  if (commandBuffer) { //check if there is a send command in the buffer
-    log_message((char *)"Sending command from buffer");
-    popCommandBuffer();
-  }
-  else { //no command in buffer, so send the default empty query
-    send_command(panasonicQuery, PANASONICQUERYSIZE);
-  }
+  send_command(panasonicQuery, PANASONICQUERYSIZE);
 }
 
 void send_optionalpcb_query() {
@@ -479,6 +477,8 @@ void loop() {
 
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
+    String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects;
+    log_message((char*)message.c_str());
     if (!mqtt_client.connected())
     {
       if (WiFi.status() != WL_CONNECTED) {

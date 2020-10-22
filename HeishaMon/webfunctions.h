@@ -1,7 +1,7 @@
 #include <FS.h>                   //this needs to be first, or it all crashes and burns...
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
-#include <DoubleResetDetect.h> 
+#include <DoubleResetDetect.h>
 #include <ArduinoJson.h>
 #include "featureboard.h"
 
@@ -10,7 +10,7 @@ struct settingsStruct {
   unsigned int waitDallasTime = 5; // how often temps are read from 1wire
   unsigned int updateAllTime = 300; // how often all data is resend to mqtt
   unsigned int updataAllDallasTime = 300; //how often all 1wire data is resent to mqtt
-  
+
   const char* update_path = "/firmware";
   const char* update_username = "admin";
   char wifi_hostname[40] = "HeishaMon";
@@ -25,13 +25,15 @@ struct settingsStruct {
   bool optionalPCB = false; //do we emulate an optional PCB?
   bool use_1wire = false; //1wire enabled?
   bool use_s0 = false; //s0 enabled?
-  
+
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
 };
 
 
 String getUptime(void);
 void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings);
+int getWifiQuality(void);
+int getFreeMemory(void);
 void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStruct *heishamonSettings);
 void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]);
 void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]);
