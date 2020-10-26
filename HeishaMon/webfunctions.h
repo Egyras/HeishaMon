@@ -25,6 +25,9 @@ struct settingsStruct {
   bool optionalPCB = false; //do we emulate an optional PCB?
   bool use_1wire = false; //1wire enabled?
   bool use_s0 = false; //s0 enabled?
+  bool logMqtt = false; //log to mqtt from start
+  bool logHexdump = false; //log hexdump from start
+  bool logSerial1 = false; //log to serial1 (gpio2) from start  
 
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
 };

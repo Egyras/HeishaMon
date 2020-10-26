@@ -40,16 +40,6 @@ unsigned long goodreads = 0;
 unsigned long totalreads = 0;
 float readpercentage = 0;
 
-//useful for debugging, outputs info to a separate mqtt topic
-bool outputMqttLog = false;
-//toggle to dump received hex data in log
-bool outputHexDump = false;
-// toggle to dump  extralog to serial1
-// *needs implementation in this code and in the webpage*
-bool outputSerial1 = true;
-
-
-
 // instead of passing array pointers between functions we just define this in the global scope
 #define MAXDATASIZE 255
 char data[MAXDATASIZE];
@@ -86,7 +76,7 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 
 void mqtt_reconnect()
 {
-  Serial1.println(F("Reconnecting to mqtt server ..."));
+  log_message((char*)"Reconnecting to mqtt server ...");
   char topic[256];
   sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
   if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
@@ -135,8 +125,8 @@ void mqtt_reconnect()
 
 void log_message(char* string)
 {
-  Serial1.println(string);
-  if (outputMqttLog)
+  if (heishamonSettings.logSerial1) Serial1.println(string);
+  if (heishamonSettings.logMqtt)
   {
     char log_topic[256];
     sprintf(log_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_logtopic);
@@ -194,7 +184,7 @@ bool readSerial()
     if (data_length == (data[1] + 3)) { //we received all data (data[1] is header length field)
       sprintf(log_msg, "Received %d bytes data", data_length); log_message(log_msg);
       sending = false; //we received an answer after our last command so from now on we can start a new send request again
-      if (outputHexDump) logHex(data, data_length);
+      if (heishamonSettings.logHexdump) logHex(data, data_length);
       if (! isValidReceiveChecksum() ) {
         log_message((char*)"Checksum received false!");
         data_length = 0; //for next attempt
@@ -266,7 +256,7 @@ bool send_command(byte* command, int length) {
   bytesSent += Serial.write(chk); //then calculcated checksum byte afterwards
   sprintf(log_msg, "sent bytes: %d including checksum value: %d ", bytesSent, int(chk)); log_message(log_msg);
 
-  if (outputHexDump) logHex((char*)command, length);
+  if (heishamonSettings.logHexdump) logHex((char*)command, length);
   allowreadtime = millis() + SERIALTIMEOUT; //set allowreadtime when to timeout the answer of this command
   return true;
 }
@@ -305,7 +295,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       //unsubscribe after restoring the watthour values
       char mqtt_topic[256];
       sprintf(mqtt_topic, "%s", topic);
-      if (mqtt_client.unsubscribe(mqtt_topic)) Serial1.println("Unsubscribed topic");
+      if (mqtt_client.unsubscribe(mqtt_topic)) log_message((char*)"Unsubscribed topic");
     }
     else {
       send_heatpump_command(topic_command, msg, send_command, log_message);
@@ -360,14 +350,14 @@ void setupHttp() {
   });
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
-    outputMqttLog ^= true;
+    heishamonSettings.logMqtt ^= true;
     httpServer.sendHeader("Location", String("/"), true);
     httpServer.send ( 302, "text/plain", "");
     httpServer.client().stop();
   });
   httpServer.on("/togglehexdump", [] {
     log_message((char*)"Toggled hexdump log flag");
-    outputHexDump ^= true;
+    heishamonSettings.logHexdump ^= true;
     httpServer.sendHeader("Location", String("/"), true);
     httpServer.send ( 302, "text/plain", "");
     httpServer.client().stop();
@@ -376,13 +366,17 @@ void setupHttp() {
 }
 
 void setupSerial() {
-  //debug line on serial1 (D4, GPIO2)
-  Serial1.begin(115200);
-  Serial1.println(F("Starting debugging"));
-
   //boot issue's first on normal serial
   Serial.begin(115200);
   Serial.flush();
+}
+
+void setupSeria11() {
+  if (heishamonSettings.logSerial1) {
+    //debug line on serial1 (D4, GPIO2)
+    Serial1.begin(115200);
+    Serial1.println(F("Starting debugging"));
+  }
 }
 
 void switchSerial() {
@@ -418,6 +412,7 @@ void setup() {
   setupSerial();
   setupWifi(drd, &heishamonSettings);
   MDNS.begin(heishamonSettings.wifi_hostname);
+  setupSeria11();
   setupOTA();
   setupMqtt();
   setupHttp();
@@ -443,7 +438,7 @@ void read_panasonic_data() {
   if (sending && (millis() > allowreadtime)) {
     log_message((char*)"Previous read data attempt failed due to timeout!");
     sprintf(log_msg, "Received %d bytes data", data_length); log_message(log_msg);
-    if (outputHexDump) logHex(data, data_length);
+    if (heishamonSettings.logHexdump) logHex(data, data_length);
     data_length = 0; //clear any data in array
     sending = false; //receiving the answer from the send command timed out, so we are allowed to send a new command
   }

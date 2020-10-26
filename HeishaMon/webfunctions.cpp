@@ -126,6 +126,9 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
               if (jsonDoc["s0_2_sum_s0_watthour"] == "enabled") heishamonSettings->s0Settings[1].sum_s0_watthour = true;
             }
             if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
+            if ( jsonDoc["logMqtt"] == "enabled" ) heishamonSettings->logMqtt = true;
+            if ( jsonDoc["logHexdump"] == "enabled" ) heishamonSettings->logHexdump = true;
+            if ( jsonDoc["logSerial1"] == "enabled" ) heishamonSettings->logSerial1 = true;
             if ( jsonDoc["optionalPCB"] == "enabled" ) heishamonSettings->optionalPCB = true;
             if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
             if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
@@ -424,6 +427,21 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     } else {
       jsonDoc["listenonly"] = "disabled";
     }
+    if (heishamonSettings->logMqtt) {
+      jsonDoc["logMqtt"] = "enabled";
+    } else {
+      jsonDoc["logMqtt"] = "disabled";
+    }
+    if (heishamonSettings->logHexdump) {
+      jsonDoc["logHexdump"] = "enabled";
+    } else {
+      jsonDoc["logHexdump"] = "disabled";
+    }
+    if (heishamonSettings->logSerial1) {
+      jsonDoc["logSerial1"] = "enabled";
+    } else {
+      jsonDoc["logSerial1"] = "disabled";
+    }            
     if (heishamonSettings->optionalPCB) {
       jsonDoc["optionalPCB"] = "enabled";
     } else {
@@ -490,6 +508,21 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     } else {
       jsonDoc["listenonly"] = "disabled";
     }
+    if (httpServer->hasArg("logMqtt")) {
+      jsonDoc["logMqtt"] = "enabled";
+    } else {
+      jsonDoc["logMqtt"] = "disabled";
+    }
+    if (httpServer->hasArg("logHexdump")) {
+      jsonDoc["logHexdump"] = "enabled";
+    } else {
+      jsonDoc["logHexdump"] = "disabled";
+    }
+    if (httpServer->hasArg("logSerial1")) {
+      jsonDoc["logSerial1"] = "enabled";
+    } else {
+      jsonDoc["logSerial1"] = "disabled";
+    }            
     if (httpServer->hasArg("optionalPCB")) {
       jsonDoc["optionalPCB"] = "enabled";
     } else {
@@ -566,6 +599,27 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\" checked >";
   } else {
     httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">";
+  }
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Debug log to MQTT topic from start:</td><td style=\"text-align:left\">";
+  if (heishamonSettings->logMqtt) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logMqtt\" value=\"enabled\" checked >";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logMqtt\" value=\"enabled\">";
+  }
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Debug log hexdump enable from start:</td><td style=\"text-align:left\">";
+  if (heishamonSettings->logHexdump) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logHexdump\" value=\"enabled\" checked >";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logHexdump\" value=\"enabled\">";
+  }
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Debug log to serial1 (GPIO2):</td><td style=\"text-align:left\">";
+  if (heishamonSettings->logSerial1) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logSerial1\" value=\"enabled\" checked >";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logSerial1\" value=\"enabled\">";
   }
   httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
   httptext = httptext + "Emulate optional PCB (experimental):</td><td style=\"text-align:left\">";  
