@@ -61,24 +61,24 @@ String unknown(byte input) {
 }
 
 String getOpMode(byte input) {
-  switch ((int)input) {
-    case 82:
+  switch ((int)(input & 0b111111)) {
+    case 18:
       return "0";
-    case 83:
+    case 19:
       return "1";
-    case 89:
+    case 25:
       return "2";
-    case 97:
+    case 33:
       return "3";
-    case 98:
+    case 34:
       return "4";
-    case 99:
+    case 35:
       return "5";
-    case 105:
+    case 41:
       return "6";
-    case 90:
+    case 26:
       return "7";
-    case 106:
+    case 42:
       return "8";
     default:
       return "-1";

@@ -396,10 +396,11 @@ void switchSerial() {
   Serial.swap();
 
   //turn on GPIO's on tx/rx for later use
-  pinMode(1, FUNCTION_3);
-  pinMode(3, FUNCTION_3);
-  pinMode(1, OUTPUT);
-  pinMode(3, OUTPUT);
+  //pinMode(1, FUNCTION_3);
+  //pinMode(3, FUNCTION_3);
+  //pinMode(1, INPUT_PULLUP);
+  //pinMode(3, INPUT_PULLUP);
+  //pinMode(16, INPUT_PULLUP);
 
   //enable gpio15 after boot using gpio5 (D1)
   pinMode(5, OUTPUT);
@@ -460,8 +461,6 @@ void loop() {
   // Allow MDNS processing
   MDNS.update();
 
-
-
   mqtt_client.loop();
 
   read_panasonic_data();
@@ -475,8 +474,10 @@ void loop() {
 
   if (heishamonSettings.use_s0) s0Loop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.s0Settings);
 
+
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
+
     String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects;
     log_message((char*)message.c_str());
     if (!mqtt_client.connected())
