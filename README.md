@@ -12,7 +12,7 @@ Suomen kielellä [README_FI.md](README_FI.md) luettavissa täällä.
 *Help on translation to other languages is welcome.*
 
 # Current releases
-Current beta release is version 0.8b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.8b.bin) can be installed on a Wemos D1 mini, on the HeishaMon PCB and generally on any ESP8266 based board compatible with Wemos build settings (at least 4MB flash). You can also download the code and compile it yourself (see required libraries below). \
+Current beta release is version 0.9b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.8b.bin) can be installed on a Wemos D1 mini, on the HeishaMon PCB and generally on any ESP8266 based board compatible with Wemos build settings (at least 4MB flash). You can also download the code and compile it yourself (see required libraries below). \
 Changed from 0.6 to 0.7 is a bug fix for the webinterface which resulted in the page become slow after minutes of having the page open. And from 0.7 to 0.8 is a better S0 kWh meter algoritm. 
 
 
@@ -112,5 +112,4 @@ To get information from heat pump, "magic" packet should be send to CN-CNT:
 
 [Domoticz](Integrations/Domoticz)
 
-[Domoticz plugin](Integrations/Domoticz%20plugin)
 
