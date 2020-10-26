@@ -4,6 +4,7 @@
 #include "decode.h"
 #include "version.h"
 #include "htmlcode.h"
+#include <LittleFS.h>
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -79,20 +80,20 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   if (drd.detect()) {
     Serial.println(F("Double reset detected, clearing config."));
-    SPIFFS.begin();
-    SPIFFS.format();
+    LittleFS.begin();
+    LittleFS.format();
     wifiManager.resetSettings();
     Serial.println(F("Config cleared. Please open the Wifi portal to configure this device..."));
   } else {
     //read configuration from FS json
     Serial.println(F("mounting FS..."));
 
-    if (SPIFFS.begin()) {
+    if (LittleFS.begin()) {
       Serial.println(F("mounted file system"));
-      if (SPIFFS.exists("/config.json")) {
+      if (LittleFS.exists("/config.json")) {
         //file exists, reading and loading
         Serial.println(F("reading config file"));
-        File configFile = SPIFFS.open("/config.json", "r");
+        File configFile = LittleFS.open("/config.json", "r");
         if (configFile) {
           Serial.println(F("opened config file"));
           size_t size = configFile.size();
@@ -222,7 +223,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
     jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
     jsonDoc["mqtt_password"] = heishamonSettings->mqtt_password;
 
-    File configFile = SPIFFS.open("/config.json", "w");
+    File configFile = LittleFS.open("/config.json", "w");
     if (!configFile) {
       Serial.println(F("failed to open config file for writing"));
     }
@@ -371,8 +372,8 @@ void handleFactoryReset(ESP8266WebServer *httpServer) {
   httpServer->sendContent("");
   httpServer->client().stop();
   delay(1000);
-  SPIFFS.begin();
-  SPIFFS.format();
+  LittleFS.begin();
+  LittleFS.format();
   WiFi.disconnect(true);
   delay(1000);
   ESP.restart();
@@ -541,8 +542,8 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
       jsonDoc["updataAllDallasTime"] = httpServer->arg("updataAllDallasTime");
     }
 
-    if (SPIFFS.begin()) {
-      File configFile = SPIFFS.open("/config.json", "w");
+    if (LittleFS.begin()) {
+      File configFile = LittleFS.open("/config.json", "w");
       if (configFile) {
         serializeJson(jsonDoc, configFile);
         configFile.close();
