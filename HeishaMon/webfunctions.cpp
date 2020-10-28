@@ -120,11 +120,9 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
               if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
               if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
               if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
-              if (jsonDoc["s0_1_sum_s0_watthour"] == "enabled") heishamonSettings->s0Settings[0].sum_s0_watthour = true;
               if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
               if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
               if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
-              if (jsonDoc["s0_2_sum_s0_watthour"] == "enabled") heishamonSettings->s0Settings[1].sum_s0_watthour = true;
             }
             if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
             if ( jsonDoc["logMqtt"] == "enabled" ) heishamonSettings->logMqtt = true;
@@ -496,11 +494,9 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
       if (httpServer->hasArg("s0_1_gpio")) jsonDoc["s0_1_gpio"] = httpServer->arg("s0_1_gpio");
       if (httpServer->hasArg("s0_1_ppkwh")) jsonDoc["s0_1_ppkwh"] = httpServer->arg("s0_1_ppkwh");
       if (httpServer->hasArg("s0_1_interval")) jsonDoc["s0_1_interval"] = httpServer->arg("s0_1_interval");
-      if (httpServer->hasArg("s0_1_sum_s0_watthour")) jsonDoc["s0_1_sum_s0_watthour"] = "enabled";
       if (httpServer->hasArg("s0_2_gpio")) jsonDoc["s0_2_gpio"] = httpServer->arg("s0_2_gpio");
       if (httpServer->hasArg("s0_2_ppkwh")) jsonDoc["s0_2_ppkwh"] = httpServer->arg("s0_2_ppkwh");
       if (httpServer->hasArg("s0_2_interval")) jsonDoc["s0_2_interval"] = httpServer->arg("s0_2_interval");
-      if (httpServer->hasArg("s0_2_sum_s0_watthour")) jsonDoc["s0_2_sum_s0_watthour"] = "enabled";
     } else {
       jsonDoc["use_s0"] = "disabled";
     }
@@ -687,13 +683,6 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i + 1) + "\" onchange=\"changeMinWatt(" + (i + 1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (heishamonSettings->s0Settings[i].lowerPowerInterval) + "\"> seconds";
     httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
     httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold:</td><td style=\"text-align:left\"><label id=\"s0_minwatt_" + (i + 1) + "\">" + (int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval) + "</label> Watt";
-    httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
-    httptext = httptext + "S0 port " + (i + 1) + " incremental Watthour and restore from MQTT at boot:</td><td style=\"text-align:left\">";
-    if (heishamonSettings->s0Settings[i].sum_s0_watthour) {
-      httptext = httptext + "<input type=\"checkbox\"  name=\"s0_" + (i + 1) + "_sum_s0_watthour\" value=\"enabled\" checked >";
-    } else {
-      httptext = httptext + "<input type=\"checkbox\"  name=\"s0_" + (i + 1) + "_sum_s0_watthour\" value=\"enabled\" >";
-    }
     httptext = httptext + "</td></tr>";
   }
   httptext = httptext + "</table>";
