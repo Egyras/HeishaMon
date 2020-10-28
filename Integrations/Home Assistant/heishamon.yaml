@@ -577,23 +577,6 @@ sensor:
       {{ (value | int) / 1000}}
 
   #### SENSORS BELOW ARE NOT IN FIRMWARE ####
-  #COP Calculations
-  - platform: template
-    sensors:
-      heishamon_cop:
-        friendly_name: "Aquarea COP"
-        unit_of_measurement: "x"
-        value_template: >-
-          {%- if states('sensor.heishamon_w_production') != "Unknown" -%}
-            {%- if states('sensor.heishamon_w_consumption') > "0" -%}
-              {{ '%0.1f' % ((states('sensor.heishamon_w_production') | float ) / (states('sensor.heishamon_w_consumption') | float)) }}
-            {%- else -%}
-              0.0
-            {%- endif -%}
-          {%- else -%}
-            n/a
-          {%- endif -%}
-
   #Energy use/production
   - platform: template
     sensors:
@@ -615,6 +598,24 @@ sensor:
           {%- else -%}
             {{ states('sensor.aquarea_power_consumed') }}
           {%- endif -%}
+
+  #COP Calculations
+  - platform: template
+    sensors:
+      heishamon_cop:
+        friendly_name: "Aquarea COP"
+        unit_of_measurement: "x"
+        value_template: >-
+          {%- if states('sensor.heishamon_w_production') != "Unknown" -%}
+            {%- if states('sensor.heishamon_w_consumption') > "0" -%}
+              {{ '%0.1f' % ((states('sensor.heishamon_w_production') | float ) / (states('sensor.heishamon_w_consumption') | float)) }}
+            {%- else -%}
+              0.0
+            {%- endif -%}
+          {%- else -%}
+            n/a
+          {%- endif -%}
+
 
 
 # switch #
