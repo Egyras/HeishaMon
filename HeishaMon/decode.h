@@ -343,7 +343,7 @@ static const char *Ampere[] = {"value", "Ampere"};
 static const char *Minutes[] = {"value", "Minutes"};
 static const char *Duty[] = {"value", "Duty"};
 static const char *HeatCoolModeDesc[] = {"2", "Comp. Curve", "Direct"};
-static const char *Model[] = {"10", "WH-MDC05H3E5", "WH-MDC07H3E5", "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8", "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8", "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8", "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8", "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5", "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5", "WH-MDC05J3E5"};
+static const char *Model[] = {"11", "WH-MDC05H3E5", "WH-MDC07H3E5", "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8", "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8", "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8", "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8", "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5", "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5", "WH-MDC05J3E5", "IDU:WH-ADC0916H9E8, ODU:WH-UX12HE8"};
 static const char **topicDescription[] = {
   OffOn,           //TOP0
   LitersPerMin,    //TOP1
