@@ -17,7 +17,7 @@ Assuming that bytes from #129 to #138 are the unique for each type of Heat pump:
 |10 | E2 CF 0B 15 33 42 D1 0B 18 33 | Monoblock | Monoblock | WH-MDC09H3E5 | 9 | 1ph | HP |
 |11 | E2 CF 0B 41 34 82 D1 0B 31 35 | Monoblock | Monoblock | WH-MXC09H3E5 | 9 | 1ph | T-CAP |
 |12 | 62 D2 0B 45 54 42 D2 0B 47 55 |WH-ADC0309J3E5 | WH-UD09JE5 | ADC09JE5 | 9 | 1ph | HP - All-In-One | 
-|13 | E2 CF 0C 74 09 12 D0 0D 95 05 |WH-ADC0916H9E8 | WH-UX12HE8 | | 12 | 3ph | T-CAP |
+|13 | E2 CF 0C 74 09 12 D0 0D 95 05 |WH-ADC0916H9E8 | WH-UX12HE8 | | 12 | 3ph | T-CAP - All-In-One |
 
 Byte 132 is taken for Heat Pump model.
 
