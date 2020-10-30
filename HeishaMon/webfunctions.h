@@ -3,7 +3,8 @@
 #include <ESP8266WebServer.h>
 #include <DoubleResetDetect.h>
 #include <ArduinoJson.h>
-#include "featureboard.h"
+#include "dallas.h"
+#include "s0.h"
 
 struct settingsStruct {
   unsigned int waitTime = 5; // how often data is read from heatpump
