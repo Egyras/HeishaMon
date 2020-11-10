@@ -1,7 +1,7 @@
 [![Join us on Slack chat room](https://img.shields.io/badge/Slack-Join%20the%20chat%20room-orange)](https://join.slack.com/t/panasonic-wemos/shared_invite/enQtODg2MDY0NjE1OTI3LTgzYjkwMzIwNTAwZTMyYzgwNDQ1Y2QxYjkwODg3NjMyN2MyM2ViMDM3Yjc3OGE3MGRiY2FkYzI4MzZiZDVkNGE)
 
 
-# Panasonic Aquarea H-sarjan vesi-ilmalämpöpumpun protokollaa lukeva IoT-laite
+# Panasonic Aquarea H- ja J-sarjan vesi-ilmalämpöpumpun protokollaa lukeva IoT-laite
 
 Tämä ESP8266-projekti mahdollistaa Panasonic Aquarea vesi-ilmalämpöpumppujen toimittamien tietojen raportoimisen MQTT-palvelimelle. Se tarjoaa myös JSON-muotoisen tiedon, jota voit pollata, jos et halua käyttää MQTT:tä.
 
@@ -9,14 +9,14 @@ Ajantasainen, englanninkielinen [README.md](README.md) löytyy täältä.
 
 # Julkaistu versio
 
-Tämän hetkinen beta-versio on 0.6b. [Käännetty binääri](binaries/HeishaMon.ino.d1-v0.6.bin) voidaan asentaa Wemos D1 minille tai luultavasti mille tahansa muulle ESP8266-pohjaiselle kehitysalustalle (ei takuita toimivuudesta). Voit myös ladata lähdekoodin ja kääntää omat binäärit (katso tarvittavat kirjastot alta).
+Tämän hetkinen beta-versio on 0.9b. [Käännetty binääri](binaries/HeishaMon.ino.d1-v0.9b.bin) voidaan asentaa Wemos D1 minille tai luultavasti mille tahansa muulle ESP8266-pohjaiselle kehitysalustalle (ei takuita toimivuudesta, joidenkin Wemos-kopioiden kanssa ollut ongelmia). Voit myös ladata lähdekoodin ja kääntää omat binäärit (katso tarvittavat kirjastot alta).
 
 # Käyttö
 
-Nykyinen Arduino-softa pystyy kommunikoimaan Panasonicin Aquarea H-sarjan (luultavasti myös J-sarjan, sillä piirikortit näyttää identtiseltä). \
-Jos haluat kääntää oman softan, niin lataa kaikki tarvittavat kirjastot ja muista myös filesystem-tuki ESP8266:lle Arduino IDE:ssä.
+Nykyinen Arduino-softa pystyy kommunikoimaan Panasonicin Aquarea H- ja J-sarjan vesi-ilmalämpöpumppujen kanssa. \
+Jos haluat kääntää softan itse, niin lataa kaikki tarvittavat kirjastot ja muista myös filesystem-tuki ESP8266:lle Arduino IDE:ssä.
 
-Kun ensimmäisen kerran kytket virrat laitteeseen, kytkeydy avoimeen WiFi-hotspotiin, jota käytetään ensimmäisen käynnistyksen yhteydessä asetusten tekemiseen. Asetussivu löytyy osoitteesta http://192.168.4.1 ja sieltä voit määrittää WiFi-verkon ja MQTT-palvelimen asetukset.
+Kun ensimmäisen kerran kytket virrat laitteeseen, kytkeydy HeishaMonin tarjoamaan avoimeen WiFi-hotspotiin, jota käytetään ensimmäisen käynnistyksen yhteydessä asetusten tekemiseen. Asetussivu löytyy osoitteesta http://192.168.4.1 ja sieltä voit määrittää WiFi-verkon ja MQTT-palvelimen asetukset.
 
 Laitteen voi palauttaa tehdasasetuksille painamalla kaksi kertaa reset-nappia nopeasti. Silloin tiedostojärjestelmä tyhjennetään ja WiFi-asetukset palautetaan ennalleen ja voit taas liittyä avoimeen WiFi-verkkoon asetusten tekemistä varten.
 
@@ -36,7 +36,7 @@ JSON-muodossa lämpöpumpun tilan voi hakea osoitteesta http://heishamon.local/j
 
 # Lisätietoa
 
-Alla vielä hieman teknisiä lisätietoja projektista, esimerkiksi kaapelinrakennusohjeet ja apua piirilevyn suunnitteluun.
+Alla vielä hieman teknisiä lisätietoja projektista, kuten esimerkiksi kaapelinrakennusohjeet ja apua piirilevyn suunnitteluun.
 
 ## Yhteys lämpöpumppuun
 
