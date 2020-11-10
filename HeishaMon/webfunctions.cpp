@@ -4,6 +4,7 @@
 #include "decode.h"
 #include "version.h"
 #include "htmlcode.h"
+#include "commands.h"
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -655,5 +656,39 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httpServer->sendContent_P(settingsJS);
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
+  httpServer->client().stop();
+}
+
+bool send_command(byte* command, int length);
+void log_message(char* string);
+
+void handleREST(ESP8266WebServer *httpServer) {
+  int arraysize = sizeof(commands)/sizeof(commands[0]);
+
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->sendHeader("Access-Control-Allow-Origin", "*");
+  httpServer->send(200, "text/plain", "");
+
+  String httptext = "";
+  if(httpServer->method() == HTTP_GET) {
+    for(uint8_t i = 0; i < httpServer->args(); i++) {
+      unsigned char cmd[256] = { 0 }, *p = cmd;
+      char log_msg[256] = { 0 }, *l = log_msg;
+      unsigned int len = 0;
+
+      int x = 0;
+
+      for(x=0;x<arraysize;x++) {
+        if(strcmp(httpServer->argName(i).c_str(), commands[x].name) == 0) {
+          len = commands[x].func((char *)httpServer->arg(i).c_str(), &p, &l);
+          httptext = httptext + log_msg + "\n";
+          log_message(log_msg);
+          send_command(cmd, len);
+        }
+      }
+    }
+  }
+
+  httpServer->sendContent(httptext);
   httpServer->client().stop();
 }
