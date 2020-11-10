@@ -133,6 +133,10 @@ SET13 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
 SET14 | SetPump | Set Water Pump to service mode, max speed | 0, 1
 SET15 | SetPumpSpeed | Set max Water Pump speed in service menu | decimal value translate to hexadecimal in service menu <br/>64 to 254
 
+These topics can be set by either using MQTT or the HTTP REST API:
+http://x.x.x.x/command?[topic]=[value]&[topic]=[value]
 
+e.g.:
+http://x.x.x.x/command?SetQuietMode=3&SetZ1HeatRequestTemperature=21
 
 *If you operate your Heisha with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*
