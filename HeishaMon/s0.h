@@ -5,7 +5,6 @@
 #define DEFAULT_S0_PIN_2 14  // S0_2 pin, for now a static config - should be in config menu later
 
 
-
 struct s0SettingsStruct {
   byte gpiopin = 255; 
   unsigned int ppkwh = 1000; //pulses per Wh of the connected meter
