@@ -82,37 +82,13 @@ void mqtt_reconnect()
   if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
   {
     mqttReconnects++;
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_quiet_mode_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_operationmode_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_heatpump_state_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z1_heat_request_temperature_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z1_cool_request_temperature_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z2_heat_request_temperature_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_z2_cool_request_temperature_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_force_DHW_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_force_defrost_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_force_sterilization_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_holiday_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_powerful_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_dhw_temp_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_pump_topic);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_set_pumpspeed_topic);
+    int arraysize = sizeof(commands)/sizeof(commands[0]), i = 0;
+
+    for(i=0;i<arraysize;i++) {
+      sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, commands[i].name);
+      mqtt_client.subscribe(topic);
+    }
+
     mqtt_client.subscribe(topic);
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_pcb);
     mqtt_client.subscribe(topic);
@@ -332,6 +308,9 @@ void setupHttp() {
   httpUpdater.setup(&httpServer, heishamonSettings.update_path, heishamonSettings.update_username, heishamonSettings.ota_password);
   httpServer.on("/", [] {
     handleRoot(&httpServer, readpercentage, &heishamonSettings);
+  });
+  httpServer.on("/command", [] {
+    handleREST(&httpServer);
   });
   httpServer.on("/tablerefresh", [] {
     handleTableRefresh(&httpServer, actData);
