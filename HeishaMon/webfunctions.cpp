@@ -128,7 +128,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
             if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
             if ( jsonDoc["logMqtt"] == "enabled" ) heishamonSettings->logMqtt = true;
             if ( jsonDoc["logHexdump"] == "enabled" ) heishamonSettings->logHexdump = true;
-            if ( jsonDoc["logSerial1"] == "enabled" ) heishamonSettings->logSerial1 = true;
+            if ( jsonDoc["logSerial1"] == "disabled" ) heishamonSettings->logSerial1 = false; //default is true so this one is different
             if ( jsonDoc["optionalPCB"] == "enabled" ) heishamonSettings->optionalPCB = true;
             if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
             if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
