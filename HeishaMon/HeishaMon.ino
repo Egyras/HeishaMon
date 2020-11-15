@@ -82,9 +82,9 @@ void mqtt_reconnect()
   if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
   {
     mqttReconnects++;
-    int arraysize = sizeof(commands)/sizeof(commands[0]), i = 0;
+    int arraysize = sizeof(commands) / sizeof(commands[0]), i = 0;
 
-    for(i=0;i<arraysize;i++) {
+    for (i = 0; i < arraysize; i++) {
       sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, commands[i].name);
       mqtt_client.subscribe(topic);
     }
@@ -147,12 +147,19 @@ bool readSerial()
   while ((Serial.available()) && (data_length < MAXDATASIZE)) {
     data[data_length] = Serial.read(); //read available data and place it after the last received data
     data_length++;
+    if (data[0] != 113) { //wrong header received!
+      log_message((char*)"Received bad header. Ignoring this data!");
+      if (heishamonSettings.logHexdump) logHex(data, data_length);
+      data_length = 0;
+      return false; //return so this while loop does not loop forever if there happens to be a continous invalid data stream
+    }
   }
 
   if (data_length > 1) { //should have received length part of header now
 
     if ((data_length > (data[1] + 3)) || (data_length >= MAXDATASIZE) ) {
       log_message((char*)"Received more data than header suggests! Ignoring this as this is bad data.");
+      if (heishamonSettings.logHexdump) logHex(data, data_length);
       data_length = 0;
       return false;
     }
@@ -355,6 +362,9 @@ void setupSeria11() {
     //debug line on serial1 (D4, GPIO2)
     Serial1.begin(115200);
     Serial1.println(F("Starting debugging"));
+  }
+  else {
+    pinMode(2, FUNCTION_0); //set it as gpio
   }
 }
 
