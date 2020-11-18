@@ -95,5 +95,5 @@ struct {
   { "SetSolarTemp", set_solar_temp }
 };
 
-void send_heatpump_command(char* topic, char *msg,bool (*send_command)(byte*, int),void (*log_message)(char*));
-void set_optionalpcb(char* topic, char *msg,void (*log_message)(char*));
+void send_heatpump_command(char* topic, char *msg, bool (*send_command)(byte*, int), void (*log_message)(char*));
+void set_optionalpcb(char* topic, char *msg, void (*log_message)(char*));

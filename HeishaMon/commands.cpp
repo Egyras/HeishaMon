@@ -18,9 +18,9 @@ const char* mqtt_send_raw_value_topic = "SendRawValue";
 
 static unsigned int temp2hex(float temp) {
   int hextemp = 0;
-  if(temp > 120) {
+  if (temp > 120) {
     hextemp = 0;
-  } else if(temp < -78) {
+  } else if (temp < -78) {
     hextemp = 255;
   } else {
     byte Uref = 255;
@@ -513,11 +513,11 @@ unsigned int set_buffer_temp(char *msg, unsigned char **cmd, char **log_msg) {
   return set_xxx_temp(msg, cmd, log_msg, 8, __FUNCTION__);
 }
 
-unsigned int set_z1_room_temp(char *msg, unsigned char **cmd, char **log_msg){
+unsigned int set_z1_room_temp(char *msg, unsigned char **cmd, char **log_msg) {
   return set_xxx_temp(msg, cmd, log_msg, 10, __FUNCTION__);
 }
 
-unsigned int set_z1_water_temp(char *msg, unsigned char **cmd, char **log_msg){
+unsigned int set_z1_water_temp(char *msg, unsigned char **cmd, char **log_msg) {
   return set_xxx_temp(msg, cmd, log_msg, 16, __FUNCTION__);
 }
 
@@ -525,11 +525,11 @@ unsigned int set_z2_room_temp(char *msg, unsigned char **cmd, char **log_msg) {
   return set_xxx_temp(msg, cmd, log_msg, 11, __FUNCTION__);
 }
 
-unsigned int set_z2_water_temp(char *msg, unsigned char **cmd, char **log_msg){
+unsigned int set_z2_water_temp(char *msg, unsigned char **cmd, char **log_msg) {
   return set_xxx_temp(msg, cmd, log_msg, 15, __FUNCTION__);
 }
 
-unsigned int set_solar_temp(char *msg, unsigned char **cmd, char **log_msg){
+unsigned int set_solar_temp(char *msg, unsigned char **cmd, char **log_msg) {
   return set_xxx_temp(msg, cmd, log_msg, 13, __FUNCTION__);
 }
 
