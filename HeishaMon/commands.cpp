@@ -16,6 +16,25 @@ const char* mqtt_iptopic = "ip";
 
 const char* mqtt_send_raw_value_topic = "SendRawValue";
 
+static unsigned int temp2hex(float temp) {
+  int hextemp = 0;
+  if(temp > 120) {
+    hextemp = 0;
+  } else if(temp < -78) {
+    hextemp = 255;
+  } else {
+    byte Uref = 255;
+    int constant = 3695;
+    int R25 = 6340;
+    byte T25 = 25;
+    int Rf = 6480;
+    float K = 273.15;
+    float RT = R25 * exp(constant * (1 / (temp + K) - 1 / (T25 + K)));
+    hextemp = Uref * (RT / (Rf + RT));
+  }
+  return hextemp;
+}
+
 unsigned int set_heatpump_state(char *msg, unsigned char **cmd, char **log_msg) {
   unsigned  len = 0;
   byte heatpump_state = 1;
@@ -345,6 +364,7 @@ unsigned int set_DHW_temp(char *msg, unsigned char **cmd, char **log_msg) {
 unsigned int set_operation_mode(char *msg, unsigned char **cmd, char **log_msg) {
   unsigned int len = 0;
   String set_mode_string(msg);
+
   byte set_mode;
   switch (set_mode_string.toInt()) {
     case 0: set_mode = 18; break;
@@ -373,6 +393,146 @@ unsigned int set_operation_mode(char *msg, unsigned char **cmd, char **log_msg) 
   return len;
 }
 
+unsigned int set_byte_6(int val, unsigned char **cmd, int base, int bit, char **log_msg, const char *func) {
+  unsigned int len = 0;
+
+  unsigned char hex = (optionalPCBQuery[6] & ~(base << bit)) | (val << bit);
+
+  {
+    char tmp[256] = { 0 };
+    snprintf(tmp, 255, "set optional pcb '%s' to state %d (result byte 6: %02x)", func, val, hex);
+    memcpy(*log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    optionalPCBQuery[6] = hex;
+
+    len = sizeof(optionalPCBQuery);
+    memcpy(*cmd, optionalPCBQuery, len);
+  }
+
+  return len;
+}
+
+unsigned int set_heat_cool_mode(char *msg, unsigned char **cmd, char **log_msg) {
+  String set_pcb_string(msg);
+  int set_pcb_value = (set_pcb_string.toInt() == 1);
+
+  return set_byte_6(set_pcb_value, cmd, 0b1, 7, log_msg, __FUNCTION__);
+}
+
+unsigned int set_compressor_state(char *msg, unsigned char **cmd, char **log_msg) {
+  String set_pcb_string(msg);
+  int set_pcb_value = (set_pcb_string.toInt() == 1);
+
+  return set_byte_6(set_pcb_value, cmd, 0b1, 6, log_msg, __FUNCTION__);
+}
+
+unsigned int set_smart_grid_mode(char *msg, unsigned char **cmd, char **log_msg) {
+  String set_pcb_string(msg);
+  int set_pcb_value = set_pcb_string.toInt();
+
+  if (set_pcb_value < 4) {
+    return set_byte_6(set_pcb_value, cmd, 0b11, 4, log_msg, __FUNCTION__);
+  } else {
+    return 0;
+  }
+}
+
+unsigned int set_external_thermostat_1_state(char *msg, unsigned char **cmd, char **log_msg) {
+  String set_pcb_string(msg);
+  int set_pcb_value = set_pcb_string.toInt();
+
+  if (set_pcb_value < 4) {
+    return set_byte_6(set_pcb_value, cmd, 0b11, 2, log_msg, __FUNCTION__);
+  } else {
+    return 0;
+  }
+}
+
+unsigned int set_external_thermostat_2_state(char *msg, unsigned char **cmd, char **log_msg) {
+  String set_pcb_string(msg);
+  int set_pcb_value = set_pcb_string.toInt();
+
+  if (set_pcb_value < 4) {
+    return set_byte_6(set_pcb_value, cmd, 0b11, 0, log_msg, __FUNCTION__);
+  } else {
+    return 0;
+  }
+}
+
+unsigned int set_demand_control(char *msg, unsigned char **cmd, char **log_msg) {
+  unsigned int len = 0;
+  String set_pcb_string(msg);
+
+  byte set_pcb_value = set_pcb_string.toInt();
+
+  {
+    char tmp[256] = { 0 };
+    snprintf(tmp, 255, "set optional pcb '%s' to %02x", __FUNCTION__, set_pcb_value);
+    memcpy(*log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    optionalPCBQuery[14] = set_pcb_value;
+
+    len = sizeof(optionalPCBQuery);
+    memcpy(*cmd, optionalPCBQuery, len);
+  }
+
+  return len;
+}
+
+unsigned int set_xxx_temp(char *msg, unsigned char **cmd, char **log_msg, int byte, const char *func) {
+  unsigned int len = 0;
+  String set_pcb_string(msg);
+
+  float temp = set_pcb_string.toFloat();
+
+  {
+    char tmp[256] = { 0 };
+    snprintf(tmp, 255, "set optional pcb '%s' to temp %.2f (%02x)", func, temp, temp2hex(temp));
+    memcpy(*log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    optionalPCBQuery[byte] = temp2hex(temp);
+
+    len = sizeof(optionalPCBQuery);
+    memcpy(*cmd, optionalPCBQuery, len);
+  }
+
+  return len;
+}
+
+unsigned int set_pool_temp(char *msg, unsigned char **cmd, char **log_msg) {
+  return set_xxx_temp(msg, cmd, log_msg, 7, __FUNCTION__);
+}
+
+unsigned int set_buffer_temp(char *msg, unsigned char **cmd, char **log_msg) {
+  return set_xxx_temp(msg, cmd, log_msg, 8, __FUNCTION__);
+}
+
+unsigned int set_z1_room_temp(char *msg, unsigned char **cmd, char **log_msg){
+  return set_xxx_temp(msg, cmd, log_msg, 10, __FUNCTION__);
+}
+
+unsigned int set_z1_water_temp(char *msg, unsigned char **cmd, char **log_msg){
+  return set_xxx_temp(msg, cmd, log_msg, 16, __FUNCTION__);
+}
+
+unsigned int set_z2_room_temp(char *msg, unsigned char **cmd, char **log_msg) {
+  return set_xxx_temp(msg, cmd, log_msg, 11, __FUNCTION__);
+}
+
+unsigned int set_z2_water_temp(char *msg, unsigned char **cmd, char **log_msg){
+  return set_xxx_temp(msg, cmd, log_msg, 15, __FUNCTION__);
+}
+
+unsigned int set_solar_temp(char *msg, unsigned char **cmd, char **log_msg){
+  return set_xxx_temp(msg, cmd, log_msg, 13, __FUNCTION__);
+}
+
 void send_heatpump_command(char* topic, char *msg, bool (*send_command)(byte*, int), void (*log_message)(char*)) {
   unsigned char cmd[256] = { 0 }, *p = cmd;
   char log_msg[256] = { 0 }, *l = log_msg;
@@ -386,74 +546,6 @@ void send_heatpump_command(char* topic, char *msg, bool (*send_command)(byte*, i
       len = commands[i].func(msg, &p, &l);
       log_message(log_msg);
       send_command(cmd, len);
-    }
-  }
-}
-
-void set_optionalpcb(char* topic, char *msg, void (*log_message)(char*)) {
-  for (int i = 0 ; i < NUMBER_OF_OPTIONALPCB_TOPICS ; i++) {
-    if (strcmp(topic, optionalPcbTopics[i]) == 0) {
-      char log_msg[256];
-      String set_pcb_string(msg);
-      if (strstr(topic, "Temp")) {
-        float temp = set_pcb_string.toFloat();
-        float hextemp;
-        if (temp > 120) {
-          hextemp = 0;
-        } else if (temp < -78) {
-          hextemp = 255;
-        }
-        else {
-          byte Uref = 255;
-          int constant = 3695;
-          int R25 = 6340;
-          byte T25 = 25;
-          int Rf = 6480;
-          float K = 273.15;
-          float RT = R25 * exp(constant * (1 / (temp + K) - 1 / (T25 + K)));
-          hextemp = Uref * (RT / (Rf + RT));
-        }
-        optionalPCBQuery[optionalPcbBytes[i]] = (int)hextemp;
-        sprintf(log_msg, "set optional pcb %s to temp %.2f, hextemp DEC %.2f = HEX %x", optionalPcbTopics[i], temp, hextemp, (int)hextemp); log_message(log_msg);
-      }
-      else if (strcmp(topic, "Heat_Cool_Mode") == 0) {
-        bool set_pcb_value = (set_pcb_string.toInt() == 1);
-        optionalPCBQuery[optionalPcbBytes[i]] = (optionalPCBQuery[optionalPcbBytes[i]] & ~(0b1 << 7)) | ( set_pcb_value << 7 );
-        sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value); log_message(log_msg);
-      }
-      else if (strcmp(topic, "Compressor_State") == 0) {
-        bool set_pcb_value = (set_pcb_string.toInt() == 1);
-        optionalPCBQuery[optionalPcbBytes[i]] = (optionalPCBQuery[optionalPcbBytes[i]] & ~(0b1 << 6)) | ( set_pcb_value << 6 );
-        sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value); log_message(log_msg);
-      }
-      else if (strcmp(topic, "SmartGrid_Mode") == 0) {
-        byte set_pcb_value = set_pcb_string.toInt();
-        if (set_pcb_value < 4) {
-          optionalPCBQuery[optionalPcbBytes[i]] = (optionalPCBQuery[optionalPcbBytes[i]] & ~(0b11 << 4)) | ( set_pcb_value << 4 );
-          sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value); log_message(log_msg);
-        }
-      }
-      else if (strcmp(topic, "External_Thermostat_1_State") == 0) {
-        byte set_pcb_value = set_pcb_string.toInt();
-        if (set_pcb_value < 4) {
-          optionalPCBQuery[optionalPcbBytes[i]] = (optionalPCBQuery[optionalPcbBytes[i]] & ~(0b11 << 2)) | ( set_pcb_value << 2 );
-          sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value); log_message(log_msg);
-        }
-
-      }
-      else if (strcmp(topic, "External_Thermostat_2_State") == 0) {
-        byte set_pcb_value = set_pcb_string.toInt();
-        if (set_pcb_value < 4) {
-          optionalPCBQuery[optionalPcbBytes[i]] = (optionalPCBQuery[optionalPcbBytes[i]] & ~(0b11 << 0)) | ( set_pcb_value << 0 );
-          sprintf(log_msg, "set optional pcb %s to %d", optionalPcbTopics[i], set_pcb_value); log_message(log_msg);
-        }
-      }
-      else {
-        byte set_pcb_value = set_pcb_string.toInt();
-        optionalPCBQuery[optionalPcbBytes[i]] = set_pcb_value;
-        sprintf(log_msg, "set optional pcb %s to %s", optionalPcbTopics[i], msg); log_message(log_msg);
-      }
-
     }
   }
 }

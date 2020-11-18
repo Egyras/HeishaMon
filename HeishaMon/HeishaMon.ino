@@ -268,7 +268,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     } else if (strncmp(topic_command, mqtt_topic_pcb, 4) == 0)  // check for optional pcb commands
     {
       char* topic_pcb = &topic_command[4]; //strip the first 4 "pcb/" from the topic to get what we need
-      set_optionalpcb(topic_pcb, msg, log_message);
+      send_heatpump_command(topic_pcb, msg, send_command, log_message);
     } else if (strncmp(topic_command, mqtt_topic_s0, 2) == 0)  // this is a s0 topic, check for watthour topic and restore it
     {
       char* topic_s0_watthour_port = &topic_command[17]; //strip the first 17 "s0/WatthourTotal/" from the topic to get the s0 port

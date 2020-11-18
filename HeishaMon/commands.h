@@ -6,39 +6,6 @@ extern byte panasonicQuery[PANASONICQUERYSIZE];
 
 #define OPTIONALPCBQUERYSIZE 19
 extern byte optionalPCBQuery[OPTIONALPCBQUERYSIZE];
-#define NUMBER_OF_OPTIONALPCB_TOPICS 13
-
-static const char * optionalPcbTopics[] = {
-  "Heat_Cool_Mode",
-  "Compressor_State",
-  "SmartGrid_Mode",
-  "External_Thermostat_1_State",
-  "External_Thermostat_2_State",
-  "Demand_Control",
-  "Pool_Temp",
-  "Buffer_Temp",
-  "Z1_Room_Temp",
-  "Z1_Water_Temp",
-  "Z2_Room_Temp",
-  "Z2_Water_Temp",
-  "Solar_Temp"  
-};
-
-static const byte optionalPcbBytes[] = {
-  6,
-  6,
-  6,
-  6,
-  6,
-  14,
-  7,
-  8,
-  10,
-  16,
-  11,
-  15,
-  13  
-};
 
 extern const char* mqtt_topic_values;
 extern const char* mqtt_topic_1wire;
@@ -48,7 +15,6 @@ extern const char* mqtt_logtopic;
 extern const char* mqtt_willtopic;
 extern const char* mqtt_iptopic;
 extern const char* mqtt_send_raw_value_topic;
-
 
 unsigned int set_heatpump_state(char *msg, unsigned char **cmd, char **log_msg);
 unsigned int set_pump(char *msg, unsigned char **cmd, char **log_msg);
@@ -65,11 +31,24 @@ unsigned int set_holiday_mode(char *msg, unsigned char **cmd, char **log_msg);
 unsigned int set_powerful_mode(char *msg, unsigned char **cmd, char **log_msg);
 unsigned int set_operation_mode(char *msg, unsigned char **cmd, char **log_msg);
 unsigned int set_DHW_temp(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_heat_cool_mode(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_compressor_state(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_smart_grid_mode(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_external_thermostat_1_state(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_external_thermostat_2_state(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_demand_control(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_pool_temp(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_buffer_temp(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_z1_room_temp(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_z1_water_temp(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_z2_room_temp(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_z2_water_temp(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_solar_temp(char *msg, unsigned char **cmd, char **log_msg);
 
 struct {
   const char *name;
   unsigned int (*func)(char *msg, unsigned char **cmd, char **log_msg);
-}commands[] = {
+} commands[] = {
   // set heatpump state to on by sending 1
   { "SetHeatpump", set_heatpump_state },
   // set pump state to on by sending 1
@@ -99,7 +78,21 @@ struct {
   // set Heat pump operation mode  3 = DHW only, 0 = heat only, 1 = cool only, 2 = Auto, 4 = Heat+DHW, 5 = Cool+DHW, 6 = Auto + DHW
   { "SetOperationMode", set_operation_mode },
   // set DHW temperature by sending desired temperature between 40C-75C
-  { "SetDHWTemp", set_DHW_temp }
+  { "SetDHWTemp", set_DHW_temp },
+  // optional PCB
+  { "SetHeatCoolMode", set_heat_cool_mode },
+  { "SetCompressorState", set_compressor_state },
+  { "SetSmartGridMode", set_smart_grid_mode },
+  { "SetExternalThermostat1State", set_external_thermostat_1_state },
+  { "SetExternalThermostat2State", set_external_thermostat_2_state },
+  { "SetDemandControl", set_demand_control },
+  { "SetPoolTemp", set_pool_temp },
+  { "SetBufferTemp", set_buffer_temp },
+  { "SetZ1RoomTemp", set_z1_room_temp },
+  { "SetZ1WaterTemp", set_z1_water_temp },
+  { "SetZ2RoomTemp", set_z2_room_temp },
+  { "SetZ2WaterTemp", set_z2_water_temp },
+  { "SetSolarTemp", set_solar_temp }
 };
 
 void send_heatpump_command(char* topic, char *msg,bool (*send_command)(byte*, int),void (*log_message)(char*));
