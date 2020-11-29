@@ -276,10 +276,10 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       char mqtt_topic[256];
       sprintf(mqtt_topic, "%s", topic);
       if (mqtt_client.unsubscribe(mqtt_topic)) log_message((char*)"Unsubscribed from S0 watthour restore topic");
-    }
-    else {
-      send_heatpump_command(topic_command, msg, send_command, log_message);
-
+    } else if (strncmp(topic_command, mqtt_topic_commands, 8) == 0)  // check for optional pcb commands
+    {
+      char* topic_sendcommand = &topic_command[9]; //strip the first 9 "commands/" from the topic to get what we need
+      send_heatpump_command(topic_sendcommand, msg, send_command, log_message);
     }
     mqttcallbackinprogress = false;
   }

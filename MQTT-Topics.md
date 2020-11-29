@@ -130,6 +130,7 @@ OPT6 | optional/Alarm_State | Alarm state (0=off, 1=on)
 ## Command Topics:
 
 These topics are commands through heishamon to set modes and values on the heatpump and they can be set by either using:
+
 MQTT: send mqtt message to base_topic/commands/SetTopic (e.g.: panasonic_heat_pump/commands/SetHeatpump)
 
 HTTP REST API: http://x.x.x.x/command?[topic]=[value]&[topic]=[value] (e.g.: http://x.x.x.x/command?SetQuietMode=3&SetZ1HeatRequestTemperature=21_
