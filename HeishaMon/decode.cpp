@@ -2,34 +2,35 @@
 #include "commands.h"
 
 unsigned long nextalldatatime = 0;
+unsigned long nextalloptdatatime = 0;
 
 String getBit1and2(byte input) {
-  return String((input  >> 6)-1);
+  return String((input  >> 6) - 1);
 }
 
 String getBit3and4(byte input) {
-  return String(((input >> 4) & 0b11)-1);
+  return String(((input >> 4) & 0b11) - 1);
 }
 
 String getBit5and6(byte input) {
-  return String(((input >> 2) & 0b11)-1);
+  return String(((input >> 2) & 0b11) - 1);
 }
 
 String getBit7and8(byte input) {
-  return String((input & 0b11)-1);
+  return String((input & 0b11) - 1);
 }
 
 String getBit3and4and5(byte input) {
-  return String(((input >> 3) & 0b111)-1);
+  return String(((input >> 3) & 0b111) - 1);
 }
 
 
 String getLeft5bits(byte input) {
-  return String((input >> 3)-1);
+  return String((input >> 3) - 1);
 }
 
 String getRight3bits(byte input) {
-  return String((input & 0b111)-1);
+  return String((input & 0b111) - 1);
 }
 
 String getIntMinus1(byte input) {
@@ -42,18 +43,18 @@ String getIntMinus128(byte input) {
   return (String)value;
 }
 
-String getIntMinus1Div5(byte input){
-  return String((((float)input - 1) / 5),1);
-  
+String getIntMinus1Div5(byte input) {
+  return String((((float)input - 1) / 5), 1);
+
 }
-String getIntMinus1Times10(byte input){
+String getIntMinus1Times10(byte input) {
   int value = (int)input - 1;
-  return (String)(value*10);
-  
+  return (String)(value * 10);
+
 }
-String getIntMinus1Times50(byte input){
+String getIntMinus1Times50(byte input) {
   int value = (int)input - 1;
-  return (String)(value*50);
+  return (String)(value * 50);
 }
 
 String unknown(byte input) {
@@ -110,9 +111,9 @@ String getModel(byte input) {
     case 21:
       return "10";
     case 65:
-      return "11";     
+      return "11";
     case 69:
-      return "12";        
+      return "12";
     case 116:
       return "13";
     case 130:
@@ -123,19 +124,19 @@ String getModel(byte input) {
 }
 
 String getEnergy(byte input)
-    {
-      int value = ((int)input - 1) * 200;
-      return (String)value;
+{
+  int value = ((int)input - 1) * 200;
+  return (String)value;
 }
 
-String getPumpFlow(char* data){   // TOP1 //
+String getPumpFlow(char* data) {  // TOP1 //
   int PumpFlow1 = (int)data[170];
-  float PumpFlow2 = (((float)data[169]-1) / 256);
+  float PumpFlow2 = (((float)data[169] - 1) / 256);
   float PumpFlow = PumpFlow1 + PumpFlow2;
-  return String(PumpFlow,2);
+  return String(PumpFlow, 2);
 }
 
-String getErrorInfo(char* data){ // TOP44 //
+String getErrorInfo(char* data) { // TOP44 //
   int Error_type = (int)(data[113]);
   int Error_number = ((int)(data[114])) - 17;
   char Error_string[10];
@@ -147,10 +148,10 @@ String getErrorInfo(char* data){ // TOP44 //
       sprintf(Error_string, "H%02X", Error_number);
       break;
     default:
-      sprintf(Error_string,"No error");
+      sprintf(Error_string, "No error");
       break;
   }
-  return String(Error_string);  
+  return String(Error_string);
 }
 
 // Decode ////////////////////////////////////////////////////////////////////////////
@@ -168,7 +169,7 @@ void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_clien
     byte Input_Byte;
     String Topic_Value;
     switch (Topic_Number) { //switch on topic numbers, some have special needs
-      case 1: 
+      case 1:
         Topic_Value = getPumpFlow(data);
         break;
       case 11:
@@ -197,5 +198,57 @@ void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_clien
       sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_values, topics[Topic_Number]); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
     }
   }
+}
 
+void decode_optional_heatpump_data(char* data, String actOptData[], PubSubClient & mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {
+  char log_msg[256];
+  char mqtt_topic[256];
+  bool updatenow = false;
+
+  if (millis() > nextalloptdatatime) {
+    updatenow = true;
+    nextalldatatime = millis() + (1000 * updateAllTime);
+  }
+  for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_OPT_TOPICS ; Topic_Number++) {
+    byte Input_Byte;
+    String Topic_Value;
+    String Topic_Name;
+    switch (Topic_Number) { //switch on topic numbers, some have special needs
+      case 0:
+        Topic_Value = String(data[4] >> 7);
+        Topic_Name = "Z1_Water_Pump";
+        break;
+      case 1:
+        Topic_Value = String((data[4] >> 6) & 0b11);
+        Topic_Name = "Z1_Mixing_Valve";
+        break;
+      case 2:
+        Topic_Value = String((data[4] >> 4) & 0b1);
+        Topic_Name = "Z2_Water_Pump";
+        break;
+      case 3:
+        Topic_Value = String((data[4] >> 3) & 0b11);
+        Topic_Name = "Z2_Mixing_Valve";
+        break;
+      case 4:
+        Topic_Value = String((data[4] >> 1) & 0b1);
+        Topic_Name = "Pool_Water_Pump";
+        break;
+      case 5:
+        Topic_Value = String((data[4] >> 0) & 0b1);
+        Topic_Name = "Solar_Water_Pump";
+        break;
+      case 6:
+        Topic_Value = String((data[5] >> 0) & 0b1);
+        Topic_Name = "Alarm_State";
+        break;
+      default:
+        break;
+    }
+    if ((updatenow) || ( actOptData[Topic_Number] != Topic_Value )) {
+      actOptData[Topic_Number] = Topic_Value;
+      sprintf(log_msg, "received OPT%d %s: %s", Topic_Number, Topic_Name.c_str(), Topic_Value.c_str()); log_message(log_msg);
+      sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_pcbvalues, Topic_Name.c_str()); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
+    }
+  }
 }

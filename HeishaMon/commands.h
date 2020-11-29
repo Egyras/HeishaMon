@@ -8,6 +8,8 @@ extern byte panasonicQuery[PANASONICQUERYSIZE];
 extern byte optionalPCBQuery[OPTIONALPCBQUERYSIZE];
 
 extern const char* mqtt_topic_values;
+extern const char* mqtt_topic_commands;
+extern const char* mqtt_topic_pcbvalues;
 extern const char* mqtt_topic_1wire;
 extern const char* mqtt_topic_s0;
 extern const char* mqtt_topic_pcb;

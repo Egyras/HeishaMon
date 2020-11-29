@@ -47,6 +47,7 @@ byte  data_length = 0;
 
 // store actual data in an String array
 String actData[NUMBER_OF_TOPICS];
+String actOptData[NUMBER_OF_OPT_TOPICS];
 
 // log message to sprintf to
 char log_msg[256];
@@ -85,12 +86,10 @@ void mqtt_reconnect()
     int arraysize = sizeof(commands) / sizeof(commands[0]), i = 0;
 
     for (i = 0; i < arraysize; i++) {
-      sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, commands[i].name);
+      sprintf(topic, "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_commands, commands[i].name);
       mqtt_client.subscribe(topic);
     }
 
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_pcb);
     mqtt_client.subscribe(topic);
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
     mqtt_client.publish(topic, "Online");
@@ -179,12 +178,14 @@ bool readSerial()
       sprintf(log_msg, "Total reads : %lu and total good reads : %lu (%.2f %%)", totalreads, goodreads, readpercentage ); log_message(log_msg);
       if (data_length == 203) { //for now only return true for this datagram because we can not decode the shorter datagram yet
         data_length = 0;
+        decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
         return true;
       }
       else if (data_length == 20 ) { //optional pcb acknowledge answer
         log_message((char*)"Received optional PCB ack answer, no need to decode this.");
         data_length = 0;
-        return false;
+        decode_optional_heatpump_data(data, actOptData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
+        return true;
       }
       else {
         log_message((char*)"Received a shorter datagram. Can't decode this yet.");
@@ -265,10 +266,6 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 
       sprintf(log_msg, "sending raw value"); log_message(log_msg);
       send_command(rawcommand, length);
-    } else if (strncmp(topic_command, mqtt_topic_pcb, 4) == 0)  // check for optional pcb commands
-    {
-      char* topic_pcb = &topic_command[4]; //strip the first 4 "pcb/" from the topic to get what we need
-      send_heatpump_command(topic_pcb, msg, send_command, log_message);
     } else if (strncmp(topic_command, mqtt_topic_s0, 2) == 0)  // this is a s0 topic, check for watthour topic and restore it
     {
       char* topic_s0_watthour_port = &topic_command[17]; //strip the first 17 "s0/WatthourTotal/" from the topic to get the s0 port
@@ -431,10 +428,7 @@ void read_panasonic_data() {
     data_length = 0; //clear any data in array
     sending = false; //receiving the answer from the send command timed out, so we are allowed to send a new command
   }
-  if ( (heishamonSettings.listenonly || sending) && (Serial.available() > 0)) { //only read data if we have sent a command so we expect an answer or in listen only mode
-    // read the serial and decode if data is complete and valid
-    if ( readSerial()) decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-  }
+  if ( (heishamonSettings.listenonly || sending) && (Serial.available() > 0)) readSerial();
 }
 
 void loop() {

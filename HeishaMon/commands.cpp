@@ -5,11 +5,12 @@ byte panasonicQuery[] = {0x71, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0
 byte optionalPCBQuery[] = {0xF1, 0x11, 0x01, 0x50, 0x00, 0x00, 0x40, 0xFF, 0xFF, 0xE5, 0xFF, 0xFF, 0x00, 0xFF, 0xEB, 0xFF, 0xFF, 0x00, 0x00};
 
 
-const char* mqtt_topic_values = "sdc";
+const char* mqtt_topic_values = "main";
+const char* mqtt_topic_commands = "commands";
+const char* mqtt_topic_pcbvalues = "optional";
 const char* mqtt_topic_1wire = "1wire";
 const char* mqtt_topic_s0 = "s0";
 const char* mqtt_logtopic = "log";
-const char* mqtt_topic_pcb = "pcb/#";
 
 const char* mqtt_willtopic = "LWT";
 const char* mqtt_iptopic = "ip";
