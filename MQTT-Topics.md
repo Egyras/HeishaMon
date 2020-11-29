@@ -120,9 +120,9 @@ These values are not visible if you have the real optional pcb installed.
 ID | Topic | Response/Description
 :--- | --- | ---
 OPT0 | optional/Z1_Water_Pump | Z1 water pump action request (0=off, 1=on)
-OPT1 | optional/Z1_Mixing_Valve | Z1 mixing valve action request (0=off, 1=increase, 2=decrease)
+OPT1 | optional/Z1_Mixing_Valve | Z1 mixing valve action request (0=off, 1=decrease, 2=increase)
 OPT2 | optional/Z2_Water_Pump | Z2 water pump action request (0=off, 1=on)
-OPT3 | optional/Z2_Mixing_Valve | Z2 mixing valve action request (0=off, 1=increase, 2=decrease)
+OPT3 | optional/Z2_Mixing_Valve | Z2 mixing valve action request (0=off, 1=decrease, 2=increase)
 OPT4 | optional/Pool_Water_Pump | Pool water pump action request (0=off, 1=on)
 OPT5 | optional/Solar_Water_Pump | Solar water pump action request (0=off, 1=on)
 OPT6 | optional/Alarm_State | Alarm state (0=off, 1=on)
