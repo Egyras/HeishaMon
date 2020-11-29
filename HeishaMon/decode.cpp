@@ -207,7 +207,7 @@ void decode_optional_heatpump_data(char* data, String actOptData[], PubSubClient
 
   if (millis() > nextalloptdatatime) {
     updatenow = true;
-    nextalldatatime = millis() + (1000 * updateAllTime);
+    nextalloptdatatime = millis() + (1000 * updateAllTime);
   }
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_OPT_TOPICS ; Topic_Number++) {
     byte Input_Byte;
@@ -219,7 +219,7 @@ void decode_optional_heatpump_data(char* data, String actOptData[], PubSubClient
         Topic_Name = "Z1_Water_Pump";
         break;
       case 1:
-        Topic_Value = String((data[4] >> 6) & 0b11);
+        Topic_Value = String((data[4] >> 5) & 0b11);
         Topic_Name = "Z1_Mixing_Valve";
         break;
       case 2:
@@ -227,7 +227,7 @@ void decode_optional_heatpump_data(char* data, String actOptData[], PubSubClient
         Topic_Name = "Z2_Water_Pump";
         break;
       case 3:
-        Topic_Value = String((data[4] >> 3) & 0b11);
+        Topic_Value = String((data[4] >> 2) & 0b11);
         Topic_Name = "Z2_Mixing_Valve";
         break;
       case 4:

@@ -182,7 +182,7 @@ bool readSerial()
         return true;
       }
       else if (data_length == 20 ) { //optional pcb acknowledge answer
-        log_message((char*)"Received optional PCB ack answer, no need to decode this.");
+        log_message((char*)"Received optional PCB ack answer. Decoding this in OPT topics.");
         data_length = 0;
         decode_optional_heatpump_data(data, actOptData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
         return true;

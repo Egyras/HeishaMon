@@ -443,4 +443,4 @@ static const char **topicDescription[] = {
 };
 
 
-#define NUMBER_OF_OPT_TOPICS 8 //last topic number + 1
+#define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
