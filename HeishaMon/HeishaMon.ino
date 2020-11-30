@@ -65,7 +65,7 @@ struct command_struct {
 };
 command_struct *commandBuffer;
 unsigned int commandsInBuffer = 0;
-#define MAXCOMMANDSINBUFFER 5 //can't have too much in buffer due to memory shortage
+#define MAXCOMMANDSINBUFFER 10 //can't have too much in buffer due to memory shortage
 
 
 //doule reset detection
@@ -83,14 +83,10 @@ void mqtt_reconnect()
   if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
   {
     mqttReconnects++;
-    int arraysize = sizeof(commands) / sizeof(commands[0]), i = 0;
-
-    for (i = 0; i < arraysize; i++) {
-      sprintf(topic, "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_commands, commands[i].name);
-      mqtt_client.subscribe(topic);
-    }
-
+    sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_commands);
     mqtt_client.subscribe(topic);
+    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
+    mqtt_client.subscribe(topic);    
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
     mqtt_client.publish(topic, "Online");
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_iptopic);
@@ -268,7 +264,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       send_command(rawcommand, length);
     } else if (strncmp(topic_command, mqtt_topic_s0, 2) == 0)  // this is a s0 topic, check for watthour topic and restore it
     {
-      char* topic_s0_watthour_port = &topic_command[17]; //strip the first 17 "s0/WatthourTotal/" from the topic to get the s0 port
+      char* topic_s0_watthour_port = topic_command + 17; //strip the first 17 "s0/WatthourTotal/" from the topic to get the s0 port
       int s0Port = String(topic_s0_watthour_port).toInt();
       float watthour = String(msg).toFloat();
       restore_s0_Watthour(s0Port, watthour);
@@ -278,7 +274,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       if (mqtt_client.unsubscribe(mqtt_topic)) log_message((char*)"Unsubscribed from S0 watthour restore topic");
     } else if (strncmp(topic_command, mqtt_topic_commands, 8) == 0)  // check for optional pcb commands
     {
-      char* topic_sendcommand = &topic_command[9]; //strip the first 9 "commands/" from the topic to get what we need
+      char* topic_sendcommand = topic_command + 9; //strip the first 9 "commands/" from the topic to get what we need
       send_heatpump_command(topic_sendcommand, msg, send_command, log_message);
     }
     mqttcallbackinprogress = false;
@@ -405,6 +401,8 @@ void setup() {
   if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
   if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings, mqtt_client, heishamonSettings.mqtt_topic_base);
   switchSerial();
+  // wait waittime for the first start
+  nexttime = millis() + (1000 * heishamonSettings.waitTime);
 }
 
 void send_panasonic_query() {

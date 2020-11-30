@@ -539,14 +539,21 @@ void send_heatpump_command(char* topic, char *msg, bool (*send_command)(byte*, i
   char log_msg[256] = { 0 }, *l = log_msg;
   unsigned int len = 0;
 
-  int arraysize = sizeof(commands) / sizeof(commands[0]);
-  int i = 0;
-
-  for (i = 0; i < arraysize; i++) {
+  for (int i = 0; i < sizeof(commands) / sizeof(commands[0]); i++) {
     if (strcmp(topic, commands[i].name) == 0) {
       len = commands[i].func(msg, &p, &l);
       log_message(log_msg);
       send_command(cmd, len);
     }
   }
+
+  //run for optional pcb commands
+  for (int i = 0; i < sizeof(optionalCommands) / sizeof(optionalCommands[0]); i++) {
+    if (strcmp(topic, optionalCommands[i].name) == 0) {
+      len = optionalCommands[i].func(msg, &p, &l);
+      log_message(log_msg);
+      //send_command(cmd, len); not sending optional pcb command directly. This if for the main process to send.
+    }
+  }
+
 }

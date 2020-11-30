@@ -80,7 +80,13 @@ struct {
   // set Heat pump operation mode  3 = DHW only, 0 = heat only, 1 = cool only, 2 = Auto, 4 = Heat+DHW, 5 = Cool+DHW, 6 = Auto + DHW
   { "SetOperationMode", set_operation_mode },
   // set DHW temperature by sending desired temperature between 40C-75C
-  { "SetDHWTemp", set_DHW_temp },
+  { "SetDHWTemp", set_DHW_temp }
+};
+
+struct {
+  const char *name;
+  unsigned int (*func)(char *msg, unsigned char **cmd, char **log_msg);
+} optionalCommands[] = {
   // optional PCB
   { "SetHeatCoolMode", set_heat_cool_mode },
   { "SetCompressorState", set_compressor_state },
