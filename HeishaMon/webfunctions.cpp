@@ -707,7 +707,6 @@ bool send_command(byte* command, int length);
 void log_message(char* string);
 
 void handleREST(ESP8266WebServer *httpServer) {
-  int arraysize = sizeof(commands)/sizeof(commands[0]);
 
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->sendHeader("Access-Control-Allow-Origin", "*");
@@ -720,9 +719,7 @@ void handleREST(ESP8266WebServer *httpServer) {
       char log_msg[256] = { 0 }, *l = log_msg;
       unsigned int len = 0;
 
-      int x = 0;
-
-      for(x=0;x<arraysize;x++) {
+      for(int x=0;x<sizeof(commands)/sizeof(commands[0]);x++) {
         if(strcmp(httpServer->argName(i).c_str(), commands[x].name) == 0) {
           len = commands[x].func((char *)httpServer->arg(i).c_str(), &p, &l);
           httptext = httptext + log_msg + "\n";
@@ -731,8 +728,24 @@ void handleREST(ESP8266WebServer *httpServer) {
         }
       }
     }
+    //optional commands
+    for(uint8_t i = 0; i < httpServer->args(); i++) {
+      unsigned char cmd[256] = { 0 }, *p = cmd;
+      char log_msg[256] = { 0 }, *l = log_msg;
+      unsigned int len = 0;
+
+      for(int x=0;x<sizeof(optionalCommands)/sizeof(optionalCommands[0]);x++) {
+        if(strcmp(httpServer->argName(i).c_str(), optionalCommands[x].name) == 0) {
+          len = optionalCommands[x].func((char *)httpServer->arg(i).c_str(), &p, &l);
+          httptext = httptext + log_msg + "\n";
+          log_message(log_msg);
+          //send_command(cmd, len); not send, only during main run
+        }
+      }
+    }    
   }
 
   httpServer->sendContent(httptext);
+  httpServer->sendContent("");
   httpServer->client().stop();
 }
