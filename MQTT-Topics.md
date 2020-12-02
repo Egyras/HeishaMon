@@ -156,7 +156,10 @@ SET16 | SetCurves | Set zones heat/cool curves | JSON document (see below)
 
 *If you operate your heatpump with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*
 
-*To send Heating/Cooling Curves on topic SET16 you need to send a JSON document. The structure of the JSON document:*
+*To send Heating/Cooling Curves on topic SET16 you need to send a flattened JSON document. For example:*
+```{"zone1":{"heat":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}},"cool":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}}},"zone2":{"heat":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}},"cool":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}}}}```
+
+*The structure of the JSON document:*
 ```json
 {
 	"zone1": {
@@ -205,7 +208,7 @@ SET16 | SetCurves | Set zones heat/cool curves | JSON document (see below)
 	}
 }
 ```
-But you are free to set only the value you need, for example:
+*But you are free to set only the value you need, for example:*
 ```json
 {
   "zone1": {
