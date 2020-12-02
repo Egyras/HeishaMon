@@ -152,5 +152,10 @@ SET12 | SetForceDefrost | Forces defrost routine | 0, 1
 SET13 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
 SET14 | SetPump | Set Water Pump to service mode, max speed | 0, 1
 SET15 | SetPumpSpeed | Set max Water Pump speed in service menu | decimal value translate to hexadecimal in service menu <br/>64 to 254
+SET16 | SetCurves | Set zones heat/cool curves | json document (**)
 
 *If you operate your heatpump with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*
+
+**To send Heating/Cooling Curves on topic SET16 you need to send a JSON document. The structure of the JSON document:
+{"zone1":{"heat":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}},"cool":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}}},"zone2":{"heat":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}},"cool":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}}}}
+but you are free to set only the value you need, for example:{"zone1":{"heat":{"outside":{"low":-15}}}}

@@ -393,7 +393,49 @@ unsigned int set_operation_mode(char *msg, unsigned char **cmd, char **log_msg) 
 
   return len;
 }
+unsigned int set_curves(char *msg, unsigned char **cmd, char **log_msg) {
+  unsigned int len = 0;
+  unsigned char tmpcmd[] = {0xf1, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  StaticJsonDocument<512> jsonDoc;
+  DeserializationError error = deserializeJson(jsonDoc, msg);
+  if (!error) {
+    char tmpmsg[256] = { 0 };
+    JsonVariant jsonValue;
+    snprintf(tmpmsg, 255, "SetCurves JSON received ok");
+    memcpy(*log_msg, tmpmsg, sizeof(tmpmsg));
+    //set correct bytes according to the values in json and if not exists keep default 0x00 value which keeps current setting for this byte
+    jsonValue = jsonDoc["zone1"]["heat"]["water"]["high"]; if (!jsonValue.isNull()) tmpcmd[75] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["heat"]["water"]["low"]; if (!jsonValue.isNull()) tmpcmd[76] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["heat"]["outside"]["low"]; if (!jsonValue.isNull()) tmpcmd[77] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["heat"]["outside"]["high"]; if (!jsonValue.isNull()) tmpcmd[78] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["heat"]["water"]["high"]; if (!jsonValue.isNull()) tmpcmd[79] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["heat"]["water"]["low"]; if (!jsonValue.isNull()) tmpcmd[80] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["heat"]["outside"]["low"]; if (!jsonValue.isNull()) tmpcmd[81] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["heat"]["outside"]["high"]; if (!jsonValue.isNull()) tmpcmd[82] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["cool"]["water"]["high"]; if (!jsonValue.isNull()) tmpcmd[86] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["cool"]["water"]["low"]; if (!jsonValue.isNull()) tmpcmd[87] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["cool"]["outside"]["low"]; if (!jsonValue.isNull()) tmpcmd[88] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["cool"]["outside"]["high"]; if (!jsonValue.isNull()) tmpcmd[89] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["cool"]["water"]["high"]; if (!jsonValue.isNull()) tmpcmd[90] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["cool"]["water"]["low"]; if (!jsonValue.isNull()) tmpcmd[91] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["cool"]["outside"]["low"]; if (!jsonValue.isNull()) tmpcmd[92] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["cool"]["outside"]["high"]; if (!jsonValue.isNull()) tmpcmd[93] = jsonValue.as<int>() + 128;    
+  }
+  else {
+    char tmpmsg[256] = { 0 };
+    snprintf(tmpmsg, 255, "SetCurves JSON decode failed!");
+    memcpy(*log_msg, tmpmsg, sizeof(tmpmsg));
+  }
 
+  // send result
+  len = sizeof(tmpcmd);
+  memcpy(*cmd, tmpcmd, len);
+  return len;
+}
+
+
+
+//start of optional pcb commands
 unsigned int set_byte_6(int val, unsigned char **cmd, int base, int bit, char **log_msg, const char *func) {
   unsigned int len = 0;
 

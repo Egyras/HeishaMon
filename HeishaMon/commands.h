@@ -1,4 +1,5 @@
 #include <ESP8266WiFi.h>
+#include <ArduinoJson.h>
 
 
 #define PANASONICQUERYSIZE 110
@@ -46,6 +47,8 @@ unsigned int set_z1_water_temp(char *msg, unsigned char **cmd, char **log_msg);
 unsigned int set_z2_room_temp(char *msg, unsigned char **cmd, char **log_msg);
 unsigned int set_z2_water_temp(char *msg, unsigned char **cmd, char **log_msg);
 unsigned int set_solar_temp(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_curves(char *msg, unsigned char **cmd, char **log_msg);
+
 
 struct {
   const char *name;
@@ -80,7 +83,9 @@ struct {
   // set Heat pump operation mode  3 = DHW only, 0 = heat only, 1 = cool only, 2 = Auto, 4 = Heat+DHW, 5 = Cool+DHW, 6 = Auto + DHW
   { "SetOperationMode", set_operation_mode },
   // set DHW temperature by sending desired temperature between 40C-75C
-  { "SetDHWTemp", set_DHW_temp }
+  { "SetDHWTemp", set_DHW_temp },
+  // set heat/cool curves on z1 and z2 using a json input
+  { "SetCurves", set_curves }
 };
 
 struct {
