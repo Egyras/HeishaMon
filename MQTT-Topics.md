@@ -110,6 +110,7 @@ TOP90 | main/Room_Heater_Operations_Hours | Electric heater operating time for R
 TOP91 | main/DHW_Heater_Operations_Hours | Electric heater operating time for DHW (Hour)
 TOP92 | main/Heat_Pump_Model | Heat pump model, all values in HeatPumpType.md
 TOP93 | main/Pump_Duty | Pump duty
+TOP94 | main/Zones_State | Zones state (0 = zone1 active, 1 = zone2 active, 3 = zone1 and zone2 active)
 
 All Topics realated with state can have also value -1 - unknown - but only in ubnormal situations.
 

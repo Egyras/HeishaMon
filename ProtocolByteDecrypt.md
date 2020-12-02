@@ -8,7 +8,7 @@
 |   | 03 | 10 |   | Header   |
 |  TOP0+TOP2 | 04 | 56 | Force DHW status 56=off,96=on, 55 = heat pump off, 56= heat pump on, Service Setup: Water pump on=65, Air Purge=75, Pump Down=F0?| Force dhw, Heat pump on/off, Service setup (Water Flow, Air Purge , Pump Down) |
 |  TOP19+TOP13+TOP68 | 05 | 55 | Holiday mode off/on (bit3and4), weekly shedule off/on (bit 1and2) force heater off/on (bit5and6) Dry Concrete off/on (bit7and8) | Holiday mode, Sheduler status, force heater state , Dry Concrete |
-|  TOP4 | 06 | 62 | 1st Bit = Zone2<br/> 2nd Bit = Zone1<br/>3rd & 4th bit = b01 DHW off ,b10 DHW on<br/> 5th ,6th,7th & 8th bit = b0001 - only DHW , b0010 - Heat , b0011 - Cool , b1001 - Auto(Heat) , b1010 - Auto(Cool) | Zone on/off <br/>Mode status   |
+|  TOP94+TOP4 | 06 | 62 | 1st Bit = Zone2<br/> 2nd Bit = Zone1<br/>3rd & 4th bit = b01 DHW off ,b10 DHW on<br/> 5th ,6th,7th & 8th bit = b0001 - only DHW , b0010 - Heat , b0011 - Cool , b1001 - Auto(Heat) , b1010 - Auto(Cool) | Zone on/off <br/>Mode status   |
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerful mode status |
 |  TOP | 08 | 00 |   | 0 byte |
 |  TOP58+TOP59 | 09 | 05 | 3rd & 4th bit = b01 Standard, b10 - DHW Smart (J-series only)<br/>5rd & 6th bit = b01 DHW heater off, b10 - DHW heater on<br/>7rd & 8th bit = b01 Water heater off, b10 - Water heater on | DHW Smart (J-series only)<br/>Heaters enable allowed status|
