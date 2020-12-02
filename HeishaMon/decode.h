@@ -26,7 +26,8 @@ String getEnergy(byte input);
 String getHeatMode(byte input);
 String getModel(byte input);
 
-#define NUMBER_OF_TOPICS 94 //last topic number + 1
+#define NUMBER_OF_TOPICS 95 //last topic number + 1
+#define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
 
 static const char * topics[] = {
   "Heatpump_State",          //TOP0
@@ -123,6 +124,7 @@ static const char * topics[] = {
   "DHW_Heater_Operations_Hours",  //TOP91
   "Heat_Pump_Model", //TOP92,
   "Pump_Duty", //TOP93
+  "Zones_State", //TOP94
 };
 
 static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
@@ -220,6 +222,7 @@ static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned
   0,      //TOP91
   132,    //TOP92
   172,    //TOP93
+  6,      //TOP94
 };
 
 typedef String (*topicFP)(byte);
@@ -318,7 +321,8 @@ static const topicFP topicFunctions[] = {
   unknown,             //TOP90
   unknown,             //TOP91
   getModel,			       //TOP92
-  getIntMinus1,             //TOP93
+  getIntMinus1,        //TOP93
+  getBit1and2,         //TOP94
 };
 
 static const char *DisabledEnabled[] = {"2", "Disabled", "Enabled"};
@@ -343,6 +347,7 @@ static const char *ErrorState[] = {"value", "Error"};
 static const char *Ampere[] = {"value", "Ampere"};
 static const char *Minutes[] = {"value", "Minutes"};
 static const char *Duty[] = {"value", "Duty"};
+static const char *ZonesState[] = {"3", "Zone1 active","Zone2 active","Zone1 and zone2 active"};
 static const char *HeatCoolModeDesc[] = {"2", "Comp. Curve", "Direct"};
 static const char *Model[] = {"15", "WH-MDC05H3E5", "WH-MDC07H3E5", "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8", "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8", "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8", "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8", "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5", "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5", "WH-MDC05J3E5", "WH-MDC09H3E5", "WH-MXC09H3E5", "IDU:WH-ADC0309J3E5, ODU:WH-UD09JE5", "IDU:WH-ADC0916H9E8, ODU:WH-UX12HE8", "IDU:WH-SQC09H3E8, ODU:WH-UQ09HE8"};
 static const char **topicDescription[] = {
@@ -440,7 +445,5 @@ static const char **topicDescription[] = {
   Hours,           //TOP91
   Model,		       //TOP92
   Duty,            //TOP93
+  ZonesState,      //TOP94
 };
-
-
-#define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
