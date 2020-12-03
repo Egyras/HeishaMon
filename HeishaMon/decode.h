@@ -202,8 +202,8 @@ static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned
   101,    //TOP71
   86,     //TOP72
   87,     //TOP73
-  88,     //TOP74
-  89,     //TOP75
+  89,     //TOP74
+  88,     //TOP75
   28,     //TOP76
   83,     //TOP77
   85,     //TOP78
@@ -216,8 +216,8 @@ static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned
   82,     //TOP85
   90,     //TOP86
   91,     //TOP87
-  92,     //TOP88
-  93,     //TOP89
+  93,     //TOP88
+  92,     //TOP89
   0,      //TOP90
   0,      //TOP91
   132,    //TOP92

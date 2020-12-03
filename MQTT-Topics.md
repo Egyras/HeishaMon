@@ -88,10 +88,10 @@ TOP68 | main/Force_Heater_State | Force heater status (0=inactive, 1=active)
 TOP69 | main/Sterilization_State | Sterilisation State (0=inactive, 1=active)
 TOP70 | main/Sterilization_Temp | Sterilisation Temperature (°C)
 TOP71 | main/Sterilization_Max_Time | Sterilisation maximum time (minutes)
-TOP72 | main/Z1_Cool_Curve_Target_High_Temp | Target temperature at lowest point on the cooling curve (°C)
-TOP73 | main/Z1_Cool_Curve_Target_Low_Temp | Target temperature at highest point on the cooling curve (°C)
-TOP74 | main/Z1_Cool_Curve_Outside_High_Temp | Lowest outside temperature on the cooling curve (°C)
-TOP75 | main/Z1_Cool_Curve_Outside_Low_Temp | Highest outside temperature on the cooling curve (°C)
+TOP72 | main/Z1_Cool_Curve_Target_High_Temp | Target temperature at highest point on the cooling curve (°C)
+TOP73 | main/Z1_Cool_Curve_Target_Low_Temp | Target temperature at lowest point on the cooling curve (°C)
+TOP74 | main/Z1_Cool_Curve_Outside_High_Temp | Highest outside temperature on the cooling curve (°C)
+TOP75 | main/Z1_Cool_Curve_Outside_Low_Temp | Lowest outside temperature on the cooling curve (°C)
 TOP76 | main/Heating_Mode | Compensation / Direct mode for heat (0 = compensation curve, 1 = direct)
 TOP77 | main/Heating_Off_Outdoor_Temp | Above this outdoor temperature all heating is turned off(5 to 35 °C)
 TOP78 | main/Heater_On_Outdoor_Temp | Below this temperature the backup heater is allowed to be used by heatpump heating logic(-15 to 20 °C)
@@ -102,10 +102,10 @@ TOP82 | main/Z2_Heat_Curve_Target_High_Temp | Target temperature at lowest point
 TOP83 | main/Z2_Heat_Curve_Target_Low_Temp | Target temperature at highest point on the heating curve (°C)
 TOP84 | main/Z2_Heat_Curve_Outside_High_Temp | Lowest outside temperature on the heating curve (°C)
 TOP85 | main/Z2_Heat_Curve_Outside_Low_Temp | Highest outside temperature on the heating curve (°C)
-TOP86 | main/Z2_Cool_Curve_Target_High_Temp | Target temperature at lowest point on the cooling curve (°C)
-TOP87 | main/Z2_Cool_Curve_Target_Low_Temp | Target temperature at highest point on the cooling curve (°C)
-TOP88 | main/Z2_Cool_Curve_Outside_High_Temp | Lowest outside temperature on the cooling curve (°C)
-TOP89 | main/Z2_Cool_Curve_Outside_Low_Temp | Highest outside temperature on the cooling curve (°C)
+TOP86 | main/Z2_Cool_Curve_Target_High_Temp | Target temperature at highest point on the cooling curve (°C)
+TOP87 | main/Z2_Cool_Curve_Target_Low_Temp | Target temperature at lowest point on the cooling curve (°C)
+TOP88 | main/Z2_Cool_Curve_Outside_High_Temp | Highest outside temperature on the cooling curve (°C)
+TOP89 | main/Z2_Cool_Curve_Outside_Low_Temp | Lowest outside temperature on the cooling curve (°C)
 TOP90 | main/Room_Heater_Operations_Hours | Electric heater operating time for Room (Hour)
 TOP91 | main/DHW_Heater_Operations_Hours | Electric heater operating time for DHW (Hour)
 TOP92 | main/Heat_Pump_Model | Heat pump model, all values in HeatPumpType.md
@@ -160,7 +160,7 @@ SET17 | SetZones | Set zones to active | 0 = zone 1 active, 1 = zone2 active, 2 
 
 *To send Heating/Cooling Curves on topic SET16 you need to send a flattened JSON document. For example:*
 
-```{"zone1":{"heat":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}},"cool":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}}},"zone2":{"heat":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}},"cool":{"water":{"high":35,"low":25},"outside":{"high":15,"low":-15}}}}```
+```{"zone1":{"heat":{"target":{"high":35,"low":25},"outside":{"high":15,"low":-15}},"cool":{"target":{"high":35,"low":25},"outside":{"high":15,"low":-15}}},"zone2":{"heat":{"target":{"high":35,"low":25},"outside":{"high":15,"low":-15}},"cool":{"target":{"high":35,"low":25},"outside":{"high":15,"low":-15}}}}```
 
 *The structure of the JSON document:*
 
@@ -168,7 +168,7 @@ SET17 | SetZones | Set zones to active | 0 = zone 1 active, 1 = zone2 active, 2 
 {
 	"zone1": {
 		"heat": {
-			"water": {
+			"target": {
 				"high": 35,
 				"low": 25
 			},
@@ -178,7 +178,7 @@ SET17 | SetZones | Set zones to active | 0 = zone 1 active, 1 = zone2 active, 2 
 			}
 		},
 		"cool": {
-			"water": {
+			"target": {
 				"high": 35,
 				"low": 25
 			},
@@ -190,7 +190,7 @@ SET17 | SetZones | Set zones to active | 0 = zone 1 active, 1 = zone2 active, 2 
 	},
 	"zone2": {
 		"heat": {
-			"water": {
+			"target": {
 				"high": 35,
 				"low": 25
 			},
@@ -200,7 +200,7 @@ SET17 | SetZones | Set zones to active | 0 = zone 1 active, 1 = zone2 active, 2 
 			}
 		},
 		"cool": {
-			"water": {
+			"target": {
 				"high": 35,
 				"low": 25
 			},

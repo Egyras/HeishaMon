@@ -404,20 +404,20 @@ unsigned int set_curves(char *msg, unsigned char **cmd, char **log_msg) {
     snprintf(tmpmsg, 255, "SetCurves JSON received ok");
     memcpy(*log_msg, tmpmsg, sizeof(tmpmsg));
     //set correct bytes according to the values in json and if not exists keep default 0x00 value which keeps current setting for this byte
-    jsonValue = jsonDoc["zone1"]["heat"]["water"]["high"]; if (!jsonValue.isNull()) tmpcmd[75] = jsonValue.as<int>() + 128;
-    jsonValue = jsonDoc["zone1"]["heat"]["water"]["low"]; if (!jsonValue.isNull()) tmpcmd[76] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["heat"]["target"]["high"]; if (!jsonValue.isNull()) tmpcmd[75] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["heat"]["target"]["low"]; if (!jsonValue.isNull()) tmpcmd[76] = jsonValue.as<int>() + 128;
     jsonValue = jsonDoc["zone1"]["heat"]["outside"]["low"]; if (!jsonValue.isNull()) tmpcmd[77] = jsonValue.as<int>() + 128;
     jsonValue = jsonDoc["zone1"]["heat"]["outside"]["high"]; if (!jsonValue.isNull()) tmpcmd[78] = jsonValue.as<int>() + 128;
-    jsonValue = jsonDoc["zone2"]["heat"]["water"]["high"]; if (!jsonValue.isNull()) tmpcmd[79] = jsonValue.as<int>() + 128;
-    jsonValue = jsonDoc["zone2"]["heat"]["water"]["low"]; if (!jsonValue.isNull()) tmpcmd[80] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["heat"]["target"]["high"]; if (!jsonValue.isNull()) tmpcmd[79] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["heat"]["target"]["low"]; if (!jsonValue.isNull()) tmpcmd[80] = jsonValue.as<int>() + 128;
     jsonValue = jsonDoc["zone2"]["heat"]["outside"]["low"]; if (!jsonValue.isNull()) tmpcmd[81] = jsonValue.as<int>() + 128;
     jsonValue = jsonDoc["zone2"]["heat"]["outside"]["high"]; if (!jsonValue.isNull()) tmpcmd[82] = jsonValue.as<int>() + 128;
-    jsonValue = jsonDoc["zone1"]["cool"]["water"]["high"]; if (!jsonValue.isNull()) tmpcmd[86] = jsonValue.as<int>() + 128;
-    jsonValue = jsonDoc["zone1"]["cool"]["water"]["low"]; if (!jsonValue.isNull()) tmpcmd[87] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["cool"]["target"]["high"]; if (!jsonValue.isNull()) tmpcmd[86] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone1"]["cool"]["target"]["low"]; if (!jsonValue.isNull()) tmpcmd[87] = jsonValue.as<int>() + 128;
     jsonValue = jsonDoc["zone1"]["cool"]["outside"]["low"]; if (!jsonValue.isNull()) tmpcmd[88] = jsonValue.as<int>() + 128;
     jsonValue = jsonDoc["zone1"]["cool"]["outside"]["high"]; if (!jsonValue.isNull()) tmpcmd[89] = jsonValue.as<int>() + 128;
-    jsonValue = jsonDoc["zone2"]["cool"]["water"]["high"]; if (!jsonValue.isNull()) tmpcmd[90] = jsonValue.as<int>() + 128;
-    jsonValue = jsonDoc["zone2"]["cool"]["water"]["low"]; if (!jsonValue.isNull()) tmpcmd[91] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["cool"]["target"]["high"]; if (!jsonValue.isNull()) tmpcmd[90] = jsonValue.as<int>() + 128;
+    jsonValue = jsonDoc["zone2"]["cool"]["target"]["low"]; if (!jsonValue.isNull()) tmpcmd[91] = jsonValue.as<int>() + 128;
     jsonValue = jsonDoc["zone2"]["cool"]["outside"]["low"]; if (!jsonValue.isNull()) tmpcmd[92] = jsonValue.as<int>() + 128;
     jsonValue = jsonDoc["zone2"]["cool"]["outside"]["high"]; if (!jsonValue.isNull()) tmpcmd[93] = jsonValue.as<int>() + 128;    
   }
