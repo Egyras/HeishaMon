@@ -35,6 +35,7 @@ settingsStruct heishamonSettings;
 bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
 unsigned long nexttime = 0;
+
 unsigned long allowreadtime = 0; //set to millis value during send, allow to wait millis for answer
 unsigned long goodreads = 0;
 unsigned long totalreads = 0;
@@ -275,7 +276,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     } else if (strncmp(topic_command, mqtt_topic_commands, 8) == 0)  // check for optional pcb commands
     {
       char* topic_sendcommand = topic_command + 9; //strip the first 9 "commands/" from the topic to get what we need
-      send_heatpump_command(topic_sendcommand, msg, send_command, log_message);
+      send_heatpump_command(topic_sendcommand, msg, send_command, log_message, heishamonSettings.optionalPCB);
     }
     mqttcallbackinprogress = false;
   }
@@ -310,7 +311,7 @@ void setupHttp() {
     handleRoot(&httpServer, readpercentage, &heishamonSettings);
   });
   httpServer.on("/command", [] {
-    handleREST(&httpServer);
+    handleREST(&httpServer, heishamonSettings.optionalPCB);
   });
   httpServer.on("/tablerefresh", [] {
     handleTableRefresh(&httpServer, actData);
@@ -403,6 +404,17 @@ void setup() {
   switchSerial();
   // wait waittime for the first start
   nexttime = millis() + (1000 * heishamonSettings.waitTime);
+
+  //load optional PCB data from flash
+  if (heishamonSettings.optionalPCB) {
+    if (loadOptionalPCB(optionalPCBQuery, OPTIONALPCBQUERYSIZE)){
+      log_message((char*)"Succesfully loaded optional PCB data from saved flash!");
+    }
+    else {
+      log_message((char*)"Failed to load optional PCB data from flash!");
+    }
+  }
+  
 }
 
 void send_panasonic_query() {

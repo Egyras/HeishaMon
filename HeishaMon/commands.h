@@ -1,11 +1,11 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
 
-
 #define PANASONICQUERYSIZE 110
 extern byte panasonicQuery[PANASONICQUERYSIZE];
 
 #define OPTIONALPCBQUERYSIZE 19
+#define OPTIONALPCBSAVETIME 300 //save each 5 minutes the current optional pcb state into flash to have valid values during reboot
 extern byte optionalPCBQuery[OPTIONALPCBQUERYSIZE];
 
 extern const char* mqtt_topic_values;
@@ -19,41 +19,44 @@ extern const char* mqtt_willtopic;
 extern const char* mqtt_iptopic;
 extern const char* mqtt_send_raw_value_topic;
 
-unsigned int set_heatpump_state(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_pump(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_pump_speed(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_quiet_mode(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_z1_heat_request_temperature(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_z1_cool_request_temperature(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_z2_heat_request_temperature(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_z2_cool_request_temperature(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_force_DHW(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_force_defrost(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_force_sterilization(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_holiday_mode(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_powerful_mode(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_operation_mode(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_DHW_temp(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_heat_cool_mode(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_compressor_state(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_smart_grid_mode(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_external_thermostat_1_state(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_external_thermostat_2_state(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_demand_control(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_pool_temp(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_buffer_temp(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_z1_room_temp(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_z1_water_temp(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_z2_room_temp(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_z2_water_temp(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_solar_temp(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_curves(char *msg, unsigned char **cmd, char **log_msg);
-unsigned int set_zones(char *msg, unsigned char **cmd, char **log_msg);
+unsigned int set_heatpump_state(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_pump(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_pump_speed(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_quiet_mode(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_z1_heat_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_z1_cool_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_z2_heat_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_z2_cool_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_force_DHW(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_force_defrost(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_force_sterilization(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_holiday_mode(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_powerful_mode(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_operation_mode(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_DHW_temp(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_curves(char *msg, unsigned char *cmd,char *log_msg);
+unsigned int set_zones(char *msg, unsigned char *cmd,char *log_msg);
+
+//optional pcb commands
+unsigned int set_heat_cool_mode(char *msg, char *log_msg);
+unsigned int set_compressor_state(char *msg, char *log_msg);
+unsigned int set_smart_grid_mode(char *msg, char *log_msg);
+unsigned int set_external_thermostat_1_state(char *msg, char *log_msg);
+unsigned int set_external_thermostat_2_state(char *msg, char *log_msg);
+unsigned int set_demand_control(char *msg, char *log_msg);
+unsigned int set_pool_temp(char *msg, char *log_msg);
+unsigned int set_buffer_temp(char *msg, char *log_msg);
+unsigned int set_z1_room_temp(char *msg, char *log_msg);
+unsigned int set_z1_water_temp(char *msg, char *log_msg);
+unsigned int set_z2_room_temp(char *msg, char *log_msg);
+unsigned int set_z2_water_temp(char *msg, char *log_msg);
+unsigned int set_solar_temp(char *msg, char *log_msg);
+
 
 
 struct {
   const char *name;
-  unsigned int (*func)(char *msg, unsigned char **cmd, char **log_msg);
+  unsigned int (*func)(char *msg, unsigned char *cmd, char *log_msg);
 } commands[] = {
   // set heatpump state to on by sending 1
   { "SetHeatpump", set_heatpump_state },
@@ -93,7 +96,7 @@ struct {
 
 struct {
   const char *name;
-  unsigned int (*func)(char *msg, unsigned char **cmd, char **log_msg);
+  unsigned int (*func)(char *msg, char *log_msg);
 } optionalCommands[] = {
   // optional PCB
   { "SetHeatCoolMode", set_heat_cool_mode },
@@ -111,5 +114,6 @@ struct {
   { "SetSolarTemp", set_solar_temp }
 };
 
-void send_heatpump_command(char* topic, char *msg, bool (*send_command)(byte*, int), void (*log_message)(char*));
-void set_optionalpcb(char* topic, char *msg, void (*log_message)(char*));
+void send_heatpump_command(char* topic, char *msg, bool (*send_command)(byte*, int), void (*log_message)(char*), bool optionalPCB);
+bool saveOptionalPCB(byte* command, int length);
+bool loadOptionalPCB(byte* command, int length);

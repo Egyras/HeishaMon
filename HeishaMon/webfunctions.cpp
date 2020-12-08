@@ -19,6 +19,8 @@
 //flag for saving data
 bool shouldSaveConfig = false;
 
+
+
 //callback notifying us of the need to save config
 void saveConfigCallback () {
   Serial.println("Should save config");
@@ -245,11 +247,11 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStru
   httpServer->sendContent_P(webBodyRoot1);
   httpServer->sendContent(heishamon_version);
   httpServer->sendContent_P(webBodyRoot2);
- 
+
   if (heishamonSettings->use_1wire) httpServer->sendContent_P(webBodyRootDallasTab);
   if (heishamonSettings->use_s0) httpServer->sendContent_P(webBodyRootS0Tab);
   httpServer->sendContent_P(webBodyEndDiv);
-   
+
   httpServer->sendContent_P(webBodyRootStatusWifi);
   httpServer->sendContent(String(getWifiQuality()));
   httpServer->sendContent_P(webBodyRootStatusMemory);
@@ -263,7 +265,7 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStru
   httpServer->sendContent_P(webBodyRootHeatpumpValues);
   if (heishamonSettings->use_1wire)httpServer->sendContent_P(webBodyRootDallasValues);
   if (heishamonSettings->use_s0)  httpServer->sendContent_P(webBodyRootS0Values);
- 
+
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(refreshJS);
   httpServer->sendContent_P(selectJS);
@@ -441,12 +443,12 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
       jsonDoc["logSerial1"] = "enabled";
     } else {
       jsonDoc["logSerial1"] = "disabled";
-    }            
+    }
     if (heishamonSettings->optionalPCB) {
       jsonDoc["optionalPCB"] = "enabled";
     } else {
       jsonDoc["optionalPCB"] = "disabled";
-    }    
+    }
     jsonDoc["waitTime"] = heishamonSettings->waitTime;
     jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
     jsonDoc["updateAllTime"] = heishamonSettings->updateAllTime;
@@ -520,12 +522,12 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
       jsonDoc["logSerial1"] = "enabled";
     } else {
       jsonDoc["logSerial1"] = "disabled";
-    }            
+    }
     if (httpServer->hasArg("optionalPCB")) {
       jsonDoc["optionalPCB"] = "enabled";
     } else {
       jsonDoc["optionalPCB"] = "disabled";
-    }    
+    }
     if (httpServer->hasArg("waitTime")) {
       jsonDoc["waitTime"] = httpServer->arg("waitTime");
     }
@@ -620,12 +622,12 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     httptext = httptext + "<input type=\"checkbox\" name=\"logSerial1\" value=\"enabled\">";
   }
   httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
-  httptext = httptext + "Emulate optional PCB (experimental):</td><td style=\"text-align:left\">";  
+  httptext = httptext + "Emulate optional PCB:</td><td style=\"text-align:left\">";
   if (heishamonSettings->optionalPCB) {
     httptext = httptext + "<input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\" checked >";
   } else {
     httptext = httptext + "<input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">";
-  }  
+  }
   httptext = httptext + "</td></tr>";
   httptext = httptext + "</table>";
 
@@ -706,43 +708,44 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
 bool send_command(byte* command, int length);
 void log_message(char* string);
 
-void handleREST(ESP8266WebServer *httpServer) {
+void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
 
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->sendHeader("Access-Control-Allow-Origin", "*");
   httpServer->send(200, "text/plain", "");
 
   String httptext = "";
-  if(httpServer->method() == HTTP_GET) {
-    for(uint8_t i = 0; i < httpServer->args(); i++) {
-      unsigned char cmd[256] = { 0 }, *p = cmd;
-      char log_msg[256] = { 0 }, *l = log_msg;
+  if (httpServer->method() == HTTP_GET) {
+    for (uint8_t i = 0; i < httpServer->args(); i++) {
+      unsigned char cmd[256] = { 0 };
+      char log_msg[256] = { 0 };
       unsigned int len = 0;
 
-      for(int x=0;x<sizeof(commands)/sizeof(commands[0]);x++) {
-        if(strcmp(httpServer->argName(i).c_str(), commands[x].name) == 0) {
-          len = commands[x].func((char *)httpServer->arg(i).c_str(), &p, &l);
+      for (int x = 0; x < sizeof(commands) / sizeof(commands[0]); x++) {
+        if (strcmp(httpServer->argName(i).c_str(), commands[x].name) == 0) {
+          len = commands[x].func((char *)httpServer->arg(i).c_str(), cmd, log_msg);
           httptext = httptext + log_msg + "\n";
           log_message(log_msg);
           send_command(cmd, len);
         }
       }
     }
-    //optional commands
-    for(uint8_t i = 0; i < httpServer->args(); i++) {
-      unsigned char cmd[256] = { 0 }, *p = cmd;
-      char log_msg[256] = { 0 }, *l = log_msg;
-      unsigned int len = 0;
+    if (optionalPCB) {
+      //optional commands
+      for (uint8_t i = 0; i < httpServer->args(); i++) {
+        unsigned char cmd[256] = { 0 };
+        char log_msg[256] = { 0 };
+        unsigned int len = 0;
 
-      for(int x=0;x<sizeof(optionalCommands)/sizeof(optionalCommands[0]);x++) {
-        if(strcmp(httpServer->argName(i).c_str(), optionalCommands[x].name) == 0) {
-          len = optionalCommands[x].func((char *)httpServer->arg(i).c_str(), &p, &l);
-          httptext = httptext + log_msg + "\n";
-          log_message(log_msg);
-          //send_command(cmd, len); not send, only during main run
+        for (int x = 0; x < sizeof(optionalCommands) / sizeof(optionalCommands[0]); x++) {
+          if (strcmp(httpServer->argName(i).c_str(), optionalCommands[x].name) == 0) {
+            len = optionalCommands[x].func((char *)httpServer->arg(i).c_str(), log_msg);
+            httptext = httptext + log_msg + "\n";
+            log_message(log_msg);
+          }
         }
       }
-    }    
+    }
   }
 
   httpServer->sendContent(httptext);
