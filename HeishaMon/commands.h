@@ -36,6 +36,9 @@ unsigned int set_operation_mode(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_DHW_temp(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_curves(char *msg, unsigned char *cmd,char *log_msg);
 unsigned int set_zones(char *msg, unsigned char *cmd,char *log_msg);
+unsigned int set_floor_heat_delta(char *msg, unsigned char *cmd,char *log_msg);
+unsigned int set_floor_cool_delta(char *msg, unsigned char *cmd,char *log_msg);
+
 
 //optional pcb commands
 unsigned int set_heat_cool_mode(char *msg, char *log_msg);
@@ -51,6 +54,8 @@ unsigned int set_z1_water_temp(char *msg, char *log_msg);
 unsigned int set_z2_room_temp(char *msg, char *log_msg);
 unsigned int set_z2_water_temp(char *msg, char *log_msg);
 unsigned int set_solar_temp(char *msg, char *log_msg);
+unsigned int set_byte_9(char *msg, char *log_msg);
+
 
 
 
@@ -92,6 +97,8 @@ struct {
   { "SetCurves", set_curves },
   // set zones to active
   { "SetZones", set_zones },
+  { "SetFloorHeatDelta", set_floor_heat_delta },
+  { "SetFloorCoolDelta", set_floor_cool_delta },
 };
 
 struct {
@@ -111,7 +118,8 @@ struct {
   { "SetZ1WaterTemp", set_z1_water_temp },
   { "SetZ2RoomTemp", set_z2_room_temp },
   { "SetZ2WaterTemp", set_z2_water_temp },
-  { "SetSolarTemp", set_solar_temp }
+  { "SetSolarTemp", set_solar_temp },
+  { "SetOptPCBByte9", set_byte_9 }
 };
 
 void send_heatpump_command(char* topic, char *msg, bool (*send_command)(byte*, int), void (*log_message)(char*), bool optionalPCB);

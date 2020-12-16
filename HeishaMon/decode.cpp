@@ -251,4 +251,9 @@ void decode_optional_heatpump_data(char* data, String actOptData[], PubSubClient
       sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_pcbvalues, Topic_Name.c_str()); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
     }
   }
+  //response to heatpump should contain the data from heatpump on byte 4 and 5
+  byte valueByte4 = data[4];
+  optionalPCBQuery[4] = valueByte4;
+  byte valueByte5 = data[5];
+  optionalPCBQuery[5] = valueByte5;
 }
