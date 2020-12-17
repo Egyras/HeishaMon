@@ -90,13 +90,13 @@ void mqtt_reconnect()
     {
       mqttReconnects++;
       sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_commands);
-      mqtt_client.loop(); mqtt_client.subscribe(topic); mqtt_client.loop();
+      mqtt_client.subscribe(topic);
       sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
-      mqtt_client.loop(); mqtt_client.subscribe(topic); mqtt_client.loop();
+      mqtt_client.subscribe(topic);
       sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
-      mqtt_client.loop(); mqtt_client.publish(topic, "Online"); mqtt_client.loop();
+      mqtt_client.publish(topic, "Online");
       sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_iptopic);
-      mqtt_client.loop(); mqtt_client.publish(topic, WiFi.localIP().toString().c_str(), true); mqtt_client.loop();
+      mqtt_client.publish(topic, WiFi.localIP().toString().c_str(), true);
     }
   }
 }
@@ -108,11 +108,17 @@ void log_message(char* string)
     Serial1.print(": ");
     Serial1.println(string);
   }
-  if (heishamonSettings.logMqtt)
+  if (heishamonSettings.logMqtt && mqtt_client.connected())
   {
     char log_topic[256];
     sprintf(log_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_logtopic);
-    mqtt_client.loop(); mqtt_client.publish(log_topic, string); mqtt_client.loop();
+
+    if (!mqtt_client.publish(log_topic, string)) {
+      Serial1.print(millis());
+      Serial1.print(": ");
+      Serial1.println("MQTT publish log message failed!");
+      mqtt_client.disconnect();
+    }
   }
 }
 
@@ -474,14 +480,14 @@ void loop() {
   if (heishamonSettings.use_s0) s0Loop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.s0Settings);
 
   if ((!sending) && (!heishamonSettings.listenonly) && (heishamonSettings.optionalPCB)) send_optionalpcb_query();
-  
+
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
     String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects;
     log_message((char*)message.c_str());
     if (!mqtt_client.connected())
     {
-      log_message((char *)"Lost MQTT connection, reconnecting...");
+      log_message((char *)"Lost MQTT connection!");
       if (WiFi.status() != WL_CONNECTED) {
         log_message((char *)"Lost WiFi connection, rebooting...");
         delay(1000);
@@ -496,10 +502,10 @@ void loop() {
     }
     nexttime = millis() + (1000 * heishamonSettings.waitTime);
     if (!heishamonSettings.listenonly) send_panasonic_query();
-    
+
     MDNS.announce();
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
     sprintf(mqtt_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
-    mqtt_client.loop(); mqtt_client.publish(mqtt_topic, "Online"); mqtt_client.loop();
+    mqtt_client.publish(mqtt_topic, "Online");
   }
 }

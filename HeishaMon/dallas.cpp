@@ -79,7 +79,7 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
           actDallasData[i].temperature = temp;
           sprintf(log_msg, "Received 1wire sensor temperature (%s): %.2f", actDallasData[i].address, actDallasData[i].temperature); log_message(log_msg);
           sprintf(valueStr, "%.2f", actDallasData[i].temperature);
-          sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.loop(); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES); mqtt_client.loop();
+          sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
         }
       }
     }
