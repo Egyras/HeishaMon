@@ -38,6 +38,7 @@ unsigned int set_curves(char *msg, unsigned char *cmd,char *log_msg);
 unsigned int set_zones(char *msg, unsigned char *cmd,char *log_msg);
 unsigned int set_floor_heat_delta(char *msg, unsigned char *cmd,char *log_msg);
 unsigned int set_floor_cool_delta(char *msg, unsigned char *cmd,char *log_msg);
+unsigned int set_dhw_heat_delta(char *msg, unsigned char *cmd,char *log_msg);
 
 
 //optional pcb commands
@@ -99,6 +100,7 @@ struct {
   { "SetZones", set_zones },
   { "SetFloorHeatDelta", set_floor_heat_delta },
   { "SetFloorCoolDelta", set_floor_cool_delta },
+  { "SetDHWHeatDelta", set_dhw_heat_delta },
 };
 
 struct {

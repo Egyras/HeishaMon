@@ -118,14 +118,14 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
       char valueStr[20];
       sprintf(log_msg, "Measured Watthour on S0 port %d: %.2f", (i + 1),  Watthour ); log_message(log_msg);
       sprintf(valueStr, "%.2f", Watthour);
-      sprintf(mqtt_topic, "%s/%s/Watthour/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+      sprintf(mqtt_topic, "%s/%s/Watthour/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.loop(); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES); mqtt_client.loop();
       float WatthourTotal = (actS0Data[i].pulsesTotal * ( 1000.0 / actS0Settings[i].ppkwh));
       sprintf(log_msg, "Measured total Watthour on S0 port %d: %.2f", (i + 1),  WatthourTotal ); log_message(log_msg);
       sprintf(valueStr, "%.2f", WatthourTotal);
-      sprintf(mqtt_topic, "%s/%s/WatthourTotal/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+      sprintf(mqtt_topic, "%s/%s/WatthourTotal/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.loop(); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES); mqtt_client.loop();
       sprintf(log_msg, "Calculated Watt on S0 port %d: %u", (i + 1), actS0Data[i].watt); log_message(log_msg);
       sprintf(valueStr, "%u",  actS0Data[i].watt);
-      sprintf(mqtt_topic, "%s/%s/Watt/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+      sprintf(mqtt_topic, "%s/%s/Watt/%d", mqtt_topic_base, mqtt_topic_s0, (i + 1)); mqtt_client.loop(); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES); mqtt_client.loop();
     }
   }
 }

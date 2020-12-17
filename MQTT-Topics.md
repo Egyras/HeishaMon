@@ -157,6 +157,7 @@ SET16 | SetCurves | Set zones heat/cool curves | JSON document (see below)
 SET17 | SetZones | Set zones to active | 0 = zone 1 active, 1 = zone2 active, 2 = zone1 and zone2 active
 SET18 | SetFloorHeatDelta | Set floor heating delta in Kelvin | 1-15
 SET19 | SetFloorCoolDelta | Set floor cooling delta in Kelvin | 1-15
+SET20 | SetDHWHeatDelta | Set DHW heating delta in Kelvin | 1-15
 
 
 *If you operate your heatpump with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*

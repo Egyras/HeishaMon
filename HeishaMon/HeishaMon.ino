@@ -34,6 +34,8 @@ settingsStruct heishamonSettings;
 
 bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
+unsigned long nextMqttReconnectAttempt = 0;
+#define MQTTRECONNECTTIMER 30000
 unsigned long nexttime = 0;
 
 unsigned long allowreadtime = 0; //set to millis value during send, allow to wait millis for answer
@@ -78,31 +80,39 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 
 void mqtt_reconnect()
 {
-  log_message((char*)"Reconnecting to mqtt server ...");
-  char topic[256];
-  sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
-  if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
-  {
-    mqttReconnects++;
-    sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_commands);
-    mqtt_client.subscribe(topic);
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
-    mqtt_client.subscribe(topic);    
+  unsigned long now = millis();
+  if (now > nextMqttReconnectAttempt) {
+    nextMqttReconnectAttempt = now + MQTTRECONNECTTIMER;
+    log_message((char*)"Reconnecting to mqtt server ...");
+    char topic[256];
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
-    mqtt_client.publish(topic, "Online");
-    sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_iptopic);
-    mqtt_client.publish(topic, WiFi.localIP().toString().c_str(), true);
+    if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
+    {
+      mqttReconnects++;
+      sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_commands);
+      mqtt_client.loop(); mqtt_client.subscribe(topic); mqtt_client.loop();
+      sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
+      mqtt_client.loop(); mqtt_client.subscribe(topic); mqtt_client.loop();
+      sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
+      mqtt_client.loop(); mqtt_client.publish(topic, "Online"); mqtt_client.loop();
+      sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_iptopic);
+      mqtt_client.loop(); mqtt_client.publish(topic, WiFi.localIP().toString().c_str(), true); mqtt_client.loop();
+    }
   }
 }
 
 void log_message(char* string)
 {
-  if (heishamonSettings.logSerial1) Serial1.println(string);
+  if (heishamonSettings.logSerial1) {
+    Serial1.print(millis());
+    Serial1.print(": ");
+    Serial1.println(string);
+  }
   if (heishamonSettings.logMqtt)
   {
     char log_topic[256];
     sprintf(log_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_logtopic);
-    mqtt_client.publish(log_topic, string);
+    mqtt_client.loop(); mqtt_client.publish(log_topic, string); mqtt_client.loop();
   }
 }
 
@@ -386,6 +396,7 @@ void switchSerial() {
 
 void setupMqtt() {
   mqtt_client.setBufferSize(1024);
+  mqtt_client.setSocketTimeout(2); mqtt_client.setKeepAlive(2); //fast timeout, any slower will block the main loop too long
   mqtt_client.setServer(heishamonSettings.mqtt_server, atoi(heishamonSettings.mqtt_port));
   mqtt_client.setCallback(mqtt_callback);
   mqtt_reconnect();
@@ -407,14 +418,14 @@ void setup() {
 
   //load optional PCB data from flash
   if (heishamonSettings.optionalPCB) {
-    if (loadOptionalPCB(optionalPCBQuery, OPTIONALPCBQUERYSIZE)){
+    if (loadOptionalPCB(optionalPCBQuery, OPTIONALPCBQUERYSIZE)) {
       log_message((char*)"Succesfully loaded optional PCB data from saved flash!");
     }
     else {
       log_message((char*)"Failed to load optional PCB data from flash!");
     }
   }
-  
+
 }
 
 void send_panasonic_query() {
@@ -462,14 +473,15 @@ void loop() {
 
   if (heishamonSettings.use_s0) s0Loop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.s0Settings);
 
-
+  if ((!sending) && (!heishamonSettings.listenonly) && (heishamonSettings.optionalPCB)) send_optionalpcb_query();
+  
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
-
     String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects;
     log_message((char*)message.c_str());
     if (!mqtt_client.connected())
     {
+      log_message((char *)"Lost MQTT connection, reconnecting...");
       if (WiFi.status() != WL_CONNECTED) {
         log_message((char *)"Lost WiFi connection, rebooting...");
         delay(1000);
@@ -484,10 +496,10 @@ void loop() {
     }
     nexttime = millis() + (1000 * heishamonSettings.waitTime);
     if (!heishamonSettings.listenonly) send_panasonic_query();
-    if ((!heishamonSettings.listenonly) && (heishamonSettings.optionalPCB)) send_optionalpcb_query();
+    
     MDNS.announce();
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
     sprintf(mqtt_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
-    mqtt_client.publish(mqtt_topic, "Online");
+    mqtt_client.loop(); mqtt_client.publish(mqtt_topic, "Online"); mqtt_client.loop();
   }
 }
