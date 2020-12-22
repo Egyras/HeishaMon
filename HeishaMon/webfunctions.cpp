@@ -4,6 +4,8 @@
 #include "decode.h"
 #include "version.h"
 #include "htmlcode.h"
+#include <LittleFS.h>
+#include "commands.h"
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -16,6 +18,8 @@
 
 //flag for saving data
 bool shouldSaveConfig = false;
+
+
 
 //callback notifying us of the need to save config
 void saveConfigCallback () {
@@ -79,20 +83,20 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   if (drd.detect()) {
     Serial.println(F("Double reset detected, clearing config."));
-    SPIFFS.begin();
-    SPIFFS.format();
+    LittleFS.begin();
+    LittleFS.format();
     wifiManager.resetSettings();
     Serial.println(F("Config cleared. Please open the Wifi portal to configure this device..."));
   } else {
     //read configuration from FS json
     Serial.println(F("mounting FS..."));
 
-    if (SPIFFS.begin()) {
+    if (LittleFS.begin()) {
       Serial.println(F("mounted file system"));
-      if (SPIFFS.exists("/config.json")) {
+      if (LittleFS.exists("/config.json")) {
         //file exists, reading and loading
         Serial.println(F("reading config file"));
-        File configFile = SPIFFS.open("/config.json", "r");
+        File configFile = LittleFS.open("/config.json", "r");
         if (configFile) {
           Serial.println(F("opened config file"));
           size_t size = configFile.size();
@@ -119,13 +123,14 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
               if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
               if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
               if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
-              if (jsonDoc["s0_1_sum_s0_watthour"] == "enabled") heishamonSettings->s0Settings[0].sum_s0_watthour = true;
               if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
               if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
               if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
-              if (jsonDoc["s0_2_sum_s0_watthour"] == "enabled") heishamonSettings->s0Settings[1].sum_s0_watthour = true;
             }
             if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
+            if ( jsonDoc["logMqtt"] == "enabled" ) heishamonSettings->logMqtt = true;
+            if ( jsonDoc["logHexdump"] == "enabled" ) heishamonSettings->logHexdump = true;
+            if ( jsonDoc["logSerial1"] == "disabled" ) heishamonSettings->logSerial1 = false; //default is true so this one is different
             if ( jsonDoc["optionalPCB"] == "enabled" ) heishamonSettings->optionalPCB = true;
             if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
             if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
@@ -219,7 +224,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
     jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
     jsonDoc["mqtt_password"] = heishamonSettings->mqtt_password;
 
-    File configFile = SPIFFS.open("/config.json", "w");
+    File configFile = LittleFS.open("/config.json", "w");
     if (!configFile) {
       Serial.println(F("failed to open config file for writing"));
     }
@@ -242,11 +247,11 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStru
   httpServer->sendContent_P(webBodyRoot1);
   httpServer->sendContent(heishamon_version);
   httpServer->sendContent_P(webBodyRoot2);
- 
+
   if (heishamonSettings->use_1wire) httpServer->sendContent_P(webBodyRootDallasTab);
   if (heishamonSettings->use_s0) httpServer->sendContent_P(webBodyRootS0Tab);
   httpServer->sendContent_P(webBodyEndDiv);
-   
+
   httpServer->sendContent_P(webBodyRootStatusWifi);
   httpServer->sendContent(String(getWifiQuality()));
   httpServer->sendContent_P(webBodyRootStatusMemory);
@@ -260,7 +265,7 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStru
   httpServer->sendContent_P(webBodyRootHeatpumpValues);
   if (heishamonSettings->use_1wire)httpServer->sendContent_P(webBodyRootDallasValues);
   if (heishamonSettings->use_s0)  httpServer->sendContent_P(webBodyRootS0Values);
- 
+
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(refreshJS);
   httpServer->sendContent_P(selectJS);
@@ -368,8 +373,8 @@ void handleFactoryReset(ESP8266WebServer *httpServer) {
   httpServer->sendContent("");
   httpServer->client().stop();
   delay(1000);
-  SPIFFS.begin();
-  SPIFFS.format();
+  LittleFS.begin();
+  LittleFS.format();
   WiFi.disconnect(true);
   delay(1000);
   ESP.restart();
@@ -424,11 +429,26 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     } else {
       jsonDoc["listenonly"] = "disabled";
     }
+    if (heishamonSettings->logMqtt) {
+      jsonDoc["logMqtt"] = "enabled";
+    } else {
+      jsonDoc["logMqtt"] = "disabled";
+    }
+    if (heishamonSettings->logHexdump) {
+      jsonDoc["logHexdump"] = "enabled";
+    } else {
+      jsonDoc["logHexdump"] = "disabled";
+    }
+    if (heishamonSettings->logSerial1) {
+      jsonDoc["logSerial1"] = "enabled";
+    } else {
+      jsonDoc["logSerial1"] = "disabled";
+    }
     if (heishamonSettings->optionalPCB) {
       jsonDoc["optionalPCB"] = "enabled";
     } else {
       jsonDoc["optionalPCB"] = "disabled";
-    }    
+    }
     jsonDoc["waitTime"] = heishamonSettings->waitTime;
     jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
     jsonDoc["updateAllTime"] = heishamonSettings->updateAllTime;
@@ -477,11 +497,9 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
       if (httpServer->hasArg("s0_1_gpio")) jsonDoc["s0_1_gpio"] = httpServer->arg("s0_1_gpio");
       if (httpServer->hasArg("s0_1_ppkwh")) jsonDoc["s0_1_ppkwh"] = httpServer->arg("s0_1_ppkwh");
       if (httpServer->hasArg("s0_1_interval")) jsonDoc["s0_1_interval"] = httpServer->arg("s0_1_interval");
-      if (httpServer->hasArg("s0_1_sum_s0_watthour")) jsonDoc["s0_1_sum_s0_watthour"] = "enabled";
       if (httpServer->hasArg("s0_2_gpio")) jsonDoc["s0_2_gpio"] = httpServer->arg("s0_2_gpio");
       if (httpServer->hasArg("s0_2_ppkwh")) jsonDoc["s0_2_ppkwh"] = httpServer->arg("s0_2_ppkwh");
       if (httpServer->hasArg("s0_2_interval")) jsonDoc["s0_2_interval"] = httpServer->arg("s0_2_interval");
-      if (httpServer->hasArg("s0_2_sum_s0_watthour")) jsonDoc["s0_2_sum_s0_watthour"] = "enabled";
     } else {
       jsonDoc["use_s0"] = "disabled";
     }
@@ -490,11 +508,26 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     } else {
       jsonDoc["listenonly"] = "disabled";
     }
+    if (httpServer->hasArg("logMqtt")) {
+      jsonDoc["logMqtt"] = "enabled";
+    } else {
+      jsonDoc["logMqtt"] = "disabled";
+    }
+    if (httpServer->hasArg("logHexdump")) {
+      jsonDoc["logHexdump"] = "enabled";
+    } else {
+      jsonDoc["logHexdump"] = "disabled";
+    }
+    if (httpServer->hasArg("logSerial1")) {
+      jsonDoc["logSerial1"] = "enabled";
+    } else {
+      jsonDoc["logSerial1"] = "disabled";
+    }
     if (httpServer->hasArg("optionalPCB")) {
       jsonDoc["optionalPCB"] = "enabled";
     } else {
       jsonDoc["optionalPCB"] = "disabled";
-    }    
+    }
     if (httpServer->hasArg("waitTime")) {
       jsonDoc["waitTime"] = httpServer->arg("waitTime");
     }
@@ -508,8 +541,8 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
       jsonDoc["updataAllDallasTime"] = httpServer->arg("updataAllDallasTime");
     }
 
-    if (SPIFFS.begin()) {
-      File configFile = SPIFFS.open("/config.json", "w");
+    if (LittleFS.begin()) {
+      File configFile = LittleFS.open("/config.json", "w");
       if (configFile) {
         serializeJson(jsonDoc, configFile);
         configFile.close();
@@ -568,12 +601,33 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">";
   }
   httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
-  httptext = httptext + "Emulate optional PCB (experimental):</td><td style=\"text-align:left\">";  
+  httptext = httptext + "Debug log to MQTT topic from start:</td><td style=\"text-align:left\">";
+  if (heishamonSettings->logMqtt) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logMqtt\" value=\"enabled\" checked >";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logMqtt\" value=\"enabled\">";
+  }
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Debug log hexdump enable from start:</td><td style=\"text-align:left\">";
+  if (heishamonSettings->logHexdump) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logHexdump\" value=\"enabled\" checked >";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logHexdump\" value=\"enabled\">";
+  }
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Debug log to serial1 (GPIO2):</td><td style=\"text-align:left\">";
+  if (heishamonSettings->logSerial1) {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logSerial1\" value=\"enabled\" checked >";
+  } else {
+    httptext = httptext + "<input type=\"checkbox\" name=\"logSerial1\" value=\"enabled\">";
+  }
+  httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
+  httptext = httptext + "Emulate optional PCB:</td><td style=\"text-align:left\">";
   if (heishamonSettings->optionalPCB) {
     httptext = httptext + "<input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\" checked >";
   } else {
     httptext = httptext + "<input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">";
-  }  
+  }
   httptext = httptext + "</td></tr>";
   httptext = httptext + "</table>";
 
@@ -632,13 +686,6 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     httptext = httptext + "<input type=\"number\" id=\"s0_interval_" + (i + 1) + "\" onchange=\"changeMinWatt(" + (i + 1) + ")\" name=\"s0_" + (i + 1) + "_interval\" value=\"" + (heishamonSettings->s0Settings[i].lowerPowerInterval) + "\"> seconds";
     httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
     httptext = httptext + "S0 port " + (i + 1) + " standby/low power usage threshold:</td><td style=\"text-align:left\"><label id=\"s0_minwatt_" + (i + 1) + "\">" + (int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval) + "</label> Watt";
-    httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
-    httptext = httptext + "S0 port " + (i + 1) + " incremental Watthour and restore from MQTT at boot:</td><td style=\"text-align:left\">";
-    if (heishamonSettings->s0Settings[i].sum_s0_watthour) {
-      httptext = httptext + "<input type=\"checkbox\"  name=\"s0_" + (i + 1) + "_sum_s0_watthour\" value=\"enabled\" checked >";
-    } else {
-      httptext = httptext + "<input type=\"checkbox\"  name=\"s0_" + (i + 1) + "_sum_s0_watthour\" value=\"enabled\" >";
-    }
     httptext = httptext + "</td></tr>";
   }
   httptext = httptext + "</table>";
@@ -654,6 +701,54 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(settingsJS);
   httpServer->sendContent_P(webFooter);
+  httpServer->sendContent("");
+  httpServer->client().stop();
+}
+
+bool send_command(byte* command, int length);
+void log_message(char* string);
+
+void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
+
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->sendHeader("Access-Control-Allow-Origin", "*");
+  httpServer->send(200, "text/plain", "");
+
+  String httptext = "";
+  if (httpServer->method() == HTTP_GET) {
+    for (uint8_t i = 0; i < httpServer->args(); i++) {
+      unsigned char cmd[256] = { 0 };
+      char log_msg[256] = { 0 };
+      unsigned int len = 0;
+
+      for (int x = 0; x < sizeof(commands) / sizeof(commands[0]); x++) {
+        if (strcmp(httpServer->argName(i).c_str(), commands[x].name) == 0) {
+          len = commands[x].func((char *)httpServer->arg(i).c_str(), cmd, log_msg);
+          httptext = httptext + log_msg + "\n";
+          log_message(log_msg);
+          send_command(cmd, len);
+        }
+      }
+    }
+    if (optionalPCB) {
+      //optional commands
+      for (uint8_t i = 0; i < httpServer->args(); i++) {
+        unsigned char cmd[256] = { 0 };
+        char log_msg[256] = { 0 };
+        unsigned int len = 0;
+
+        for (int x = 0; x < sizeof(optionalCommands) / sizeof(optionalCommands[0]); x++) {
+          if (strcmp(httpServer->argName(i).c_str(), optionalCommands[x].name) == 0) {
+            len = optionalCommands[x].func((char *)httpServer->arg(i).c_str(), log_msg);
+            httptext = httptext + log_msg + "\n";
+            log_message(log_msg);
+          }
+        }
+      }
+    }
+  }
+
+  httpServer->sendContent(httptext);
   httpServer->sendContent("");
   httpServer->client().stop();
 }

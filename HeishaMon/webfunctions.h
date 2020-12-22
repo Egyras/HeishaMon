@@ -3,7 +3,8 @@
 #include <ESP8266WebServer.h>
 #include <DoubleResetDetect.h>
 #include <ArduinoJson.h>
-#include "featureboard.h"
+#include "dallas.h"
+#include "s0.h"
 
 struct settingsStruct {
   unsigned int waitTime = 5; // how often data is read from heatpump
@@ -25,6 +26,9 @@ struct settingsStruct {
   bool optionalPCB = false; //do we emulate an optional PCB?
   bool use_1wire = false; //1wire enabled?
   bool use_s0 = false; //s0 enabled?
+  bool logMqtt = false; //log to mqtt from start
+  bool logHexdump = false; //log hexdump from start
+  bool logSerial1 = true; //log to serial1 (gpio2) from start  
 
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
 };
@@ -34,9 +38,11 @@ String getUptime(void);
 void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings);
 int getWifiQuality(void);
 int getFreeMemory(void);
+
 void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStruct *heishamonSettings);
 void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]);
 void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]);
 void handleFactoryReset(ESP8266WebServer *httpServer);
 void handleReboot(ESP8266WebServer *httpServer);
 void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
+void handleREST(ESP8266WebServer *httpServer, bool optionalPCB);

@@ -90,7 +90,7 @@ esp8266 by esp8266 community version 2.6.3 [Arduino](https://github.com/esp8266/
 [Current list of documented MQTT topics can be found here](MQTT-Topics.md)
 
 ## DS18b20 1-wire support
-The software also supports ds18b20 1-wire temperature sensors reading. A proper 1-wire configuration (with 4.7kohm pull-up resistor) connected to GPIO4 will be read each 30 secs and send at the panasonic_heat_pump/1wire/"sensor-hex-address" topic.
+The software also supports ds18b20 1-wire temperature sensors reading. A proper 1-wire configuration (with 4.7kohm pull-up resistor) connected to GPIO4 will be read each configured secs (minimal 5) and send at the panasonic_heat_pump/1wire/"sensor-hex-address" topic.
 
 
 ## Protocol info packet:
