@@ -14,6 +14,8 @@ Remark 2: Turning on Optional PCB in HP's options will couse ,that Room Thermo 1
 
 Remark 3: Setting in HP Service settings Optional PCB to YES gives expectation ,that Optional PCB emulator ( HeishaMon) will sent continuously Set Command. When communication disappear (for around 1 min) HP generates H74 error and switches off. So ensure continiues communication is very important , be aware during switch off , factory default of HeishaMon , or similar action.
 
+Remark 4: If you enable optional pcb emulation the HeishaMon will not reboot on wifi failures and also will not reboot into a wifi config hotspot if it can not connect to your previously configured wifi during boot. It is important to send often optional pcb commands to the heatpump and therefore it can not react on wifi failures like that. Instead, if you need to reconfigure your HeishaMon in such situation you need the double reset factory reset trick to clear the config on the Heishamon.
+
 ### Set command byte decrypt:
 
 | PCB Topic |Topic value| Byte# | Possible Value | Value decrypt | Value Description |

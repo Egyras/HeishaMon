@@ -83,6 +83,14 @@ void mqtt_reconnect()
   unsigned long now = millis();
   if (now > nextMqttReconnectAttempt) {
     nextMqttReconnectAttempt = now + MQTTRECONNECTTIMER;
+    if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) ) {
+      log_message((char *)"Lost WiFi connection!");
+      if (!heishamonSettings.optionalPCB) { //do not reboot if optional pcb emulation is active because it is more important to keep transmitting data packages to heatpump
+        log_message((char *)"Rebooting...");
+        delay(1000);
+        ESP.restart();
+      }
+    }
     log_message((char*)"Reconnecting to mqtt server ...");
     char topic[256];
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
@@ -488,16 +496,6 @@ void loop() {
     if (!mqtt_client.connected())
     {
       log_message((char *)"Lost MQTT connection!");
-      if (WiFi.status() != WL_CONNECTED) {
-        log_message((char *)"Lost WiFi connection, rebooting...");
-        delay(1000);
-        ESP.restart();
-      }
-      if (! WiFi.localIP()) {
-        log_message((char *)"Lost IP configuration, rebooting...");
-        delay(1000);
-        ESP.restart();
-      }
       mqtt_reconnect();
     }
     nexttime = millis() + (1000 * heishamonSettings.waitTime);

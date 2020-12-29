@@ -189,7 +189,14 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   wifiManager.setConfigPortalTimeout(120);
   wifiManager.setConnectTimeout(10);
-  if (!wifiManager.autoConnect("HeishaMon-Setup")) {
+
+  if (heishamonSettings->optionalPCB) {
+    Serial.println(F("Optional PCB enabled so wifi portal can not be used."));
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(); //reconnect based on saved wifi data
+    delay(5000); //we just wait 5 secs and if there is still no connection just go to the main loop as we need to send optional pcb data
+  }
+  else if (!wifiManager.autoConnect("HeishaMon-Setup")) {
     Serial.println(F("failed to connect and hit timeout"));
     delay(3000);
     //reset and try again, or maybe put it to deep sleep
@@ -197,8 +204,9 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
     delay(5000);
   }
 
+
   //if you get here you have connected to the WiFi
-  Serial.println(F("Wifi connected...yeey :)"));
+  if (WiFi.isConnected()) Serial.println(F("Wifi connected...yeey :)"));
 
   //read updated parameters, make sure no overflow
   strncpy(heishamonSettings->wifi_hostname, custom_wifi_hostname.getValue(), 39); heishamonSettings->wifi_hostname[39] = '\0';
@@ -234,9 +242,11 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
     configFile.close();
     //end save
   }
-  Serial.println(F("=========="));
-  Serial.println(F("local ip"));
-  Serial.println(WiFi.localIP());
+  if (WiFi.isConnected()) {
+    Serial.println(F("=========="));
+    Serial.println(F("local ip"));
+    Serial.println(WiFi.localIP());
+  }
 }
 
 void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStruct *heishamonSettings) {
