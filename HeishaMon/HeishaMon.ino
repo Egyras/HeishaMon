@@ -81,7 +81,7 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 void mqtt_reconnect()
 {
   unsigned long now = millis();
-  if (now > nextMqttReconnectAttempt) {
+  if ((now > nextMqttReconnectAttempt) || ( mqttReconnects == 0 )) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when mqttReconnects is still 0
     nextMqttReconnectAttempt = now + MQTTRECONNECTTIMER;
     if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) ) {
       log_message((char *)"Lost WiFi connection!");
@@ -424,11 +424,8 @@ void setup() {
   setupOTA();
   setupMqtt();
   setupHttp();
-  if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
-  if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings, mqtt_client, heishamonSettings.mqtt_topic_base);
-  switchSerial();
-  // wait waittime for the first start
-  nexttime = millis() + (1000 * heishamonSettings.waitTime);
+
+  switchSerial(); //switch serial to gpio13/gpio15
 
   //load optional PCB data from flash
   if (heishamonSettings.optionalPCB) {
@@ -438,8 +435,16 @@ void setup() {
     else {
       log_message((char*)"Failed to load optional PCB data from flash!");
     }
+    delay(1500); //need 1.5 sec delay before sending first datagram
+    send_optionalpcb_query(); //send one datagram already at boot
   }
+  
+  //these two after optional pcb because it needs to send a datagram fast after boot
+  if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
+  if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings, mqtt_client, heishamonSettings.mqtt_topic_base);
 
+  // wait waittime for the first start in main loop
+  nexttime = millis() + (1000 * heishamonSettings.waitTime);
 }
 
 void send_panasonic_query() {

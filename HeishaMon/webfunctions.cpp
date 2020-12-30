@@ -194,7 +194,8 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
     Serial.println(F("Optional PCB enabled so wifi portal can not be used."));
     WiFi.mode(WIFI_STA);
     WiFi.begin(); //reconnect based on saved wifi data
-    delay(5000); //we just wait 5 secs and if there is still no connection just go to the main loop as we need to send optional pcb data
+    //delay(5000); //we just wait 5 secs and if there is still no connection just go to the main loop as we need to send optional pcb data
+    //we can't wait
   }
   else if (!wifiManager.autoConnect("HeishaMon-Setup")) {
     Serial.println(F("failed to connect and hit timeout"));
