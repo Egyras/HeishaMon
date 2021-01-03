@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include "dallas.h"
 #include "s0.h"
+#include "gpio.h"
 
 struct settingsStruct {
   unsigned int waitTime = 5; // how often data is read from heatpump
@@ -31,6 +32,7 @@ struct settingsStruct {
   bool logSerial1 = true; //log to serial1 (gpio2) from start  
 
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
+  gpioSettingsStruct gpioSettings;
 };
 
 

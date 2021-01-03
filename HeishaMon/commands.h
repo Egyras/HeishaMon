@@ -39,6 +39,7 @@ unsigned int set_zones(char *msg, unsigned char *cmd,char *log_msg);
 unsigned int set_floor_heat_delta(char *msg, unsigned char *cmd,char *log_msg);
 unsigned int set_floor_cool_delta(char *msg, unsigned char *cmd,char *log_msg);
 unsigned int set_dhw_heat_delta(char *msg, unsigned char *cmd,char *log_msg);
+unsigned int set_reset(char *msg, unsigned char *cmd,char *log_msg);
 
 
 //optional pcb commands
@@ -101,6 +102,7 @@ struct {
   { "SetFloorHeatDelta", set_floor_heat_delta },
   { "SetFloorCoolDelta", set_floor_cool_delta },
   { "SetDHWHeatDelta", set_dhw_heat_delta },
+  { "SetReset", set_reset },
 };
 
 struct {

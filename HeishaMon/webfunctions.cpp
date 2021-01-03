@@ -23,8 +23,16 @@ bool shouldSaveConfig = false;
 
 //callback notifying us of the need to save config
 void saveConfigCallback () {
-  Serial.println("Should save config");
+  Serial.println(F("Should save config"));
   shouldSaveConfig = true;
+}
+
+//calback to print something on debug line to indicate config mode starting
+void configModeCallback (WiFiManager *myWiFiManager) {
+  //initiate debug led indication for config mode
+  pinMode(2, FUNCTION_0); //set it as gpio
+  pinMode(2, OUTPUT);
+  digitalWrite(2, LOW);
 }
 
 int getWifiQuality() {
@@ -83,10 +91,21 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   if (drd.detect()) {
     Serial.println(F("Double reset detected, clearing config."));
+    Serial1.begin(115200);
     LittleFS.begin();
     LittleFS.format();
     wifiManager.resetSettings();
-    Serial.println(F("Config cleared. Please open the Wifi portal to configure this device..."));
+    Serial.println(F("Config cleared. Please reset to configure this device..."));
+    //initiate debug led indication for factory reset
+    pinMode(2, FUNCTION_0); //set it as gpio
+    pinMode(2, OUTPUT);
+    while (true) {
+      digitalWrite(2, HIGH);
+      delay(100);
+      digitalWrite(2, LOW);
+      delay(100);
+    }
+
   } else {
     //read configuration from FS json
     Serial.println(F("mounting FS..."));
@@ -173,6 +192,9 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   //set config save notify callback
   wifiManager.setSaveConfigCallback(saveConfigCallback);
+
+  //set config start callback
+  wifiManager.setAPCallback(configModeCallback);
 
 
   //add all your parameters here

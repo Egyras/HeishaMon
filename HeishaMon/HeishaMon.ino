@@ -15,6 +15,7 @@
 #include "decode.h"
 #include "commands.h"
 
+
 // maximum number of seconds between resets that
 // counts as a double reset
 #define DRD_TIMEOUT 0.1
@@ -375,7 +376,7 @@ void setupSerial() {
   Serial.flush();
 }
 
-void setupSeria11() {
+void setupSerial1() {
   if (heishamonSettings.logSerial1) {
     //debug line on serial1 (D4, GPIO2)
     Serial1.begin(115200);
@@ -395,13 +396,11 @@ void switchSerial() {
   Serial.flush();
   //swap to gpio13 (D7) and gpio15 (D8)
   Serial.swap();
-
   //turn on GPIO's on tx/rx for later use
-  //pinMode(1, FUNCTION_3);
-  //pinMode(3, FUNCTION_3);
-  //pinMode(1, INPUT_PULLUP);
-  //pinMode(3, INPUT_PULLUP);
-  //pinMode(16, INPUT_PULLUP);
+  pinMode(1, FUNCTION_3);
+  pinMode(3, FUNCTION_3);
+
+  setupGPIO(heishamonSettings.gpioSettings); //switch extra GPIOs to configured mode
 
   //enable gpio15 after boot using gpio5 (D1)
   pinMode(5, OUTPUT);
@@ -420,7 +419,7 @@ void setup() {
   setupSerial();
   setupWifi(drd, &heishamonSettings);
   MDNS.begin(heishamonSettings.wifi_hostname);
-  setupSeria11();
+  setupSerial1();
   setupOTA();
   setupMqtt();
   setupHttp();
