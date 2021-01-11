@@ -37,6 +37,11 @@ A json output of all received data (heatpump and 1wire) is available at the url 
 
 Within the 'integrations' folder you can find examples how to connect your automation platform to the HeishaMon.
 
+# Debug led indications
+On first boot the debug led will turn on after 10 seconds to let you know that there is no config yet and a HeishaMon-Setup wifi portal should be available.
+A factory reset can be performed on the web interface but if the web interface is unavailable you can perform a double reset. The double reset should be performed not too fast but also not too slow. Usually halve a second between both resets should do the trick. To indicate that the double reset performed a factory reset, the blue led will flash rapidly.
+During normal running of the software, the blue led will flash on textual debug output (if enabled in the settings). This would cause the led to flash a few times about each 5 seconds.
+
 # Further information
 Below you can find some technical details about the project. How to build your own cables. How to build your own PCB etc.
 
