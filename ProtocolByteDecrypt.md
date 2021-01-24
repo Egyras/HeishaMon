@@ -119,7 +119,7 @@
 |  TOP44 | 114 | 53 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 |  TOP | 115 | 15 |   | ? |
 |  TOP | 116 | 5a |   | ? |
-|  TOP69 | 117 | 05 | No sterilization -05 , Sterilization active  -09  | Sterilization status |
+|  TOP69 | 117 | 05 | Sterilization on/off (bit5and6)  , Z2 active (bit7) ,Z1 active (bit8)| Sterilization status Zone active information (look byte #6) |
 |  TOP | 118 | 12 |   | ? |
 |  TOP | 119 | 12 |   | ? |
 |  TOP | 120 | 19 |   | ? |
