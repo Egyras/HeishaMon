@@ -92,7 +92,8 @@ static const char webBodyEndDiv[] PROGMEM = "</div>";
 static const char webBodyRootStatusWifi[] PROGMEM =   "<div class=\"w3-container w3-left\"><br>Wifi signal: ";
 static const char webBodyRootStatusMemory[] PROGMEM =   "%<br>Memory free: ";
 static const char webBodyRootStatusReceived[] PROGMEM =  "%<br>Correct received data: ";
-static const char webBodyRootStatusUptime[] PROGMEM =   "%<br>Uptime: ";
+static const char webBodyRootStatusReconnects[] PROGMEM =  "%<br>MQTT reconnects: ";
+static const char webBodyRootStatusUptime[] PROGMEM =   "<br>Uptime: ";
 
 static const char webBodyRootHeatpumpValues[] PROGMEM =
   "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">"
@@ -107,7 +108,7 @@ static const char webBodyRootDallasValues[] PROGMEM =
 static const char webBodyRootS0Values[] PROGMEM =
   "<div id=\"S0\" class=\"w3-container w3-center heishatable\" style=\"display:none\">"
   "<h2>Current S0 kWh meters values</h2>"
-  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>S0 port</th><th>Watt</th><th>Watthour</th></tr></thead><tbody id=\"s0values\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
+  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>S0 port</th><th>Watt</th><th>Watthour</th><th>WatthourTotal</th></tr></thead><tbody id=\"s0values\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
 
 
 static const char webBodyFactoryResetWarning[] PROGMEM =

@@ -41,7 +41,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings);
 int getWifiQuality(void);
 int getFreeMemory(void);
 
-void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStruct *heishamonSettings);
+void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings);
 void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]);
 void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]);
 void handleFactoryReset(ESP8266WebServer *httpServer);

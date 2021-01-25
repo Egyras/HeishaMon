@@ -98,6 +98,7 @@ void mqtt_reconnect()
     if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
     {
       mqttReconnects++;
+      MDNS.begin(heishamonSettings.wifi_hostname); //assume reconnect on wifi so maybe need mdns restart
       sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_commands);
       mqtt_client.subscribe(topic);
       sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
@@ -333,7 +334,7 @@ void setupOTA() {
 void setupHttp() {
   httpUpdater.setup(&httpServer, heishamonSettings.update_path, heishamonSettings.update_username, heishamonSettings.ota_password);
   httpServer.on("/", [] {
-    handleRoot(&httpServer, readpercentage, &heishamonSettings);
+    handleRoot(&httpServer, readpercentage, mqttReconnects, &heishamonSettings);
   });
   httpServer.on("/command", [] {
     handleREST(&httpServer, heishamonSettings.optionalPCB);
@@ -419,6 +420,7 @@ void setup() {
   setupSerial();
   setupWifi(drd, &heishamonSettings);
   MDNS.begin(heishamonSettings.wifi_hostname);
+  MDNS.addService("http", "tcp", 80);
   setupSerial1();
   setupOTA();
   setupMqtt();
@@ -495,16 +497,22 @@ void loop() {
 
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
-    String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects;
-    log_message((char*)message.c_str());
+    nexttime = millis() + (1000 * heishamonSettings.waitTime);
     if (!mqtt_client.connected())
     {
       log_message((char *)"Lost MQTT connection!");
       mqtt_reconnect();
     }
-    nexttime = millis() + (1000 * heishamonSettings.waitTime);
-    if (!heishamonSettings.listenonly) send_panasonic_query();
 
+    //log stats
+    String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects;
+    log_message((char*)message.c_str());
+    String stats = "{\"uptime\":" + String(millis()) + ",\"free memory\":" + getFreeMemory() + ",\"wifi\":" + getWifiQuality() + ",\"mqtt reconnects\":" + mqttReconnects + ",\"good reads\":" + goodreads + ",\"total reads\":" + totalreads + "}";
+    sprintf(mqtt_topic, "%s/stats", heishamonSettings.mqtt_topic_base); mqtt_client.publish(mqtt_topic, stats.c_str(), MQTT_RETAIN_VALUES);
+
+    //get new data
+    if (!heishamonSettings.listenonly) send_panasonic_query();
+ 
     MDNS.announce();
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
     sprintf(mqtt_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);

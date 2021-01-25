@@ -91,8 +91,8 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
     //then report after nextReport
     if (millisThisLoop > actS0Data[i].nextReport) {
 
-      unsigned long lastePulseInterval = millisThisLoop - actS0Data[i].lastPulse;
-      unsigned long calcMaxWatt = (3600000000.0 / lastePulseInterval) / actS0Settings[i].ppkwh;
+      unsigned long lastPulseInterval = millisThisLoop - actS0Data[i].lastPulse;
+      unsigned long calcMaxWatt = (3600000000.0 / lastPulseInterval) / actS0Settings[i].ppkwh;
 
       if (actS0Data[i].watt < ((3600000.0 / actS0Settings[i].ppkwh) / actS0Settings[i].lowerPowerInterval) ) { //watt is lower than possible in lower power interval time
         actS0Data[i].nextReport = millisThisLoop + 1000 * actS0Settings[i].lowerPowerInterval;
@@ -137,6 +137,7 @@ String s0TableOutput() {
     output = output + "<td>" + (i + 1) + "</td>";
     output = output + "<td>" + actS0Data[i].watt + "</td>";
     output = output + "<td>" + (actS0Data[i].pulses * ( 1000.0 / actS0Settings[i].ppkwh)) + "</td>";
+    output = output + "<td>" + (actS0Data[i].pulsesTotal * ( 1000.0 / actS0Settings[i].ppkwh)) + "</td>";
     output = output + "</tr>";
   }
   return output;
@@ -148,7 +149,8 @@ String s0JsonOutput() {
     output = output + "{";
     output = output + "\"S0 port\": \"" + (i + 1) + "\",";
     output = output + "\"Watt\": \"" + actS0Data[i].watt + "\",";
-    output = output + "\"Watthour\": \"" + (actS0Data[i].pulses * ( 1000.0 / actS0Settings[i].ppkwh)) + "\"";
+    output = output + "\"Watthour\": \"" + (actS0Data[i].pulses * ( 1000.0 / actS0Settings[i].ppkwh)) + "\",";
+    output = output + "\"WatthourTotal\": \"" + (actS0Data[i].pulsesTotal * ( 1000.0 / actS0Settings[i].ppkwh)) + "\"";
     output = output + "}";
     if (i < NUM_S0_COUNTERS - 1) output = output + ",";
   }

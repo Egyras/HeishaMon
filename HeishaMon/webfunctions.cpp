@@ -272,7 +272,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
   }
 }
 
-void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStruct *heishamonSettings) {
+void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -291,6 +291,8 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, settingsStru
   httpServer->sendContent(String(getFreeMemory()));
   httpServer->sendContent_P(webBodyRootStatusReceived);
   httpServer->sendContent(String(readpercentage));
+  httpServer->sendContent_P(webBodyRootStatusReconnects);
+  httpServer->sendContent(String(mqttReconnects)); 
   httpServer->sendContent_P(webBodyRootStatusUptime);
   httpServer->sendContent(getUptime());
   httpServer->sendContent_P(webBodyEndDiv);
