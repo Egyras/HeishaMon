@@ -9,6 +9,8 @@
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266WiFiGratuitous.h>
+
 
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 #include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson
@@ -212,9 +214,13 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
   wifiManager.setConfigPortalTimeout(120);
   wifiManager.setConnectTimeout(10);
 
+  //no sleep wifi
+  WiFi.setSleepMode(WIFI_NONE_SLEEP);
+  
   if (heishamonSettings->optionalPCB) {
     Serial.println(F("Optional PCB enabled so wifi portal can not be used."));
     WiFi.mode(WIFI_STA);
+    experimental::ESP8266WiFiGratuitous::stationKeepAliveSetIntervalMs(5000);
     WiFi.begin(); //reconnect based on saved wifi data
     //delay(5000); //we just wait 5 secs and if there is still no connection just go to the main loop as we need to send optional pcb data
     //we can't wait
@@ -266,6 +272,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
     //end save
   }
   if (WiFi.isConnected()) {
+    experimental::ESP8266WiFiGratuitous::stationKeepAliveSetIntervalMs(5000);
     Serial.println(F("=========="));
     Serial.println(F("local ip"));
     Serial.println(WiFi.localIP());
@@ -292,7 +299,7 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReco
   httpServer->sendContent_P(webBodyRootStatusReceived);
   httpServer->sendContent(String(readpercentage));
   httpServer->sendContent_P(webBodyRootStatusReconnects);
-  httpServer->sendContent(String(mqttReconnects)); 
+  httpServer->sendContent(String(mqttReconnects));
   httpServer->sendContent_P(webBodyRootStatusUptime);
   httpServer->sendContent(getUptime());
   httpServer->sendContent_P(webBodyEndDiv);

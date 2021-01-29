@@ -16,6 +16,9 @@
 #include "commands.h"
 
 
+//to read bus voltage in stats
+ADC_MODE(ADC_VCC);
+
 // maximum number of seconds between resets that
 // counts as a double reset
 #define DRD_TIMEOUT 0.1
@@ -42,6 +45,11 @@ unsigned long nexttime = 0;
 unsigned long allowreadtime = 0; //set to millis value during send, allow to wait millis for answer
 unsigned long goodreads = 0;
 unsigned long totalreads = 0;
+unsigned long badcrcread = 0;
+unsigned long badheaderread = 0;
+unsigned long tooshortread = 0;
+unsigned long toolongread = 0;
+unsigned long timeoutread = 0;
 float readpercentage = 0;
 
 // instead of passing array pointers between functions we just define this in the global scope
@@ -172,6 +180,7 @@ bool readSerial()
     if (data[0] != 113) { //wrong header received!
       log_message((char*)"Received bad header. Ignoring this data!");
       if (heishamonSettings.logHexdump) logHex(data, data_length);
+      badheaderread++;
       data_length = 0;
       return false; //return so this while loop does not loop forever if there happens to be a continous invalid data stream
     }
@@ -183,6 +192,7 @@ bool readSerial()
       log_message((char*)"Received more data than header suggests! Ignoring this as this is bad data.");
       if (heishamonSettings.logHexdump) logHex(data, data_length);
       data_length = 0;
+      toolongread++;
       return false;
     }
 
@@ -193,12 +203,12 @@ bool readSerial()
       if (! isValidReceiveChecksum() ) {
         log_message((char*)"Checksum received false!");
         data_length = 0; //for next attempt
+        badcrcread++;
         return false;
       }
       log_message((char*)"Checksum and header received ok!");
       goodreads++;
-      readpercentage = (((float)goodreads / (float)totalreads) * 100);
-      sprintf(log_msg, "Total reads : %lu and total good reads : %lu (%.2f %%)", totalreads, goodreads, readpercentage ); log_message(log_msg);
+
       if (data_length == 203) { //for now only return true for this datagram because we can not decode the shorter datagram yet
         data_length = 0;
         decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
@@ -466,6 +476,12 @@ void read_panasonic_data() {
     log_message((char*)"Previous read data attempt failed due to timeout!");
     sprintf(log_msg, "Received %d bytes data", data_length); log_message(log_msg);
     if (heishamonSettings.logHexdump) logHex(data, data_length);
+    if (data_length == 0) { 
+      timeoutread++;
+      totalreads++; //at at timeout we didn't receive anything but did expect it so need to increase this for the stats
+    } else {
+      tooshortread++;
+    }
     data_length = 0; //clear any data in array
     sending = false; //receiving the answer from the send command timed out, so we are allowed to send a new command
   }
@@ -498,6 +514,7 @@ void loop() {
   // run the data query only each WAITTIME
   if (millis() > nexttime) {
     nexttime = millis() + (1000 * heishamonSettings.waitTime);
+    //check mqtt
     if (!mqtt_client.connected())
     {
       log_message((char *)"Lost MQTT connection!");
@@ -505,14 +522,15 @@ void loop() {
     }
 
     //log stats
-    String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects;
+    if (totalreads > 0 ) readpercentage = (((float)goodreads / (float)totalreads) * 100);
+    String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects + " ## Correct data: " + readpercentage + "%";
     log_message((char*)message.c_str());
-    String stats = "{\"uptime\":" + String(millis()) + ",\"free memory\":" + getFreeMemory() + ",\"wifi\":" + getWifiQuality() + ",\"mqtt reconnects\":" + mqttReconnects + ",\"good reads\":" + goodreads + ",\"total reads\":" + totalreads + "}";
+    String stats = "{\"uptime\":" + String(millis()) + ",\"voltage\":" + ESP.getVcc()/1024.0 + ",\"free memory\":" + getFreeMemory() + ",\"wifi\":" + getWifiQuality() + ",\"mqtt reconnects\":" + mqttReconnects + ",\"total reads\":" + totalreads + ",\"good reads\":" + goodreads + ",\"bad crc reads\":" + badcrcread + ",\"bad header reads\":" + badheaderread + ",\"too short reads\":" + tooshortread + ",\"too long reads\":" + toolongread + ",\"timeout reads\":" + timeoutread + "}";
     sprintf(mqtt_topic, "%s/stats", heishamonSettings.mqtt_topic_base); mqtt_client.publish(mqtt_topic, stats.c_str(), MQTT_RETAIN_VALUES);
 
     //get new data
     if (!heishamonSettings.listenonly) send_panasonic_query();
- 
+
     MDNS.announce();
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
     sprintf(mqtt_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
