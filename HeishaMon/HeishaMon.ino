@@ -476,7 +476,7 @@ void read_panasonic_data() {
     log_message((char*)"Previous read data attempt failed due to timeout!");
     sprintf(log_msg, "Received %d bytes data", data_length); log_message(log_msg);
     if (heishamonSettings.logHexdump) logHex(data, data_length);
-    if (data_length == 0) { 
+    if (data_length == 0) {
       timeoutread++;
       totalreads++; //at at timeout we didn't receive anything but did expect it so need to increase this for the stats
     } else {
@@ -525,7 +525,7 @@ void loop() {
     if (totalreads > 0 ) readpercentage = (((float)goodreads / (float)totalreads) * 100);
     String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects + " ## Correct data: " + readpercentage + "%";
     log_message((char*)message.c_str());
-    String stats = "{\"uptime\":" + String(millis()) + ",\"voltage\":" + ESP.getVcc()/1024.0 + ",\"free memory\":" + getFreeMemory() + ",\"wifi\":" + getWifiQuality() + ",\"mqtt reconnects\":" + mqttReconnects + ",\"total reads\":" + totalreads + ",\"good reads\":" + goodreads + ",\"bad crc reads\":" + badcrcread + ",\"bad header reads\":" + badheaderread + ",\"too short reads\":" + tooshortread + ",\"too long reads\":" + toolongread + ",\"timeout reads\":" + timeoutread + "}";
+    String stats = "{\"uptime\":" + String(millis()) + ",\"voltage\":" + ESP.getVcc() / 1024.0 + ",\"free memory\":" + getFreeMemory() + ",\"wifi\":" + getWifiQuality() + ",\"mqtt reconnects\":" + mqttReconnects + ",\"total reads\":" + totalreads + ",\"good reads\":" + goodreads + ",\"bad crc reads\":" + badcrcread + ",\"bad header reads\":" + badheaderread + ",\"too short reads\":" + tooshortread + ",\"too long reads\":" + toolongread + ",\"timeout reads\":" + timeoutread + "}";
     sprintf(mqtt_topic, "%s/stats", heishamonSettings.mqtt_topic_base); mqtt_client.publish(mqtt_topic, stats.c_str(), MQTT_RETAIN_VALUES);
 
     //get new data

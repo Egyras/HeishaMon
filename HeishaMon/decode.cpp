@@ -86,43 +86,15 @@ String getOpMode(byte input) {
   }
 }
 
-String getModel(byte input) {
-  switch ((int)input) {
-    case 19:
-      return "0";
-    case 20:
-      return "1";
-    case 119:
-      return "2";
-    case 136:
-      return "3";
-    case 133:
-      return "4";
-    case 134:
-      return "5";
-    case 135:
-      return "6";
-    case 113:
-      return "7";
-    case 67:
-      return "8";
-    case 51:
-      return "9";
-    case 21:
-      return "10";
-    case 65:
-      return "11";
-    case 69:
-      return "12";
-    case 116:
-      return "13";
-    case 130:
-      return "14";
-    case 85:
-      return "15";
-    default:
-      return "-1";
+String getModel(char* data) { // TOP92 //
+  byte model[10] = { data[129], data[130], data[131], data[132], data[133], data[134], data[135], data[136], data[137], data[138]};
+  byte modelResult = -1;
+  for (unsigned int i = 0 ; i < NUMBER_OF_KNOWN_MODELS ; i++) {
+    if (memcmp(model, knownModels[i], 10) == 0) {
+      modelResult = i;
+    }
   }
+  return String(modelResult);
 }
 
 String getEnergy(byte input)
@@ -188,6 +160,9 @@ void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_clien
         break;
       case 44:
         Topic_Value = getErrorInfo(data);
+        break;
+      case 92:
+        Topic_Value = getModel(data);
         break;
       default:
         Input_Byte = data[topicBytes[Topic_Number]];

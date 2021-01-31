@@ -26,6 +26,46 @@ String getEnergy(byte input);
 String getHeatMode(byte input);
 String getModel(byte input);
 
+#define NUMBER_OF_KNOWN_MODELS 17 //update in char array below also
+static const char *Model[] = {"17", //string representation of number of known models
+                              "WH-MDC05H3E5",
+                              "WH-MDC07H3E5",
+                              "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5",
+                              "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8",
+                              "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8",
+                              "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8",
+                              "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8",
+                              "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5",
+                              "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5",
+                              "WH-MDC05J3E5",
+                              "WH-MDC09H3E5",
+                              "WH-MXC09H3E5",
+                              "IDU:WH-ADC0309J3E5, ODU:WH-UD09JE5",
+                              "IDU:WH-ADC0916H9E8, ODU:WH-UX12HE8",
+                              "IDU:WH-SQC09H3E8, ODU:WH-UQ09HE8",
+                              "IDU:WH-SDC09H3E5, ODU:WH-UD09HE5",
+                              "IDU:WH-ADC0309H3E5, ODU:WH-UD09HE5",
+                             };
+static const byte knownModels[NUMBER_OF_KNOWN_MODELS][10] = { //stores the bytes #129 to #138 of known models in the same order as the const above
+  0xE2, 0xCF, 0x0B, 0x13, 0x33, 0x32, 0xD1, 0x0C, 0x16, 0x33,
+  0xE2, 0xCF, 0x0B, 0x14, 0x33, 0x42, 0xD1, 0x0B, 0x17, 0x33,
+  0xE2, 0xCF, 0x0D, 0x77, 0x09, 0x12, 0xD0, 0x0B, 0x05, 0x11,
+  0xE2, 0xCF, 0x0C, 0x88, 0x05, 0x12, 0xD0, 0x0B, 0x97, 0x05,
+  0xE2, 0xCF, 0x0D, 0x85, 0x05, 0x12, 0xD0, 0x0C, 0x94, 0x05,
+  0xE2, 0xCF, 0x0D, 0x86, 0x05, 0x12, 0xD0, 0x0C, 0x95, 0x05,
+  0xE2, 0xCF, 0x0D, 0x87, 0x05, 0x12, 0xD0, 0x0C, 0x96, 0x05,
+  0xE2, 0xCE, 0x0D, 0x71, 0x81, 0x72, 0xCE, 0x0C, 0x92, 0x81,
+  0x62, 0xD2, 0x0B, 0x43, 0x54, 0x42, 0xD2, 0x0B, 0x72, 0x66,
+  0xC2, 0xD3, 0x0B, 0x33, 0x65, 0xB2, 0xD3, 0x0B, 0x94, 0x65,
+  0xE2, 0xCF, 0x0B, 0x15, 0x33, 0x42, 0xD1, 0x0B, 0x18, 0x33,
+  0xE2, 0xCF, 0x0B, 0x41, 0x34, 0x82, 0xD1, 0x0B, 0x31, 0x35,
+  0x62, 0xD2, 0x0B, 0x45, 0x54, 0x42, 0xD2, 0x0B, 0x47, 0x55,
+  0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0D, 0x95, 0x05,
+  0xE2, 0xCF, 0x0B, 0x82, 0x05, 0x12, 0xD0, 0x0C, 0x91, 0x05,
+  0xE2, 0xCF, 0x0C, 0x55, 0x14, 0x12, 0xD0, 0x0B, 0x15, 0x08,
+  0xE2, 0xCF, 0x0C, 0x43, 0x00, 0x12, 0xD0, 0x0B, 0x15, 0x08,
+};
+
 #define NUMBER_OF_TOPICS 95 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
 
@@ -220,7 +260,7 @@ static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned
   92,     //TOP89
   0,      //TOP90
   0,      //TOP91
-  132,    //TOP92
+  0,      //TOP92
   172,    //TOP93
   6,      //TOP94
 };
@@ -320,7 +360,7 @@ static const topicFP topicFunctions[] = {
   getIntMinus128,      //TOP89
   unknown,             //TOP90
   unknown,             //TOP91
-  getModel,			       //TOP92
+  unknown,			       //TOP92
   getIntMinus1,        //TOP93
   getBit1and2,         //TOP94
 };
@@ -330,7 +370,7 @@ static const char *BlockedFree[] = {"2", "Blocked", "Free"};
 static const char *OffOn[] = {"2", "Off", "On"};
 static const char *InactiveActive[] = {"2", "Inactive", "Active"};
 static const char *HolidayState[] = {"3", "Off", "Scheduled", "Active"};
-static const char *OpModeDesc[] = {"9", "Heat", "Cool", "Auto(heat)", "DHW", "Heat+DHW", "Cool+DHW", "Auto(heat)+DHW","Auto(cool)","Auto(cool)+DHW"};
+static const char *OpModeDesc[] = {"9", "Heat", "Cool", "Auto(heat)", "DHW", "Heat+DHW", "Cool+DHW", "Auto(heat)+DHW", "Auto(cool)", "Auto(cool)+DHW"};
 static const char *Powerfulmode[] = {"4", "Off", "30min", "60min", "90min"};
 static const char *Quietmode[] = {"4", "Off", "Level 1", "Level 2", "Level 3"};
 static const char *Valve[] = {"2", "Room", "DHW"};
@@ -347,9 +387,9 @@ static const char *ErrorState[] = {"value", "Error"};
 static const char *Ampere[] = {"value", "Ampere"};
 static const char *Minutes[] = {"value", "Minutes"};
 static const char *Duty[] = {"value", "Duty"};
-static const char *ZonesState[] = {"3", "Zone1 active","Zone2 active","Zone1 and zone2 active"};
+static const char *ZonesState[] = {"3", "Zone1 active", "Zone2 active", "Zone1 and zone2 active"};
 static const char *HeatCoolModeDesc[] = {"2", "Comp. Curve", "Direct"};
-static const char *Model[] = {"16", "WH-MDC05H3E5", "WH-MDC07H3E5", "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8", "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8", "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8", "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8", "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5", "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5", "WH-MDC05J3E5", "WH-MDC09H3E5", "WH-MXC09H3E5", "IDU:WH-ADC0309J3E5, ODU:WH-UD09JE5", "IDU:WH-ADC0916H9E8, ODU:WH-UX12HE8", "IDU:WH-SQC09H3E8, ODU:WH-UQ09HE8","IDU:WH-SDC09H3E5, ODU:WH-UD09HE5"};
+
 static const char **topicDescription[] = {
   OffOn,           //TOP0
   LitersPerMin,    //TOP1
