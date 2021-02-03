@@ -21,7 +21,7 @@ extern const char* mqtt_send_raw_value_topic;
 
 unsigned int set_heatpump_state(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_pump(char *msg, unsigned char *cmd, char *log_msg);
-unsigned int set_pump_speed(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_max_pump_duty(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_quiet_mode(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_z1_heat_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_z1_cool_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
@@ -69,8 +69,8 @@ struct {
   { "SetHeatpump", set_heatpump_state },
   // set pump state to on by sending 1
   { "SetPump", set_pump },
-  // set pump speed
-  { "SetPumpSpeed", set_pump_speed },
+  // set max pump duty
+  { "SetMaxPumpDuty", set_max_pump_duty },
   // set 0 for Off mode, set 1 for Quiet mode 1, set 2 for Quiet mode 2, set 3 for Quiet mode 3
   { "SetQuietMode", set_quiet_mode },
   // z1 heat request temp -  set from -5 to 5 to get same temperature shift point or set direct temp

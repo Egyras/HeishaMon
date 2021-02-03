@@ -111,6 +111,8 @@ TOP91 | main/DHW_Heater_Operations_Hours | Electric heater operating time for DH
 TOP92 | main/Heat_Pump_Model | Heat pump model, all values in HeatPumpType.md
 TOP93 | main/Pump_Duty | Pump duty
 TOP94 | main/Zones_State | Zones state (0 = zone1 active, 1 = zone2 active, 2 = zone1 and zone2 active)
+TOP95 | main/Max_Pump_Duty | Max pump duty configured
+
 
 All Topics realated with state can have also value -1 - unknown - but only in ubnormal situations.
 
@@ -152,7 +154,7 @@ SET11 | SetDHWTemp | Set DHW target temperature | 40 - 75
 SET12 | SetForceDefrost | Forces defrost routine | 0, 1
 SET13 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
 SET14 | SetPump | Set Water Pump to service mode, max speed | 0, 1
-SET15 | SetPumpSpeed | Set max Water Pump speed in service menu | decimal value translate to hexadecimal in service menu <br/>64 to 254
+SET15 | SetMaxPumpDuty | Set max Water Pump duty in service menu | decimal value translate to hexadecimal in service menu <br/>64 to 254
 SET16 | SetCurves | Set zones heat/cool curves | JSON document (see below)
 SET17 | SetZones | Set zones to active | 0 = zone 1 active, 1 = zone2 active, 2 = zone1 and zone2 active
 SET18 | SetFloorHeatDelta | Set floor heating delta in Kelvin | 1-15

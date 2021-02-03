@@ -47,7 +47,7 @@
 |  TOP9 | 42 | b2 | Convert to DEC 178-128 = 50  | DHW Target Temperature [°C] |
 |  TOP45 | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode [°K]  |
 |  TOP25 | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for DHW mode [°K] |
-|  TOP | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
+|  TOP95 | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
 |  TOP | 46 | 99 | Convert to DEC 153-128 = 25  | Dry concrete target temperature for actual stage [°C] |
 |  TOP | 47 | 00 |   | 0 byte |
 |  TOP | 48 | 00 |   | 0 byte |
