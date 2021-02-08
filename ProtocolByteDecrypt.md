@@ -106,9 +106,9 @@
 |  TOP71 | 101 | 0b |  Convert to DEC 11 - 1 = 10 | Sterilization max operation time [min] |
 |  TOP | 102 | 00 |   | 0 byte |
 |  TOP | 103 | 00 |   | 0 byte |
-|  TOP | 104 | 00 |   | 0 byte |
-|  TOP | 105 | 00 |   | 0 byte |
-|  TOP | 106 | 00 |   | 0 byte |
+|  TOP | 104 | 00 | Convert to DEC X-1  | ? Delay timer to start internal heater on J series |
+|  TOP | 105 | 00 | Convert to DEC-128 | ? Delta to start internal heater for room heating on J series |  
+|  TOP | 106 | 00 | Convert to DEC-128 | ? Delta to stop internal heater for room heating on J series |
 |  TOP | 107 | 00 |   | 0 byte |
 |  TOP | 108 | 00 |   | 0 byte |
 |  TOP | 109 | 00 |   | 0 byte |
