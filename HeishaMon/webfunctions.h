@@ -19,8 +19,8 @@ struct settingsStruct {
   char ota_password[40] = "heisha";
   char mqtt_server[40];
   char mqtt_port[6] = "1883";
-  char mqtt_username[40];
-  char mqtt_password[40];
+  char mqtt_username[64];
+  char mqtt_password[64];
   char mqtt_topic_base[40] = "panasonic_heat_pump";
 
   bool listenonly = false; //listen only so heishamon can be installed parallel to cz-taw1, set commands will not work though

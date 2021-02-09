@@ -66,7 +66,7 @@ static const byte knownModels[NUMBER_OF_KNOWN_MODELS][10] = { //stores the bytes
   0xE2, 0xCF, 0x0C, 0x43, 0x00, 0x12, 0xD0, 0x0B, 0x15, 0x08,
 };
 
-#define NUMBER_OF_TOPICS 96 //last topic number + 1
+#define NUMBER_OF_TOPICS 99 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
 
 static const char * topics[] = {
@@ -166,6 +166,9 @@ static const char * topics[] = {
   "Pump_Duty", //TOP93
   "Zones_State", //TOP94
   "Max_Pump_Duty", //TOP95
+  "Heater_Delay_Time", //TOP96
+  "Heater_Start_Delta", //TOP97
+  "Heater_Stop_Delta", //TOP98
 };
 
 static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
@@ -265,6 +268,9 @@ static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned
   172,    //TOP93
   6,      //TOP94
   45,     //TOP95
+  104,     //TOP96
+  105,     //TOP97
+  106,     //TOP98
 };
 
 typedef String (*topicFP)(byte);
@@ -366,6 +372,9 @@ static const topicFP topicFunctions[] = {
   getIntMinus1,        //TOP93
   getBit1and2,         //TOP94
   getIntMinus1,        //TOP95
+  getIntMinus1,        //TOP96  
+  getIntMinus128,      //TOP97
+  getIntMinus128,      //TOP98    
 };
 
 static const char *DisabledEnabled[] = {"2", "Disabled", "Enabled"};
@@ -490,4 +499,7 @@ static const char **topicDescription[] = {
   Duty,            //TOP93
   ZonesState,      //TOP94
   Duty,            //TOP95
+  Minutes,         //TOP96
+  Kelvin,          //TOP97
+  Kelvin,          //TOP98      
 };

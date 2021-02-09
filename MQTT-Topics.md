@@ -160,6 +160,10 @@ SET17 | SetZones | Set zones to active | 0 = zone 1 active, 1 = zone2 active, 2 
 SET18 | SetFloorHeatDelta | Set floor heating delta in Kelvin | 1-15
 SET19 | SetFloorCoolDelta | Set floor cooling delta in Kelvin | 1-15
 SET20 | SetDHWHeatDelta | Set DHW heating delta in Kelvin | 1-15
+SET21 | SetHeaterDelayTime | Set heater start delay time (only J-series) | in minutes
+SET22 | SetHeaterStartDelta | Set heater start delta T (only J-series) | in kelvin
+SET23 | SetHeaterStopDelta | Set heater stop delta T (only J-series) | in kelvin
+SET24 | SetMainSchedule | Set weekly schedule | 0=off, 1=on
 
 
 *If you operate your heatpump with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*
