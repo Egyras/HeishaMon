@@ -22,8 +22,8 @@
 |  TOP | 17 | 00 |   | 0 byte |
 |  TOP | 18 | 00 |   | 0 byte |
 |  TOP | 19 | 00 |   | 0 byte |
-|  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Optional PCB, Anti freezing, Colling Medium,External outdoor temp sensor |
-|  TOP | 21 | 15 |  (hex) 15 - One Zone and Z1 as room , 19 - One Zone and Z1 as pool, 16 - Two Zones and Z2 as room, 26 - Two Zones ,Z2 as pool| No. of Zones and Zone Destination |
+|  TOP | 20 | 19 | 1st Bit = b0 Water , b1 Glycol<br/>3rd & 4th bit = b01 Alternative Sensor Off ,b10 Alternative Sensor On<br/>5rd & 6th bit = b01 Antifreezing Off ,b10 Antifreezing on<br/>7rd & 8th bit = b01 Optional PCB Off ,b10 Optional PCB on<br/>| Circulation liquid<br/> ,Alternative outdoor temp sensor<br/> Anti freezing<br/> Optional PCB |
+|  TOP | 21 | 15 |  (hex) 15 - One  Zone and Z1 as room , 19 - One Zone and Z1 as pool, 16 - Two Zones and Z2 as room, 26 - Two Zones ,Z2 as pool| No. of Zones and Zone Destination |
 |  TOP | 22 | 11 |First digit -Z2 ,Second digit Z1 (hex) 1 - water temperature,2 - External Thermostat, 3 - Internal Thermostat, , 4 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
 |  TOP | 24 | 16 | (hex) DHW connected (no solar) =16, DHW not connected=15, no buffer(DHW connected)=16, DHW+Buffer=1A, DHW as buffer for Solar=26, Buffer tank as Buffer for solar=36, 5A - Standard , 6A - Variable  | DHW Connection and Buffer + Solar status , DHW Variable/Standard -All-In-One only |
@@ -195,12 +195,12 @@
 |  TOP | 190 | 00 |   | 0 byte |
 |  TOP | 191 | 06 | Convert to DEC X-1  | ? Possible heat pump power in Kw |
 |  TOP | 192 | 01 | (hex) simple model=1, T-CAP=2  | ? Possible Heat pump indicator for T-CAP  |
-|  TOP16 | 193 | 01 | Convert to DEC (x-1) / 5   | Energy Consumption for Heat in [kw]  |
-|  TOP15 | 194 | 01 | Convert to DEC (x-1) / 5   | Energy Generation for Heat in [kw] |
-|  TOP38 | 195 | 01 | Convert to DEC (x-1) / 5   | Energy Consumption for Cool in [kw] |
-|  TOP39 | 196 | 01 | Convert to DEC (x-1) / 5   | Energy Generation for Cool in [kw] |
-|  TOP40 | 197 | 0a | Convert to DEC (x-1) / 5   | Energy Consumption for DHW in [kw] |
-|  TOP41 | 198 | 14 | Convert to DEC (x-1) / 5   | Energy Generation for DHW in [kw] |
+|  TOP16 | 193 | 01 | Convert to DEC (x-1) / 5   | Power Consumption for Heat in [kw]  |
+|  TOP15 | 194 | 01 | Convert to DEC (x-1) / 5   | Power Generation for Heat in [kw] |
+|  TOP38 | 195 | 01 | Convert to DEC (x-1) / 5   | Power Consumption for Cool in [kw] |
+|  TOP39 | 196 | 01 | Convert to DEC (x-1) / 5   | Power Generation for Cool in [kw] |
+|  TOP40 | 197 | 0a | Convert to DEC (x-1) / 5   | Power Consumption for DHW in [kw] |
+|  TOP41 | 198 | 14 | Convert to DEC (x-1) / 5   | Power Generation for DHW in [kw] |
 |  TOP | 199 | 00 |   | byte 0 |
 |  TOP | 200 | 00 |   | byte 0 |
 |  TOP | 201 | 00 |   | byte 0 |
