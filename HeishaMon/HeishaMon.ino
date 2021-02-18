@@ -420,7 +420,7 @@ void switchSerial() {
 
 void setupMqtt() {
   mqtt_client.setBufferSize(1024);
-  mqtt_client.setSocketTimeout(2); mqtt_client.setKeepAlive(2); //fast timeout, any slower will block the main loop too long
+  mqtt_client.setSocketTimeout(5); mqtt_client.setKeepAlive(2); //fast timeout, any slower will block the main loop too long
   mqtt_client.setServer(heishamonSettings.mqtt_server, atoi(heishamonSettings.mqtt_port));
   mqtt_client.setCallback(mqtt_callback);
   mqtt_reconnect();
