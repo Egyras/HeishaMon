@@ -26,8 +26,8 @@ String getEnergy(byte input);
 String getHeatMode(byte input);
 String getModel(byte input);
 
-#define NUMBER_OF_KNOWN_MODELS 19 //update in char array below also
-static const char *Model[] = {"19", //string representation of number of known models
+#define NUMBER_OF_KNOWN_MODELS 20 //update in char array below also
+static const char *Model[] = {"20", //string representation of number of known models
                               "WH-MDC05H3E5",
                               "WH-MDC07H3E5",
                               "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5",
@@ -47,6 +47,7 @@ static const char *Model[] = {"19", //string representation of number of known m
                               "IDU:WH-ADC0309H3E5, ODU:WH-UD09HE5",
                               "IDU:WH-ADC0309J3E5, ODU: WH-UD05JE5",
                               "IDU: WH-SDC0709J3E5, ODU: WH-UD07JE5",
+                              "IDU: WH-SDC07H3E5-1 ODU: WH-UD07HE5-1",
                              };
 static const byte knownModels[NUMBER_OF_KNOWN_MODELS][10] = { //stores the bytes #129 to #138 of known models in the same order as the const above
   0xE2, 0xCF, 0x0B, 0x13, 0x33, 0x32, 0xD1, 0x0C, 0x16, 0x33,
@@ -68,6 +69,7 @@ static const byte knownModels[NUMBER_OF_KNOWN_MODELS][10] = { //stores the bytes
   0xE2, 0xCF, 0x0C, 0x43, 0x00, 0x12, 0xD0, 0x0B, 0x15, 0x08,
   0x62, 0xD2, 0x0B, 0x45, 0x54, 0x32, 0xD2, 0x0C, 0x45, 0x55,
   0x62, 0xD2, 0x0B, 0x43, 0x54, 0x42, 0xD2, 0x0C, 0x46, 0x55,
+  0xE2, 0xCF, 0x0C, 0x54, 0x14, 0x12, 0xD0, 0x0B, 0x14, 0x08,
 };
 
 #define NUMBER_OF_TOPICS 99 //last topic number + 1
