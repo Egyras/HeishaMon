@@ -112,6 +112,17 @@ TOP92 | main/Heat_Pump_Model | Heat pump model, all values in HeatPumpType.md
 TOP93 | main/Pump_Duty | Pump duty
 TOP94 | main/Zones_State | Zones state (0 = zone1 active, 1 = zone2 active, 2 = zone1 and zone2 active)
 TOP95 | main/Max_Pump_Duty | Max pump duty configured
+TOP96 | main/Heater_Delay_Time | Heater delay time (J-series only)
+TOP97 | main/Heater_Start_Delta | Heater start delta (J-series only)
+TOP98 | main/Heater_Stop_Delta | Heater stop delta (J-series only)
+TOP99 | main/Buffer_Installed | Buffer tank installed
+TOP100 | main/DHW_Installed | DHW tank installed
+TOP101 | main/Solar_Mode | Solar mode (disabled, to buffer, to DHW)
+TOP102 | main/Solar_On_Delta | Solar heating delta on
+TOP103 | main/Solar_Off_Delta | solar heating delta off
+TOP104 | main/Solar_Frost_Protection | Solar frost protection temp
+TOP105 | main/Solar_High_Limit | Solar max temp limit
+
 
 
 All Topics realated with state can have also value -1 - unknown - but only in ubnormal situations.

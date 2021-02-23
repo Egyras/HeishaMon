@@ -72,7 +72,7 @@ static const byte knownModels[NUMBER_OF_KNOWN_MODELS][10] = { //stores the bytes
   0xE2, 0xCF, 0x0C, 0x54, 0x14, 0x12, 0xD0, 0x0B, 0x14, 0x08,
 };
 
-#define NUMBER_OF_TOPICS 99 //last topic number + 1
+#define NUMBER_OF_TOPICS 106 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
 
 static const char * topics[] = {
@@ -175,6 +175,13 @@ static const char * topics[] = {
   "Heater_Delay_Time", //TOP96
   "Heater_Start_Delta", //TOP97
   "Heater_Stop_Delta", //TOP98
+  "Buffer_Installed", //TOP99
+  "DHW_Installed", //TOP100
+  "Solar_Mode", //TOP101
+  "Solar_On_Delta", //TOP102
+  "Solar_Off_Delta", //TOP103
+  "Solar_Frost_Protection", //TOP104
+  "Solar_High_Limit", //TOP105
 };
 
 static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
@@ -274,9 +281,16 @@ static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned
   172,    //TOP93
   6,      //TOP94
   45,     //TOP95
-  104,     //TOP96
-  105,     //TOP97
-  106,     //TOP98
+  104,    //TOP96
+  105,    //TOP97
+  106,    //TOP98
+  24,     //TOP99
+  24,     //TOP100
+  24,     //TOP101
+  61,     //TOP102
+  62,     //TOP103
+  63,     //TOP104
+  64,     //TOP105
 };
 
 typedef String (*topicFP)(byte);
@@ -380,7 +394,14 @@ static const topicFP topicFunctions[] = {
   getIntMinus1,        //TOP95
   getIntMinus1,        //TOP96  
   getIntMinus128,      //TOP97
-  getIntMinus128,      //TOP98    
+  getIntMinus128,      //TOP98 
+  getBit5and6,         //TOP99
+  getBit7and8,         //TOP100
+  getBit3and4,         //TOP101
+  getIntMinus128,      //TOP102
+  getIntMinus128,      //TOP103
+  getIntMinus128,      //TOP104
+  getIntMinus128,      //TOP105     
 };
 
 static const char *DisabledEnabled[] = {"2", "Disabled", "Enabled"};
@@ -407,6 +428,7 @@ static const char *Minutes[] = {"value", "Minutes"};
 static const char *Duty[] = {"value", "Duty"};
 static const char *ZonesState[] = {"3", "Zone1 active", "Zone2 active", "Zone1 and zone2 active"};
 static const char *HeatCoolModeDesc[] = {"2", "Comp. Curve", "Direct"};
+static const char *SolarModeDesc[] = {"3", "Disabled", "Buffer", "DHW"};
 
 static const char **topicDescription[] = {
   OffOn,           //TOP0
@@ -508,4 +530,11 @@ static const char **topicDescription[] = {
   Minutes,         //TOP96
   Kelvin,          //TOP97
   Kelvin,          //TOP98      
+  DisabledEnabled, //TOP99
+  DisabledEnabled, //TOP100
+  SolarModeDesc,   //TOP101
+  Kelvin,          //TOP102
+  Kelvin,          //TOP103
+  Celsius,         //TOP104
+  Celsius,         //TOP105   
 };
