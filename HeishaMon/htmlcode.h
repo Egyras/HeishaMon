@@ -75,6 +75,7 @@ static const char webBodyRoot1[] PROGMEM =
   "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
   "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
   "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
+  "<a href=\"/smartfeatures\" class=\"w3-bar-item w3-button\">Smart Features</a>"
   "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
   "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
   "<hr><div class=\"w3-text-grey\">Version: ";
@@ -137,6 +138,7 @@ static const char webBodySettings1[] PROGMEM =
   "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
   "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
   "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
+  "<a href=\"/smartfeatures\" class=\"w3-bar-item w3-button\">Smart Features</a>"
   "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
   "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
   "</div>";
