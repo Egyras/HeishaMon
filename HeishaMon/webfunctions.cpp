@@ -705,6 +705,29 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httpServer->client().stop();
 }
 
+void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->send(200, "text/html", "");
+  httpServer->sendContent_P(webHeader);
+  httpServer->sendContent_P(webBodyStart);
+  httpServer->sendContent_P(webBodySmartcontrol1);
+  httpServer->sendContent_P(webBodySmartcontrol2);
+  httpServer->sendContent_P(webBodySmartcontrolHeatingcurve);
+  
+  //body
+  String httptext = "Loading...";
+  httptext = httptext + "";
+  httpServer->sendContent(httptext);
+  
+  httpServer->sendContent_P(webBodyEndDiv);
+
+  httpServer->sendContent_P(menuJS);
+  httpServer->sendContent_P(settingsJS);
+  httpServer->sendContent_P(webFooter);
+  httpServer->sendContent("");
+  httpServer->client().stop();
+}  
+  
 bool send_command(byte* command, int length);
 void log_message(char* string);
 

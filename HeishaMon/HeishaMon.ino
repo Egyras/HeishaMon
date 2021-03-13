@@ -344,6 +344,9 @@ void setupHttp() {
   httpServer.on("/settings", [] {
     handleSettings(&httpServer, &heishamonSettings);
   });
+  httpServer.on("/smartcontrol", [] {
+    handleSmartcontrol(&httpServer, &heishamonSettings);
+  });
   httpServer.on("/togglelog", [] {
     log_message((char*)"Toggled mqtt log flag");
     heishamonSettings.logMqtt ^= true;
