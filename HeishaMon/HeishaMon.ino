@@ -90,7 +90,7 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 void mqtt_reconnect()
 {
   unsigned long now = millis();
-  if ((now > nextMqttReconnectAttempt) || ( mqttReconnects == 0 )) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when mqttReconnects is still 0
+  if (now > nextMqttReconnectAttempt) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when nextMqttReconnectAttempt is still 0
     nextMqttReconnectAttempt = now + MQTTRECONNECTTIMER;
     if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) ) {
       log_message((char *)"Lost WiFi connection!");
@@ -150,7 +150,6 @@ void logHex(char *hex, byte hex_len) {
     }
     sprintf(log_msg, "data: %s", buffer ); log_message(log_msg);
   }
-
 }
 
 byte calcChecksum(byte* command, int length) {
@@ -361,6 +360,9 @@ void setupHttp() {
   httpServer.on("/reboot", [] {
     handleReboot(&httpServer);
   });
+  httpServer.on("/debug", [] {
+    handleDebug(&httpServer, data, 203);
+  }); 
   httpServer.on("/settings", [] {
     handleSettings(&httpServer, &heishamonSettings);
   });

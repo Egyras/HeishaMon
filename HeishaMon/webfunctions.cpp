@@ -218,7 +218,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   //no sleep wifi
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
-  
+
   if (heishamonSettings->optionalPCB) {
     Serial.println(F("Optional PCB enabled so wifi portal can not be used."));
     WiFi.mode(WIFI_STA);
@@ -765,7 +765,7 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
       char log_msg[256] = { 0 };
       unsigned int len = 0;
 
-      for (int x = 0; x < sizeof(commands) / sizeof(commands[0]); x++) {
+      for (uint8_t x = 0; x < sizeof(commands) / sizeof(commands[0]); x++) {
         if (strcmp(httpServer->argName(i).c_str(), commands[x].name) == 0) {
           len = commands[x].func((char *)httpServer->arg(i).c_str(), cmd, log_msg);
           httptext = httptext + log_msg + "\n";
@@ -781,7 +781,7 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
         char log_msg[256] = { 0 };
         unsigned int len = 0;
 
-        for (int x = 0; x < sizeof(optionalCommands) / sizeof(optionalCommands[0]); x++) {
+        for (uint8_t x = 0; x < sizeof(optionalCommands) / sizeof(optionalCommands[0]); x++) {
           if (strcmp(httpServer->argName(i).c_str(), optionalCommands[x].name) == 0) {
             len = optionalCommands[x].func((char *)httpServer->arg(i).c_str(), log_msg);
             httptext = httptext + log_msg + "\n";
@@ -793,6 +793,27 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
   }
 
   httpServer->sendContent(httptext);
+  httpServer->sendContent("");
+  httpServer->client().stop();
+}
+
+
+void handleDebug(ESP8266WebServer *httpServer, char *hex, byte hex_len) {
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->sendHeader("Access-Control-Allow-Origin", "*");
+  httpServer->send(200, "text/plain", "");
+  char log_msg[256];
+  
+#define LOGHEXBYTESPERLINE 32
+  for (int i = 0; i < hex_len; i += LOGHEXBYTESPERLINE) {
+    char buffer [(LOGHEXBYTESPERLINE * 3) + 1];
+    buffer[LOGHEXBYTESPERLINE * 3] = '\0';
+    for (int j = 0; ((j < LOGHEXBYTESPERLINE) && ((i + j) < hex_len)); j++) {
+      sprintf(&buffer[3 * j], "%02X ", hex[i + j]);
+    }
+    sprintf(log_msg, "data: %s", buffer ); httpServer->sendContent(log_msg); httpServer->sendContent("\n");
+  }
+
   httpServer->sendContent("");
   httpServer->client().stop();
 }
