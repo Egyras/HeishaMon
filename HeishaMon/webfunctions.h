@@ -45,5 +45,5 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]);
 void handleFactoryReset(ESP8266WebServer *httpServer);
 void handleReboot(ESP8266WebServer *httpServer);
 void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
-void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
+void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]);
 void handleREST(ESP8266WebServer *httpServer, bool optionalPCB);

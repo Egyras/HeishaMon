@@ -705,24 +705,94 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httpServer->client().stop();
 }
 
-void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
+void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(webBodyStart);
   httpServer->sendContent_P(webBodySmartcontrol1);
   httpServer->sendContent_P(webBodySmartcontrol2);
-  httpServer->sendContent_P(webBodySmartcontrolHeatingcurve);
   
-  //body
-  String httptext = "Loading...";
-  httptext = httptext + "";
+  String httptext = "<form action=\"/settings\" method=\"POST\">";
   httpServer->sendContent(httptext);
-  
+  httpServer->sendContent_P(webBodyEndDiv);
+
+  //Heating curve
+  httpServer->sendContent_P(webBodySmartcontrolHeatingcurve1);
+
+  int heatingMode = actData[76].toInt();
+  if (heatingMode == 1) {
+    httptext = "<div class=\"w3-row-padding\"><div class=\"w3-half\">";
+    if (true) {
+      httptext = httptext + "<input class=\"w3-check\" type=\"checkbox\" name=\"heatingcurve\" checked>";
+    } else {
+      httptext = httptext + "<input class=\"w3-check\" type=\"checkbox\" name=\"heatingcurve\">";
+    }
+    httptext = httptext + "<label>Enable smart heating curve</label></div><div class=\"w3-half\"><select class=\"w3-select\" name=\"average-time\">";
+    if (true) {
+      httptext = httptext + "<option value=\"0h\" selected>No average on outside temperature</option>";
+    } else {
+      httptext = httptext + "<option value=\"0h\">No average on outside temperature</option>";
+    }
+    if (false) {
+      httptext = httptext + "<option value=\"12h\" selected>Average outside temperature over last 12 hours</option>";
+    } else {
+      httptext = httptext + "<option value=\"12h\">Average outside temperature over last 12 hours</option>";
+    }
+    if (false) {
+      httptext = httptext + "<option value=\"24h\" selected>Average outside temperature over last 24 hours</option>";
+    } else {
+      httptext = httptext + "<option value=\"24h\">Average outside temperature over last 24 hours</option>";
+    }
+    if (false) {
+      httptext = httptext + "<option value=\"36h\" selected>Average outside temperature over last 36 hours</option>";
+    } else {
+      httptext = httptext + "<option value=\"36h\">Average outside temperature over last 36 hours</option>";
+    }
+    if (false) {
+      httptext = httptext + "<option value=\"48h\" selected>Average outside temperature over last 48 hours</option>";
+    } else {
+      httptext = httptext + "<option value=\"48h\">Average outside temperature over last 48 hours</option>";
+    }
+    httptext = httptext + "</select></div></div><br><div class=\"w3-row-padding\"><div class=\"w3-half\"><label>Heating Curve Target High Temp</label>";
+    httptext = httptext + "<input class=\"w3-input w3-border\" type=\"number\" name=\"hcth\" id=\"hcth\" value=\"42\" min=\"20\" max=\"60\" required>";
+    httptext = httptext + "</div><div class=\"w3-half\"><label>Heating Curve Target Low Temp</label>";
+    httptext = httptext + "<input class=\"w3-input w3-border\" type=\"number\" name=\"hctl\" id=\"hctl\"  value=\"32\" min=\"20\" max=\"60\" required>";
+    httptext = httptext + "</div></div><div class=\"w3-row-padding\"><div class=\"w3-half\"><label>Heating Curve Outside High Temp</label>";
+    httptext = httptext + "<input class=\"w3-input w3-border\" type=\"number\" name=\"hcoh\" id=\"hcoh\" value=\"8\" min=\"-20\" max=\"15\" required>";
+    httptext = httptext + "</div><div class=\"w3-half\"><label>Heating Curve Outside Low Temp</label>";
+    httptext = httptext + "<input class=\"w3-input w3-border\" type=\"number\" name=\"hcol\" id=\"hcol\" value=\"-7\" min=\"-20\" max=\"15\" required>";
+    httptext = httptext + "</div></div><br><br>";
+    httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
+    httptext = httptext + "<div class=\"w3-panel w3-red\">";
+    httptext = httptext + "<p>Current average calculated since Heishamon uptime.</p>";
+    httpServer->sendContent(httptext);
+    httpServer->sendContent_P(webBodyEndDiv);
+    
+    httpServer->sendContent_P(webBodySmartcontrolHeatingcurveSVG);
+    httpServer->sendContent_P(webBodySmartcontrolHeatingcurve2);
+    httpServer->sendContent_P(webBodyEndDiv);
+  } else {
+	httptext = "Heating mode must be \"direct heating\" to enable this option";
+    httpServer->sendContent(httptext);
+    httpServer->sendContent_P(webBodyEndDiv);
+  }
+  httpServer->sendContent_P(webBodyEndDiv);
+
+  //Other example
+//  httpServer->sendContent_P(webBodySmartcontrolOtherexample);
+//  httptext = "...Loading...";
+//  httptext = httptext + "";
+//  httpServer->sendContent(httptext);
+//  httpServer->sendContent_P(webBodyEndDiv);
+
+  httptext = "</form>";
+  httpServer->sendContent(httptext);
   httpServer->sendContent_P(webBodyEndDiv);
 
   httpServer->sendContent_P(menuJS);
-  httpServer->sendContent_P(settingsJS);
+  httpServer->sendContent_P(selectJS);
+  httpServer->sendContent_P(heatingCurveJS);
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
   httpServer->client().stop();

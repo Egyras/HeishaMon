@@ -70,6 +70,44 @@ static const char settingsJS[] PROGMEM =
   "    }"
   "</script>";
 
+static const char heatingCurveJS[] PROGMEM =
+  "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js\"></script>"
+  "<script>"
+  " $( document ).ready(function() {"
+  "    $('#hcoh,#hcol,#hcth,#hctl').change(ChangeHeatingCurve);"
+  "    ChangeHeatingCurve();"
+  " });"
+  " function ChangeHeatingCurve(){"
+  "    var inputHcthValue = $('#hcth').val();"
+  "    var inputHctlValue = $('#hctl').val();"
+  "    var inputHcohValue = $('#hcoh').val();"
+  "    var inputHcolValue = $('#hcol').val();"
+  "    "
+  "    $('#graph-hcth').text(inputHcthValue);"
+  "    $('#graph-hctl').text(inputHctlValue);"
+  "    $('#graph-hcoh').text(inputHcohValue);"
+  "    $('#graph-hcol').text(inputHcolValue);"
+  "    "
+  "    var tableHTML = '';"
+  "    for (i = 15; i > -21; i--) {"
+  "        tableHTML += '<tr><td>';"
+  "        tableHTML += i;"
+  "        tableHTML += '</td><td>';"
+  "        if (i > inputHcohValue) {"
+  "            tableHTML += '<input class=\"w3-input w3-border-0\" type=\"text\" name=\"lookup['+i+']\" value=\"'+inputHctlValue+'\" readonly>';"
+  "        } else if (i < inputHcolValue) {"
+  "            tableHTML += '<input class=\"w3-input w3-border-0\" type=\"text\" name=\"lookup['+i+']\" value=\"'+inputHcthValue+'\" readonly>';"
+  "        } else {"
+  "            var temperature = ((inputHctlValue * 1.0) + (((inputHcthValue - inputHctlValue) / (inputHcohValue - inputHcolValue)) * (inputHcohValue - i)));"
+  "            temperature = temperature.toFixed(0);"
+  "            tableHTML += '<input class=\"w3-input w3-border-0\" type=\"text\" name=\"lookup['+i+']\" value=\"'+temperature+'\" readonly>';"
+  "        }"
+  "        tableHTML += '</td></tr>';"
+  "    }"
+  "    $(\"#heatcurvevalues\").html(tableHTML);"
+  " }"
+  "</script>";
+
 static const char webBodyRoot1[] PROGMEM =
   "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
   "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
@@ -98,7 +136,7 @@ static const char webBodyRootStatusUptime[] PROGMEM =   "%<br>Uptime: ";
 static const char webBodyRootHeatpumpValues[] PROGMEM =
   "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">"
   "<h2>Current heatpump values</h2>"
-  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></r></tbody></table></div>";
+  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
 
 static const char webBodyRootDallasValues[] PROGMEM =
   "<div id=\"Dallas\" class=\"w3-container w3-center heishatable\" style=\"display:none\">"
@@ -155,10 +193,64 @@ static const char webBodySmartcontrol1[] PROGMEM =
   
 static const char webBodySmartcontrol2[] PROGMEM =
   "<div class=\"w3-bar w3-red\">"
-  "<button class=\"w3-bar-item w3-button\" onclick=\"openPage('heatingcurve')\">Heating Curve</button>"
-  "<button class=\"w3-bar-item w3-button\" onclick=\"openPage('others')\">Others</button>"
+  "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('heatingcurve')\">Heating Curve</button>"
+//  "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('others')\">Others</button>"
   "</div>";
 
-static const char webBodySmartcontrolHeatingcurve[] PROGMEM =
-  "<div id=\"heatingcurve\" class=\"w3-container w3-center smartheisha\">"
+static const char webBodySmartcontrolHeatingcurve1[] PROGMEM =
+  "<div id=\"heatingcurve\" class=\"w3-container w3-center heishatable\">"
   "<h2>Heating curve setting</h2>";
+
+static const char webBodySmartcontrolHeatingcurve2[] PROGMEM =
+  "<br><br>"
+  "<table class=\"w3-table-all\">"
+  "<thead>"
+  "<tr class=\"w3-red\">"
+  "<th>Outside Temperature</th>"
+  "<th>Target Setpoint</th>"
+  "</tr>"
+  "</thead>"
+  "<tbody id=\"heatcurvevalues\">"
+  "<tr>"
+  "<td>...Loading...</td>"
+  "<td></td>"
+  "</tr>"
+  "</tbody>"
+  "</table>";
+
+static const char webBodySmartcontrolHeatingcurveSVG[] PROGMEM =
+  "<svg version=\"1.2\" width=\"500\" height=\"450\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" class=\"graph\">"
+  "<g style=\"stroke:black;stroke-dasharray: 5;stroke-width: 0.5;\">"
+  "<line x1=\"100\" x2=\"500\" y1=\"0\" y2=\"0\"></line>"
+  "<line x1=\"100\" x2=\"500\" y1=\"133\" y2=\"133\"></line>"
+  "<line x1=\"100\" x2=\"500\" y1=\"267\" y2=\"267\"></line>"
+  "<line x1=\"100\" x2=\"500\" y1=\"400\" y2=\"400\"></line>"
+  "<line x1=\"100\" x2=\"100\" y1=\"0\" y2=\"400\"></line>"
+  "<line x1=\"233\" x2=\"233\" y1=\"0\" y2=\"400\"></line>"
+  "<line x1=\"367\" x2=\"367\" y1=\"0\" y2=\"400\"></line>"
+  "<line x1=\"500\" x2=\"500\" y1=\"0\" y2=\"400\"></line>"
+  "</g>"
+  "<g style=\"text-anchor: middle;\">"
+  "<text x=\"100\" y=\"420\">-20</text>"
+  "<text x=\"233\" y=\"420\" id=\"graph-hcol\">-20</text>"
+  "<text x=\"367\" y=\"420\" id=\"graph-hcoh\">15</text>"
+  "<text x=\"490\" y=\"420\">15</text>"
+  "</g>"
+  "<g style=\"text-anchor: end;text-anchor: middle;\">"
+  "<text x=\"80\" y=\"0 \" style=\"alignment-baseline:hanging\">60</text>"
+  "<text x=\"80\" y=\"133 \" id=\"graph-hcth\" style=\"alignment-baseline:hanging\">60</text>"
+  "<text x=\"80\" y=\"267 \" id=\"graph-hctl\" style=\"alignment-baseline:hanging\">20</text>"
+  "<text x=\"80\" y=\"400 \" style=\"alignment-baseline:hanging\">20</text>"
+  "</g>"
+  "<g style=\"text-anchor: middle;\">"
+  "<text x=\"50%\" y=\"450\">Outside temperature</text>"
+  "</g>"
+  "<g style=\"text-anchor: middle;\">"
+  "<text x=\"15\" y=\"200\" transform=\"rotate(-90,15,200)\">Target setpoint</text>"
+  "</g>"
+  "<polyline style=\"stroke:green;stroke-width: 3;fill: none;\" points=\"100,133 233,133 367,267 500,267 \"/>"
+  "</svg>";
+
+//static const char webBodySmartcontrolOtherexample[] PROGMEM =
+//  "<div id=\"others\" class=\"w3-container w3-center heishatable\" style=\"display:none\">"
+//  "<h2>Other example</h2>";
