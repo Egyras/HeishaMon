@@ -481,6 +481,8 @@ void loop() {
   if (heishamonSettings.use_1wire) dallasLoop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
 
   if (heishamonSettings.use_s0) s0Loop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.s0Settings);
+  
+  if (heishamonSettings.SmartControlSettings.enableHeatCurve) smartControlLoop(log_message, heishamonSettings.SmartControlSettings, actData, goodreads);
 
   if ((!sending) && (!heishamonSettings.listenonly) && (heishamonSettings.optionalPCB)) send_optionalpcb_query(); //send this as fast as possible or else we could get warnings on heatpump
 

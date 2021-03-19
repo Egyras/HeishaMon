@@ -749,8 +749,8 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
   httpServer->sendContent_P(webBodySmartcontrolHeatingcurve1);
 
   //check if POST was made with save settings, if yes then save and reboot
-    DynamicJsonDocument jsonDoc(1024);
   if (httpServer->args()) {
+    DynamicJsonDocument jsonDoc(1024);
     //set jsonDoc with current settings
     if ( heishamonSettings->SmartControlSettings.enableHeatCurve){
         jsonDoc["enableHeatCurve"] = "enabled";
@@ -959,7 +959,9 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
     httptext = httptext + "</div></div><br><br>";
     httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
     httptext = httptext + "<div class=\"w3-panel w3-red\">";
-    httptext = httptext + "<p>Current average calculated since Heishamon uptime.</p>";
+    httptext = httptext + "<p>";
+    httptext = httptext + getAvgOutsideTemp();
+    httptext = httptext + "</p>";
     httpServer->sendContent(httptext);
     httpServer->sendContent_P(webBodyEndDiv);
     

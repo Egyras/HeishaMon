@@ -9,3 +9,7 @@ struct SmartControlSettingsStruct {
   
   short heatCurveLookup[36] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Lookup table for heating curve
 };
+
+String getAvgOutsideTemp(void);
+
+void smartControlLoop(void (*log_message)(char*), SmartControlSettingsStruct SmartControlSettings, String actData[], unsigned long goodreads);
