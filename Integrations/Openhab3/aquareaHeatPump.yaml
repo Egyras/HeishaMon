@@ -1,0 +1,415 @@
+UID: mqtt:topic:MQTTSERVICE:HPwemos1D
+label: Panasonic Heat Pump (direct)
+thingTypeUID: mqtt:topic
+configuration:
+  payloadNotAvailable: Offline
+  availabilityTopic: panasonic_heat_pump/LWT
+  payloadAvailable: Online
+bridgeUID: mqtt:broker:MQTTSERVICE
+channels:
+  - id: powerState
+    channelTypeUID: mqtt:switch
+    label: Power State
+    description: ""
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetHeatpump
+      stateTopic: panasonic_heat_pump/main/Heatpump_State
+      off: "0"
+      on: "1"
+  - id: pumpFlow
+    channelTypeUID: mqtt:number
+    label: Pump Flow
+    description: ""
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Pump_Flow
+      unit: L/min
+      min: 0
+  - id: forceDHWmode
+    channelTypeUID: mqtt:switch
+    label: Force DHW Mode
+    description: null
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetForceDHW
+      stateTopic: panasonic_heat_pump/main/Force_DHW_State
+      off: "0"
+      on: "1"
+  - id: heatMode
+    channelTypeUID: mqtt:number
+    label: Heat Mode
+    description: null
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetOperationMode
+      min: 0
+      stateTopic: panasonic_heat_pump/main/Operating_Mode_State
+      max: 6
+  - id: inletTemperature
+    channelTypeUID: mqtt:number
+    label: Inlet Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Main_Inlet_Temp
+      unit: °C
+  - id: outletTemperature
+    channelTypeUID: mqtt:number
+    label: Outlet Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Main_Outlet_Temp
+      unit: °C
+  - id: targetOutletTemperature
+    channelTypeUID: mqtt:number
+    label: Outlet Target Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Main_Target_Temp
+      unit: °C
+  - id: compressorFrequency
+    channelTypeUID: mqtt:number
+    label: Compressor Frequency
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Compressor_Freq
+      unit: Hz
+  - id: targetDHWtemperature
+    channelTypeUID: mqtt:number
+    label: DHW Target Temperature
+    description: null
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetDHWTemp
+      stateTopic: panasonic_heat_pump/main/DHW_Target_Temp
+      unit: °C
+  - id: currentDHWtemperature
+    channelTypeUID: mqtt:number
+    label: DHW Current Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/DHW_Temp
+      unit: °C
+  - id: compressorHours
+    channelTypeUID: mqtt:number
+    label: Compressor Operating Time
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Operations_Hours
+      unit: Hour
+  - id: compressorCycles
+    channelTypeUID: mqtt:number
+    label: Compressor Operating Start/Stop Counter
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Operations_Counter
+  - id: currentOutdoorTemperature
+    channelTypeUID: mqtt:number
+    label: Outdoor Current Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Outside_Temp
+      unit: °C
+  - id: hiPowerMode
+    channelTypeUID: mqtt:number
+    label: High Power Mode Timer
+    description: ""
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetPowerfulMode
+      unit: Minute
+      min: 0
+      stateTopic: panasonic_heat_pump/main/Powerful_Mode_Time
+      max: 3
+  - id: holidayMode
+    channelTypeUID: mqtt:number
+    label: Holiday Mode
+    description: ""
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetHolidayMode
+      min: 0
+      stateTopic: panasonic_heat_pump/main/Holiday_Mode_State
+      max: 2
+  - id: ipAddress
+    channelTypeUID: mqtt:string
+    label: IP Interface Address
+    description: ""
+    configuration:
+      stateTopic: panasonic_heat_pump/ip
+  - id: outletDirection
+    channelTypeUID: mqtt:number
+    label: Outlet 3-way Valve direction
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/ThreeWay_Valve_State
+      max: 1
+      min: 0
+  - id: outsidePipeTemperature
+    channelTypeUID: mqtt:number
+    label: Outdoor  Pipe Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Outside_Pipe_Temp
+      unit: °C
+  - id: defrost
+    channelTypeUID: mqtt:switch
+    label: Defrost state
+    description: null
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetForceDefrost
+      stateTopic: panasonic_heat_pump/main/Defrosting_State
+      off: "0"
+      on: "1"
+  - id: Z1HeatRequestedTemperature
+    channelTypeUID: mqtt:number
+    label: Z1 Zone Heat Requested Temperature
+    description: null
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetZ1HeatRequestTemperature
+      unit: °C
+      min: -5
+      stateTopic: panasonic_heat_pump/main/Z1_Heat_Request_Temp
+      max: 65
+  - id: Z1CoolRequestedTemperature
+    channelTypeUID: mqtt:number
+    label: Z1 Zone Cool Requested Temperature
+    description: null
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetZ1CoolRequestTemperature
+      unit: °C
+      min: -5
+      stateTopic: panasonic_heat_pump/main/Z1_Cool_Request_Temp
+      max: 20
+  - id: Z1HeatCurveTargetHighTemp
+    channelTypeUID: mqtt:number
+    label: Z1 Target temperature at lowest point on the heating curve
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z1_Heat_Curve_Target_High_Temp
+      unit: °C
+  - id: Z1HeatCurveTargetLowTemp
+    channelTypeUID: mqtt:number
+    label: Z1 Target temperature at highest point on the heating curve
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z1_Heat_Curve_Target_Low_Temp
+      unit: °C
+  - id: Z1HeatCurveOutsideHighTemp
+    channelTypeUID: mqtt:number
+    label: Z1 Highest outside temperature on the heating curve
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z1_Heat_Curve_Outside_High_Temp
+      unit: °C
+  - id: Z1HeatCurveOutsideLowTemp
+    channelTypeUID: mqtt:number
+    label: Z1 Lowest outside temperature on the heating curve
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z1_Heat_Curve_Outside_Low_Temp
+      unit: °C
+  - id: roomThermostatTemp
+    channelTypeUID: mqtt:number
+    label: Remote control thermostat temp
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Room_Thermostat_Temp
+      unit: °C
+  - id: currentZ1WaterTemperature
+    channelTypeUID: mqtt:number
+    label: Current Zone 1 Water Outlet Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z1_Water_Temp
+      unit: °C
+  - id: targetZ1WaterTemperature
+    channelTypeUID: mqtt:number
+    label: Target Zone 1 Water Outlet Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z1_Water_Target_Temp
+      unit: °C
+  - id: Z1MeasuredTemperature
+    channelTypeUID: mqtt:number
+    label: Actual Zone 1 Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z1_Temp
+      unit: °C
+  - id: Z1CoolCurveTargetHighTemp
+    channelTypeUID: mqtt:number
+    label: Z1 Target temperature at highest point on the cooling curve
+    description: null
+    configuration:
+      stateTopic: panasonic_cool_pump/main/Z1_Cool_Curve_Target_High_Temp
+      unit: °C
+  - id: Z1CoolCurveTargetLowTemp
+    channelTypeUID: mqtt:number
+    label: Z1 Target temperature at lowest point on the cooling curve
+    description: null
+    configuration:
+      stateTopic: panasonic_cool_pump/main/Z1_Cool_Curve_Target_Low_Temp
+      unit: °C
+  - id: Z1CoolCurveOutsideHighTemp
+    channelTypeUID: mqtt:number
+    label: Z1 Highest outside temperature on the cooling curve
+    description: null
+    configuration:
+      stateTopic: panasonic_cool_pump/main/Z1_Cool_Curve_Outside_High_Temp
+      unit: °C
+  - id: Z1CoolCurveOutsideLowTemp
+    channelTypeUID: mqtt:number
+    label: Z1 Lowest outside temperature on the cooling curve
+    description: null
+    configuration:
+      stateTopic: panasonic_cool_pump/main/Z1_Cool_Curve_Outside_Low_Temp
+      unit: °C
+  - id: Z2HeatRequestedTemperature
+    channelTypeUID: mqtt:number
+    label: Z2 Zone Requested Temperature
+    description: null
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetZ2HeatRequestTemperature
+      unit: °C
+      min: -5
+      stateTopic: panasonic_heat_pump/main/Z2_Heat_Request_Temp
+      max: 65
+  - id: Z2CoolRequestedTemperature
+    channelTypeUID: mqtt:number
+    label: Z2 Zone Requested Temperature
+    description: null
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetZ2CoolRequestTemperature
+      unit: °C
+      min: -5
+      stateTopic: panasonic_heat_pump/main/Z2_Cool_Request_Temp
+      max: 20
+  - id: Z2HeatCurveTargetHighTemp
+    channelTypeUID: mqtt:number
+    label: Z2 Target temperature at lowest point on the heating curve
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z2_Heat_Curve_Target_High_Temp
+      unit: °C
+  - id: Z2HeatCurveTargetLowTemp
+    channelTypeUID: mqtt:number
+    label: Z2 Target temperature at highest point on the heating curve
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z2_Heat_Curve_Target_Low_Temp
+      unit: °C
+  - id: Z2HeatCurveOutsideHighTemp
+    channelTypeUID: mqtt:number
+    label: Z2 Lowest outside temperature on the heating curve
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z2_Heat_Curve_Outside_High_Temp
+      unit: °C
+  - id: Z2HeatCurveOutsideLowTemp
+    channelTypeUID: mqtt:number
+    label: Z2 Highest outside temperature on the heating curve
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z2_Heat_Curve_Outside_Low_Temp
+      unit: °C
+  - id: currentZ2WaterTemperature
+    channelTypeUID: mqtt:number
+    label: Current Zone 2 Water Outlet Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z2_Water_Temp
+      unit: °C
+  - id: targetZ2WaterTemperature
+    channelTypeUID: mqtt:number
+    label: Target Zone 2 Water Outlet Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z2_Water_Target_Temp
+      unit: °C
+  - id: Z2MeasuredTemperature
+    channelTypeUID: mqtt:number
+    label: Actual Zone 2 Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Z2_Temp
+      unit: °C
+  - id: Z2CoolCurveTargetHighTemp
+    channelTypeUID: mqtt:number
+    label: Z2 Target temperature at highest point on the cooling curve
+    description: null
+    configuration:
+      stateTopic: panasonic_cool_pump/main/Z2_Cool_Curve_Target_High_Temp
+      unit: °C
+  - id: Z2CoolCurveTargetLowTemp
+    channelTypeUID: mqtt:number
+    label: Z2 Target temperature at lowest point on the cooling curve
+    description: null
+    configuration:
+      stateTopic: panasonic_cool_pump/main/Z2_Cool_Curve_Target_Low_Temp
+      unit: °C
+  - id: Z2CoolCurveOutsideHighTemp
+    channelTypeUID: mqtt:number
+    label: Z2 Highest outside temperature on the cooling curve
+    description: null
+    configuration:
+      stateTopic: panasonic_cool_pump/main/Z2_Cool_Curve_Outside_High_Temp
+      unit: °C
+  - id: Z2CoolCurveOutsideLowTemp
+    channelTypeUID: mqtt:number
+    label: Z2 Lowest outside temperature on the cooling curve
+    description: null
+    configuration:
+      stateTopic: panasonic_cool_pump/main/Z2_Cool_Curve_Outside_Low_Temp
+      unit: °C
+  - id: zonesActive
+    channelTypeUID: mqtt:number
+    label: Status of Zones activation
+    description: null
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetZones
+      min: 0
+      stateTopic: panasonic_heat_pump/main/Zones_State
+      max: 2
+  - id: bufferTemperature
+    channelTypeUID: mqtt:number
+    label: Buffer Temperature
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Buffer_Temp
+      unit: °C
+  - id: HeatPowerProduction
+    channelTypeUID: mqtt:number
+    label: Heat Current Power Production
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Heat_Energy_Production
+      unit: Watt
+  - id: HeatPowerConsumption
+    channelTypeUID: mqtt:number
+    label: Heat Current Power Consumption
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Heat_Energy_Consumption
+      unit: Watt
+  - id: CoolPowerProduction
+    channelTypeUID: mqtt:number
+    label: Cool Current Power Production
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Cool_Energy_Production
+      unit: Watt
+  - id: CoolPowerConsumption
+    channelTypeUID: mqtt:number
+    label: Cool Current Power Consumption
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/Cool_Energy_Consumption
+      unit: Watt
+  - id: DHWPowerProduction
+    channelTypeUID: mqtt:number
+    label: DHW Current Power Production
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/DHW_Energy_Production
+      unit: Watt
+  - id: DHWPowerConsumption
+    channelTypeUID: mqtt:number
+    label: DHW Current Power Consumption
+    description: null
+    configuration:
+      stateTopic: panasonic_heat_pump/main/DHW_Energy_Production
+      unit: Watt

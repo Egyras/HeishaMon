@@ -6,6 +6,7 @@
 #include "dallas.h"
 #include "s0.h"
 #include "gpio.h"
+#include "smartcontrol.h"
 
 struct settingsStruct {
   unsigned int waitTime = 5; // how often data is read from heatpump
@@ -33,6 +34,7 @@ struct settingsStruct {
 
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
   gpioSettingsStruct gpioSettings;
+  SmartControlSettingsStruct SmartControlSettings;
 };
 
 
@@ -48,4 +50,5 @@ void handleFactoryReset(ESP8266WebServer *httpServer);
 void handleReboot(ESP8266WebServer *httpServer);
 void handleDebug(ESP8266WebServer *httpServer, char *hex, byte hex_len);
 void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
+void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]);
 void handleREST(ESP8266WebServer *httpServer, bool optionalPCB);
