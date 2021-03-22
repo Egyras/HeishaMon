@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include "dallas.h"
 #include "s0.h"
+#include "smartcontrol.h"
 
 struct settingsStruct {
   unsigned int waitTime = 5; // how often data is read from heatpump
@@ -31,6 +32,7 @@ struct settingsStruct {
   bool logSerial1 = true; //log to serial1 (gpio2) from start  
 
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
+  SmartControlSettingsStruct SmartControlSettings;
 };
 
 
@@ -45,4 +47,5 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]);
 void handleFactoryReset(ESP8266WebServer *httpServer);
 void handleReboot(ESP8266WebServer *httpServer);
 void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
+void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]);
 void handleREST(ESP8266WebServer *httpServer, bool optionalPCB);

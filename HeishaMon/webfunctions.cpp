@@ -151,6 +151,35 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
         Serial.println(F("No config.json exists! Forcing a config reset."));
         wifiManager.resetSettings();
       }
+	  
+      if (LittleFS.exists("/heatcurve.json")) {
+        //file exists, reading and loading
+        Serial.println(F("reading heatingcurve file"));
+        File configFile = LittleFS.open("/heatcurve.json", "r");
+        if (configFile) {
+          Serial.println(F("opened heating curve config file"));
+          size_t size = configFile.size();
+          // Allocate a buffer to store contents of the file.
+          std::unique_ptr<char[]> buf(new char[size]);
+
+          configFile.readBytes(buf.get(), size);
+          DynamicJsonDocument jsonDoc(1024);
+          DeserializationError error = deserializeJson(jsonDoc, buf.get());
+          serializeJson(jsonDoc, Serial);
+          if (!error) {	  
+	        if ( jsonDoc["enableHeatCurve"] == "enabled" ) heishamonSettings->SmartControlSettings.enableHeatCurve = true;
+            if ( jsonDoc["avgHourHeatCurve"]) heishamonSettings->SmartControlSettings.avgHourHeatCurve = jsonDoc["avgHourHeatCurve"];
+            if ( jsonDoc["heatCurveTargetHigh"]) heishamonSettings->SmartControlSettings.heatCurveTargetHigh = jsonDoc["heatCurveTargetHigh"];
+            if ( jsonDoc["heatCurveTargetLow"]) heishamonSettings->SmartControlSettings.heatCurveTargetLow = jsonDoc["heatCurveTargetLow"];
+            if ( jsonDoc["heatCurveOutHigh"]) heishamonSettings->SmartControlSettings.heatCurveOutHigh = jsonDoc["heatCurveOutHigh"];
+            if ( jsonDoc["heatCurveOutLow"]) heishamonSettings->SmartControlSettings.heatCurveOutLow = jsonDoc["heatCurveOutLow"];
+            for (unsigned int i = 0 ; i < 36 ; i++) {
+              if ( jsonDoc["heatCurveLookup"][i]) heishamonSettings->SmartControlSettings.heatCurveLookup[i] = jsonDoc["heatCurveLookup"][i];
+            }
+		  }
+          configFile.close();
+		}
+	  }
     } else {
       Serial.println(F("failed to mount FS"));
     }
@@ -690,7 +719,6 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   }
   httptext = httptext + "</table>";
 
-
   httptext = httptext + "<br><br>";
   httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
   httptext = httptext + "</form>";
@@ -705,6 +733,268 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httpServer->client().stop();
 }
 
+void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]) {
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->send(200, "text/html", "");
+  httpServer->sendContent_P(webHeader);
+  httpServer->sendContent_P(webBodyStart);
+  httpServer->sendContent_P(webBodySmartcontrol1);
+  httpServer->sendContent_P(webBodySmartcontrol2);
+  
+  String httptext = "<form action=\"/smartcontrol\" method=\"POST\">";
+  httpServer->sendContent(httptext);
+  httpServer->sendContent_P(webBodyEndDiv);
+
+  //Heating curve
+  httpServer->sendContent_P(webBodySmartcontrolHeatingcurve1);
+
+  //check if POST was made with save settings, if yes then save and reboot
+  if (httpServer->args()) {
+    DynamicJsonDocument jsonDoc(1024);
+    //set jsonDoc with current settings
+    if ( heishamonSettings->SmartControlSettings.enableHeatCurve){
+        jsonDoc["enableHeatCurve"] = "enabled";
+    } else {
+        jsonDoc["enableHeatCurve"] = "disabled";
+    }   
+    jsonDoc["avgHourHeatCurve"] = heishamonSettings->SmartControlSettings.avgHourHeatCurve;
+    jsonDoc["heatCurveTargetHigh"] = heishamonSettings->SmartControlSettings.heatCurveTargetHigh;
+    jsonDoc["heatCurveTargetLow"] = heishamonSettings->SmartControlSettings.heatCurveTargetLow;
+    jsonDoc["heatCurveOutHigh"] = heishamonSettings->SmartControlSettings.heatCurveOutHigh;
+    jsonDoc["heatCurveOutLow"] = heishamonSettings->SmartControlSettings.heatCurveOutLow;
+    for (unsigned int i = 0 ; i < 36 ; i++) {
+        jsonDoc["heatCurveLookup"][i] = heishamonSettings->SmartControlSettings.heatCurveLookup[i];
+    }
+
+    //then overwrite with new settings
+    if (httpServer->hasArg("heatingcurve")) {
+      jsonDoc["enableHeatCurve"] = "enabled";
+    } else {
+      jsonDoc["enableHeatCurve"] = "disabled";
+    }
+    if (httpServer->hasArg("average-time")) {
+      jsonDoc["avgHourHeatCurve"] = httpServer->arg("average-time");
+    }
+    if (httpServer->hasArg("hcth")) {
+      jsonDoc["heatCurveTargetHigh"] = httpServer->arg("hcth");
+    }
+    if (httpServer->hasArg("hctl")) {
+      jsonDoc["heatCurveTargetLow"] = httpServer->arg("hctl");
+    }
+    if (httpServer->hasArg("hcoh")) {
+      jsonDoc["heatCurveOutHigh"] = httpServer->arg("hcoh");
+    }
+    if (httpServer->hasArg("hcol")) {
+      jsonDoc["heatCurveOutLow"] = httpServer->arg("hcol");
+    }
+    if (httpServer->hasArg("lookup0")) {
+      jsonDoc["heatCurveLookup"][0] = httpServer->arg("lookup0");
+    }
+    if (httpServer->hasArg("lookup1")) {
+      jsonDoc["heatCurveLookup"][1] = httpServer->arg("lookup1");
+    }
+    if (httpServer->hasArg("lookup2")) {
+      jsonDoc["heatCurveLookup"][2] = httpServer->arg("lookup2");
+    }
+    if (httpServer->hasArg("lookup3")) {
+      jsonDoc["heatCurveLookup"][3] = httpServer->arg("lookup3");
+    }
+    if (httpServer->hasArg("lookup4")) {
+      jsonDoc["heatCurveLookup"][4] = httpServer->arg("lookup4");
+    }
+    if (httpServer->hasArg("lookup5")) {
+      jsonDoc["heatCurveLookup"][5] = httpServer->arg("lookup5");
+    }
+    if (httpServer->hasArg("lookup6")) {
+      jsonDoc["heatCurveLookup"][6] = httpServer->arg("lookup6");
+    }
+    if (httpServer->hasArg("lookup7")) {
+      jsonDoc["heatCurveLookup"][7] = httpServer->arg("lookup7");
+    }
+    if (httpServer->hasArg("lookup8")) {
+      jsonDoc["heatCurveLookup"][8] = httpServer->arg("lookup8");
+    }
+    if (httpServer->hasArg("lookup9")) {
+      jsonDoc["heatCurveLookup"][9] = httpServer->arg("lookup9");
+    }
+    if (httpServer->hasArg("lookup10")) {
+      jsonDoc["heatCurveLookup"][10] = httpServer->arg("lookup10");
+    }
+    if (httpServer->hasArg("lookup11")) {
+      jsonDoc["heatCurveLookup"][11] = httpServer->arg("lookup11");
+    }
+    if (httpServer->hasArg("lookup12")) {
+      jsonDoc["heatCurveLookup"][12] = httpServer->arg("lookup12");
+    }
+    if (httpServer->hasArg("lookup13")) {
+      jsonDoc["heatCurveLookup"][13] = httpServer->arg("lookup13");
+    }
+    if (httpServer->hasArg("lookup14")) {
+      jsonDoc["heatCurveLookup"][14] = httpServer->arg("lookup14");
+    }
+    if (httpServer->hasArg("lookup15")) {
+      jsonDoc["heatCurveLookup"][15] = httpServer->arg("lookup15");
+    }
+    if (httpServer->hasArg("lookup16")) {
+      jsonDoc["heatCurveLookup"][16] = httpServer->arg("lookup16");
+    }
+    if (httpServer->hasArg("lookup17")) {
+      jsonDoc["heatCurveLookup"][17] = httpServer->arg("lookup17");
+    }
+    if (httpServer->hasArg("lookup18")) {
+      jsonDoc["heatCurveLookup"][18] = httpServer->arg("lookup18");
+    }
+    if (httpServer->hasArg("lookup19")) {
+      jsonDoc["heatCurveLookup"][19] = httpServer->arg("lookup19");
+    }
+    if (httpServer->hasArg("lookup20")) {
+      jsonDoc["heatCurveLookup"][20] = httpServer->arg("lookup20");
+    }
+    if (httpServer->hasArg("lookup21")) {
+      jsonDoc["heatCurveLookup"][21] = httpServer->arg("lookup21");
+    }
+    if (httpServer->hasArg("lookup22")) {
+      jsonDoc["heatCurveLookup"][22] = httpServer->arg("lookup22");
+    }
+    if (httpServer->hasArg("lookup23")) {
+      jsonDoc["heatCurveLookup"][23] = httpServer->arg("lookup23");
+    }
+    if (httpServer->hasArg("lookup24")) {
+      jsonDoc["heatCurveLookup"][24] = httpServer->arg("lookup24");
+    }
+    if (httpServer->hasArg("lookup25")) {
+      jsonDoc["heatCurveLookup"][25] = httpServer->arg("lookup25");
+    }
+    if (httpServer->hasArg("lookup26")) {
+      jsonDoc["heatCurveLookup"][26] = httpServer->arg("lookup26");
+    }
+    if (httpServer->hasArg("lookup27")) {
+      jsonDoc["heatCurveLookup"][27] = httpServer->arg("lookup27");
+    }
+    if (httpServer->hasArg("lookup28")) {
+      jsonDoc["heatCurveLookup"][28] = httpServer->arg("lookup28");
+    }
+    if (httpServer->hasArg("lookup29")) {
+      jsonDoc["heatCurveLookup"][29] = httpServer->arg("lookup29");
+    }
+    if (httpServer->hasArg("lookup30")) {
+      jsonDoc["heatCurveLookup"][30] = httpServer->arg("lookup30");
+    }
+    if (httpServer->hasArg("lookup31")) {
+      jsonDoc["heatCurveLookup"][31] = httpServer->arg("lookup31");
+    }
+    if (httpServer->hasArg("lookup32")) {
+      jsonDoc["heatCurveLookup"][32] = httpServer->arg("lookup32");
+    }
+    if (httpServer->hasArg("lookup33")) {
+      jsonDoc["heatCurveLookup"][33] = httpServer->arg("lookup33");
+    }
+    if (httpServer->hasArg("lookup34")) {
+      jsonDoc["heatCurveLookup"][34] = httpServer->arg("lookup34");
+    }
+    if (httpServer->hasArg("lookup35")) {
+      jsonDoc["heatCurveLookup"][35] = httpServer->arg("lookup35");
+    }
+
+    if (LittleFS.begin()) {
+      File configFile = LittleFS.open("/heatcurve.json", "w");
+      if (configFile) {
+        serializeJson(jsonDoc, configFile);
+        configFile.close();
+        delay(1000);
+    
+        httpServer->sendContent_P(webBodySettingsSaveMessage);
+        httpServer->sendContent_P(refreshMeta);
+        httpServer->sendContent_P(webFooter);
+        httpServer->sendContent("");
+        httpServer->client().stop();
+        delay(1000);
+        ESP.restart();
+      }
+    }
+  }
+
+  int heatingMode = actData[76].toInt();
+  if (heatingMode == 1) {
+    httptext = "<div class=\"w3-row-padding\"><div class=\"w3-half\">";
+    if (heishamonSettings->SmartControlSettings.enableHeatCurve == true) {
+      httptext = httptext + "<input class=\"w3-check\" type=\"checkbox\" name=\"heatingcurve\" checked>";
+    } else {
+      httptext = httptext + "<input class=\"w3-check\" type=\"checkbox\" name=\"heatingcurve\">";
+    }
+    httptext = httptext + "<label>Enable smart heating curve</label></div><div class=\"w3-half\"><select class=\"w3-select\" name=\"average-time\">";
+    if (heishamonSettings->SmartControlSettings.avgHourHeatCurve == 0) {
+      httptext = httptext + "<option value=\"0\" selected>No average on outside temperature</option>";
+    } else {
+      httptext = httptext + "<option value=\"0\">No average on outside temperature</option>";
+    }
+    if (heishamonSettings->SmartControlSettings.avgHourHeatCurve == 12) {
+      httptext = httptext + "<option value=\"12\" selected>Average outside temperature over last 12 hours</option>";
+    } else {
+      httptext = httptext + "<option value=\"12\">Average outside temperature over last 12 hours</option>";
+    }
+    if (heishamonSettings->SmartControlSettings.avgHourHeatCurve == 24) {
+      httptext = httptext + "<option value=\"24\" selected>Average outside temperature over last 24 hours</option>";
+    } else {
+      httptext = httptext + "<option value=\"24\">Average outside temperature over last 24 hours</option>";
+    }
+    if (heishamonSettings->SmartControlSettings.avgHourHeatCurve == 36) {
+      httptext = httptext + "<option value=\"36\" selected>Average outside temperature over last 36 hours</option>";
+    } else {
+      httptext = httptext + "<option value=\"36\">Average outside temperature over last 36 hours</option>";
+    }
+    if (heishamonSettings->SmartControlSettings.avgHourHeatCurve == 48) {
+      httptext = httptext + "<option value=\"48\" selected>Average outside temperature over last 48 hours</option>";
+    } else {
+      httptext = httptext + "<option value=\"48\">Average outside temperature over last 48 hours</option>";
+    }
+    httptext = httptext + "</select></div></div><br><div class=\"w3-row-padding\"><div class=\"w3-half\"><label>Heating Curve Target High Temp</label>";
+    httptext = httptext + "<input class=\"w3-input w3-border\" type=\"number\" name=\"hcth\" id=\"hcth\" value=\"" + heishamonSettings->SmartControlSettings.heatCurveTargetHigh + "\" min=\"20\" max=\"60\" required>";
+    httptext = httptext + "</div><div class=\"w3-half\"><label>Heating Curve Target Low Temp</label>";
+    httptext = httptext + "<input class=\"w3-input w3-border\" type=\"number\" name=\"hctl\" id=\"hctl\"  value=\"" + heishamonSettings->SmartControlSettings.heatCurveTargetLow + "\" min=\"20\" max=\"60\" required>";
+    httptext = httptext + "</div></div><div class=\"w3-row-padding\"><div class=\"w3-half\"><label>Heating Curve Outside High Temp</label>";
+    httptext = httptext + "<input class=\"w3-input w3-border\" type=\"number\" name=\"hcoh\" id=\"hcoh\" value=\"" + heishamonSettings->SmartControlSettings.heatCurveOutHigh + "\" min=\"-20\" max=\"15\" required>";
+    httptext = httptext + "</div><div class=\"w3-half\"><label>Heating Curve Outside Low Temp</label>";
+    httptext = httptext + "<input class=\"w3-input w3-border\" type=\"number\" name=\"hcol\" id=\"hcol\" value=\"" + heishamonSettings->SmartControlSettings.heatCurveOutLow + "\" min=\"-20\" max=\"15\" required>";
+    httptext = httptext + "</div></div><br><br>";
+    httptext = httptext + "<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">";
+    httptext = httptext + "<div class=\"w3-panel w3-red\">";
+    httptext = httptext + "<p>";
+    httptext = httptext + getAvgOutsideTemp();
+    httptext = httptext + "</p>";
+    httpServer->sendContent(httptext);
+    httpServer->sendContent_P(webBodyEndDiv);
+    
+    httpServer->sendContent_P(webBodySmartcontrolHeatingcurveSVG);
+    httpServer->sendContent_P(webBodySmartcontrolHeatingcurve2);
+    httpServer->sendContent_P(webBodyEndDiv);
+  } else {
+    httptext = "Heating mode must be \"direct heating\" to enable this option";
+    httpServer->sendContent(httptext);
+    httpServer->sendContent_P(webBodyEndDiv);
+  }
+  
+  httpServer->sendContent_P(webBodyEndDiv);
+
+  //Other example
+//  httpServer->sendContent_P(webBodySmartcontrolOtherexample);
+//  httptext = "...Loading...";
+//  httptext = httptext + "";
+//  httpServer->sendContent(httptext);
+//  httpServer->sendContent_P(webBodyEndDiv);
+
+  httptext = "</form>";
+  httpServer->sendContent(httptext);
+  httpServer->sendContent_P(webBodyEndDiv);
+
+  httpServer->sendContent_P(menuJS);
+  httpServer->sendContent_P(selectJS);
+  httpServer->sendContent_P(heatingCurveJS);
+  httpServer->sendContent_P(webFooter);
+  httpServer->sendContent("");
+  httpServer->client().stop();
+}  
+  
 bool send_command(byte* command, int length);
 void log_message(char* string);
 
