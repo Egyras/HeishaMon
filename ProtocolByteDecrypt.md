@@ -22,8 +22,8 @@
 |  TOP | 17 | 00 |   | 0 byte |
 |  TOP | 18 | 00 |   | 0 byte |
 |  TOP | 19 | 00 |   | 0 byte |
-|  TOP | 20 | 19 | (hex) Water as medium Antifreezing off Optional PCB off=15, Antifreezing off Optional PCB on=16, Antifreezing on Optional PCB off=19, Antifreezing on Optional PCB on=1A, Glikol as medium High byte from 1 changes to 9, Antifreezing on Optional PCB off and External out temp on=29 (+10 for all values if External temp sensor selected) | Optional PCB, Anti freezing, Colling Medium,External outdoor temp sensor |
-|  TOP | 21 | 15 |  (hex) 15 - One Zone and Z1 as room , 19 - One Zone and Z1 as pool, 16 - Two Zones and Z2 as room, 26 - Two Zones ,Z2 as pool| No. of Zones and Zone Destination |
+|  TOP | 20 | 19 | 1st Bit = b0 Water , b1 Glycol<br/>3rd & 4th bit = b01 Alternative Sensor Off ,b10 Alternative Sensor On<br/>5rd & 6th bit = b01 Antifreezing Off ,b10 Antifreezing on<br/>7rd & 8th bit = b01 Optional PCB Off ,b10 Optional PCB on<br/>| Circulation liquid<br/> ,Alternative outdoor temp sensor<br/> Anti freezing<br/> Optional PCB |
+|  TOP | 21 | 15 |  (hex) 15 - One  Zone and Z1 as room , 19 - One Zone and Z1 as pool, 16 - Two Zones and Z2 as room, 26 - Two Zones ,Z2 as pool| No. of Zones and Zone Destination |
 |  TOP | 22 | 11 |First digit -Z2 ,Second digit Z1 (hex) 1 - water temperature,2 - External Thermostat, 3 - Internal Thermostat, , 4 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
 |  TOP99+TOP100+TOP101 | 24 | 16 | 1st & 2nd bit Smart DHW -All-In-One only, 3rd & 4th bit = solar buffer (0b01=no solar, 0b10=solar buffer, 0b11=solar dhw), 5th & 6th bit = buffer installed, 7th & 8th bit = DHW installed|
@@ -106,9 +106,9 @@
 |  TOP71 | 101 | 0b |  Convert to DEC 11 - 1 = 10 | Sterilization max operation time [min] |
 |  TOP | 102 | 00 |   | 0 byte |
 |  TOP | 103 | 00 |   | 0 byte |
-|  TOP | 104 | 00 |   | 0 byte |
-|  TOP | 105 | 00 |   | 0 byte |
-|  TOP | 106 | 00 |   | 0 byte |
+|  TOP | 104 | 00 | Convert to DEC X-1  | ? Delay timer to start internal heater on J series |
+|  TOP | 105 | 00 | Convert to DEC-128 | ? Delta to start internal heater for room heating on J series |  
+|  TOP | 106 | 00 | Convert to DEC-128 | ? Delta to stop internal heater for room heating on J series |
 |  TOP | 107 | 00 |   | 0 byte |
 |  TOP | 108 | 00 |   | 0 byte |
 |  TOP | 109 | 00 |   | 0 byte |
@@ -119,7 +119,7 @@
 |  TOP44 | 114 | 53 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 |  TOP | 115 | 15 |   | ? |
 |  TOP | 116 | 5a |   | ? |
-|  TOP69 | 117 | 05 | No sterilization -05 , Sterilization active  -09  | Sterilization status |
+|  TOP69 | 117 | 05 | Sterilization on/off (bit5and6)  , Z2 active (bit7) ,Z1 active (bit8)| Sterilization status Zone active information (look byte #6) |
 |  TOP | 118 | 12 |   | ? |
 |  TOP | 119 | 12 |   | ? |
 |  TOP | 120 | 19 |   | ? |
@@ -195,12 +195,12 @@
 |  TOP | 190 | 00 |   | 0 byte |
 |  TOP | 191 | 06 | Convert to DEC X-1  | ? Possible heat pump power in Kw |
 |  TOP | 192 | 01 | (hex) simple model=1, T-CAP=2  | ? Possible Heat pump indicator for T-CAP  |
-|  TOP16 | 193 | 01 | Convert to DEC (x-1) / 5   | Energy Consumption for Heat in [kw]  |
-|  TOP15 | 194 | 01 | Convert to DEC (x-1) / 5   | Energy Generation for Heat in [kw] |
-|  TOP38 | 195 | 01 | Convert to DEC (x-1) / 5   | Energy Consumption for Cool in [kw] |
-|  TOP39 | 196 | 01 | Convert to DEC (x-1) / 5   | Energy Generation for Cool in [kw] |
-|  TOP40 | 197 | 0a | Convert to DEC (x-1) / 5   | Energy Consumption for DHW in [kw] |
-|  TOP41 | 198 | 14 | Convert to DEC (x-1) / 5   | Energy Generation for DHW in [kw] |
+|  TOP16 | 193 | 01 | Convert to DEC (x-1) / 5   | Power Consumption for Heat in [kw]  |
+|  TOP15 | 194 | 01 | Convert to DEC (x-1) / 5   | Power Generation for Heat in [kw] |
+|  TOP38 | 195 | 01 | Convert to DEC (x-1) / 5   | Power Consumption for Cool in [kw] |
+|  TOP39 | 196 | 01 | Convert to DEC (x-1) / 5   | Power Generation for Cool in [kw] |
+|  TOP40 | 197 | 0a | Convert to DEC (x-1) / 5   | Power Consumption for DHW in [kw] |
+|  TOP41 | 198 | 14 | Convert to DEC (x-1) / 5   | Power Generation for DHW in [kw] |
 |  TOP | 199 | 00 |   | byte 0 |
 |  TOP | 200 | 00 |   | byte 0 |
 |  TOP | 201 | 00 |   | byte 0 |
