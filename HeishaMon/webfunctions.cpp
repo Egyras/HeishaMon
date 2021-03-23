@@ -174,7 +174,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
         Serial.println(F("No config.json exists! Forcing a config reset."));
         wifiManager.resetSettings();
       }
-	  
+
       if (LittleFS.exists("/heatcurve.json")) {
         //file exists, reading and loading
         Serial.println(F("reading heatingcurve file"));
@@ -189,8 +189,8 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
           DynamicJsonDocument jsonDoc(1024);
           DeserializationError error = deserializeJson(jsonDoc, buf.get());
           serializeJson(jsonDoc, Serial);
-          if (!error) {	  
-	        if ( jsonDoc["enableHeatCurve"] == "enabled" ) heishamonSettings->SmartControlSettings.enableHeatCurve = true;
+          if (!error) {
+            if ( jsonDoc["enableHeatCurve"] == "enabled" ) heishamonSettings->SmartControlSettings.enableHeatCurve = true;
             if ( jsonDoc["avgHourHeatCurve"]) heishamonSettings->SmartControlSettings.avgHourHeatCurve = jsonDoc["avgHourHeatCurve"];
             if ( jsonDoc["heatCurveTargetHigh"]) heishamonSettings->SmartControlSettings.heatCurveTargetHigh = jsonDoc["heatCurveTargetHigh"];
             if ( jsonDoc["heatCurveTargetLow"]) heishamonSettings->SmartControlSettings.heatCurveTargetLow = jsonDoc["heatCurveTargetLow"];
@@ -199,10 +199,10 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
             for (unsigned int i = 0 ; i < 36 ; i++) {
               if ( jsonDoc["heatCurveLookup"][i]) heishamonSettings->SmartControlSettings.heatCurveLookup[i] = jsonDoc["heatCurveLookup"][i];
             }
-		  }
+          }
           configFile.close();
-		}
-	  }
+        }
+      }
     } else {
       Serial.println(F("failed to mount FS"));
     }
@@ -667,7 +667,9 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httptext = httptext + "How often all heatpump values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">";
   httptext = httptext + "<input type=\"number\" name=\"updateAllTime\" value=\"" + heishamonSettings->updateAllTime + "\"> seconds";
   httptext = httptext + "</td></tr><tr><td style=\"text-align:right; width: 50%\">";
-  httptext = httptext + "Listen only mode:</td><td style=\"text-align:left\">";
+
+  httpServer->sendContent(httptext);
+  httptext = "Listen only mode:</td><td style=\"text-align:left\">";
   if (heishamonSettings->listenonly) {
     httptext = httptext + "<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\" checked >";
   } else {
@@ -704,8 +706,10 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httptext = httptext + "</td></tr>";
   httptext = httptext + "</table>";
 
+  httpServer->sendContent(httptext);
+
   // 1wire
-  httptext = httptext + "<table style=\"width:100%\">";
+  httptext = "<table style=\"width:100%\">";
   httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
   httptext = httptext + "Use 1wire DS18b20:</td><td style=\"text-align:left\">";
   if (heishamonSettings->use_1wire) {
@@ -728,8 +732,9 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httptext = httptext + "</td></tr>";
   httptext = httptext + "</table>";
 
+  httpServer->sendContent(httptext);
   // s0
-  httptext = httptext + "<table style=\"width:100%\">";
+  httptext = "<table style=\"width:100%\">";
   httptext = httptext + "<tr><td style=\"text-align:right; width: 50%\">";
   httptext = httptext + "Use s0 kWh metering:</td><td style=\"text-align:left\">";
   if (heishamonSettings->use_s0) {
@@ -784,7 +789,7 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
   httpServer->sendContent_P(webBodyStart);
   httpServer->sendContent_P(webBodySmartcontrol1);
   httpServer->sendContent_P(webBodySmartcontrol2);
-  
+
   String httptext = "<form action=\"/smartcontrol\" method=\"POST\">";
   httpServer->sendContent(httptext);
   httpServer->sendContent_P(webBodyEndDiv);
@@ -796,18 +801,18 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
   if (httpServer->args()) {
     DynamicJsonDocument jsonDoc(1024);
     //set jsonDoc with current settings
-    if ( heishamonSettings->SmartControlSettings.enableHeatCurve){
-        jsonDoc["enableHeatCurve"] = "enabled";
+    if ( heishamonSettings->SmartControlSettings.enableHeatCurve) {
+      jsonDoc["enableHeatCurve"] = "enabled";
     } else {
-        jsonDoc["enableHeatCurve"] = "disabled";
-    }   
+      jsonDoc["enableHeatCurve"] = "disabled";
+    }
     jsonDoc["avgHourHeatCurve"] = heishamonSettings->SmartControlSettings.avgHourHeatCurve;
     jsonDoc["heatCurveTargetHigh"] = heishamonSettings->SmartControlSettings.heatCurveTargetHigh;
     jsonDoc["heatCurveTargetLow"] = heishamonSettings->SmartControlSettings.heatCurveTargetLow;
     jsonDoc["heatCurveOutHigh"] = heishamonSettings->SmartControlSettings.heatCurveOutHigh;
     jsonDoc["heatCurveOutLow"] = heishamonSettings->SmartControlSettings.heatCurveOutLow;
     for (unsigned int i = 0 ; i < 36 ; i++) {
-        jsonDoc["heatCurveLookup"][i] = heishamonSettings->SmartControlSettings.heatCurveLookup[i];
+      jsonDoc["heatCurveLookup"][i] = heishamonSettings->SmartControlSettings.heatCurveLookup[i];
     }
 
     //then overwrite with new settings
@@ -946,7 +951,7 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
         serializeJson(jsonDoc, configFile);
         configFile.close();
         delay(1000);
-    
+
         httpServer->sendContent_P(webBodySettingsSaveMessage);
         httpServer->sendContent_P(refreshMeta);
         httpServer->sendContent_P(webFooter);
@@ -1008,7 +1013,7 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
     httptext = httptext + "</p>";
     httpServer->sendContent(httptext);
     httpServer->sendContent_P(webBodyEndDiv);
-    
+
     httpServer->sendContent_P(webBodySmartcontrolHeatingcurveSVG);
     httpServer->sendContent_P(webBodySmartcontrolHeatingcurve2);
     httpServer->sendContent_P(webBodyEndDiv);
@@ -1017,15 +1022,15 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
     httpServer->sendContent(httptext);
     httpServer->sendContent_P(webBodyEndDiv);
   }
-  
+
   httpServer->sendContent_P(webBodyEndDiv);
 
   //Other example
-//  httpServer->sendContent_P(webBodySmartcontrolOtherexample);
-//  httptext = "...Loading...";
-//  httptext = httptext + "";
-//  httpServer->sendContent(httptext);
-//  httpServer->sendContent_P(webBodyEndDiv);
+  //  httpServer->sendContent_P(webBodySmartcontrolOtherexample);
+  //  httptext = "...Loading...";
+  //  httptext = httptext + "";
+  //  httpServer->sendContent(httptext);
+  //  httpServer->sendContent_P(webBodyEndDiv);
 
   httptext = "</form>";
   httpServer->sendContent(httptext);
@@ -1037,8 +1042,8 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
   httpServer->client().stop();
-}  
-  
+}
+
 bool send_command(byte* command, int length);
 void log_message(char* string);
 
@@ -1093,7 +1098,7 @@ void handleDebug(ESP8266WebServer *httpServer, char *hex, byte hex_len) {
   httpServer->sendHeader("Access-Control-Allow-Origin", "*");
   httpServer->send(200, "text/plain", "");
   char log_msg[256];
-  
+
 #define LOGHEXBYTESPERLINE 32
   for (int i = 0; i < hex_len; i += LOGHEXBYTESPERLINE) {
     char buffer [(LOGHEXBYTESPERLINE * 3) + 1];

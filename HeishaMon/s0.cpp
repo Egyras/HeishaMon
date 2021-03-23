@@ -47,6 +47,7 @@ void initS0Sensors(s0SettingsStruct s0Settings[], PubSubClient &mqtt_client, cha
   actS0Data[1].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
   sprintf(mqtt_topic, "%s/%s/WatthourTotal/2", mqtt_topic_base, mqtt_topic_s0);
   mqtt_client.subscribe(mqtt_topic);
+
 }
 
 void restore_s0_Watthour(int s0Port, float watthour) {

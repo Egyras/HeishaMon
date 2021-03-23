@@ -48,7 +48,7 @@ static const char *Model[] = {"21", //string representation of number of known m
                               "IDU:WH-ADC0309J3E5, ODU: WH-UD05JE5",
                               "IDU: WH-SDC0709J3E5, ODU: WH-UD07JE5",
                               "IDU: WH-SDC07H3E5-1 ODU: WH-UD07HE5-1",
-			      "WH-MDC07J3E5",
+                              "WH-MDC07J3E5",
                              };
 static const byte knownModels[NUMBER_OF_KNOWN_MODELS][10] = { //stores the bytes #129 to #138 of known models in the same order as the const above
   0xE2, 0xCF, 0x0B, 0x13, 0x33, 0x32, 0xD1, 0x0C, 0x16, 0x33,
@@ -394,16 +394,16 @@ static const topicFP topicFunctions[] = {
   getIntMinus1,        //TOP93
   getBit1and2,         //TOP94
   getIntMinus1,        //TOP95
-  getIntMinus1,        //TOP96  
+  getIntMinus1,        //TOP96
   getIntMinus128,      //TOP97
-  getIntMinus128,      //TOP98 
+  getIntMinus128,      //TOP98
   getBit5and6,         //TOP99
   getBit7and8,         //TOP100
   getBit3and4,         //TOP101
   getIntMinus128,      //TOP102
   getIntMinus128,      //TOP103
   getIntMinus128,      //TOP104
-  getIntMinus128,      //TOP105     
+  getIntMinus128,      //TOP105
 };
 
 static const char *DisabledEnabled[] = {"2", "Disabled", "Enabled"};
@@ -531,12 +531,12 @@ static const char **topicDescription[] = {
   Duty,            //TOP95
   Minutes,         //TOP96
   Kelvin,          //TOP97
-  Kelvin,          //TOP98      
+  Kelvin,          //TOP98
   DisabledEnabled, //TOP99
   DisabledEnabled, //TOP100
   SolarModeDesc,   //TOP101
   Kelvin,          //TOP102
   Kelvin,          //TOP103
   Celsius,         //TOP104
-  Celsius,         //TOP105   
+  Celsius,         //TOP105
 };

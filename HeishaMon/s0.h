@@ -6,7 +6,7 @@
 
 
 struct s0SettingsStruct {
-  byte gpiopin = 255; 
+  byte gpiopin = 255;
   unsigned int ppkwh = 1000; //pulses per Wh of the connected meter
   unsigned int lowerPowerInterval = 60; //configurabel low power interval
 };
@@ -21,7 +21,7 @@ struct s0DataStruct {
 
 
 void initS0Sensors(s0SettingsStruct s0Settings[], PubSubClient &mqtt_client, char* mqtt_topic_base);
-void restore_s0_Watthour(int s0Port,float watthour);
+void restore_s0_Watthour(int s0Port, float watthour);
 void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, s0SettingsStruct s0Settings[]);
 String s0TableOutput(void);
 String s0JsonOutput(void);

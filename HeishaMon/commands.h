@@ -34,16 +34,16 @@ unsigned int set_holiday_mode(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_powerful_mode(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_operation_mode(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_DHW_temp(char *msg, unsigned char *cmd, char *log_msg);
-unsigned int set_curves(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_zones(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_floor_heat_delta(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_floor_cool_delta(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_dhw_heat_delta(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_reset(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_heater_delay_time(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_heater_start_delta(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_heater_stop_delta(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_main_schedule(char *msg, unsigned char *cmd,char *log_msg);
+unsigned int set_curves(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_zones(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_floor_heat_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_floor_cool_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_dhw_heat_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_reset(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heater_delay_time(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heater_start_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heater_stop_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_main_schedule(char *msg, unsigned char *cmd, char *log_msg);
 
 //optional pcb commands
 unsigned int set_heat_cool_mode(char *msg, char *log_msg);
@@ -107,9 +107,9 @@ struct {
   { "SetDHWHeatDelta", set_dhw_heat_delta },
   { "SetReset", set_reset },
   { "SetHeaterDelayTime", set_heater_delay_time },
-  { "SetHeaterStartDelta", set_heater_start_delta },  
-  { "SetHeaterStopDelta", set_heater_stop_delta },    
-  { "SetMainSchedule", set_main_schedule },    
+  { "SetHeaterStartDelta", set_heater_start_delta },
+  { "SetHeaterStopDelta", set_heater_stop_delta },
+  { "SetMainSchedule", set_main_schedule },
 };
 
 struct {

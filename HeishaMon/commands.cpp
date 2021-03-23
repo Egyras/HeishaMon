@@ -624,7 +624,7 @@ unsigned int set_main_schedule(char *msg, unsigned char *cmd, char *log_msg) {
   String stringValue(msg);
 
   byte byteValue = 64; //hex 0x40
-  
+
   if ( stringValue.toInt() == 1 ) {
     byteValue = 128; //hex 0x80
   }
