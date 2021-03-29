@@ -45,12 +45,13 @@ void smartControlLoop(void (*log_message)(char*), SmartControlSettingsStruct Sma
 	  sprintf(log_msg, "Current calculated average outside temperature: %dC.", avgOutsideTemp); log_message(log_msg);
 
 	  log_message((char*)"Send new heat request temperature setpoint");
+    short heatRequest = int(SmartControlSettings.heatCurveLookup[35]);
 	  if (avgOutsideTemp > 15) {
-		  short heatRequest = int(SmartControlSettings.heatCurveLookup[35]);
+		  heatRequest = int(SmartControlSettings.heatCurveLookup[35]);
 	  } else if (avgOutsideTemp < -20) {
-		  short heatRequest = int(SmartControlSettings.heatCurveLookup[0]);
+		  heatRequest = int(SmartControlSettings.heatCurveLookup[0]);
 	  } else {	  
-		  short heatRequest = int(SmartControlSettings.heatCurveLookup[(avgOutsideTemp+20)]);
+		  heatRequest = int(SmartControlSettings.heatCurveLookup[(avgOutsideTemp+20)]);
 	  }
 	  sprintf(log_msg, "Current heat request temperature: %dC.", heatRequest); log_message(log_msg);
 	  
