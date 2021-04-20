@@ -41,27 +41,27 @@ void smartControlLoop(void (*log_message)(char*), SmartControlSettingsStruct Sma
       for (unsigned int i = 0 ; i < ((SmartControlSettings.avgHourHeatCurve * 2) + 1); i++) {
         outsideTempSum = outsideTempSum + avgOutsideTempArray[i];
       }
-	  long outsideTempSum = 0;
-	  for (unsigned int i = 0 ; i < ((SmartControlSettings.avgHourHeatCurve * 2)+1); i++) {
-	    outsideTempSum = outsideTempSum + avgOutsideTempArray[i];
-	  }
-	  avgOutsideTemp = int(outsideTempSum / (SmartControlSettings.avgHourHeatCurve * 2));
-	  sprintf(log_msg, "Current calculated average outside temperature: %dC.", avgOutsideTemp); log_message(log_msg);
+      long outsideTempSum = 0;
+      for (unsigned int i = 0 ; i < ((SmartControlSettings.avgHourHeatCurve * 2) + 1); i++) {
+        outsideTempSum = outsideTempSum + avgOutsideTempArray[i];
+      }
+      avgOutsideTemp = int(outsideTempSum / (SmartControlSettings.avgHourHeatCurve * 2));
+      sprintf(log_msg, "Current calculated average outside temperature: %dC.", avgOutsideTemp); log_message(log_msg);
 
-	  log_message((char*)"Send new heat request temperature setpoint");
-    short heatRequest = int(SmartControlSettings.heatCurveLookup[35]);
-	  if (avgOutsideTemp > 15) {
-		  heatRequest = int(SmartControlSettings.heatCurveLookup[35]);
-	  } else if (avgOutsideTemp < -20) {
-		  heatRequest = int(SmartControlSettings.heatCurveLookup[0]);
-	  } else {	  
-		  heatRequest = int(SmartControlSettings.heatCurveLookup[(avgOutsideTemp+20)]);
-	  }
-	  sprintf(log_msg, "Current heat request temperature: %dC.", heatRequest); log_message(log_msg);
-	  
-	  log_msg[0] = 0;
-	  unsigned char cmd[256] = { 0 };
-	  char msg[3];
+      log_message((char*)"Send new heat request temperature setpoint");
+      short heatRequest = int(SmartControlSettings.heatCurveLookup[35]);
+      if (avgOutsideTemp > 15) {
+        heatRequest = int(SmartControlSettings.heatCurveLookup[35]);
+      } else if (avgOutsideTemp < -20) {
+        heatRequest = int(SmartControlSettings.heatCurveLookup[0]);
+      } else {
+        heatRequest = int(SmartControlSettings.heatCurveLookup[(avgOutsideTemp + 20)]);
+      }
+      sprintf(log_msg, "Current heat request temperature: %dC.", heatRequest); log_message(log_msg);
+
+      log_msg[0] = 0;
+      unsigned char cmd[256] = { 0 };
+      char msg[3];
       unsigned int len = 0;
       sprintf(msg, "%d", heatRequest);
       len = set_z1_heat_request_temperature(msg, cmd, log_msg);
