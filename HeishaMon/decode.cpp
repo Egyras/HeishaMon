@@ -218,9 +218,9 @@ void decode_optional_heatpump_data(char* data, String actOptData[], PubSubClient
     }
     if ((updatenow) || ( actOptData[Topic_Number] != Topic_Value )) {
       actOptData[Topic_Number] = Topic_Value;
-      sprintf_P(log_msg, PSTR("received OPT%d %s: %s"), Topic_Number, topics[Topic_Number], Topic_Value.c_str());
+      sprintf_P(log_msg, PSTR("received OPT%d %s: %s"), Topic_Number, optTopics[Topic_Number], Topic_Value.c_str());
       log_message(log_msg);
-      sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_pcbvalues, topics[Topic_Number]);
+      sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_pcbvalues, optTopics[Topic_Number]);
       mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
     }
   }
