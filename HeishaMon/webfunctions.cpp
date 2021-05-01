@@ -321,6 +321,7 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReco
 
   if (heishamonSettings->use_1wire) httpServer->sendContent_P(webBodyRootDallasTab);
   if (heishamonSettings->use_s0) httpServer->sendContent_P(webBodyRootS0Tab);
+  httpServer->sendContent_P(webBodyRootConsoleTab);
   httpServer->sendContent_P(webBodyEndDiv);
 
   httpServer->sendContent_P(webBodyRootStatusWifi);
@@ -338,10 +339,12 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReco
   httpServer->sendContent_P(webBodyRootHeatpumpValues);
   if (heishamonSettings->use_1wire)httpServer->sendContent_P(webBodyRootDallasValues);
   if (heishamonSettings->use_s0)  httpServer->sendContent_P(webBodyRootS0Values);
+  httpServer->sendContent_P(webBodyRootConsole);
 
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(refreshJS);
   httpServer->sendContent_P(selectJS);
+  httpServer->sendContent_P(websocketJS);
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
   httpServer->client().stop();
@@ -1111,4 +1114,21 @@ void handleDebug(ESP8266WebServer *httpServer, char *hex, byte hex_len) {
 
   httpServer->sendContent("");
   httpServer->client().stop();
+}
+
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length) {
+  switch(type) {
+    case WStype_DISCONNECTED:
+    break;
+    case WStype_CONNECTED: {
+    } break;
+    case WStype_TEXT:
+    break;
+    case WStype_BIN:
+    break;
+    case WStype_PONG: {
+    } break;
+    default:
+    break;
+  }
 }
