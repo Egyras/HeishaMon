@@ -134,8 +134,8 @@ void log_message(char* string)
 
     if (!mqtt_client.publish(log_topic, string)) {
       Serial1.print(millis());
-      Serial1.print(": ");
-      Serial1.println("MQTT publish log message failed!");
+      Serial1.print(F(": "));
+      Serial1.println(F("MQTT publish log message failed!"));
       mqtt_client.disconnect();
     }
   }
@@ -274,7 +274,8 @@ bool send_command(byte* command, int length) {
   byte chk = calcChecksum(command, length);
   int bytesSent = Serial.write(command, length); //first send command
   bytesSent += Serial.write(chk); //then calculcated checksum byte afterwards
-  sprintf(log_msg, "sent bytes: %d including checksum value: %d ", bytesSent, int(chk)); log_message(log_msg);
+  sprintf_P(log_msg, PSTR("sent bytes: %d including checksum value: %d "), bytesSent, int(chk));
+  log_message(log_msg);
 
   if (heishamonSettings.logHexdump) logHex((char*)command, length);
   allowreadtime = millis() + SERIALTIMEOUT; //set allowreadtime when to timeout the answer of this command
@@ -300,7 +301,8 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       rawcommand = (byte *) malloc(length);
       memcpy(rawcommand, msg, length);
 
-      sprintf(log_msg, "sending raw value"); log_message(log_msg);
+      sprintf_P(log_msg, PSTR("sending raw value"));
+      log_message(log_msg);
       send_command(rawcommand, length);
     } else if (strncmp(topic_command, mqtt_topic_s0, 2) == 0)  // this is a s0 topic, check for watthour topic and restore it
     {
@@ -311,7 +313,9 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       //unsubscribe after restoring the watthour values
       char mqtt_topic[256];
       sprintf(mqtt_topic, "%s", topic);
-      if (mqtt_client.unsubscribe(mqtt_topic)) log_message((char*)"Unsubscribed from S0 watthour restore topic");
+      if (mqtt_client.unsubscribe(mqtt_topic)) {
+        log_message((char*)"Unsubscribed from S0 watthour restore topic");
+      }
     } else if (strncmp(topic_command, mqtt_topic_commands, 8) == 0)  // check for optional pcb commands
     {
       char* topic_sendcommand = topic_command + 9; //strip the first 9 "commands/" from the topic to get what we need
@@ -472,13 +476,13 @@ void setup() {
 }
 
 void send_panasonic_query() {
-  String message = "Requesting new panasonic data";
+  String message = F("Requesting new panasonic data");
   log_message((char*)message.c_str());
   send_command(panasonicQuery, PANASONICQUERYSIZE);
 }
 
 void send_optionalpcb_query() {
-  String message = "Sending optional PCB data";
+  String message = F("Sending optional PCB data");
   log_message((char*)message.c_str());
   send_command(optionalPCBQuery, OPTIONALPCBQUERYSIZE);
 }
@@ -487,7 +491,8 @@ void send_optionalpcb_query() {
 void read_panasonic_data() {
   if (sending && (millis() > allowreadtime)) {
     log_message((char*)"Previous read data attempt failed due to timeout!");
-    sprintf(log_msg, "Received %d bytes data", data_length); log_message(log_msg);
+    sprintf_P(log_msg, PSTR("Received %d bytes data"), data_length);
+    log_message(log_msg);
     if (heishamonSettings.logHexdump) logHex(data, data_length);
     if (data_length == 0) {
       timeoutread++;
@@ -540,10 +545,48 @@ void loop() {
 
     //log stats
     if (totalreads > 0 ) readpercentage = (((float)goodreads / (float)totalreads) * 100);
-    String message = "Heishamon stats: Uptime: " + getUptime() + " ## Free memory: " + getFreeMemory() + "% " + ESP.getFreeHeap() + " bytes ## Wifi: " + getWifiQuality() + "% ## Mqtt reconnects: " + mqttReconnects + " ## Correct data: " + readpercentage + "%";
+    String message = F("Heishamon stats: Uptime: ");
+    message += getUptime();
+    message += F(" ## Free memory: ");
+    message += getFreeMemory();
+    message += F("% ");
+    message += ESP.getFreeHeap();
+    message += F(" bytes ## Wifi: ");
+    message += getWifiQuality();
+    message += F("% ## Mqtt reconnects: ");
+    message += mqttReconnects;
+    message += F(" ## Correct data: ");
+    message += readpercentage;
+    message += F("%");
     log_message((char*)message.c_str());
-    String stats = "{\"uptime\":" + String(millis()) + ",\"voltage\":" + ESP.getVcc() / 1024.0 + ",\"free memory\":" + getFreeMemory() + ",\"wifi\":" + getWifiQuality() + ",\"mqtt reconnects\":" + mqttReconnects + ",\"total reads\":" + totalreads + ",\"good reads\":" + goodreads + ",\"bad crc reads\":" + badcrcread + ",\"bad header reads\":" + badheaderread + ",\"too short reads\":" + tooshortread + ",\"too long reads\":" + toolongread + ",\"timeout reads\":" + timeoutread + "}";
-    sprintf(mqtt_topic, "%s/stats", heishamonSettings.mqtt_topic_base); mqtt_client.publish(mqtt_topic, stats.c_str(), MQTT_RETAIN_VALUES);
+
+    String stats = F("{\"uptime\":");
+    message += String(millis());
+    message += F(",\"voltage\":");
+    message += ESP.getVcc() / 1024.0;
+    message += F(",\"free memory\":");
+    message += getFreeMemory();
+    message += F(",\"wifi\":");
+    message += getWifiQuality();
+    message += F(",\"mqtt reconnects\":");
+    message += mqttReconnects;
+    message += F(",\"total reads\":");
+    message += totalreads;
+    message += F(",\"good reads\":");
+    message += goodreads;
+    message += F(",\"bad crc reads\":");
+    message += badcrcread;
+    message += F(",\"bad header reads\":");
+    message += badheaderread;
+    message += F(",\"too short reads\":");
+    message += tooshortread;
+    message += F(",\"too long reads\":");
+    message += toolongread;
+    message += F(",\"timeout reads\":");
+    message += timeoutread;
+    message += F("}");
+    sprintf(mqtt_topic, "%s/stats", heishamonSettings.mqtt_topic_base);
+    mqtt_client.publish(mqtt_topic, stats.c_str(), MQTT_RETAIN_VALUES);
 
     //get new data
     if (!heishamonSettings.listenonly) send_panasonic_query();

@@ -9,7 +9,7 @@ short avgOutsideTempArray[96] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 // returns the calculated average outside temperature
 String getAvgOutsideTemp() {
   char avgOutsideTempStr[55];
-  sprintf(avgOutsideTempStr, "Current calculated average outside temperature: %dC.", avgOutsideTemp);
+  sprintf_P(avgOutsideTempStr, PSTR("Current calculated average outside temperature: %dC."), avgOutsideTemp);
   return String(avgOutsideTempStr);
 }
 
@@ -41,12 +41,9 @@ void smartControlLoop(void (*log_message)(char*), SmartControlSettingsStruct Sma
       for (unsigned int i = 0 ; i < ((SmartControlSettings.avgHourHeatCurve * 2) + 1); i++) {
         outsideTempSum = outsideTempSum + avgOutsideTempArray[i];
       }
-      long outsideTempSum = 0;
-      for (unsigned int i = 0 ; i < ((SmartControlSettings.avgHourHeatCurve * 2) + 1); i++) {
-        outsideTempSum = outsideTempSum + avgOutsideTempArray[i];
-      }
       avgOutsideTemp = int(outsideTempSum / (SmartControlSettings.avgHourHeatCurve * 2));
-      sprintf(log_msg, "Current calculated average outside temperature: %dC.", avgOutsideTemp); log_message(log_msg);
+      sprintf_P(log_msg, PSTR("Current calculated average outside temperature: %dC."), avgOutsideTemp);
+      log_message(log_msg);
 
       log_message((char*)"Send new heat request temperature setpoint");
       short heatRequest = int(SmartControlSettings.heatCurveLookup[35]);
