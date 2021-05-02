@@ -89,8 +89,8 @@ String getOpMode(byte input) {
 String getModel(char* data) { // TOP92 //
   byte model[10] = { data[129], data[130], data[131], data[132], data[133], data[134], data[135], data[136], data[137], data[138]};
   byte modelResult = -1;
-  for (unsigned int i = 0 ; i < NUMBER_OF_KNOWN_MODELS ; i++) {
-    if (memcmp(model, knownModels[i], 10) == 0) {
+  for (unsigned int i = 0 ; i < sizeof(knownModels)/sizeof(knownModels[0]) ; i++) {
+    if (memcmp_P(model, knownModels[i], 10) == 0) {
       modelResult = i;
     }
   }
@@ -171,8 +171,10 @@ void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_clien
     }
     if ((updatenow) || ( actData[Topic_Number] != Topic_Value )) {
       actData[Topic_Number] = Topic_Value;
-      sprintf(log_msg, "received TOP%d %s: %s", Topic_Number, topics[Topic_Number], Topic_Value.c_str()); log_message(log_msg);
-      sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_values, topics[Topic_Number]); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
+      sprintf_P(log_msg, PSTR("received TOP%d %s: %s"), Topic_Number, topics[Topic_Number], Topic_Value.c_str());
+      log_message(log_msg);
+      sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_values, topics[Topic_Number]);
+      mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
     }
   }
 }
@@ -189,43 +191,37 @@ void decode_optional_heatpump_data(char* data, String actOptData[], PubSubClient
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_OPT_TOPICS ; Topic_Number++) {
     byte Input_Byte;
     String Topic_Value;
-    String Topic_Name;
     switch (Topic_Number) { //switch on topic numbers, some have special needs
       case 0:
         Topic_Value = String(data[4] >> 7);
-        Topic_Name = "Z1_Water_Pump";
         break;
       case 1:
         Topic_Value = String((data[4] >> 5) & 0b11);
-        Topic_Name = "Z1_Mixing_Valve";
         break;
       case 2:
         Topic_Value = String((data[4] >> 4) & 0b1);
-        Topic_Name = "Z2_Water_Pump";
         break;
       case 3:
         Topic_Value = String((data[4] >> 2) & 0b11);
-        Topic_Name = "Z2_Mixing_Valve";
         break;
       case 4:
         Topic_Value = String((data[4] >> 1) & 0b1);
-        Topic_Name = "Pool_Water_Pump";
         break;
       case 5:
         Topic_Value = String((data[4] >> 0) & 0b1);
-        Topic_Name = "Solar_Water_Pump";
         break;
       case 6:
         Topic_Value = String((data[5] >> 0) & 0b1);
-        Topic_Name = "Alarm_State";
         break;
       default:
         break;
     }
     if ((updatenow) || ( actOptData[Topic_Number] != Topic_Value )) {
       actOptData[Topic_Number] = Topic_Value;
-      sprintf(log_msg, "received OPT%d %s: %s", Topic_Number, Topic_Name.c_str(), Topic_Value.c_str()); log_message(log_msg);
-      sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_pcbvalues, Topic_Name.c_str()); mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
+      sprintf_P(log_msg, PSTR("received OPT%d %s: %s"), Topic_Number, optTopics[Topic_Number], Topic_Value.c_str());
+      log_message(log_msg);
+      sprintf(mqtt_topic, "%s/%s/%s", mqtt_topic_base, mqtt_topic_pcbvalues, optTopics[Topic_Number]);
+      mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
     }
   }
   //response to heatpump should contain the data from heatpump on byte 4 and 5

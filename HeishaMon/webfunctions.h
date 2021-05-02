@@ -38,7 +38,6 @@ struct settingsStruct {
   SmartControlSettingsStruct SmartControlSettings;
 };
 
-
 String getUptime(void);
 void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings);
 int getWifiQuality(void);

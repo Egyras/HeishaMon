@@ -26,31 +26,32 @@ String getEnergy(byte input);
 String getHeatMode(byte input);
 String getModel(byte input);
 
-#define NUMBER_OF_KNOWN_MODELS 21 //update in char array below also
-static const char *Model[] = {"21", //string representation of number of known models
-                              "WH-MDC05H3E5",
-                              "WH-MDC07H3E5",
-                              "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5",
-                              "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8",
-                              "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8",
-                              "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8",
-                              "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8",
-                              "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5",
-                              "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5",
-                              "WH-MDC05J3E5",
-                              "WH-MDC09H3E5",
-                              "WH-MXC09H3E5",
-                              "IDU:WH-ADC0309J3E5, ODU:WH-UD09JE5",
-                              "IDU:WH-ADC0916H9E8, ODU:WH-UX12HE8",
-                              "IDU:WH-SQC09H3E8, ODU:WH-UQ09HE8",
-                              "IDU:WH-SDC09H3E5, ODU:WH-UD09HE5",
-                              "IDU:WH-ADC0309H3E5, ODU:WH-UD09HE5",
-                              "IDU:WH-ADC0309J3E5, ODU: WH-UD05JE5",
-                              "IDU: WH-SDC0709J3E5, ODU: WH-UD07JE5",
-                              "IDU: WH-SDC07H3E5-1 ODU: WH-UD07HE5-1",
-                              "WH-MDC07J3E5",
-                             };
-static const byte knownModels[NUMBER_OF_KNOWN_MODELS][10] = { //stores the bytes #129 to #138 of known models in the same order as the const above
+static const char *Model[] PROGMEM = {
+  "21", //string representation of number of known models
+  "WH-MDC05H3E5",
+  "WH-MDC07H3E5",
+  "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5",
+  "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8",
+  "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8",
+  "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8",
+  "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8",
+  "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5",
+  "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5",
+  "WH-MDC05J3E5",
+  "WH-MDC09H3E5",
+  "WH-MXC09H3E5",
+  "IDU:WH-ADC0309J3E5, ODU:WH-UD09JE5",
+  "IDU:WH-ADC0916H9E8, ODU:WH-UX12HE8",
+  "IDU:WH-SQC09H3E8, ODU:WH-UQ09HE8",
+  "IDU:WH-SDC09H3E5, ODU:WH-UD09HE5",
+  "IDU:WH-ADC0309H3E5, ODU:WH-UD09HE5",
+  "IDU:WH-ADC0309J3E5, ODU: WH-UD05JE5",
+  "IDU: WH-SDC0709J3E5, ODU: WH-UD07JE5",
+  "IDU: WH-SDC07H3E5-1 ODU: WH-UD07HE5-1",
+  "WH-MDC07J3E5",
+};
+
+static const byte knownModels[sizeof(Model)/sizeof(Model[0])][10] = { //stores the bytes #129 to #138 of known models in the same order as the const above
   0xE2, 0xCF, 0x0B, 0x13, 0x33, 0x32, 0xD1, 0x0C, 0x16, 0x33,
   0xE2, 0xCF, 0x0B, 0x14, 0x33, 0x42, 0xD1, 0x0B, 0x17, 0x33,
   0xE2, 0xCF, 0x0D, 0x77, 0x09, 0x12, 0xD0, 0x0B, 0x05, 0x11,
@@ -77,7 +78,17 @@ static const byte knownModels[NUMBER_OF_KNOWN_MODELS][10] = { //stores the bytes
 #define NUMBER_OF_TOPICS 106 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
 
-static const char * topics[] = {
+static const char *optTopics[] PROGMEM = {
+  "Z1_Water_Pump", // OPT0
+  "Z1_Mixing_Valve", // OPT1
+  "Z2_Water_Pump", // OPT2
+  "Z2_Mixing_Valve", // OPT3
+  "Pool_Water_Pump", // OPT4
+  "Solar_Water_Pump", // OPT5
+  "Alarm_State", // OPT6
+};
+
+static const char *topics[] PROGMEM = {
   "Heatpump_State",          //TOP0
   "Pump_Flow",               //TOP1
   "Force_DHW_State",         //TOP2
@@ -186,7 +197,7 @@ static const char * topics[] = {
   "Solar_High_Limit", //TOP105
 };
 
-static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
+static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
   4,      //TOP0
   0,      //TOP1
   4,      //TOP2
@@ -297,7 +308,7 @@ static const byte topicBytes[] = { //can store the index as byte (8-bit unsigned
 
 typedef String (*topicFP)(byte);
 
-static const topicFP topicFunctions[] = {
+static const topicFP topicFunctions[] PROGMEM = {
   getBit7and8,         //TOP0
   unknown,             //TOP1
   getBit1and2,         //TOP2
@@ -406,33 +417,33 @@ static const topicFP topicFunctions[] = {
   getIntMinus128,      //TOP105
 };
 
-static const char *DisabledEnabled[] = {"2", "Disabled", "Enabled"};
-static const char *BlockedFree[] = {"2", "Blocked", "Free"};
-static const char *OffOn[] = {"2", "Off", "On"};
-static const char *InactiveActive[] = {"2", "Inactive", "Active"};
-static const char *HolidayState[] = {"3", "Off", "Scheduled", "Active"};
-static const char *OpModeDesc[] = {"9", "Heat", "Cool", "Auto(heat)", "DHW", "Heat+DHW", "Cool+DHW", "Auto(heat)+DHW", "Auto(cool)", "Auto(cool)+DHW"};
-static const char *Powerfulmode[] = {"4", "Off", "30min", "60min", "90min"};
-static const char *Quietmode[] = {"4", "Off", "Level 1", "Level 2", "Level 3"};
-static const char *Valve[] = {"2", "Room", "DHW"};
-static const char *LitersPerMin[] = {"value", "l/min"};
-static const char *RotationsPerMin[] = {"value", "r/min"};
-static const char *Pressure[] = {"value", "Kgf/cm2"};
-static const char *Celsius[] = {"value", "&deg;C"};
-static const char *Kelvin[] = {"value", "K"};
-static const char *Hertz[] = {"value", "Hz"};
-static const char *Counter[] = {"value", "count"};
-static const char *Hours[] = {"value", "hours"};
-static const char *Watt[] = {"value", "Watt"};
-static const char *ErrorState[] = {"value", "Error"};
-static const char *Ampere[] = {"value", "Ampere"};
-static const char *Minutes[] = {"value", "Minutes"};
-static const char *Duty[] = {"value", "Duty"};
-static const char *ZonesState[] = {"3", "Zone1 active", "Zone2 active", "Zone1 and zone2 active"};
-static const char *HeatCoolModeDesc[] = {"2", "Comp. Curve", "Direct"};
-static const char *SolarModeDesc[] = {"3", "Disabled", "Buffer", "DHW"};
+static const char *DisabledEnabled[] PROGMEM = {"2", "Disabled", "Enabled"};
+static const char *BlockedFree[] PROGMEM = {"2", "Blocked", "Free"};
+static const char *OffOn[] PROGMEM = {"2", "Off", "On"};
+static const char *InactiveActive[] PROGMEM = {"2", "Inactive", "Active"};
+static const char *HolidayState[] PROGMEM = {"3", "Off", "Scheduled", "Active"};
+static const char *OpModeDesc[] PROGMEM = {"9", "Heat", "Cool", "Auto(heat)", "DHW", "Heat+DHW", "Cool+DHW", "Auto(heat)+DHW", "Auto(cool)", "Auto(cool)+DHW"};
+static const char *Powerfulmode[] PROGMEM = {"4", "Off", "30min", "60min", "90min"};
+static const char *Quietmode[] PROGMEM = {"4", "Off", "Level 1", "Level 2", "Level 3"};
+static const char *Valve[] PROGMEM = {"2", "Room", "DHW"};
+static const char *LitersPerMin[] PROGMEM = {"value", "l/min"};
+static const char *RotationsPerMin[] PROGMEM = {"value", "r/min"};
+static const char *Pressure[] PROGMEM = {"value", "Kgf/cm2"};
+static const char *Celsius[] PROGMEM = {"value", "&deg;C"};
+static const char *Kelvin[] PROGMEM = {"value", "K"};
+static const char *Hertz[] PROGMEM = {"value", "Hz"};
+static const char *Counter[] PROGMEM = {"value", "count"};
+static const char *Hours[] PROGMEM = {"value", "hours"};
+static const char *Watt[] PROGMEM = {"value", "Watt"};
+static const char *ErrorState[] PROGMEM = {"value", "Error"};
+static const char *Ampere[] PROGMEM = {"value", "Ampere"};
+static const char *Minutes[] PROGMEM = {"value", "Minutes"};
+static const char *Duty[] PROGMEM = {"value", "Duty"};
+static const char *ZonesState[] PROGMEM = {"3", "Zone1 active", "Zone2 active", "Zone1 and zone2 active"};
+static const char *HeatCoolModeDesc[] PROGMEM = {"2", "Comp. Curve", "Direct"};
+static const char *SolarModeDesc[] PROGMEM = {"3", "Disabled", "Buffer", "DHW"};
 
-static const char **topicDescription[] = {
+static const char **topicDescription[] PROGMEM = {
   OffOn,           //TOP0
   LitersPerMin,    //TOP1
   DisabledEnabled, //TOP2
