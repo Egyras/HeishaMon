@@ -41,10 +41,7 @@ void smartControlLoop(void (*log_message)(char*), SmartControlSettingsStruct Sma
       for (unsigned int i = 0 ; i < ((SmartControlSettings.avgHourHeatCurve * 2) + 1); i++) {
         outsideTempSum = outsideTempSum + avgOutsideTempArray[i];
       }
-      long outsideTempSum = 0;
-      for (unsigned int i = 0 ; i < ((SmartControlSettings.avgHourHeatCurve * 2) + 1); i++) {
-        outsideTempSum = outsideTempSum + avgOutsideTempArray[i];
-      }
+
       avgOutsideTemp = int(outsideTempSum / (SmartControlSettings.avgHourHeatCurve * 2));
       sprintf(log_msg, "Current calculated average outside temperature: %dC.", avgOutsideTemp); log_message(log_msg);
 
