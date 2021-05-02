@@ -32,6 +32,7 @@ ADC_MODE(ADC_VCC);
 #define SERIALTIMEOUT 2000 // wait until all 203 bytes are read, must not be too long to avoid blocking the code
 
 ESP8266WebServer httpServer(80);
+WebSocketsServer webSocket = WebSocketsServer(81);
 ESP8266HTTPUpdateServer httpUpdater;
 
 settingsStruct heishamonSettings;
@@ -137,6 +138,9 @@ void log_message(char* string)
       Serial1.println("MQTT publish log message failed!");
       mqtt_client.disconnect();
     }
+  }
+  if(webSocket.connectedClients() > 0) {
+    webSocket.broadcastTXT(string, strlen(string));
   }
 }
 
@@ -384,6 +388,10 @@ void setupHttp() {
     httpServer.client().stop();
   });
   httpServer.begin();
+
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
+  webSocket.enableHeartbeat(3000, 3000, 2);
 }
 
 void setupSerial() {
@@ -498,6 +506,8 @@ void loop() {
   ArduinoOTA.handle();
   // then handle HTTP
   httpServer.handleClient();
+  // handle Websockets
+  webSocket.loop();
   // Allow MDNS processing
   MDNS.update();
 
