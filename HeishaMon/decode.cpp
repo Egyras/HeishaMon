@@ -165,7 +165,9 @@ void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_clien
         Topic_Value = getModel(data);
         break;
       default:
-        Input_Byte = data[topicBytes[Topic_Number]];
+        byte cpy;
+        memcpy_P(&cpy, &topicBytes[Topic_Number], sizeof(byte));
+        Input_Byte = data[cpy];
         Topic_Value = topicFunctions[Topic_Number](Input_Byte);
         break;
     }
