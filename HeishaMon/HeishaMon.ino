@@ -2,6 +2,7 @@
 
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
+#include <DNSServer.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include <PubSubClient.h>
@@ -15,6 +16,7 @@
 #include "decode.h"
 #include "commands.h"
 
+DNSServer dnsServer;
 
 //to read bus voltage in stats
 ADC_MODE(ADC_VCC);
@@ -28,6 +30,7 @@ ADC_MODE(ADC_VCC);
 // of the address block
 #define DRD_ADDRESS 0x00
 
+const byte DNS_PORT = 53;
 
 #define SERIALTIMEOUT 2000 // wait until all 203 bytes are read, must not be too long to avoid blocking the code
 
@@ -68,7 +71,8 @@ char log_msg[256];
 // mqtt topic to sprintf and then publish to
 char mqtt_topic[256];
 
-int mqttReconnects = 0;
+static int mqttReconnects = 0;
+static int wifiReconnects = 0;
 
 //buffer for commands to send
 struct command_struct {
@@ -94,13 +98,23 @@ void mqtt_reconnect()
   if (now > nextMqttReconnectAttempt) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when nextMqttReconnectAttempt is still 0
     nextMqttReconnectAttempt = now + MQTTRECONNECTTIMER;
     if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) ) {
+      wifiReconnects++;
       log_message((char *)"Lost WiFi connection!");
-      if (!heishamonSettings.optionalPCB) { //do not reboot if optional pcb emulation is active because it is more important to keep transmitting data packages to heatpump
-        log_message((char *)"Rebooting...");
-        delay(1000);
-        ESP.restart();
+      if(WiFi.status() == WL_CONNECT_FAILED) {
+        WiFi.begin();
+      } else if(WiFi.status() == WL_CONNECTED) {
+        wifiReconnects = 0;
+        Serial.print("Connected, IP address: ");
+        Serial.println(WiFi.localIP());
+      } else {
+        Serial.println("WiFi connecting...");
       }
-    }
+      if(wifiReconnects > 5) {
+        WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+        WiFi.mode(WIFI_AP_STA);
+        WiFi.softAP("HeishaMon-Setup");
+       }
+     }
     log_message((char*)"Reconnecting to mqtt server ...");
     char topic[256];
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
@@ -372,7 +386,7 @@ void setupHttp() {
     handleDebug(&httpServer, data, 203);
   });
   httpServer.on("/settings", [] {
-    handleSettings(&httpServer, &heishamonSettings);
+    handleSettings(drd, &httpServer, &heishamonSettings);
   });
   httpServer.on("/smartcontrol", [] {
     handleSmartcontrol(&httpServer, &heishamonSettings, actData);
@@ -390,6 +404,26 @@ void setupHttp() {
     httpServer.sendHeader("Location", String("/"), true);
     httpServer.send ( 302, "text/plain", "");
     httpServer.client().stop();
+  });
+  httpServer.onNotFound([]() {
+    httpServer.sendHeader("Location", String("/"), true);
+    httpServer.send(302, "text/plain", "");
+    httpServer.client().stop();
+  });
+  /*
+   * Captive portal url's
+   */
+  httpServer.on("/generate_204", [] {
+    handleSettings(drd, &httpServer, &heishamonSettings);
+  });
+  httpServer.on("/hotspot-detect.html", [] {
+    handleSettings(drd, &httpServer, &heishamonSettings);
+  });
+  httpServer.on("/fwlink", [] {
+    handleSettings(drd, &httpServer, &heishamonSettings);
+  });
+  httpServer.on("/popup", [] {
+    handleSettings(drd, &httpServer, &heishamonSettings);
   });
   httpServer.begin();
 
@@ -445,6 +479,7 @@ void setupMqtt() {
 
 void setup() {
   setupSerial();
+  WiFi.printDiag(Serial);
   setupWifi(drd, &heishamonSettings);
   MDNS.begin(heishamonSettings.wifi_hostname);
   MDNS.addService("http", "tcp", 80);
@@ -454,6 +489,7 @@ void setup() {
   setupHttp();
 
   switchSerial(); //switch serial to gpio13/gpio15
+  WiFi.printDiag(Serial1);
 
   //load optional PCB data from flash
   if (heishamonSettings.optionalPCB) {
@@ -470,6 +506,9 @@ void setup() {
   //these two after optional pcb because it needs to send a datagram fast after boot
   if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
   if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings, mqtt_client, heishamonSettings.mqtt_topic_base);
+
+  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+  dnsServer.start(DNS_PORT, "*", apIP);
 
   // wait waittime for the first start in main loop
   nexttime = millis() + (1000 * heishamonSettings.waitTime);
@@ -507,6 +546,9 @@ void read_panasonic_data() {
 }
 
 void loop() {
+  if ((WiFi.getMode() != WIFI_STA) ) {
+    dnsServer.processNextRequest();
+  }
   // Handle OTA first.
   ArduinoOTA.handle();
   // then handle HTTP
