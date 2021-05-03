@@ -70,16 +70,18 @@ char mqtt_topic[256];
 
 int mqttReconnects = 0;
 
-//buffer for commands to send
-struct command_struct {
-  byte value[128];
-  unsigned int length;
-  command_struct *next;
-};
-command_struct *commandBuffer;
-unsigned int commandsInBuffer = 0;
-#define MAXCOMMANDSINBUFFER 10 //can't have too much in buffer due to memory shortage
+// can't have too much in buffer due to memory shortage
+#define MAXCOMMANDSINBUFFER 10
 
+// buffer for commands to send
+struct cmdbuffer_t {
+	uint8_t length;
+	byte data[128];
+} cmdbuffer[MAXCOMMANDSINBUFFER];
+
+static uint8_t cmdstart = 0;
+static uint8_t cmdend = 0;
+static uint8_t cmdnrel = 0;
 
 //doule reset detection
 DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
@@ -234,29 +236,23 @@ bool readSerial()
 }
 
 void popCommandBuffer() {
-  if ((!sending) && (commandBuffer)) { //to make sure we can pop a command from the buffer
-    send_command(commandBuffer->value, commandBuffer->length);
-    command_struct* nextCommand = commandBuffer->next;
-    free(commandBuffer);
-    commandBuffer = nextCommand;
-    commandsInBuffer--;
+  // to make sure we can pop a command from the buffer
+  if((!sending) && cmdnrel > 0) {
+    send_command(cmdbuffer[cmdstart].data, cmdbuffer[cmdstart].length);
+    cmdstart = (cmdstart + 1) % (MAXCOMMANDSINBUFFER);
+    cmdnrel--;
   }
 }
 
 void pushCommandBuffer(byte* command, int length) {
-  if (commandsInBuffer < MAXCOMMANDSINBUFFER) {
-    command_struct* newCommand = new command_struct;
-    newCommand->length = length;
-    for (int i = 0 ; i < length ; i++) {
-      newCommand->value[i] = command[i];
-    }
-    newCommand->next = commandBuffer;
-    commandBuffer = newCommand;
-    commandsInBuffer++;
+  if(cmdnrel+1 > MAXCOMMANDSINBUFFER) {
+    log_message((char *)"Too much commands already in buffer. Ignoring this commands.\n");
+    return;
   }
-  else {
-    log_message((char*)"Too much commands already in buffer. Ignoring this commands.");
-  }
+  cmdbuffer[cmdend].length = length;
+  memcpy(&cmdbuffer[cmdend].data, command, length);
+  cmdend = (cmdend + 1) % (MAXCOMMANDSINBUFFER);
+  cmdnrel++;
 }
 
 bool send_command(byte* command, int length) {
@@ -520,7 +516,7 @@ void loop() {
 
   read_panasonic_data();
 
-  if ((!sending) && (commandsInBuffer > 0)) { //check if there is a send command in the buffer
+  if ((!sending) && (cmdnrel > 0)) { //check if there is a send command in the buffer
     log_message((char *)"Sending command from buffer");
     popCommandBuffer();
   }
