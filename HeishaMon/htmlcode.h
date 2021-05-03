@@ -9,6 +9,8 @@ static const char webHeader[] PROGMEM  =
   "<link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">"
   "<style>"
   "  .w3-btn { margin-bottom:10px; }"
+  "  .heishatable { display: none; }"
+  "  #cli{ background: black; color: white; width: 100%; height: 400px!important; }"
   "</style>";
 
 static const char refreshMeta[] PROGMEM = "<meta http-equiv=\"refresh\" content=\"5; url=/\" />";
@@ -30,10 +32,51 @@ static const char menuJS[] PROGMEM =
   " }"
   "</script>";
 
+static const char websocketJS[] PROGMEM =
+  "<script>"
+  "  var bConnected = false;"
+  "  function startWebsockets() {"
+  "    if(typeof MozWebSocket != \"undefined\") {"
+  "      oWebsocket = new MozWebSocket(\"ws://\" + location.host + \":81\");"
+  "    } else if(typeof WebSocket != \"undefined\") {"
+  "      /* The characters after the trailing slash are needed for a wierd IE 10 bug */"
+  "      oWebsocket = new WebSocket(\"ws://\" + location.host + \":81/ws\");"
+  "    }"
+  ""
+  "    if(oWebsocket) {"
+  "      oWebsocket.onopen = function(evt) {"
+  "        bConnected = true;"
+  "      };"
+  ""
+  "      oWebsocket.onclose = function(evt) {"
+  "        console.log('onclose: ' + evt);"
+  "      };"
+  ""
+  "      oWebsocket.onerror = function(evt) {"
+  "        console.log('onerror: ' + evt);"
+  "      };"
+  ""
+  "      oWebsocket.onmessage = function(evt) {"
+  "        let obj = document.getElementById(\"cli\");"
+  "        let chk = document.getElementById(\"autoscroll\");"
+  "        obj.value += evt.data + \"\\n\";"
+  "        if(chk.checked) {"
+  "          obj.scrollTop = obj.scrollHeight;"
+  "        }"
+  "      }"
+  "    }"
+  "  }"
+  "</script>";
+
 static const char refreshJS[] PROGMEM =
   "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js\"></script>"
   "<script>"
-  " $(document).ready(function(){refreshTable();});"
+  " $(document).ready(function(){"
+  "    refreshTable();"
+  "    openTable('Heatpump');"
+  "    document.getElementById(\"cli\").value = \"\";"
+  "    startWebsockets();"
+  " });"
   " function refreshTable(){"
   "   $('#heishavalues').load('/tablerefresh', function(){setTimeout(refreshTable, 30000);});"
   "   $('#dallasvalues').load('/tablerefresh?1wire', function(){});"
@@ -137,6 +180,8 @@ static const char webBodyRoot2[] PROGMEM =
 static const char webBodyRootDallasTab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Dallas')\">Dallas 1-wire</button>";
 static const char webBodyRootS0Tab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('S0')\">S0 kWh meters</button>";
 
+static const char webBodyRootConsoleTab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Console')\">Console</button>";
+
 static const char webBodyEndDiv[] PROGMEM = "</div>";
 
 static const char webBodyRootStatusWifi[] PROGMEM =   "<div class=\"w3-container w3-left\"><br>Wifi signal: ";
@@ -160,6 +205,10 @@ static const char webBodyRootS0Values[] PROGMEM =
   "<h2>Current S0 kWh meters values</h2>"
   "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>S0 port</th><th>Watt</th><th>Watthour</th><th>WatthourTotal</th></tr></thead><tbody id=\"s0values\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
 
+static const char webBodyRootConsole[] PROGMEM =
+  "<div id=\"Console\" class=\"w3-container w3-center heishatable\">"
+  "<h2>Console output</h2>"
+  "<textarea id=\"cli\" disabled></textarea><br /><input type=\"checkbox\" id=\"autoscroll\" checked=\"checked\">Enable autoscroll</div>";
 
 static const char webBodyFactoryResetWarning[] PROGMEM =
   "<div class=\"w3-container w3-center\">"

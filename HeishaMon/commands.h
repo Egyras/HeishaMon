@@ -61,13 +61,10 @@ unsigned int set_z2_water_temp(char *msg, char *log_msg);
 unsigned int set_solar_temp(char *msg, char *log_msg);
 unsigned int set_byte_9(char *msg, char *log_msg);
 
-
-
-
 struct {
   const char *name;
   unsigned int (*func)(char *msg, unsigned char *cmd, char *log_msg);
-} commands[] = {
+} commands[] PROGMEM = {
   // set heatpump state to on by sending 1
   { "SetHeatpump", set_heatpump_state },
   // set pump state to on by sending 1
@@ -115,7 +112,7 @@ struct {
 struct {
   const char *name;
   unsigned int (*func)(char *msg, char *log_msg);
-} optionalCommands[] = {
+} optionalCommands[] PROGMEM = {
   // optional PCB
   { "SetHeatCoolMode", set_heat_cool_mode },
   { "SetCompressorState", set_compressor_state },

@@ -1,6 +1,7 @@
 #include <FS.h>                   //this needs to be first, or it all crashes and burns...
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include <WebSocketsServer.h>
 #include <DoubleResetDetect.h>
 #include <ArduinoJson.h>
 #include "dallas.h"
@@ -37,7 +38,6 @@ struct settingsStruct {
   SmartControlSettingsStruct SmartControlSettings;
 };
 
-
 String getUptime(void);
 void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings);
 int getWifiQuality(void);
@@ -52,3 +52,4 @@ void handleDebug(ESP8266WebServer *httpServer, char *hex, byte hex_len);
 void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
 void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]);
 void handleREST(ESP8266WebServer *httpServer, bool optionalPCB);
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);

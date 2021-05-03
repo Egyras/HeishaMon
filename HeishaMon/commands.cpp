@@ -8,17 +8,17 @@ byte optionalPCBQuery[] = {0xF1, 0x11, 0x01, 0x50, 0x00, 0x00, 0x40, 0xFF, 0xFF,
 //timer for saving optional pcb data to flash
 unsigned long nextOptionalPCBSave = 0;
 
-const char* mqtt_topic_values = "main";
-const char* mqtt_topic_commands = "commands";
-const char* mqtt_topic_pcbvalues = "optional";
-const char* mqtt_topic_1wire = "1wire";
-const char* mqtt_topic_s0 = "s0";
-const char* mqtt_logtopic = "log";
+const char* mqtt_topic_values PROGMEM = "main";
+const char* mqtt_topic_commands PROGMEM = "commands";
+const char* mqtt_topic_pcbvalues PROGMEM = "optional";
+const char* mqtt_topic_1wire PROGMEM = "1wire";
+const char* mqtt_topic_s0 PROGMEM = "s0";
+const char* mqtt_logtopic PROGMEM = "log";
 
-const char* mqtt_willtopic = "LWT";
-const char* mqtt_iptopic = "ip";
+const char* mqtt_willtopic PROGMEM = "LWT";
+const char* mqtt_iptopic PROGMEM = "ip";
 
-const char* mqtt_send_raw_value_topic = "SendRawValue";
+const char* mqtt_send_raw_value_topic PROGMEM = "SendRawValue";
 
 static unsigned int temp2hex(float temp) {
   int hextemp = 0;
