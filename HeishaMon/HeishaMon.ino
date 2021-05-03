@@ -139,7 +139,7 @@ void log_message(char* string)
       mqtt_client.disconnect();
     }
   }
-  if(webSocket.connectedClients() > 0) {
+  if (webSocket.connectedClients() > 0) {
     webSocket.broadcastTXT(string, strlen(string));
   }
 }

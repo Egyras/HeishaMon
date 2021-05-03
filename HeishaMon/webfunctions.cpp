@@ -351,7 +351,7 @@ void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]) {
     for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
       String topicdesc;
       const char *valuetext = "value";
-      if (strcmp(topicDescription[topic][0], valuetext) == 0) {
+      if (strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
         topicdesc = topicDescription[topic][1];
       }
       else {
@@ -389,7 +389,7 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]) {
   for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
     String topicdesc;
     const char *valuetext = "value";
-    if (strcmp(topicDescription[topic][0], valuetext) == 0) {
+    if (strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
       topicdesc = topicDescription[topic][1];
     }
     else {
@@ -1108,18 +1108,18 @@ void handleDebug(ESP8266WebServer *httpServer, char *hex, byte hex_len) {
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length) {
-  switch(type) {
+  switch (type) {
     case WStype_DISCONNECTED:
-    break;
+      break;
     case WStype_CONNECTED: {
-    } break;
+      } break;
     case WStype_TEXT:
-    break;
+      break;
     case WStype_BIN:
-    break;
+      break;
     case WStype_PONG: {
-    } break;
+      } break;
     default:
-    break;
+      break;
   }
 }

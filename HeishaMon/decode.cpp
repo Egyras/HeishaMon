@@ -89,7 +89,7 @@ String getOpMode(byte input) {
 String getModel(char* data) { // TOP92 //
   byte model[10] = { data[129], data[130], data[131], data[132], data[133], data[134], data[135], data[136], data[137], data[138]};
   byte modelResult = -1;
-  for (unsigned int i = 0 ; i < sizeof(knownModels)/sizeof(knownModels[0]) ; i++) {
+  for (unsigned int i = 0 ; i < sizeof(knownModels) / sizeof(knownModels[0]) ; i++) {
     if (memcmp_P(model, knownModels[i], 10) == 0) {
       modelResult = i;
     }
