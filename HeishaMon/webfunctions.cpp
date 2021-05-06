@@ -448,16 +448,6 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
     if (httpServer->hasArg("wifi_hostname")) {
       jsonDoc["wifi_hostname"] = httpServer->arg("wifi_hostname");
     }
-    if (httpServer->hasArg("wifi_ssid") && httpServer->hasArg("wifi_password")) {
-      if (jsonDoc["wifi_ssid"] != httpServer->hasArg("wifi_ssid") || jsonDoc["wifi_password"] != httpServer->hasArg("wifi_password")) {
-        WiFi.persistent(true);
-        if(httpServer->arg("wifi_password").length() == 0) {
-          WiFi.begin(httpServer->arg("wifi_ssid").c_str());
-        } else {
-          WiFi.begin(httpServer->arg("wifi_ssid").c_str(), httpServer->arg("wifi_password"));
-        }
-      }
-    }
     if (httpServer->hasArg("wifi_ssid")) {
       jsonDoc["wifi_ssid"] = httpServer->arg("wifi_ssid").c_str();
     }
@@ -554,9 +544,14 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
         configFile.close();
       }
     }
-  }
 
-  setupWifi(drd, heishamonSettings);
+    setupWifi(drd, heishamonSettings);
+
+    httpServer->sendHeader("Location", String("/Settings"), true);
+    httpServer->send(302, "text/plain", "");
+    httpServer->client().stop();
+    return;
+  }
 
   String httptext = F("<div class=\"w3-container w3-center\">");
   httptext = httptext + F("<h2>Settings</h2>");
