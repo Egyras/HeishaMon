@@ -14,6 +14,8 @@
 
 #define UPTIME_OVERFLOW 4294967295 // Uptime overflow value
 
+void log_message(char* string);
+
 int getWifiQuality() {
   if (WiFi.status() != WL_CONNECTED)
     return -1;
@@ -64,14 +66,14 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
   getUptime();
 
   if (drd.detect()) {
-    Serial.println(F("Double reset detected, clearing config."));
+    log_message("Double reset detected, clearing config.");
     Serial1.begin(115200);
     LittleFS.begin();
     LittleFS.format();
     WiFi.persistent(true);
     WiFi.disconnect();
     WiFi.persistent(false);
-    Serial.println(F("Config cleared. Please reset to configure this device..."));
+    log_message("Config cleared. Please reset to configure this device...");
     //initiate debug led indication for factory reset
     pinMode(2, FUNCTION_0); //set it as gpio
     pinMode(2, OUTPUT);
@@ -84,16 +86,16 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   } else {
     //read configuration from FS json
-    Serial.println(F("mounting FS..."));
+    log_message("mounting FS...");
 
     if (LittleFS.begin()) {
-      Serial.println(F("mounted file system"));
+      log_message("mounted file system");
       if (LittleFS.exists("/config.json")) {
         //file exists, reading and loading
-        Serial.println(F("reading config file"));
+        log_message("reading config file");
         File configFile = LittleFS.open("/config.json", "r");
         if (configFile) {
-          Serial.println(F("opened config file"));
+          log_message("opened config file");
           size_t size = configFile.size();
           // Allocate a buffer to store contents of the file.
           std::unique_ptr<char[]> buf(new char[size]);
@@ -103,7 +105,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
           DeserializationError error = deserializeJson(jsonDoc, buf.get());
           serializeJson(jsonDoc, Serial);
           if (!error) {
-            Serial.println(F("\nparsed json"));
+            log_message("\nparsed json");
             //read updated parameters, make sure no overflow
             if ( jsonDoc["wifi_ssid"] ) strncpy(heishamonSettings->wifi_ssid, jsonDoc["wifi_ssid"], sizeof(heishamonSettings->wifi_ssid));
             if ( jsonDoc["wifi_password"] ) strncpy(heishamonSettings->wifi_password, jsonDoc["wifi_password"], sizeof(heishamonSettings->wifi_password));
@@ -138,7 +140,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
             if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
             if (heishamonSettings->updataAllDallasTime < heishamonSettings->waitDallasTime) heishamonSettings->updataAllDallasTime = heishamonSettings->waitDallasTime;
           } else {
-            Serial.println(F("Failed to load json config, forcing config reset."));
+            log_message("Failed to load json config, forcing config reset.");
             WiFi.persistent(true);
             WiFi.disconnect();
             WiFi.persistent(false);
@@ -147,7 +149,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
         }
       }
       else {
-        Serial.println(F("No config.json exists! Forcing a config reset."));
+        log_message("No config.json exists! Forcing a config reset.");
         WiFi.persistent(true);
         WiFi.disconnect();
         WiFi.persistent(false);
@@ -155,10 +157,10 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
       if (LittleFS.exists("/heatcurve.json")) {
         //file exists, reading and loading
-        Serial.println(F("reading heatingcurve file"));
+        log_message("reading heatingcurve file");
         File configFile = LittleFS.open("/heatcurve.json", "r");
         if (configFile) {
-          Serial.println(F("opened heating curve config file"));
+          log_message("opened heating curve config file");
           size_t size = configFile.size();
           // Allocate a buffer to store contents of the file.
           std::unique_ptr<char[]> buf(new char[size]);
@@ -182,7 +184,7 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
         }
       }
     } else {
-      Serial.println(F("failed to mount FS"));
+      log_message("failed to mount FS");
     }
     //end read
   }
@@ -212,9 +214,9 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
   }
 
   if (WiFi.isConnected()) {
-    Serial.println(F("=========="));
-    Serial.println(F("local ip"));
-    Serial.println(WiFi.localIP());
+    log_message("==========");
+    log_message("local ip");
+    log_message((char *)WiFi.localIP().toString().c_str());
   }
 }
 
@@ -976,7 +978,6 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
 }
 
 bool send_command(byte* command, int length);
-void log_message(char* string);
 
 void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
 
