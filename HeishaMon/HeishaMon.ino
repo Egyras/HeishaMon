@@ -74,16 +74,18 @@ char mqtt_topic[256];
 static int mqttReconnects = 0;
 static int wifiReconnects = 0;
 
-//buffer for commands to send
-struct command_struct {
-  byte value[128];
-  unsigned int length;
-  command_struct *next;
-};
-command_struct *commandBuffer;
-unsigned int commandsInBuffer = 0;
-#define MAXCOMMANDSINBUFFER 10 //can't have too much in buffer due to memory shortage
+// can't have too much in buffer due to memory shortage
+#define MAXCOMMANDSINBUFFER 10
 
+// buffer for commands to send
+struct cmdbuffer_t {
+	uint8_t length;
+	byte data[128];
+} cmdbuffer[MAXCOMMANDSINBUFFER];
+
+static uint8_t cmdstart = 0;
+static uint8_t cmdend = 0;
+static uint8_t cmdnrel = 0;
 
 //doule reset detection
 DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
@@ -153,7 +155,7 @@ void log_message(char* string)
       mqtt_client.disconnect();
     }
   }
-  if(webSocket.connectedClients() > 0) {
+  if (webSocket.connectedClients() > 0) {
     webSocket.broadcastTXT(string, strlen(string));
   }
 }
@@ -248,29 +250,23 @@ bool readSerial()
 }
 
 void popCommandBuffer() {
-  if ((!sending) && (commandBuffer)) { //to make sure we can pop a command from the buffer
-    send_command(commandBuffer->value, commandBuffer->length);
-    command_struct* nextCommand = commandBuffer->next;
-    free(commandBuffer);
-    commandBuffer = nextCommand;
-    commandsInBuffer--;
+  // to make sure we can pop a command from the buffer
+  if((!sending) && cmdnrel > 0) {
+    send_command(cmdbuffer[cmdstart].data, cmdbuffer[cmdstart].length);
+    cmdstart = (cmdstart + 1) % (MAXCOMMANDSINBUFFER);
+    cmdnrel--;
   }
 }
 
 void pushCommandBuffer(byte* command, int length) {
-  if (commandsInBuffer < MAXCOMMANDSINBUFFER) {
-    command_struct* newCommand = new command_struct;
-    newCommand->length = length;
-    for (int i = 0 ; i < length ; i++) {
-      newCommand->value[i] = command[i];
-    }
-    newCommand->next = commandBuffer;
-    commandBuffer = newCommand;
-    commandsInBuffer++;
+  if(cmdnrel+1 > MAXCOMMANDSINBUFFER) {
+    log_message((char *)"Too much commands already in buffer. Ignoring this commands.\n");
+    return;
   }
-  else {
-    log_message((char*)"Too much commands already in buffer. Ignoring this commands.");
-  }
+  cmdbuffer[cmdend].length = length;
+  memcpy(&cmdbuffer[cmdend].data, command, length);
+  cmdend = (cmdend + 1) % (MAXCOMMANDSINBUFFER);
+  cmdnrel++;
 }
 
 bool send_command(byte* command, int length) {
@@ -562,7 +558,7 @@ void loop() {
 
   read_panasonic_data();
 
-  if ((!sending) && (commandsInBuffer > 0)) { //check if there is a send command in the buffer
+  if ((!sending) && (cmdnrel > 0)) { //check if there is a send command in the buffer
     log_message((char *)"Sending command from buffer");
     popCommandBuffer();
   }
@@ -603,30 +599,30 @@ void loop() {
     log_message((char*)message.c_str());
 
     String stats = F("{\"uptime\":");
-    message += String(millis());
-    message += F(",\"voltage\":");
-    message += ESP.getVcc() / 1024.0;
-    message += F(",\"free memory\":");
-    message += getFreeMemory();
-    message += F(",\"wifi\":");
-    message += getWifiQuality();
-    message += F(",\"mqtt reconnects\":");
-    message += mqttReconnects;
-    message += F(",\"total reads\":");
-    message += totalreads;
-    message += F(",\"good reads\":");
-    message += goodreads;
-    message += F(",\"bad crc reads\":");
-    message += badcrcread;
-    message += F(",\"bad header reads\":");
-    message += badheaderread;
-    message += F(",\"too short reads\":");
-    message += tooshortread;
-    message += F(",\"too long reads\":");
-    message += toolongread;
-    message += F(",\"timeout reads\":");
-    message += timeoutread;
-    message += F("}");
+    stats += String(millis());
+    stats += F(",\"voltage\":");
+    stats += ESP.getVcc() / 1024.0;
+    stats += F(",\"free memory\":");
+    stats += getFreeMemory();
+    stats += F(",\"wifi\":");
+    stats += getWifiQuality();
+    stats += F(",\"mqtt reconnects\":");
+    stats += mqttReconnects;
+    stats += F(",\"total reads\":");
+    stats += totalreads;
+    stats += F(",\"good reads\":");
+    stats += goodreads;
+    stats += F(",\"bad crc reads\":");
+    stats += badcrcread;
+    stats += F(",\"bad header reads\":");
+    stats += badheaderread;
+    stats += F(",\"too short reads\":");
+    stats += tooshortread;
+    stats += F(",\"too long reads\":");
+    stats += toolongread;
+    stats += F(",\"timeout reads\":");
+    stats += timeoutread;
+    stats += F("}");
     sprintf(mqtt_topic, "%s/stats", heishamonSettings.mqtt_topic_base);
     mqtt_client.publish(mqtt_topic, stats.c_str(), MQTT_RETAIN_VALUES);
 
