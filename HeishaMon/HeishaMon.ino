@@ -42,8 +42,13 @@ settingsStruct heishamonSettings;
 
 bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
+
+#define MQTTRECONNECTTIMER 30000 //it takes 30 secs for each mqtt server reconnect attempt
 unsigned long nextMqttReconnectAttempt = 0;
-#define MQTTRECONNECTTIMER 30000
+
+#define WIFIRETRYTIMER 30000 // switch between hotspot and configured SSID each 30 secs if SSID is lost
+unsigned long nextWifiRetryTimer = WIFIRETRYTIMER;
+
 unsigned long nexttime = 0;
 
 unsigned long allowreadtime = 0; //set to millis value during send, allow to wait millis for answer
@@ -72,15 +77,14 @@ char log_msg[256];
 char mqtt_topic[256];
 
 static int mqttReconnects = 0;
-static int wifiReconnects = 0;
 
 // can't have too much in buffer due to memory shortage
 #define MAXCOMMANDSINBUFFER 10
 
 // buffer for commands to send
 struct cmdbuffer_t {
-	uint8_t length;
-	byte data[128];
+  uint8_t length;
+  byte data[128];
 } cmdbuffer[MAXCOMMANDSINBUFFER];
 
 static uint8_t cmdstart = 0;
@@ -94,29 +98,39 @@ DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 WiFiClient mqtt_wifi_client;
 PubSubClient mqtt_client(mqtt_wifi_client);
 
+void check_wifi()
+{
+  if ((WiFi.getMode() != WIFI_STA) ) { // if we are not in STA mode we need to process DNS requests
+    dnsServer.processNextRequest();
+  }
+
+  if ( (strlen(heishamonSettings.wifi_ssid) > 0) && (nextWifiRetryTimer < millis()) ) { //do not run this routine if there is no SSID configured and only after next timer
+    if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) )  {
+      nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
+      log_message((char *)"WiFi connecting...");
+      if (WiFi.getMode() != WIFI_AP)  {
+        log_message((char *)"WiFi lost, starting setup hotspot...");
+        WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+        WiFi.mode(WIFI_OFF);
+        WiFi.mode(WIFI_AP);
+        WiFi.softAP("HeishaMon-Setup");
+      }
+      else if (WiFi.softAPgetStationNum() == 0 ) { //switch back to STA if no clients on soft AP
+        log_message((char *)"Retrying configured WiFi, removing hotspot...");
+        WiFi.softAPdisconnect(true);
+        WiFi.mode(WIFI_OFF);
+        WiFi.mode(WIFI_STA);
+        WiFi.begin();
+      }
+    }
+  }
+}
+
 void mqtt_reconnect()
 {
   unsigned long now = millis();
   if (now > nextMqttReconnectAttempt) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when nextMqttReconnectAttempt is still 0
     nextMqttReconnectAttempt = now + MQTTRECONNECTTIMER;
-    if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) ) {
-      wifiReconnects++;
-      log_message((char *)"Lost WiFi connection!");
-      if(WiFi.status() == WL_CONNECT_FAILED) {
-        WiFi.begin();
-      } else if(WiFi.status() == WL_CONNECTED) {
-        wifiReconnects = 0;
-        Serial.print("Connected, IP address: ");
-        Serial.println(WiFi.localIP());
-      } else {
-        Serial.println("WiFi connecting...");
-      }
-      if(wifiReconnects > 5) {
-        WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-        WiFi.mode(WIFI_AP_STA);
-        WiFi.softAP("HeishaMon-Setup");
-       }
-     }
     log_message((char*)"Reconnecting to mqtt server ...");
     char topic[256];
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
@@ -251,7 +265,7 @@ bool readSerial()
 
 void popCommandBuffer() {
   // to make sure we can pop a command from the buffer
-  if((!sending) && cmdnrel > 0) {
+  if ((!sending) && cmdnrel > 0) {
     send_command(cmdbuffer[cmdstart].data, cmdbuffer[cmdstart].length);
     cmdstart = (cmdstart + 1) % (MAXCOMMANDSINBUFFER);
     cmdnrel--;
@@ -259,7 +273,7 @@ void popCommandBuffer() {
 }
 
 void pushCommandBuffer(byte* command, int length) {
-  if(cmdnrel+1 > MAXCOMMANDSINBUFFER) {
+  if (cmdnrel + 1 > MAXCOMMANDSINBUFFER) {
     log_message((char *)"Too much commands already in buffer. Ignoring this commands.\n");
     return;
   }
@@ -407,11 +421,12 @@ void setupHttp() {
     httpServer.client().stop();
   });
   /*
-   * Captive portal url's
-   */
-  httpServer.on("/generate_204", [] {
+     Captive portal url's
+     for now, the android one sometimes gets the heishamon in a wait loop during wifi reconfig
+
+    httpServer.on("/generate_204", [] {
     handleSettings(drd, &httpServer, &heishamonSettings);
-  });
+    });  */
   httpServer.on("/hotspot-detect.html", [] {
     handleSettings(drd, &httpServer, &heishamonSettings);
   });
@@ -421,6 +436,7 @@ void setupHttp() {
   httpServer.on("/popup", [] {
     handleSettings(drd, &httpServer, &heishamonSettings);
   });
+
   httpServer.begin();
 
   webSocket.begin();
@@ -475,11 +491,14 @@ void setupMqtt() {
 
 void setup() {
   setupSerial();
+  setupSerial1();
+  Serial.println();
+  Serial.println(F("--- HEISHAMON ---"));
+  Serial.println(F("starting..."));
   WiFi.printDiag(Serial);
-  setupWifi(drd, &heishamonSettings, 1);
+  setupWifi(drd, &heishamonSettings);
   MDNS.begin(heishamonSettings.wifi_hostname);
   MDNS.addService("http", "tcp", 80);
-  setupSerial1();
   setupOTA();
   setupMqtt();
   setupHttp();
@@ -542,9 +561,8 @@ void read_panasonic_data() {
 }
 
 void loop() {
-  if ((WiFi.getMode() != WIFI_STA) ) {
-    dnsServer.processNextRequest();
-  }
+  // check wifi
+  check_wifi();
   // Handle OTA first.
   ArduinoOTA.handle();
   // then handle HTTP
@@ -575,7 +593,7 @@ void loop() {
   if (millis() > nexttime) {
     nexttime = millis() + (1000 * heishamonSettings.waitTime);
     //check mqtt
-    if (!mqtt_client.connected())
+    if ( (WiFi.isConnected()) && (!mqtt_client.connected()) )
     {
       log_message((char *)"Lost MQTT connection!");
       mqtt_reconnect();

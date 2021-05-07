@@ -225,6 +225,14 @@ static const char webBodyRebootWarning[] PROGMEM =
   "<p>Rebooting</p>"
   "</div>";
 
+static const char webBodySettingsNewWifiWarning[] PROGMEM =
+  "<div class=\"w3-container w3-center\">"
+  "<h3>------- reconfiguring WiFi -------</h3>"
+  "<h3>-- trying to reconnect if succesfull --</h3>"
+  "<h3>-- otherwise HeishaMon-Setup WiFi will appear --</h3>"
+  "</div>";
+
+
 static const char webBodySettingsResetPasswordWarning[] PROGMEM =
   "<div class=\"w3-container w3-center\">"
   "<h3>------- wrong current password -------</h3>"

@@ -57,7 +57,7 @@ String getUptime() {
   return String(uptime);
 }
 
-void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, uint8_t reconnect) {
+void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
   //first get total memory before we do anything
   getFreeMemory();
@@ -89,13 +89,13 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, uint8_
     log_message("mounting FS...");
 
     if (LittleFS.begin()) {
-      log_message("mounted file system");
+      log_message((char *)"mounted file system");
       if (LittleFS.exists("/config.json")) {
         //file exists, reading and loading
-        log_message("reading config file");
+        log_message((char *)"reading config file");
         File configFile = LittleFS.open("/config.json", "r");
         if (configFile) {
-          log_message("opened config file");
+          log_message((char *)"opened config file");
           size_t size = configFile.size();
           // Allocate a buffer to store contents of the file.
           std::unique_ptr<char[]> buf(new char[size]);
@@ -103,9 +103,11 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, uint8_
           configFile.readBytes(buf.get(), size);
           DynamicJsonDocument jsonDoc(1024);
           DeserializationError error = deserializeJson(jsonDoc, buf.get());
-          serializeJson(jsonDoc, Serial);
+          char log_msg[512];
+          serializeJson(jsonDoc, log_msg);
+          log_message(log_msg);
           if (!error) {
-            log_message("\nparsed json");
+            log_message((char *)"\nparsed json");
             //read updated parameters, make sure no overflow
             if ( jsonDoc["wifi_ssid"] ) strncpy(heishamonSettings->wifi_ssid, jsonDoc["wifi_ssid"], sizeof(heishamonSettings->wifi_ssid));
             if ( jsonDoc["wifi_password"] ) strncpy(heishamonSettings->wifi_password, jsonDoc["wifi_password"], sizeof(heishamonSettings->wifi_password));
@@ -189,37 +191,34 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, uint8_
     //end read
   }
 
-  if(reconnect == 1) {
-    //no sleep wifi
-    WiFi.setSleepMode(WIFI_NONE_SLEEP);
 
-    WiFi.persistent(true);
-    if (strlen(heishamonSettings->wifi_ssid) > 0) {
-      WiFi.mode(WIFI_STA);
-      if(strlen(heishamonSettings->wifi_password) == 0) {
-        WiFi.begin(heishamonSettings->wifi_ssid);
-      } else {
-        WiFi.begin(heishamonSettings->wifi_ssid, heishamonSettings->wifi_password);
-      }
+  log_message((char *)"Wifi reconnecting with new configuration...");
+  //no sleep wifi
+  WiFi.setSleepMode(WIFI_NONE_SLEEP);
+
+  WiFi.persistent(true);
+  if (strlen(heishamonSettings->wifi_ssid) > 0) {
+    log_message((char *)"Wifi client mode...");
+    WiFi.mode(WIFI_STA);
+    if (strlen(heishamonSettings->wifi_password) == 0) {
+      WiFi.begin(heishamonSettings->wifi_ssid);
     } else {
-      WiFi.mode(WIFI_AP);
-      WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-      WiFi.softAP("HeishaMon-Setup");
+      WiFi.begin(heishamonSettings->wifi_ssid, heishamonSettings->wifi_password);
     }
-
-    if(strlen(heishamonSettings->wifi_hostname) == 0) {
-      //Set hostname on wifi rather than ESP_xxxxx
-      WiFi.hostname("HeishaMon");
-    } else {
-      WiFi.hostname(heishamonSettings->wifi_hostname);
-    }
-
-    if (WiFi.isConnected()) {
-      log_message("==========");
-      log_message("local ip");
-      log_message((char *)WiFi.localIP().toString().c_str());
-    }
+  } else {
+    log_message((char *)"Wifi hotspot mode...");
+    WiFi.mode(WIFI_AP);
+    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+    WiFi.softAP("HeishaMon-Setup");
   }
+
+  if (strlen(heishamonSettings->wifi_hostname) == 0) {
+    //Set hostname on wifi rather than ESP_xxxxx
+    WiFi.hostname("HeishaMon");
+  } else {
+    WiFi.hostname(heishamonSettings->wifi_hostname);
+  }
+
 }
 
 void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings) {
@@ -390,16 +389,11 @@ void handleReboot(ESP8266WebServer *httpServer) {
 }
 
 void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
-  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
-  httpServer->send(200, "text/html", "");
-  httpServer->sendContent_P(webHeader);
-  httpServer->sendContent_P(webCSS);
-  httpServer->sendContent_P(webBodyStart);
-  httpServer->sendContent_P(webBodySettings1);
+
 
   //check if POST was made with save settings, if yes then save and reboot
   if (httpServer->args()) {
-    uint8_t reconnect = 0;
+    bool reconnectWiFi = false;
     DynamicJsonDocument jsonDoc(1024);
     //set jsonDoc with current settings
     jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
@@ -457,7 +451,7 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
     }
     if (httpServer->hasArg("wifi_ssid") && httpServer->hasArg("wifi_password")) {
       if (strcmp(jsonDoc["wifi_ssid"], httpServer->arg("wifi_ssid").c_str()) != 0 || strcmp(jsonDoc["wifi_password"], httpServer->arg("wifi_password").c_str()) != 0) {
-        reconnect = 1;
+        reconnectWiFi = true;
       }
     }
     if (httpServer->hasArg("wifi_ssid")) {
@@ -471,7 +465,12 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
         jsonDoc["ota_password"] = httpServer->arg("new_ota_password");
       }
       else {
-
+        httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+        httpServer->send(200, "text/html", "");
+        httpServer->sendContent_P(webHeader);
+        httpServer->sendContent_P(webCSS);
+        httpServer->sendContent_P(webBodyStart);
+        httpServer->sendContent_P(webBodySettings1);
         httpServer->sendContent_P(webBodySettingsResetPasswordWarning);
         httpServer->sendContent_P(refreshMeta);
         httpServer->sendContent_P(webFooter);
@@ -557,15 +556,29 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
       }
     }
 
-    setupWifi(drd, heishamonSettings, reconnect);
-
-    if(reconnect == 1) {
-      httpServer->sendHeader("Location", String("/settings"), true);
-      httpServer->send(302, "text/plain", "");
+    if (reconnectWiFi) {
+      httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+      httpServer->send(200, "text/html", "");
+      httpServer->sendContent_P(webHeader);
+      httpServer->sendContent_P(webCSS);
+      httpServer->sendContent_P(webBodyStart);
+      httpServer->sendContent_P(webBodySettings1);
+      httpServer->sendContent_P(webBodySettingsNewWifiWarning);
+      httpServer->sendContent_P(refreshMeta);
+      httpServer->sendContent_P(webFooter);
+      httpServer->sendContent("");
       httpServer->client().stop();
+      setupWifi(drd, heishamonSettings);
       return;
     }
   }
+
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->send(200, "text/html", "");
+  httpServer->sendContent_P(webHeader);
+  httpServer->sendContent_P(webCSS);
+  httpServer->sendContent_P(webBodyStart);
+  httpServer->sendContent_P(webBodySettings1);
 
   String httptext = F("<div class=\"w3-container w3-center\">");
   httptext = httptext + F("<h2>Settings</h2>");

@@ -43,7 +43,7 @@ struct settingsStruct {
 };
 
 String getUptime(void);
-void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, uint8_t reconnect);
+void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings);
 int getWifiQuality(void);
 int getFreeMemory(void);
 
