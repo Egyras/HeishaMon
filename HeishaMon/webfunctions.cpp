@@ -57,7 +57,7 @@ String getUptime() {
   return String(uptime);
 }
 
-void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
+void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings, uint8_t reconnect) {
 
   //first get total memory before we do anything
   getFreeMemory();
@@ -189,34 +189,36 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
     //end read
   }
 
-  //no sleep wifi
-  WiFi.setSleepMode(WIFI_NONE_SLEEP);
+  if(reconnect == 1) {
+    //no sleep wifi
+    WiFi.setSleepMode(WIFI_NONE_SLEEP);
 
-  WiFi.persistent(true);
-  if (strlen(heishamonSettings->wifi_ssid) > 0) {
-    WiFi.mode(WIFI_STA);
-    if(strlen(heishamonSettings->wifi_password) == 0) {
-      WiFi.begin(heishamonSettings->wifi_ssid);
+    WiFi.persistent(true);
+    if (strlen(heishamonSettings->wifi_ssid) > 0) {
+      WiFi.mode(WIFI_STA);
+      if(strlen(heishamonSettings->wifi_password) == 0) {
+        WiFi.begin(heishamonSettings->wifi_ssid);
+      } else {
+        WiFi.begin(heishamonSettings->wifi_ssid, heishamonSettings->wifi_password);
+      }
     } else {
-      WiFi.begin(heishamonSettings->wifi_ssid, heishamonSettings->wifi_password);
+      WiFi.mode(WIFI_AP);
+      WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+      WiFi.softAP("HeishaMon-Setup");
     }
-  } else {
-    WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP("HeishaMon-Setup");
-  }
 
-  if(strlen(heishamonSettings->wifi_hostname) == 0) {
-    //Set hostname on wifi rather than ESP_xxxxx
-    WiFi.hostname("HeishaMon");
-  } else {
-    WiFi.hostname(heishamonSettings->wifi_hostname);
-  }
+    if(strlen(heishamonSettings->wifi_hostname) == 0) {
+      //Set hostname on wifi rather than ESP_xxxxx
+      WiFi.hostname("HeishaMon");
+    } else {
+      WiFi.hostname(heishamonSettings->wifi_hostname);
+    }
 
-  if (WiFi.isConnected()) {
-    log_message("==========");
-    log_message("local ip");
-    log_message((char *)WiFi.localIP().toString().c_str());
+    if (WiFi.isConnected()) {
+      log_message("==========");
+      log_message("local ip");
+      log_message((char *)WiFi.localIP().toString().c_str());
+    }
   }
 }
 
@@ -397,9 +399,12 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
 
   //check if POST was made with save settings, if yes then save and reboot
   if (httpServer->args()) {
+    uint8_t reconnect = 0;
     DynamicJsonDocument jsonDoc(1024);
     //set jsonDoc with current settings
     jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
+    jsonDoc["wifi_password"] = heishamonSettings->wifi_password;
+    jsonDoc["wifi_ssid"] = heishamonSettings->wifi_ssid;
     jsonDoc["ota_password"] = heishamonSettings->ota_password;
     jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
     jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
@@ -449,6 +454,11 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
     //then overwrite with new settings
     if (httpServer->hasArg("wifi_hostname")) {
       jsonDoc["wifi_hostname"] = httpServer->arg("wifi_hostname");
+    }
+    if (httpServer->hasArg("wifi_ssid") && httpServer->hasArg("wifi_password")) {
+      if (strcmp(jsonDoc["wifi_ssid"], httpServer->arg("wifi_ssid").c_str()) != 0 || strcmp(jsonDoc["wifi_password"], httpServer->arg("wifi_password").c_str()) != 0) {
+        reconnect = 1;
+      }
     }
     if (httpServer->hasArg("wifi_ssid")) {
       jsonDoc["wifi_ssid"] = httpServer->arg("wifi_ssid").c_str();
@@ -547,12 +557,14 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
       }
     }
 
-    setupWifi(drd, heishamonSettings);
+    setupWifi(drd, heishamonSettings, reconnect);
 
-    httpServer->sendHeader("Location", String("/Settings"), true);
-    httpServer->send(302, "text/plain", "");
-    httpServer->client().stop();
-    return;
+    if(reconnect == 1) {
+      httpServer->sendHeader("Location", String("/settings"), true);
+      httpServer->send(302, "text/plain", "");
+      httpServer->client().stop();
+      return;
+    }
   }
 
   String httptext = F("<div class=\"w3-container w3-center\">");

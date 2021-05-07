@@ -476,7 +476,7 @@ void setupMqtt() {
 void setup() {
   setupSerial();
   WiFi.printDiag(Serial);
-  setupWifi(drd, &heishamonSettings);
+  setupWifi(drd, &heishamonSettings, 1);
   MDNS.begin(heishamonSettings.wifi_hostname);
   MDNS.addService("http", "tcp", 80);
   setupSerial1();
