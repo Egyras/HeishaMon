@@ -195,22 +195,20 @@ void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
   log_message((char *)"Wifi reconnecting with new configuration...");
   //no sleep wifi
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
-
+  WiFi.mode(WIFI_AP_STA);
   WiFi.persistent(true);
   if (strlen(heishamonSettings->wifi_ssid) > 0) {
     log_message((char *)"Wifi client mode...");
-    WiFi.mode(WIFI_STA);
     if (strlen(heishamonSettings->wifi_password) == 0) {
       WiFi.begin(heishamonSettings->wifi_ssid);
     } else {
       WiFi.begin(heishamonSettings->wifi_ssid, heishamonSettings->wifi_password);
     }
-  } else {
-    log_message((char *)"Wifi hotspot mode...");
-    WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP("HeishaMon-Setup");
   }
+
+  log_message((char *)"Wifi hotspot mode...");
+  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+  WiFi.softAP("HeishaMon-Setup");
 
   if (strlen(heishamonSettings->wifi_hostname) == 0) {
     //Set hostname on wifi rather than ESP_xxxxx

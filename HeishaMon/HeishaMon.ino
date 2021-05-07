@@ -100,7 +100,7 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 
 void check_wifi()
 {
-  if ((WiFi.getMode() != WIFI_STA) ) { // if we are not in STA mode we need to process DNS requests
+  if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) )  { // if we are not in STA mode we need to process DNS requests
     dnsServer.processNextRequest();
   }
 
@@ -108,20 +108,14 @@ void check_wifi()
     if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) )  {
       nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
       log_message((char *)"WiFi connecting...");
-      if (WiFi.getMode() != WIFI_AP)  {
-        log_message((char *)"WiFi lost, starting setup hotspot...");
-        WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-        WiFi.mode(WIFI_OFF);
-        WiFi.mode(WIFI_AP);
-        WiFi.softAP("HeishaMon-Setup");
-      }
-      else if (WiFi.softAPgetStationNum() == 0 ) { //switch back to STA if no clients on soft AP
+      log_message((char *)"WiFi lost, starting setup hotspot...");
+      WiFi.softAP("HeishaMon-Setup");
+      if (WiFi.softAPgetStationNum() == 0 ) { //switch back to STA if no clients on soft AP
         log_message((char *)"Retrying configured WiFi, removing hotspot...");
-        WiFi.softAPdisconnect(true);
-        WiFi.mode(WIFI_OFF);
-        WiFi.mode(WIFI_STA);
         WiFi.begin();
       }
+    } else {
+      WiFi.softAPdisconnect(true);
     }
   }
 }
