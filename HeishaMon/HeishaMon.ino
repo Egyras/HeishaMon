@@ -143,7 +143,7 @@ void check_wifi()
     }
   } else {
     if (softAPenabled) {
-      log_message((char *)"WiFi (re)connected, removing hotspot...");
+      log_message((char *)"WiFi (re)connected, shutting down hotspot...");
       softAPenabled = false;
       reconnectingWiFi = false;
       WiFi.softAPdisconnect(true);
