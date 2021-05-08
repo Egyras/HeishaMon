@@ -9,6 +9,8 @@
 #include "gpio.h"
 #include "smartcontrol.h"
 
+static IPAddress apIP(192, 168, 4, 1);
+
 struct settingsStruct {
   unsigned int waitTime = 5; // how often data is read from heatpump
   unsigned int waitDallasTime = 5; // how often temps are read from 1wire
@@ -17,6 +19,8 @@ struct settingsStruct {
 
   const char* update_path = "/firmware";
   const char* update_username = "admin";
+  char wifi_ssid[40] = "";
+  char wifi_password[40] = "";
   char wifi_hostname[40] = "HeishaMon";
   char ota_password[40] = "heisha";
   char mqtt_server[40];
@@ -49,7 +53,7 @@ void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]);
 void handleFactoryReset(ESP8266WebServer *httpServer);
 void handleReboot(ESP8266WebServer *httpServer);
 void handleDebug(ESP8266WebServer *httpServer, char *hex, byte hex_len);
-void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
+void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
 void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]);
 void handleREST(ESP8266WebServer *httpServer, bool optionalPCB);
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
