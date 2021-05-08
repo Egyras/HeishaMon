@@ -105,11 +105,11 @@ bool firstConnectSinceBoot = true; //if this is true there is no first connectio
 */
 void check_wifi()
 {
-  if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {  
+  if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
     /*
-       if we are not connected to an AP
-       we must be in softAP so respond to DNS
-    */
+     *  if we are not connected to an AP
+     *  we must be in softAP so respond to DNS
+     */
     dnsServer.processNextRequest();
 
     if (((WiFi.status() != WL_DISCONNECTED)) && (WiFi.softAPgetStationNum() > 0))  {
@@ -117,10 +117,9 @@ void check_wifi()
       WiFi.disconnect(true);
     }
 
-    /*
-       only start this routine if timeout on
-       reconnecting to AP and SSID is set
-    */
+    /*  only start this routine if timeout on
+     *  reconnecting to AP and SSID is set
+     */
     if ((strlen(heishamonSettings.wifi_ssid) > 0) && (nextWifiRetryTimer < millis()))  {
       nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
       if (WiFi.softAPSSID() == "") {
@@ -150,7 +149,7 @@ void check_wifi()
     if (firstConnectSinceBoot) { // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
       firstConnectSinceBoot = false;
       setupOTA();
-      MDNS.begin(heishamonSettings.wifi_hostname); 
+      MDNS.begin(heishamonSettings.wifi_hostname);
       MDNS.addService("http", "tcp", 80);
     }
 
