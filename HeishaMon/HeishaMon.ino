@@ -98,25 +98,51 @@ DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 WiFiClient mqtt_wifi_client;
 PubSubClient mqtt_client(mqtt_wifi_client);
 
+bool softAPenabled = false;
+bool reconnectingWiFi = false;
+
+/*
+   check_wifi will process wifi reconnecting managing
+
+*/
 void check_wifi()
 {
-  if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) )  { // if we are not in STA mode we need to process DNS requests
-    dnsServer.processNextRequest();
-  }
+  if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) )  {
+    dnsServer.processNextRequest(); // if we are not connected to an AP we must be in softAP so respond to DNS
 
-  if ( (strlen(heishamonSettings.wifi_ssid) > 0) && (nextWifiRetryTimer < millis()) ) { //do not run this routine if there is no SSID configured and only after next timer
-    if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) )  {
+    if ( (reconnectingWiFi) && (WiFi.softAPgetStationNum() > 0 ) )  {
+      log_message((char *)"WiFi lost but softAP station connecting so stop scanning...");
+      reconnectingWiFi = false;
+      WiFi.disconnect();
+    }
+
+    if ( (strlen(heishamonSettings.wifi_ssid) > 0) && (nextWifiRetryTimer < millis())  )  { //only start this routine if timeout on reconnecting to AP and SSID is set
       nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
-      log_message((char *)"WiFi connecting...");
-      log_message((char *)"WiFi lost, starting setup hotspot...");
-      WiFi.softAP("HeishaMon-Setup");
-      if (WiFi.softAPgetStationNum() == 0 ) { //switch back to STA if no clients on soft AP
-        log_message((char *)"Retrying configured WiFi, removing hotspot...");
-        WiFi.begin();
+      if  (!softAPenabled)  {
+        log_message((char *)"WiFi lost, starting setup hotspot...");
+        softAPenabled = true;
+        WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+        WiFi.softAP("HeishaMon-Setup");
       }
-    } else {
+      if ( (!reconnectingWiFi) && (WiFi.softAPgetStationNum() == 0 ) ) {
+        reconnectingWiFi = true;
+        log_message((char *)"Retrying configured WiFi, ...");
+        if (strlen(heishamonSettings.wifi_password) == 0) {
+          WiFi.begin(heishamonSettings.wifi_ssid);
+        } else {
+          WiFi.begin(heishamonSettings.wifi_ssid, heishamonSettings.wifi_password);
+        }
+      }
+    }
+
+  } else {
+    if (softAPenabled) {
+      log_message((char *)"WiFi reconnected, removing hotspot ...");
+      softAPenabled = false;
+      reconnectingWiFi = false;
       WiFi.softAPdisconnect(true);
     }
+    nextWifiRetryTimer = millis() + WIFIRETRYTIMER; //always update if wifi is working so next time on ssid failure it only starts the routine above after this timeout
   }
 }
 
