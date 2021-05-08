@@ -387,8 +387,6 @@ void handleReboot(ESP8266WebServer *httpServer) {
 }
 
 void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
-
-
   //check if POST was made with save settings, if yes then save and reboot
   if (httpServer->args()) {
     bool reconnectWiFi = false;
