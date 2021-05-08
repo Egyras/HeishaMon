@@ -46,7 +46,7 @@ bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
 #define MQTTRECONNECTTIMER 30000 //it takes 30 secs for each mqtt server reconnect attempt
 unsigned long nextMqttReconnectAttempt = 0;
 
-#define WIFIRETRYTIMER 30000 // switch between hotspot and configured SSID each 30 secs if SSID is lost
+#define WIFIRETRYTIMER 10000 // switch between hotspot and configured SSID each 10 secs if SSID is lost
 unsigned long nextWifiRetryTimer = WIFIRETRYTIMER;
 
 unsigned long nexttime = 0;
@@ -98,42 +98,37 @@ DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 WiFiClient mqtt_wifi_client;
 PubSubClient mqtt_client(mqtt_wifi_client);
 
-//check wifi bools
-bool softAPenabled = false;
-bool reconnectingWiFi = false;
+bool firstConnectSinceBoot = true; //if this is true there is no first connection made yet
 
 /*
- * check_wifi will process wifi reconnecting managing
- */
+   check_wifi will process wifi reconnecting managing
+*/
 void check_wifi()
 {
-  if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
+  if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {  
     /*
-     * if we are not connected to an AP
-     * we must be in softAP so respond to DNS
-     */
+       if we are not connected to an AP
+       we must be in softAP so respond to DNS
+    */
     dnsServer.processNextRequest();
 
-    if ((reconnectingWiFi) && (WiFi.softAPgetStationNum() > 0))  {
+    if (((WiFi.status() != WL_DISCONNECTED)) && (WiFi.softAPgetStationNum() > 0))  {
       log_message((char *)"WiFi lost, but softAP station connecting, so stop scanning...");
-      reconnectingWiFi = false;
-      WiFi.disconnect();
+      WiFi.disconnect(true);
     }
 
     /*
-     * only start this routine if timeout on
-     * reconnecting to AP and SSID is set
-     */
+       only start this routine if timeout on
+       reconnecting to AP and SSID is set
+    */
     if ((strlen(heishamonSettings.wifi_ssid) > 0) && (nextWifiRetryTimer < millis()))  {
       nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
-      if (!softAPenabled) {
+      if (WiFi.softAPSSID() == "") {
         log_message((char *)"WiFi lost, starting setup hotspot...");
-        softAPenabled = true;
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
         WiFi.softAP("HeishaMon-Setup");
       }
-      if ((!reconnectingWiFi) && (WiFi.softAPgetStationNum() == 0 )) {
-        reconnectingWiFi = true;
+      if ((WiFi.status() == WL_DISCONNECTED)  && (WiFi.softAPgetStationNum() == 0 )) {
         log_message((char *)"Retrying configured WiFi, ...");
         if (strlen(heishamonSettings.wifi_password) == 0) {
           WiFi.begin(heishamonSettings.wifi_ssid);
@@ -141,23 +136,32 @@ void check_wifi()
           WiFi.begin(heishamonSettings.wifi_ssid, heishamonSettings.wifi_password);
         }
       } else {
-        reconnectingWiFi = false;
         log_message((char *)"Reconnecting to WiFi failed. Waiting a few seconds before trying again.");
-        WiFi.disconnect();
+        WiFi.disconnect(true);
       }
     }
-  } else {
-    if (softAPenabled) {
+  } else { //WiFi connected
+    if (WiFi.softAPSSID() != "") {
       log_message((char *)"WiFi (re)connected, shutting down hotspot...");
-      softAPenabled = false;
-      reconnectingWiFi = false;
       WiFi.softAPdisconnect(true);
+      MDNS.notifyAPChange();
     }
+
+    if (firstConnectSinceBoot) { // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
+      firstConnectSinceBoot = false;
+      setupOTA();
+      MDNS.begin(heishamonSettings.wifi_hostname); 
+      MDNS.addService("http", "tcp", 80);
+    }
+
     /*
-     * always update if wifi is working so next time on ssid failure
-     * it only starts the routine above after this timeout
-     */
+       always update if wifi is working so next time on ssid failure
+       it only starts the routine above after this timeout
+    */
     nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
+
+    // Allow MDNS processing
+    MDNS.update();
   }
 }
 
@@ -172,7 +176,7 @@ void mqtt_reconnect()
     if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
     {
       mqttReconnects++;
-      MDNS.begin(heishamonSettings.wifi_hostname); //assume reconnect on wifi so maybe need mdns restart
+
       sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_commands);
       mqtt_client.subscribe(topic);
       sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
@@ -532,9 +536,7 @@ void setup() {
   Serial.println(F("starting..."));
   WiFi.printDiag(Serial);
   setupWifi(drd, &heishamonSettings);
-  MDNS.begin(heishamonSettings.wifi_hostname);
-  MDNS.addService("http", "tcp", 80);
-  setupOTA();
+
   setupMqtt();
   setupHttp();
 
@@ -604,8 +606,6 @@ void loop() {
   httpServer.handleClient();
   // handle Websockets
   webSocket.loop();
-  // Allow MDNS processing
-  MDNS.update();
 
   mqtt_client.loop();
 
@@ -682,9 +682,12 @@ void loop() {
     //get new data
     if (!heishamonSettings.listenonly) send_panasonic_query();
 
-    MDNS.announce();
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
     sprintf(mqtt_topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
     mqtt_client.publish(mqtt_topic, "Online");
+
+    if (WiFi.isConnected()) {
+      MDNS.announce();
+    }
   }
 }

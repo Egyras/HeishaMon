@@ -11,6 +11,8 @@
 
 static IPAddress apIP(192, 168, 4, 1);
 
+
+
 struct settingsStruct {
   unsigned int waitTime = 5; // how often data is read from heatpump
   unsigned int waitDallasTime = 5; // how often temps are read from 1wire
@@ -41,6 +43,7 @@ struct settingsStruct {
   gpioSettingsStruct gpioSettings;
   SmartControlSettingsStruct SmartControlSettings;
 };
+
 
 String getUptime(void);
 void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings);
