@@ -4,7 +4,6 @@
 #define DEFAULT_S0_PIN_1 12  // S0_1 pin, for now a static config - should be in config menu later
 #define DEFAULT_S0_PIN_2 14  // S0_2 pin, for now a static config - should be in config menu later
 
-
 struct s0SettingsStruct {
   byte gpiopin = 255;
   unsigned int ppkwh = 1000; //pulses per Wh of the connected meter
@@ -18,7 +17,6 @@ struct s0DataStruct {
   unsigned long lastPulse = 0; //last pulse in millis
   unsigned long nextReport = 0; //next time we reported the s0 value in millis
 };
-
 
 void initS0Sensors(s0SettingsStruct s0Settings[], PubSubClient &mqtt_client, char* mqtt_topic_base);
 void restore_s0_Watthour(int s0Port, float watthour);
