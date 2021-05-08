@@ -227,22 +227,22 @@ static const char webBodyRebootWarning[] PROGMEM =
 
 static const char webBodySettingsNewWifiWarning[] PROGMEM =
   "<div class=\"w3-container w3-center\">"
-  "<h3>------- reconfiguring WiFi -------</h3>"
-  "<h3>-- trying to reconnect if succesfull --</h3>"
-  "<h3>-- otherwise HeishaMon-Setup WiFi will appear --</h3>"
+  "<p><b>Reconfiguring WiFi</b><br /><br />"
+  "Trying to connect to the new AP<br /><br />"
+  "The Heishamon-Setup hotspot will<br />automatically be brought<br />down when this succeeds<br /><br />"
+  "This page automatically<br />redirect to home in a few seconds</p>"
   "</div>";
-
 
 static const char webBodySettingsResetPasswordWarning[] PROGMEM =
   "<div class=\"w3-container w3-center\">"
-  "<h3>------- wrong current password -------</h3>"
-  "<h3>-- do factory reset if password lost --</h3>"
+  "<p><b>Wrong password</b><br /><br />"
+  "Do a factory reset to reset it to<br />the its default password: heisha</p>"
   "</div>";
 
 static const char webBodySettingsSaveMessage[] PROGMEM =
   "<div class=\"w3-container w3-center\">"
-  "<h3>--- saved ---</h3>"
-  "<h3>-- rebooting --</h3>"
+  "<p><b>Configuration saved</b><br /><br />"
+  "Rebooting</p>"
   "</div>";
 
 static const char webBodySettings1[] PROGMEM =

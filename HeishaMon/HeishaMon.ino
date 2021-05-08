@@ -102,29 +102,36 @@ bool softAPenabled = false;
 bool reconnectingWiFi = false;
 
 /*
-   check_wifi will process wifi reconnecting managing
-
-*/
+ * check_wifi will process wifi reconnecting managing
+ */
 void check_wifi()
 {
-  if ((WiFi.status() != WL_CONNECTED) || (! WiFi.localIP()) )  {
-    dnsServer.processNextRequest(); // if we are not connected to an AP we must be in softAP so respond to DNS
+  if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
+    /*
+     * if we are not connected to an AP
+     * we must be in softAP so respond to DNS
+     */
+    dnsServer.processNextRequest();
 
-    if ( (reconnectingWiFi) && (WiFi.softAPgetStationNum() > 0 ) )  {
-      log_message((char *)"WiFi lost but softAP station connecting so stop scanning...");
+    if ((reconnectingWiFi) && (WiFi.softAPgetStationNum() > 0))  {
+      log_message((char *)"WiFi lost, but softAP station connecting, so stop scanning...");
       reconnectingWiFi = false;
       WiFi.disconnect();
     }
 
-    if ( (strlen(heishamonSettings.wifi_ssid) > 0) && (nextWifiRetryTimer < millis())  )  { //only start this routine if timeout on reconnecting to AP and SSID is set
+    /*
+     * only start this routine if timeout on
+     * reconnecting to AP and SSID is set
+     */
+    if ((strlen(heishamonSettings.wifi_ssid) > 0) && (nextWifiRetryTimer < millis()))  {
       nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
-      if  (!softAPenabled)  {
+      if (!softAPenabled) {
         log_message((char *)"WiFi lost, starting setup hotspot...");
         softAPenabled = true;
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
         WiFi.softAP("HeishaMon-Setup");
       }
-      if ( (!reconnectingWiFi) && (WiFi.softAPgetStationNum() == 0 ) ) {
+      if ((!reconnectingWiFi) && (WiFi.softAPgetStationNum() == 0 )) {
         reconnectingWiFi = true;
         log_message((char *)"Retrying configured WiFi, ...");
         if (strlen(heishamonSettings.wifi_password) == 0) {
@@ -134,15 +141,18 @@ void check_wifi()
         }
       }
     }
-
   } else {
     if (softAPenabled) {
-      log_message((char *)"WiFi reconnected, removing hotspot ...");
+      log_message((char *)"WiFi (re)connected, removing hotspot...");
       softAPenabled = false;
       reconnectingWiFi = false;
       WiFi.softAPdisconnect(true);
     }
-    nextWifiRetryTimer = millis() + WIFIRETRYTIMER; //always update if wifi is working so next time on ssid failure it only starts the routine above after this timeout
+    /*
+     * always update if wifi is working so next time on ssid failure
+     * it only starts the routine above after this timeout
+     */
+    nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
   }
 }
 
