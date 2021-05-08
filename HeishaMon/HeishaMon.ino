@@ -98,6 +98,7 @@ DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 WiFiClient mqtt_wifi_client;
 PubSubClient mqtt_client(mqtt_wifi_client);
 
+//check wifi bools
 bool softAPenabled = false;
 bool reconnectingWiFi = false;
 
@@ -132,6 +133,10 @@ void check_wifi()
         } else {
           WiFi.begin(heishamonSettings.wifi_ssid, heishamonSettings.wifi_password);
         }
+      } else {
+        reconnectingWiFi = false;
+        log_message((char *)"Reconnecting to WiFi failed. Waiting a few seconds before trying again.");
+        WiFi.disconnect();
       }
     }
 
