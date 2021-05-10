@@ -389,60 +389,75 @@ void handleReboot(ESP8266WebServer *httpServer) {
   ESP.restart();
 }
 
+void settingsToJson(DynamicJsonDocument &jsonDoc, settingsStruct *heishamonSettings) {
+  //set jsonDoc with current settings
+  jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
+  jsonDoc["wifi_password"] = heishamonSettings->wifi_password;
+  jsonDoc["wifi_ssid"] = heishamonSettings->wifi_ssid;
+  jsonDoc["ota_password"] = heishamonSettings->ota_password;
+  jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
+  jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
+  jsonDoc["mqtt_port"] = heishamonSettings->mqtt_port;
+  jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
+  jsonDoc["mqtt_password"] = heishamonSettings->mqtt_password;
+  if (heishamonSettings->use_1wire) {
+    jsonDoc["use_1wire"] = "enabled";
+  } else {
+    jsonDoc["use_1wire"] = "disabled";
+  }
+  if (heishamonSettings->use_s0) {
+    jsonDoc["use_s0"] = "enabled";
+  } else {
+    jsonDoc["use_s0"] = "disabled";
+  }
+  if (heishamonSettings->listenonly) {
+    jsonDoc["listenonly"] = "enabled";
+  } else {
+    jsonDoc["listenonly"] = "disabled";
+  }
+  if (heishamonSettings->logMqtt) {
+    jsonDoc["logMqtt"] = "enabled";
+  } else {
+    jsonDoc["logMqtt"] = "disabled";
+  }
+  if (heishamonSettings->logHexdump) {
+    jsonDoc["logHexdump"] = "enabled";
+  } else {
+    jsonDoc["logHexdump"] = "disabled";
+  }
+  if (heishamonSettings->logSerial1) {
+    jsonDoc["logSerial1"] = "enabled";
+  } else {
+    jsonDoc["logSerial1"] = "disabled";
+  }
+  if (heishamonSettings->optionalPCB) {
+    jsonDoc["optionalPCB"] = "enabled";
+  } else {
+    jsonDoc["optionalPCB"] = "disabled";
+  }
+  jsonDoc["waitTime"] = heishamonSettings->waitTime;
+  jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
+  jsonDoc["updateAllTime"] = heishamonSettings->updateAllTime;
+  jsonDoc["updataAllDallasTime"] = heishamonSettings->updataAllDallasTime;
+}
+
+void saveJsonToConfig(DynamicJsonDocument &jsonDoc) {
+  if (LittleFS.begin()) {
+    File configFile = LittleFS.open("/config.json", "w");
+    if (configFile) {
+      serializeJson(jsonDoc, configFile);
+      configFile.close();
+    }
+  }
+}
+
 void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
   //check if POST was made with save settings, if yes then save and reboot
   if (httpServer->args()) {
     bool reconnectWiFi = false;
     DynamicJsonDocument jsonDoc(1024);
-    //set jsonDoc with current settings
-    jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
-    jsonDoc["wifi_password"] = heishamonSettings->wifi_password;
-    jsonDoc["wifi_ssid"] = heishamonSettings->wifi_ssid;
-    jsonDoc["ota_password"] = heishamonSettings->ota_password;
-    jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
-    jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
-    jsonDoc["mqtt_port"] = heishamonSettings->mqtt_port;
-    jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
-    jsonDoc["mqtt_password"] = heishamonSettings->mqtt_password;
-    if (heishamonSettings->use_1wire) {
-      jsonDoc["use_1wire"] = "enabled";
-    } else {
-      jsonDoc["use_1wire"] = "disabled";
-    }
-    if (heishamonSettings->use_s0) {
-      jsonDoc["use_s0"] = "enabled";
-    } else {
-      jsonDoc["use_s0"] = "disabled";
-    }
-    if (heishamonSettings->listenonly) {
-      jsonDoc["listenonly"] = "enabled";
-    } else {
-      jsonDoc["listenonly"] = "disabled";
-    }
-    if (heishamonSettings->logMqtt) {
-      jsonDoc["logMqtt"] = "enabled";
-    } else {
-      jsonDoc["logMqtt"] = "disabled";
-    }
-    if (heishamonSettings->logHexdump) {
-      jsonDoc["logHexdump"] = "enabled";
-    } else {
-      jsonDoc["logHexdump"] = "disabled";
-    }
-    if (heishamonSettings->logSerial1) {
-      jsonDoc["logSerial1"] = "enabled";
-    } else {
-      jsonDoc["logSerial1"] = "disabled";
-    }
-    if (heishamonSettings->optionalPCB) {
-      jsonDoc["optionalPCB"] = "enabled";
-    } else {
-      jsonDoc["optionalPCB"] = "disabled";
-    }
-    jsonDoc["waitTime"] = heishamonSettings->waitTime;
-    jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
-    jsonDoc["updateAllTime"] = heishamonSettings->updateAllTime;
-    jsonDoc["updataAllDallasTime"] = heishamonSettings->updataAllDallasTime;
+
+    settingsToJson(jsonDoc, heishamonSettings); //stores current settings in a json document
 
     //then overwrite with new settings
     if (httpServer->hasArg("wifi_hostname")) {
@@ -547,13 +562,7 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
       jsonDoc["updataAllDallasTime"] = httpServer->arg("updataAllDallasTime");
     }
 
-    if (LittleFS.begin()) {
-      File configFile = LittleFS.open("/config.json", "w");
-      if (configFile) {
-        serializeJson(jsonDoc, configFile);
-        configFile.close();
-      }
-    }
+    saveJsonToConfig(jsonDoc); //save to config file
 
     if (reconnectWiFi) {
       httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);

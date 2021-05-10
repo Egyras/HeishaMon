@@ -152,6 +152,15 @@ void check_wifi()
       setupOTA();
       MDNS.begin(heishamonSettings.wifi_hostname);
       MDNS.addService("http", "tcp", 80);
+
+      if (!strlen(heishamonSettings.wifi_ssid) > 0) {
+        log_message((char *)"WiFi connected without SSID and password in settings. Must come from persistent memory. Storing in settings.");
+        WiFi.SSID().toCharArray(heishamonSettings.wifi_ssid, 40);
+        WiFi.psk().toCharArray(heishamonSettings.wifi_password, 40);
+        DynamicJsonDocument jsonDoc(1024);
+        settingsToJson(jsonDoc, &heishamonSettings); //stores current settings in a json document
+        saveJsonToConfig(jsonDoc); //save to config file
+      }
     }
 
     /*
