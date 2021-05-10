@@ -596,8 +596,11 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
   httptext = httptext + F("<input type=\"password\" name=\"wifi_password\" value=\"") + heishamonSettings->wifi_password + F("\">");
   httptext = httptext + F("</td></tr>");
   httptext = httptext + F("<tr><td style=\"text-align:right; width: 50%\">");
+  httptext = httptext + F("Update username:</td><td style=\"text-align:left\">");
+  httptext = httptext + F("<label name=\"username\">admin</label>");
+  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   httptext = httptext + F("Current update password:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"password\" name=\"current_ota_password\" value=\"\">");
+  httptext = httptext + F("<input type=\"password\" name=\"current_ota_password\" value=\"\"> default password: \"heisha\"");
   httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   httptext = httptext + F("New update password:</td><td style=\"text-align:left\">");
   httptext = httptext + F("<input type=\"password\" name=\"new_ota_password\" value=\"\">");
