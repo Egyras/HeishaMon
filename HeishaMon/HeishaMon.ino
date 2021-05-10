@@ -101,8 +101,8 @@ PubSubClient mqtt_client(mqtt_wifi_client);
 bool firstConnectSinceBoot = true; //if this is true there is no first connection made yet
 
 /*
-   check_wifi will process wifi reconnecting managing
-*/
+ *  check_wifi will process wifi reconnecting managing
+ */
 void check_wifi()
 {
   if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
@@ -148,6 +148,7 @@ void check_wifi()
 
     if (firstConnectSinceBoot) { // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
       firstConnectSinceBoot = false;
+      nextMqttReconnectAttempt = 0; //initiate mqtt connection asap
       setupOTA();
       MDNS.begin(heishamonSettings.wifi_hostname);
       MDNS.addService("http", "tcp", 80);
@@ -213,7 +214,7 @@ void log_message(char* string)
 }
 
 void logHex(char *hex, byte hex_len) {
-#define LOGHEXBYTESPERLINE 32  // please be aware of max mqtt message size - 32 bytes per line does not work
+#define LOGHEXBYTESPERLINE 32  // please be aware of max mqtt message size
   for (int i = 0; i < hex_len; i += LOGHEXBYTESPERLINE) {
     char buffer [(LOGHEXBYTESPERLINE * 3) + 1];
     buffer[LOGHEXBYTESPERLINE * 3] = '\0';
