@@ -1,17 +1,14 @@
-#include <FS.h>                   //this needs to be first, or it all crashes and burns...
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WebSocketsServer.h>
-#include <DoubleResetDetect.h>
 #include <ArduinoJson.h>
+#include <LittleFS.h>
 #include "dallas.h"
 #include "s0.h"
 #include "gpio.h"
 #include "smartcontrol.h"
 
 static IPAddress apIP(192, 168, 4, 1);
-
-
 
 struct settingsStruct {
   unsigned int waitTime = 5; // how often data is read from heatpump
@@ -44,9 +41,9 @@ struct settingsStruct {
   SmartControlSettingsStruct SmartControlSettings;
 };
 
-
+int getFreeMemory(void);
 String getUptime(void);
-void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings);
+void setupWifi(settingsStruct *heishamonSettings);
 int getWifiQuality(void);
 int getFreeMemory(void);
 
@@ -58,7 +55,7 @@ void handleReboot(ESP8266WebServer *httpServer);
 void handleDebug(ESP8266WebServer *httpServer, char *hex, byte hex_len);
 void settingsToJson(DynamicJsonDocument &jsonDoc, settingsStruct *heishamonSettings);
 void saveJsonToConfig(DynamicJsonDocument &jsonDoc);
-void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
+void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
 void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]);
 void handleREST(ESP8266WebServer *httpServer, bool optionalPCB);
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);

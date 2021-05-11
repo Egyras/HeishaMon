@@ -1,5 +1,3 @@
-#include <FS.h>                   //this needs to be first, or it all crashes and burns...
-
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <DNSServer.h>
@@ -9,6 +7,7 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
 #include <DNSServer.h>
+#include <DoubleResetDetect.h>
 
 #include <ArduinoJson.h>
 
@@ -26,7 +25,7 @@ ADC_MODE(ADC_VCC);
 #define DRD_TIMEOUT 0.1
 
 // address to the block in the RTC user memory
-// change it if it collides with another usage
+// change it if it collides with another usageb
 // of the address block
 #define DRD_ADDRESS 0x00
 
@@ -444,7 +443,7 @@ void setupHttp() {
     handleDebug(&httpServer, data, 203);
   });
   httpServer.on("/settings", [] {
-    handleSettings(drd, &httpServer, &heishamonSettings);
+    handleSettings(&httpServer, &heishamonSettings);
   });
   httpServer.on("/smartcontrol", [] {
     handleSmartcontrol(&httpServer, &heishamonSettings, actData);
@@ -473,16 +472,16 @@ void setupHttp() {
      for now, the android one sometimes gets the heishamon in a wait loop during wifi reconfig
 
     httpServer.on("/generate_204", [] {
-    handleSettings(drd, &httpServer, &heishamonSettings);
+    handleSettings(&httpServer, &heishamonSettings);
     });  */
   httpServer.on("/hotspot-detect.html", [] {
-    handleSettings(drd, &httpServer, &heishamonSettings);
+    handleSettings(&httpServer, &heishamonSettings);
   });
   httpServer.on("/fwlink", [] {
-    handleSettings(drd, &httpServer, &heishamonSettings);
+    handleSettings(&httpServer, &heishamonSettings);
   });
   httpServer.on("/popup", [] {
-    handleSettings(drd, &httpServer, &heishamonSettings);
+    handleSettings(&httpServer, &heishamonSettings);
   });
 
   httpServer.begin();
@@ -490,6 +489,28 @@ void setupHttp() {
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
   webSocket.enableHeartbeat(3000, 3000, 2);
+}
+
+void doubleResetDetect() {
+  if (drd.detect()) {
+    Serial.println("Double reset detected, clearing config."); //save to print on std serial because serial switch didn't happen yet
+    LittleFS.begin();
+    LittleFS.format();
+    WiFi.persistent(true);
+    WiFi.disconnect();
+    WiFi.persistent(false);
+    Serial.println("Config cleared. Please reset to configure this device...");
+    //initiate debug led indication for factory reset
+    pinMode(2, FUNCTION_0); //set it as gpio
+    pinMode(2, OUTPUT);
+    while (true) {
+      digitalWrite(2, HIGH);
+      delay(100);
+      digitalWrite(2, LOW);
+      delay(100);
+    }
+
+  }
 }
 
 void setupSerial() {
@@ -538,13 +559,23 @@ void setupMqtt() {
 }
 
 void setup() {
+  //first get total memory before we do anything
+  getFreeMemory();
+
+  //set boottime
+  getUptime();
+
   setupSerial();
   setupSerial1();
   Serial.println();
   Serial.println(F("--- HEISHAMON ---"));
   Serial.println(F("starting..."));
+
+  //double reset detect from start
+  doubleResetDetect();
+
   WiFi.printDiag(Serial);
-  setupWifi(drd, &heishamonSettings);
+  setupWifi(&heishamonSettings);
 
   setupMqtt();
   setupHttp();

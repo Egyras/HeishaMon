@@ -1,10 +1,7 @@
-#include <FS.h>                   //this needs to be first, or it all crashes and burns...
-
 #include "webfunctions.h"
 #include "decode.h"
 #include "version.h"
 #include "htmlcode.h"
-#include <LittleFS.h>
 #include "commands.h"
 
 #include <ESP8266WiFi.h>
@@ -58,139 +55,115 @@ String getUptime() {
   return String(uptime);
 }
 
-void setupWifi(DoubleResetDetect &drd, settingsStruct *heishamonSettings) {
 
-  //first get total memory before we do anything
-  getFreeMemory();
 
-  //set boottime
-  getUptime();
+void setupWifi(settingsStruct *heishamonSettings) {
 
-  if (drd.detect()) {
-    log_message("Double reset detected, clearing config.");
-    Serial1.begin(115200);
-    LittleFS.begin();
-    LittleFS.format();
-    WiFi.persistent(true);
-    WiFi.disconnect();
-    WiFi.persistent(false);
-    log_message("Config cleared. Please reset to configure this device...");
-    //initiate debug led indication for factory reset
-    pinMode(2, FUNCTION_0); //set it as gpio
-    pinMode(2, OUTPUT);
-    while (true) {
-      digitalWrite(2, HIGH);
-      delay(100);
-      digitalWrite(2, LOW);
-      delay(100);
+  //read configuration from FS json
+  log_message("mounting FS...");
+
+  if (LittleFS.begin()) {
+    log_message((char *)"mounted file system");
+    if (LittleFS.exists("/config.json")) {
+      //file exists, reading and loading
+      log_message((char *)"reading config file");
+      File configFile = LittleFS.open("/config.json", "r");
+      if (configFile) {
+        log_message((char *)"opened config file");
+        size_t size = configFile.size();
+        // Allocate a buffer to store contents of the file.
+        std::unique_ptr<char[]> buf(new char[size]);
+
+        configFile.readBytes(buf.get(), size);
+        DynamicJsonDocument jsonDoc(1024);
+        DeserializationError error = deserializeJson(jsonDoc, buf.get());
+        char log_msg[512];
+        serializeJson(jsonDoc, log_msg);
+        log_message(log_msg);
+        if (!error) {
+          log_message((char *)"\nparsed json");
+          //read updated parameters, make sure no overflow
+          if ( jsonDoc["wifi_ssid"] ) strncpy(heishamonSettings->wifi_ssid, jsonDoc["wifi_ssid"], sizeof(heishamonSettings->wifi_ssid));
+          if ( jsonDoc["wifi_password"] ) strncpy(heishamonSettings->wifi_password, jsonDoc["wifi_password"], sizeof(heishamonSettings->wifi_password));
+          if ( jsonDoc["wifi_hostname"] ) strncpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], sizeof(heishamonSettings->wifi_hostname));
+          if ( jsonDoc["ota_password"] ) strncpy(heishamonSettings->ota_password, jsonDoc["ota_password"], sizeof(heishamonSettings->ota_password));
+          if ( jsonDoc["mqtt_topic_base"] ) strncpy(heishamonSettings->mqtt_topic_base, jsonDoc["mqtt_topic_base"], sizeof(heishamonSettings->mqtt_topic_base));
+          if ( jsonDoc["mqtt_server"] ) strncpy(heishamonSettings->mqtt_server, jsonDoc["mqtt_server"], sizeof(heishamonSettings->mqtt_server));
+          if ( jsonDoc["mqtt_port"] ) strncpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], sizeof(heishamonSettings->mqtt_port));
+          if ( jsonDoc["mqtt_username"] ) strncpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], sizeof(heishamonSettings->mqtt_username));
+          if ( jsonDoc["mqtt_password"] ) strncpy(heishamonSettings->mqtt_password, jsonDoc["mqtt_password"], sizeof(heishamonSettings->mqtt_password));
+          if ( jsonDoc["use_1wire"] == "enabled" ) heishamonSettings->use_1wire = true;
+          if ( jsonDoc["use_s0"] == "enabled" ) {
+            heishamonSettings->use_s0 = true;
+            if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
+            if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
+            if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
+            if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
+            if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
+            if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
+          }
+          if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
+          if ( jsonDoc["logMqtt"] == "enabled" ) heishamonSettings->logMqtt = true;
+          if ( jsonDoc["logHexdump"] == "enabled" ) heishamonSettings->logHexdump = true;
+          if ( jsonDoc["logSerial1"] == "disabled" ) heishamonSettings->logSerial1 = false; //default is true so this one is different
+          if ( jsonDoc["optionalPCB"] == "enabled" ) heishamonSettings->optionalPCB = true;
+          if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
+          if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
+          if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
+          if (heishamonSettings->waitDallasTime < 5) heishamonSettings->waitDallasTime = 5;
+          if ( jsonDoc["updateAllTime"]) heishamonSettings->updateAllTime = jsonDoc["updateAllTime"];
+          if (heishamonSettings->updateAllTime < heishamonSettings->waitTime) heishamonSettings->updateAllTime = heishamonSettings->waitTime;
+          if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
+          if (heishamonSettings->updataAllDallasTime < heishamonSettings->waitDallasTime) heishamonSettings->updataAllDallasTime = heishamonSettings->waitDallasTime;
+        } else {
+          log_message("Failed to load json config, forcing config reset.");
+          WiFi.persistent(true);
+          WiFi.disconnect();
+          WiFi.persistent(false);
+        }
+        configFile.close();
+      }
+    }
+    else {
+      log_message("No config.json exists! Forcing a config reset.");
+      WiFi.persistent(true);
+      WiFi.disconnect();
+      WiFi.persistent(false);
     }
 
+    if (LittleFS.exists("/heatcurve.json")) {
+      //file exists, reading and loading
+      log_message("reading heatingcurve file");
+      File configFile = LittleFS.open("/heatcurve.json", "r");
+      if (configFile) {
+        log_message("opened heating curve config file");
+        size_t size = configFile.size();
+        // Allocate a buffer to store contents of the file.
+        std::unique_ptr<char[]> buf(new char[size]);
+
+        configFile.readBytes(buf.get(), size);
+        DynamicJsonDocument jsonDoc(1024);
+        DeserializationError error = deserializeJson(jsonDoc, buf.get());
+        serializeJson(jsonDoc, Serial);
+        if (!error) {
+          if ( jsonDoc["enableHeatCurve"] == "enabled" ) heishamonSettings->SmartControlSettings.enableHeatCurve = true;
+          if ( jsonDoc["avgHourHeatCurve"]) heishamonSettings->SmartControlSettings.avgHourHeatCurve = jsonDoc["avgHourHeatCurve"];
+          if ( jsonDoc["heatCurveTargetHigh"]) heishamonSettings->SmartControlSettings.heatCurveTargetHigh = jsonDoc["heatCurveTargetHigh"];
+          if ( jsonDoc["heatCurveTargetLow"]) heishamonSettings->SmartControlSettings.heatCurveTargetLow = jsonDoc["heatCurveTargetLow"];
+          if ( jsonDoc["heatCurveOutHigh"]) heishamonSettings->SmartControlSettings.heatCurveOutHigh = jsonDoc["heatCurveOutHigh"];
+          if ( jsonDoc["heatCurveOutLow"]) heishamonSettings->SmartControlSettings.heatCurveOutLow = jsonDoc["heatCurveOutLow"];
+          for (unsigned int i = 0 ; i < 36 ; i++) {
+            if ( jsonDoc["heatCurveLookup"][i]) heishamonSettings->SmartControlSettings.heatCurveLookup[i] = jsonDoc["heatCurveLookup"][i];
+          }
+        }
+        configFile.close();
+      }
+    }
   } else {
-    //read configuration from FS json
-    log_message("mounting FS...");
-
-    if (LittleFS.begin()) {
-      log_message((char *)"mounted file system");
-      if (LittleFS.exists("/config.json")) {
-        //file exists, reading and loading
-        log_message((char *)"reading config file");
-        File configFile = LittleFS.open("/config.json", "r");
-        if (configFile) {
-          log_message((char *)"opened config file");
-          size_t size = configFile.size();
-          // Allocate a buffer to store contents of the file.
-          std::unique_ptr<char[]> buf(new char[size]);
-
-          configFile.readBytes(buf.get(), size);
-          DynamicJsonDocument jsonDoc(1024);
-          DeserializationError error = deserializeJson(jsonDoc, buf.get());
-          char log_msg[512];
-          serializeJson(jsonDoc, log_msg);
-          log_message(log_msg);
-          if (!error) {
-            log_message((char *)"\nparsed json");
-            //read updated parameters, make sure no overflow
-            if ( jsonDoc["wifi_ssid"] ) strncpy(heishamonSettings->wifi_ssid, jsonDoc["wifi_ssid"], sizeof(heishamonSettings->wifi_ssid));
-            if ( jsonDoc["wifi_password"] ) strncpy(heishamonSettings->wifi_password, jsonDoc["wifi_password"], sizeof(heishamonSettings->wifi_password));
-            if ( jsonDoc["wifi_hostname"] ) strncpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], sizeof(heishamonSettings->wifi_hostname));
-            if ( jsonDoc["ota_password"] ) strncpy(heishamonSettings->ota_password, jsonDoc["ota_password"], sizeof(heishamonSettings->ota_password));
-            if ( jsonDoc["mqtt_topic_base"] ) strncpy(heishamonSettings->mqtt_topic_base, jsonDoc["mqtt_topic_base"], sizeof(heishamonSettings->mqtt_topic_base));
-            if ( jsonDoc["mqtt_server"] ) strncpy(heishamonSettings->mqtt_server, jsonDoc["mqtt_server"], sizeof(heishamonSettings->mqtt_server));
-            if ( jsonDoc["mqtt_port"] ) strncpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], sizeof(heishamonSettings->mqtt_port));
-            if ( jsonDoc["mqtt_username"] ) strncpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], sizeof(heishamonSettings->mqtt_username));
-            if ( jsonDoc["mqtt_password"] ) strncpy(heishamonSettings->mqtt_password, jsonDoc["mqtt_password"], sizeof(heishamonSettings->mqtt_password));
-            if ( jsonDoc["use_1wire"] == "enabled" ) heishamonSettings->use_1wire = true;
-            if ( jsonDoc["use_s0"] == "enabled" ) {
-              heishamonSettings->use_s0 = true;
-              if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
-              if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
-              if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
-              if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
-              if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
-              if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
-            }
-            if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
-            if ( jsonDoc["logMqtt"] == "enabled" ) heishamonSettings->logMqtt = true;
-            if ( jsonDoc["logHexdump"] == "enabled" ) heishamonSettings->logHexdump = true;
-            if ( jsonDoc["logSerial1"] == "disabled" ) heishamonSettings->logSerial1 = false; //default is true so this one is different
-            if ( jsonDoc["optionalPCB"] == "enabled" ) heishamonSettings->optionalPCB = true;
-            if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
-            if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
-            if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
-            if (heishamonSettings->waitDallasTime < 5) heishamonSettings->waitDallasTime = 5;
-            if ( jsonDoc["updateAllTime"]) heishamonSettings->updateAllTime = jsonDoc["updateAllTime"];
-            if (heishamonSettings->updateAllTime < heishamonSettings->waitTime) heishamonSettings->updateAllTime = heishamonSettings->waitTime;
-            if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
-            if (heishamonSettings->updataAllDallasTime < heishamonSettings->waitDallasTime) heishamonSettings->updataAllDallasTime = heishamonSettings->waitDallasTime;
-          } else {
-            log_message("Failed to load json config, forcing config reset.");
-            WiFi.persistent(true);
-            WiFi.disconnect();
-            WiFi.persistent(false);
-          }
-          configFile.close();
-        }
-      }
-      else {
-        log_message("No config.json exists! Forcing a config reset.");
-        WiFi.persistent(true);
-        WiFi.disconnect();
-        WiFi.persistent(false);
-      }
-
-      if (LittleFS.exists("/heatcurve.json")) {
-        //file exists, reading and loading
-        log_message("reading heatingcurve file");
-        File configFile = LittleFS.open("/heatcurve.json", "r");
-        if (configFile) {
-          log_message("opened heating curve config file");
-          size_t size = configFile.size();
-          // Allocate a buffer to store contents of the file.
-          std::unique_ptr<char[]> buf(new char[size]);
-
-          configFile.readBytes(buf.get(), size);
-          DynamicJsonDocument jsonDoc(1024);
-          DeserializationError error = deserializeJson(jsonDoc, buf.get());
-          serializeJson(jsonDoc, Serial);
-          if (!error) {
-            if ( jsonDoc["enableHeatCurve"] == "enabled" ) heishamonSettings->SmartControlSettings.enableHeatCurve = true;
-            if ( jsonDoc["avgHourHeatCurve"]) heishamonSettings->SmartControlSettings.avgHourHeatCurve = jsonDoc["avgHourHeatCurve"];
-            if ( jsonDoc["heatCurveTargetHigh"]) heishamonSettings->SmartControlSettings.heatCurveTargetHigh = jsonDoc["heatCurveTargetHigh"];
-            if ( jsonDoc["heatCurveTargetLow"]) heishamonSettings->SmartControlSettings.heatCurveTargetLow = jsonDoc["heatCurveTargetLow"];
-            if ( jsonDoc["heatCurveOutHigh"]) heishamonSettings->SmartControlSettings.heatCurveOutHigh = jsonDoc["heatCurveOutHigh"];
-            if ( jsonDoc["heatCurveOutLow"]) heishamonSettings->SmartControlSettings.heatCurveOutLow = jsonDoc["heatCurveOutLow"];
-            for (unsigned int i = 0 ; i < 36 ; i++) {
-              if ( jsonDoc["heatCurveLookup"][i]) heishamonSettings->SmartControlSettings.heatCurveLookup[i] = jsonDoc["heatCurveLookup"][i];
-            }
-          }
-          configFile.close();
-        }
-      }
-    } else {
-      log_message("failed to mount FS");
-    }
-    //end read
+    log_message("failed to mount FS");
   }
+  //end read
+
 
 
   log_message((char *)"Wifi reconnecting with new configuration...");
@@ -451,7 +424,7 @@ void saveJsonToConfig(DynamicJsonDocument &jsonDoc) {
   }
 }
 
-void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
+void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
   //check if POST was made with save settings, if yes then save and reboot
   if (httpServer->args()) {
     bool reconnectWiFi = false;
@@ -576,7 +549,7 @@ void handleSettings(DoubleResetDetect &drd, ESP8266WebServer *httpServer, settin
       httpServer->sendContent_P(webFooter);
       httpServer->sendContent("");
       httpServer->client().stop();
-      setupWifi(drd, heishamonSettings);
+      setupWifi(heishamonSettings);
       return;
     }
   }
