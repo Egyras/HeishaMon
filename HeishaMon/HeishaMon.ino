@@ -120,7 +120,7 @@ void check_wifi()
     /*  only start this routine if timeout on
      *  reconnecting to AP and SSID is set
      */
-    if ((strlen(heishamonSettings.wifi_ssid) > 0) && (nextWifiRetryTimer < millis()))  {
+    if ((heishamonSettings.wifi_ssid[0] != '\0') && (nextWifiRetryTimer < millis()))  {
       nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
       if (WiFi.softAPSSID() == "") {
         log_message((char *)"WiFi lost, starting setup hotspot...");
@@ -129,7 +129,7 @@ void check_wifi()
       }
       if ((WiFi.status() == WL_DISCONNECTED)  && (WiFi.softAPgetStationNum() == 0 )) {
         log_message((char *)"Retrying configured WiFi, ...");
-        if (strlen(heishamonSettings.wifi_password) == 0) {
+        if (heishamonSettings.wifi_password[0] == '\0') {
           WiFi.begin(heishamonSettings.wifi_ssid);
         } else {
           WiFi.begin(heishamonSettings.wifi_ssid, heishamonSettings.wifi_password);
@@ -153,7 +153,7 @@ void check_wifi()
       MDNS.begin(heishamonSettings.wifi_hostname);
       MDNS.addService("http", "tcp", 80);
 
-      if (!strlen(heishamonSettings.wifi_ssid) > 0) {
+      if (heishamonSettings.wifi_ssid[0] == '\0') {
         log_message((char *)"WiFi connected without SSID and password in settings. Must come from persistent memory. Storing in settings.");
         WiFi.SSID().toCharArray(heishamonSettings.wifi_ssid, 40);
         WiFi.psk().toCharArray(heishamonSettings.wifi_password, 40);
