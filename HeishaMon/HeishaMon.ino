@@ -111,7 +111,7 @@ void check_wifi()
      */
     dnsServer.processNextRequest();
 
-    if (((WiFi.status() != WL_DISCONNECTED)) && (WiFi.softAPgetStationNum() > 0))  {
+    if (((WiFi.status() != WL_DISCONNECTED)) && (WiFi.softAPgetStationNum() > 0))  {  // disconnected means not scanning for AP connection
       log_message((char *)"WiFi lost, but softAP station connecting, so stop scanning...");
       WiFi.disconnect(true);
     }
