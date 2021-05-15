@@ -571,7 +571,12 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httptext = httptext + F("</td></tr>");
   httptext = httptext + F("<tr><td style=\"text-align:right; width: 50%\">");
   httptext = httptext + F("Wifi SSID:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"text\" name=\"wifi_ssid\" value=\"") + heishamonSettings->wifi_ssid + F("\">");
+  // wifi scan select box
+  httptext = httptext + F("<input list=\"available_ssid\" name=\"wifi_ssid\" id=\"wifi_ssid_id\" value=\"") + heishamonSettings->wifi_ssid + F("\">");
+  httptext = httptext + F("<select id=\"wifi_ssid_select\" style=\"display:none\" onchange=\"changewifissid()\">");
+  httptext = httptext + F("<option hidden selected value=\"\">Select SSID</option>");
+  httptext = httptext + F("</select>");
+  //
   httptext = httptext + F("</td></tr>");
   httptext = httptext + F("<tr><td style=\"text-align:right; width: 50%\">");
   httptext = httptext + F("Wifi password:</td><td style=\"text-align:left\">");
@@ -718,6 +723,8 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
 
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(settingsJS);
+  httpServer->sendContent_P(populatescanwifiJS);
+  httpServer->sendContent_P(changewifissidJS);
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
   httpServer->client().stop();
@@ -985,6 +992,54 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
   httpServer->sendContent("");
   httpServer->client().stop();
 }
+
+void handleWifiScan(ESP8266WebServer *httpServer) {
+  httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer->sendHeader("Access-Control-Allow-Origin", "*");
+  httpServer->send(200, "application/json", "");
+  int numSsid = WiFi.scanNetworks();
+
+  if (numSsid > 0) { //found wifi networks
+    String httptext = "[";
+    int indexes[numSsid];
+    for (int i = 0; i < numSsid; i++) { //fill the sorted list with normal indexes first
+      indexes[i] = i;
+    }
+    for (int i = 0; i < numSsid; i++) { //then sort
+      for (int j = i + 1; j < numSsid; j++) {
+        if (WiFi.RSSI(indexes[j]) > WiFi.RSSI(indexes[i])) {
+          int temp = indexes[j];
+          indexes[j] = indexes[i];
+          indexes[i] = temp;
+        }
+      }
+    }
+    String ssid;
+    for (int i = 0; i < numSsid; i++) { //then remove duplicates
+      if (indexes[i] == -1) continue;
+      ssid = WiFi.SSID(indexes[i]);
+      for (int j = i + 1; j < numSsid; j++) {
+        if (ssid == WiFi.SSID(indexes[j])) {
+          indexes[j] = -1;
+        }
+      }
+    }
+    bool firstSSID = true;
+    for (int i = 0; i < numSsid; i++) { //then output json
+      if (indexes[i] == -1) continue;
+      if (!firstSSID) {
+        httptext = httptext + ",";
+      }
+      httptext = httptext + "{\"ssid\":\"" + WiFi.SSID(indexes[i]) + "\", \"rssi\": " + WiFi.RSSI(indexes[i]) + "}";
+      firstSSID = false;
+    }
+    httptext = httptext + "]";
+    httpServer->sendContent(httptext);
+  }
+  httpServer->sendContent("");
+  httpServer->client().stop();
+}
+
 
 bool send_command(byte* command, int length);
 

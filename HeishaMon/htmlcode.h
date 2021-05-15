@@ -570,3 +570,34 @@ static const char webCSS[] PROGMEM =
   ".heishatable { display: none; }"
   "#cli{ background: black; color: white; width: 100%; height: 400px!important; }"
   "</style>";
+
+ 
+static const char changewifissidJS[] PROGMEM =
+  "<script>"
+  "function changewifissid() {"
+  " var x = document.getElementById(\"wifi_ssid_select\").value;"
+  " document.getElementById(\"wifi_ssid_id\").value = x;"
+  "}"
+  "</script>"; 
+
+static const char populatescanwifiJS[] PROGMEM =
+  "<script>"
+  "var selectList = document.getElementById('wifi_ssid_select');"
+  "var request = new XMLHttpRequest();"
+  "request.onreadystatechange = function(response) {"
+  " if (request.readyState === 4) {"
+  "  if (request.status === 200) {"
+  "     var jsonOptions = JSON.parse(request.responseText);"
+  "     jsonOptions.forEach(function(item) {"
+  "       var option = document.createElement('option');" 
+  "       option.value = item.ssid;"
+  "       option.text = \"SSID: \" + item.ssid + \" - RSSI: \" + item.rssi;" 
+  "       selectList.appendChild(option);"
+  "     });"
+  "     selectList.style.display = \"block\";"
+  "   };"
+  " };"
+  "};"
+  "request.open('GET', '/wifiscan', true);"
+  "request.send();"
+  "</script>";

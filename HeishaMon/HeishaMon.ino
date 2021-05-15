@@ -445,6 +445,10 @@ void setupHttp() {
   httpServer.on("/settings", [] {
     handleSettings(&httpServer, &heishamonSettings);
   });
+  httpServer.on("/wifiscan", [] {
+    handleWifiScan(&httpServer);
+  });
+  
   httpServer.on("/smartcontrol", [] {
     handleSmartcontrol(&httpServer, &heishamonSettings, actData);
   });

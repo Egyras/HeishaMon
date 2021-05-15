@@ -56,6 +56,7 @@ void handleDebug(ESP8266WebServer *httpServer, char *hex, byte hex_len);
 void settingsToJson(DynamicJsonDocument &jsonDoc, settingsStruct *heishamonSettings);
 void saveJsonToConfig(DynamicJsonDocument &jsonDoc);
 void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings);
+void handleWifiScan(ESP8266WebServer *httpServer);
 void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]);
 void handleREST(ESP8266WebServer *httpServer, bool optionalPCB);
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
