@@ -11,8 +11,20 @@
 
 #define UPTIME_OVERFLOW 4294967295 // Uptime overflow value
 
+static int numSsid = 0;
+
 void log_message(char* string);
 
+
+void getWifiScanResults(int networksFound) {
+  Serial1.printf("Num ssid: %d, networks found: %d",numSsid,networksFound);
+  Serial1.println();
+  numSsid = networksFound;
+  for (int i = 0; i < numSsid; i++)
+  {
+    Serial1.printf("%d: %s, Ch:%d (%ddBm) %s\n", i + 1, WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i), WiFi.encryptionType(i) == ENC_TYPE_NONE ? "open" : "");
+  }
+}
 
 int getWifiQuality() {
   if (WiFi.status() != WL_CONNECTED)
@@ -171,6 +183,7 @@ void setupWifi(settingsStruct *heishamonSettings) {
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAPdisconnect(true);
+
   if (heishamonSettings->wifi_ssid[0] != '\0') {
     log_message((char *)"Wifi client mode...");
     WiFi.persistent(true);
@@ -192,7 +205,8 @@ void setupWifi(settingsStruct *heishamonSettings) {
   } else {
     WiFi.hostname(heishamonSettings->wifi_hostname);
   }
-
+  //initiate a wifi scan at boot to fill the wifi scan list
+  WiFi.scanNetworksAsync(getWifiScanResults);
 }
 
 void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings) {
@@ -997,7 +1011,6 @@ void handleWifiScan(ESP8266WebServer *httpServer) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->sendHeader("Access-Control-Allow-Origin", "*");
   httpServer->send(200, "application/json", "");
-  int numSsid = WiFi.scanNetworks();
 
   if (numSsid > 0) { //found wifi networks
     String httptext = "[";
@@ -1038,6 +1051,9 @@ void handleWifiScan(ESP8266WebServer *httpServer) {
   }
   httpServer->sendContent("");
   httpServer->client().stop();
+
+  //initatie a new async scan for next try
+  WiFi.scanNetworksAsync(getWifiScanResults);
 }
 
 
