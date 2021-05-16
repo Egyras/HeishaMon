@@ -17,13 +17,7 @@ void log_message(char* string);
 
 
 void getWifiScanResults(int networksFound) {
-  Serial1.printf("Num ssid: %d, networks found: %d",numSsid,networksFound);
-  Serial1.println();
   numSsid = networksFound;
-  for (int i = 0; i < numSsid; i++)
-  {
-    Serial1.printf("%d: %s, Ch:%d (%ddBm) %s\n", i + 1, WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i), WiFi.encryptionType(i) == ENC_TYPE_NONE ? "open" : "");
-  }
 }
 
 int getWifiQuality() {
