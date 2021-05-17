@@ -593,7 +593,7 @@ static const char populatescanwifiJS[] PROGMEM =
   "      jsonOptions.forEach(function(item) {"
   "        var option = document.createElement('option');" 
   "        option.value = item.ssid;"
-  "        option.text = \"SSID: \" + item.ssid + \" - RSSI: \" + item.rssi;" 
+  "        option.text = item.ssid + \" - \" + item.rssi;" 
   "        selectList.appendChild(option);"
   "      });"
   "       selectList.style.display = \"block\";"
@@ -602,7 +602,7 @@ static const char populatescanwifiJS[] PROGMEM =
   " };"
   " request.open('GET', '/wifiscan', true);"
   " request.send();"
-  " setTimeout(refreshWifiScan,5000);"
+  " setTimeout(refreshWifiScan,10000);"
   "};"
   "refreshWifiScan();"
   "</script>";

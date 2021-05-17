@@ -20,15 +20,18 @@ void getWifiScanResults(int networksFound) {
   numSsid = networksFound;
 }
 
-int getWifiQuality() {
-  if (WiFi.status() != WL_CONNECTED)
-    return -1;
-  int dBm = WiFi.RSSI();
+int dBmToQuality(int dBm) {
   if (dBm <= -100)
     return 0;
   if (dBm >= -50)
     return 100;
   return 2 * (dBm + 100);
+}
+
+int getWifiQuality() {
+  if (WiFi.status() != WL_CONNECTED)
+    return -1;
+  return dBmToQuality(WiFi.RSSI());
 }
 
 int getFreeMemory() {
@@ -1037,7 +1040,7 @@ void handleWifiScan(ESP8266WebServer *httpServer) {
       if (!firstSSID) {
         httptext = httptext + ",";
       }
-      httptext = httptext + "{\"ssid\":\"" + WiFi.SSID(indexes[i]) + "\", \"rssi\": " + WiFi.RSSI(indexes[i]) + "}";
+      httptext = httptext + "{\"ssid\":\"" + WiFi.SSID(indexes[i]) + "\", \"rssi\": \"" + dBmToQuality(WiFi.RSSI(indexes[i])) + "%\"}";
       firstSSID = false;
     }
     httptext = httptext + "]";
