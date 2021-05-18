@@ -111,8 +111,11 @@ void check_wifi()
      */
     dnsServer.processNextRequest();
 
-    if (((WiFi.status() != WL_DISCONNECTED)) && (WiFi.softAPgetStationNum() > 0))  {  // disconnected means not scanning for AP connection
-      log_message((char *)"WiFi lost, but softAP station connecting, so stop scanning...");
+    /* we need to stop reconnecting to a configured wifi network if there is a hotspot user connected
+     *  also, do not disconnect if wifi network scan is active
+     */
+    if ((heishamonSettings.wifi_ssid[0] != '\0') && (WiFi.status() != WL_DISCONNECTED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0))  { 
+      log_message((char *)"WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid...");
       WiFi.disconnect(true);
     }
 
@@ -559,7 +562,6 @@ void setupMqtt() {
   mqtt_client.setSocketTimeout(10); mqtt_client.setKeepAlive(5); //fast timeout, any slower will block the main loop too long
   mqtt_client.setServer(heishamonSettings.mqtt_server, atoi(heishamonSettings.mqtt_port));
   mqtt_client.setCallback(mqtt_callback);
-  mqtt_reconnect();
 }
 
 void setup() {

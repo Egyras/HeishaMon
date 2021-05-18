@@ -179,6 +179,7 @@ void setupWifi(settingsStruct *heishamonSettings) {
   //no sleep wifi
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.mode(WIFI_AP_STA);
+  WiFi.disconnect(true);
   WiFi.softAPdisconnect(true);
 
   if (heishamonSettings->wifi_ssid[0] != '\0') {
