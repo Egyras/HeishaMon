@@ -146,6 +146,7 @@ void check_wifi()
       log_message((char *)"WiFi (re)connected, shutting down hotspot...");
       WiFi.softAPdisconnect(true);
       MDNS.notifyAPChange();
+      experimental::ESP8266WiFiGratuitous::stationKeepAliveSetIntervalMs(5000); //necessary for some users with bad wifi routers
     }
 
     if (firstConnectSinceBoot) { // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
