@@ -25,15 +25,12 @@ ICACHE_RAM_ATTR void onS0Pulse2() {
   new_pulse_s0[1] = millis();
 }
 
-void initS0Sensors(s0SettingsStruct s0Settings[], PubSubClient &mqtt_client, char* mqtt_topic_base) {
-  char mqtt_topic[256];
-
+void initS0Sensors(s0SettingsStruct s0Settings[]) {
   //setup s0 port 1
   actS0Settings[0].gpiopin = s0Settings[0].gpiopin;
   actS0Settings[0].ppkwh = s0Settings[0].ppkwh;
   actS0Settings[0].lowerPowerInterval = s0Settings[0].lowerPowerInterval;
-  sprintf_P(mqtt_topic, PSTR("%s/%s/WatthourTotal/1"), mqtt_topic_base, mqtt_topic_s0);
-  mqtt_client.subscribe(mqtt_topic);
+
   pinMode(actS0Settings[0].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Settings[0].gpiopin), onS0Pulse1, RISING);
   actS0Data[0].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
@@ -45,13 +42,13 @@ void initS0Sensors(s0SettingsStruct s0Settings[], PubSubClient &mqtt_client, cha
   pinMode(actS0Settings[1].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Settings[1].gpiopin), onS0Pulse2, RISING);
   actS0Data[1].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
-  sprintf_P(mqtt_topic, PSTR("%s/%s/WatthourTotal/2"), mqtt_topic_base, mqtt_topic_s0);
-  mqtt_client.subscribe(mqtt_topic);
-
 }
 
 void restore_s0_Watthour(int s0Port, float watthour) {
-  if ((s0Port == 1) || (s0Port == 2)) actS0Data[s0Port - 1].pulsesTotal = int(watthour * (actS0Settings[s0Port - 1].ppkwh / 1000.0));
+  if ((s0Port == 1) || (s0Port == 2)) { 
+    unsigned int newTotal = int(watthour * (actS0Settings[s0Port - 1].ppkwh / 1000.0));
+    if (newTotal > actS0Data[s0Port - 1].pulsesTotal) actS0Data[s0Port - 1].pulsesTotal = newTotal;
+  }
 }
 
 void s0SettingsCorrupt(s0SettingsStruct s0Settings[], void (*log_message)(char*)) {

@@ -18,7 +18,7 @@ struct s0DataStruct {
   unsigned long nextReport = 0; //next time we reported the s0 value in millis
 };
 
-void initS0Sensors(s0SettingsStruct s0Settings[], PubSubClient &mqtt_client, char* mqtt_topic_base);
+void initS0Sensors(s0SettingsStruct s0Settings[]);
 void restore_s0_Watthour(int s0Port, float watthour);
 void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, s0SettingsStruct s0Settings[]);
 String s0TableOutput(void);

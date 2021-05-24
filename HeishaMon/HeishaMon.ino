@@ -113,7 +113,7 @@ void check_wifi()
     /* we need to stop reconnecting to a configured wifi network if there is a hotspot user connected
      *  also, do not disconnect if wifi network scan is active
      */
-    if ((heishamonSettings.wifi_ssid[0] != '\0') && (WiFi.status() != WL_DISCONNECTED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0))  { 
+    if ((heishamonSettings.wifi_ssid[0] != '\0') && (WiFi.status() != WL_DISCONNECTED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0))  {
       log_message((char *)"WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid...");
       WiFi.disconnect(true);
     }
@@ -196,7 +196,17 @@ void mqtt_reconnect()
       mqtt_client.publish(topic, "Online");
       sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_iptopic);
       mqtt_client.publish(topic, WiFi.localIP().toString().c_str(), true);
+
+      if (heishamonSettings.use_s0) { // connect to s0 topic to retrieve older watttotal from mqtt
+        sprintf_P(mqtt_topic, PSTR("%s/%s/WatthourTotal/1"), heishamonSettings.mqtt_topic_base, mqtt_topic_s0);
+        mqtt_client.subscribe(mqtt_topic);
+        sprintf_P(mqtt_topic, PSTR("%s/%s/WatthourTotal/2"), heishamonSettings.mqtt_topic_base, mqtt_topic_s0);
+        mqtt_client.subscribe(mqtt_topic);
+      }
     }
+
+
+
   }
 }
 
@@ -454,7 +464,7 @@ void setupHttp() {
   httpServer.on("/wifiscan", [] {
     handleWifiScan(&httpServer);
   });
-  
+
   httpServer.on("/smartcontrol", [] {
     handleSmartcontrol(&httpServer, &heishamonSettings, actData);
   });
@@ -582,7 +592,7 @@ void setupConditionals() {
 
   //these two after optional pcb because it needs to send a datagram fast after boot
   if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
-  if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings, mqtt_client, heishamonSettings.mqtt_topic_base);
+  if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings);
 }
 void setup() {
   //first get total memory before we do anything
