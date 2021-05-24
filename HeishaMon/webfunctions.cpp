@@ -64,10 +64,7 @@ String getUptime() {
   return String(uptime);
 }
 
-
-
-void setupWifi(settingsStruct *heishamonSettings) {
-
+void loadSettings(settingsStruct *heishamonSettings) {
   //read configuration from FS json
   log_message("mounting FS...");
 
@@ -101,21 +98,13 @@ void setupWifi(settingsStruct *heishamonSettings) {
           if ( jsonDoc["mqtt_port"] ) strncpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], sizeof(heishamonSettings->mqtt_port));
           if ( jsonDoc["mqtt_username"] ) strncpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], sizeof(heishamonSettings->mqtt_username));
           if ( jsonDoc["mqtt_password"] ) strncpy(heishamonSettings->mqtt_password, jsonDoc["mqtt_password"], sizeof(heishamonSettings->mqtt_password));
-          if ( jsonDoc["use_1wire"] == "enabled" ) heishamonSettings->use_1wire = true;
-          if ( jsonDoc["use_s0"] == "enabled" ) {
-            heishamonSettings->use_s0 = true;
-            if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
-            if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
-            if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
-            if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
-            if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
-            if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
-          }
-          if ( jsonDoc["listenonly"] == "enabled" ) heishamonSettings->listenonly = true;
-          if ( jsonDoc["logMqtt"] == "enabled" ) heishamonSettings->logMqtt = true;
-          if ( jsonDoc["logHexdump"] == "enabled" ) heishamonSettings->logHexdump = true;
-          if ( jsonDoc["logSerial1"] == "disabled" ) heishamonSettings->logSerial1 = false; //default is true so this one is different
-          if ( jsonDoc["optionalPCB"] == "enabled" ) heishamonSettings->optionalPCB = true;
+          heishamonSettings->use_1wire = ( jsonDoc["use_1wire"] == "enabled" ) ? true : false;
+          heishamonSettings->use_s0 = ( jsonDoc["use_s0"] == "enabled" ) ? true : false;
+          heishamonSettings->listenonly = ( jsonDoc["listenonly"] == "enabled" ) ? true : false;
+          heishamonSettings->logMqtt = ( jsonDoc["logMqtt"] == "enabled" ) ? true : false;
+          heishamonSettings->logHexdump = ( jsonDoc["logHexdump"] == "enabled" ) ? true : false;
+          heishamonSettings->logSerial1 = ( jsonDoc["logSerial1"] == "enabled" ) ? true : false;
+          heishamonSettings->optionalPCB = ( jsonDoc["optionalPCB"] == "enabled" ) ? true : false;
           if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
           if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
           if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
@@ -124,6 +113,12 @@ void setupWifi(settingsStruct *heishamonSettings) {
           if (heishamonSettings->updateAllTime < heishamonSettings->waitTime) heishamonSettings->updateAllTime = heishamonSettings->waitTime;
           if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
           if (heishamonSettings->updataAllDallasTime < heishamonSettings->waitDallasTime) heishamonSettings->updataAllDallasTime = heishamonSettings->waitDallasTime;
+          if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
+          if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
+          if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
+          if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
+          if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
+          if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
         } else {
           log_message("Failed to load json config, forcing config reset.");
           WiFi.persistent(true);
@@ -155,7 +150,7 @@ void setupWifi(settingsStruct *heishamonSettings) {
         DeserializationError error = deserializeJson(jsonDoc, buf.get());
         serializeJson(jsonDoc, Serial);
         if (!error) {
-          if ( jsonDoc["enableHeatCurve"] == "enabled" ) heishamonSettings->SmartControlSettings.enableHeatCurve = true;
+          heishamonSettings->SmartControlSettings.enableHeatCurve =( jsonDoc["enableHeatCurve"] == "enabled" ) ? true : false;
           if ( jsonDoc["avgHourHeatCurve"]) heishamonSettings->SmartControlSettings.avgHourHeatCurve = jsonDoc["avgHourHeatCurve"];
           if ( jsonDoc["heatCurveTargetHigh"]) heishamonSettings->SmartControlSettings.heatCurveTargetHigh = jsonDoc["heatCurveTargetHigh"];
           if ( jsonDoc["heatCurveTargetLow"]) heishamonSettings->SmartControlSettings.heatCurveTargetLow = jsonDoc["heatCurveTargetLow"];
@@ -173,7 +168,9 @@ void setupWifi(settingsStruct *heishamonSettings) {
   }
   //end read
 
+}
 
+void setupWifi(settingsStruct *heishamonSettings) {
 
   log_message((char *)"Wifi reconnecting with new configuration...");
   //no sleep wifi
@@ -436,8 +433,8 @@ void saveJsonToConfig(DynamicJsonDocument &jsonDoc) {
   }
 }
 
-void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
-  //check if POST was made with save settings, if yes then save and reboot
+bool handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
+  //check if POST was made with save settings
   if (httpServer->args()) {
     bool reconnectWiFi = false;
     DynamicJsonDocument jsonDoc(1024);
@@ -475,7 +472,7 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
         httpServer->sendContent_P(webFooter);
         httpServer->sendContent("");
         httpServer->client().stop();
-        return;
+        return true;
       }
     }
     if (httpServer->hasArg("mqtt_topic_base")) {
@@ -548,6 +545,7 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     }
 
     saveJsonToConfig(jsonDoc); //save to config file
+    loadSettings(heishamonSettings); //load config file to current settings
 
     if (reconnectWiFi) {
       httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
@@ -562,8 +560,10 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
       httpServer->sendContent("");
       httpServer->client().stop();
       setupWifi(heishamonSettings);
-      return;
+      return true;
     }
+
+
   }
 
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
@@ -740,6 +740,16 @@ void handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httpServer->sendContent_P(webFooter);
   httpServer->sendContent("");
   httpServer->client().stop();
+
+  /*
+   * need to reload some settings in main loop if save was done
+   */
+  if (httpServer->args()) {
+    return true;
+  }
+  else {
+    return false;
+  }
 }
 
 void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]) {
