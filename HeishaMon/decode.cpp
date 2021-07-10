@@ -1,8 +1,8 @@
 #include "decode.h"
 #include "commands.h"
 
-unsigned long nextalldatatime = 0;
-unsigned long nextalloptdatatime = 0;
+unsigned long lastalldatatime = 0;
+unsigned long lastalloptdatatime = 0;
 
 String getBit1and2(byte input) {
   return String((input  >> 6) - 1);
@@ -134,10 +134,6 @@ void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_clien
   char mqtt_topic[256];
   bool updatenow = false;
 
-  if (millis() > nextalldatatime) {
-    updatenow = true;
-    nextalldatatime = millis() + (1000 * updateAllTime);
-  }
 
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS ; Topic_Number++) {
     byte Input_Byte;
@@ -171,6 +167,10 @@ void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_clien
         Topic_Value = topicFunctions[Topic_Number](Input_Byte);
         break;
     }
+    if ((unsigned long)(millis() - lastalldatatime) > (1000 * updateAllTime)) {
+      updatenow = true;
+      lastalldatatime = millis();;
+    }
     if ((updatenow) || ( actData[Topic_Number] != Topic_Value )) {
       actData[Topic_Number] = Topic_Value;
       sprintf_P(log_msg, PSTR("received TOP%d %s: %s"), Topic_Number, topics[Topic_Number], Topic_Value.c_str());
@@ -186,10 +186,7 @@ void decode_optional_heatpump_data(char* data, String actOptData[], PubSubClient
   char mqtt_topic[256];
   bool updatenow = false;
 
-  if (millis() > nextalloptdatatime) {
-    updatenow = true;
-    nextalloptdatatime = millis() + (1000 * updateAllTime);
-  }
+
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_OPT_TOPICS ; Topic_Number++) {
     byte Input_Byte;
     String Topic_Value;
@@ -217,6 +214,10 @@ void decode_optional_heatpump_data(char* data, String actOptData[], PubSubClient
         break;
       default:
         break;
+    }
+    if ((unsigned long)(millis() - lastalloptdatatime) > (1000 * updateAllTime)) {
+      updatenow = true;
+      lastalloptdatatime = millis();
     }
     if ((updatenow) || ( actOptData[Topic_Number] != Topic_Value )) {
       actOptData[Topic_Number] = Topic_Value;

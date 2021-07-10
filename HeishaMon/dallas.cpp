@@ -18,7 +18,7 @@ dallasDataStruct* actDallasData = 0;
 int dallasDevicecount = 0;
 
 
-unsigned long nextalldatatime_dallas = 0;
+unsigned long lastalldatatime_dallas = 0;
 
 unsigned long dallasTimer = 0;
 unsigned int updateAllDallasTime = 30000; // will be set using heishmonSettings
@@ -61,9 +61,9 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
   char valueStr[20];
   bool updatenow = false;
 
-  if (millis() > nextalldatatime_dallas) {
+  if ((unsigned long)(millis() > lastalldatatime_dallas) >  (1000 * updateAllDallasTime)) {
     updatenow = true;
-    nextalldatatime_dallas = millis() + (1000 * updateAllDallasTime);
+    lastalldatatime_dallas = millis();
   }
   if (!(DALLASASYNC)) DS18B20.requestTemperatures();
   for (int i = 0; i < dallasDevicecount; i++) {
@@ -90,12 +90,12 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
 }
 
 void dallasLoop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
-  if ((DALLASASYNC) && (millis() > (dallasTimer - 1000))) {
+  if ((DALLASASYNC) && ((unsigned long)(millis() - dallasTimer) > ((1000 * dallasTimerWait)-1000)) ) {
     DS18B20.requestTemperatures(); // get temperatures for next run 1 second before getting the temperatures (async)
   }
-  if (millis() > dallasTimer) {
+  if ((unsigned long)(millis() - dallasTimer) > (1000 * dallasTimerWait)) {
     log_message((char*)"Requesting new 1wire temperatures");
-    dallasTimer = millis() + (1000 * dallasTimerWait);
+    dallasTimer = millis();
     readNewDallasTemp(mqtt_client, log_message, mqtt_topic_base);
   }
 }

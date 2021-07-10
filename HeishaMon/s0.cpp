@@ -81,7 +81,7 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
       }
       actS0Data[i].lastPulse = new_pulse;
       actS0Data[i].pulses++;
-      if ((actS0Data[i].nextReport - millisThisLoop) > MINREPORTEDS0TIME) { //loop was in standby interval
+      if ((unsigned long)(actS0Data[i].nextReport - millisThisLoop) > MINREPORTEDS0TIME) { //loop was in standby interval
         actS0Data[i].nextReport = 0; // report now
       }
     }

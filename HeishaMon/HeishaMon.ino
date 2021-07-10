@@ -42,14 +42,14 @@ bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
 
 #define MQTTRECONNECTTIMER 30000 //it takes 30 secs for each mqtt server reconnect attempt
-unsigned long nextMqttReconnectAttempt = 0;
+unsigned long lastMqttReconnectAttempt = 0;
 
 #define WIFIRETRYTIMER 10000 // switch between hotspot and configured SSID each 10 secs if SSID is lost
-unsigned long nextWifiRetryTimer = WIFIRETRYTIMER;
+unsigned long lastWifiRetryTimer = 0;
 
-unsigned long nexttime = 0;
+unsigned long lastRunTime = 0;
 
-unsigned long allowreadtime = 0; //set to millis value during send, allow to wait millis for answer
+unsigned long sendCommandReadTime = 0; //set to millis value during send, allow to wait millis for answer
 unsigned long goodreads = 0;
 unsigned long totalreads = 0;
 unsigned long badcrcread = 0;
@@ -121,8 +121,8 @@ void check_wifi()
     /*  only start this routine if timeout on
      *  reconnecting to AP and SSID is set
      */
-    if ((heishamonSettings.wifi_ssid[0] != '\0') && (nextWifiRetryTimer < millis()))  {
-      nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
+    if ((heishamonSettings.wifi_ssid[0] != '\0') && ((unsigned long)(millis() - lastWifiRetryTimer) > WIFIRETRYTIMER ) )  {
+      lastWifiRetryTimer = millis();
       if (WiFi.softAPSSID() == "") {
         log_message((char *)"WiFi lost, starting setup hotspot...");
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
@@ -150,7 +150,7 @@ void check_wifi()
 
     if (firstConnectSinceBoot) { // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
       firstConnectSinceBoot = false;
-      nextMqttReconnectAttempt = 0; //initiate mqtt connection asap
+      lastMqttReconnectAttempt = 0; //initiate mqtt connection asap
       setupOTA();
       MDNS.begin(heishamonSettings.wifi_hostname);
       MDNS.addService("http", "tcp", 80);
@@ -169,7 +169,7 @@ void check_wifi()
        always update if wifi is working so next time on ssid failure
        it only starts the routine above after this timeout
     */
-    nextWifiRetryTimer = millis() + WIFIRETRYTIMER;
+    lastWifiRetryTimer = millis();
 
     // Allow MDNS processing
     MDNS.update();
@@ -179,8 +179,8 @@ void check_wifi()
 void mqtt_reconnect()
 {
   unsigned long now = millis();
-  if (now > nextMqttReconnectAttempt) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when nextMqttReconnectAttempt is still 0
-    nextMqttReconnectAttempt = now + MQTTRECONNECTTIMER;
+  if ((unsigned long)(now - lastMqttReconnectAttempt) > MQTTRECONNECTTIMER) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when lastMqttReconnectAttempt is still 0
+    lastMqttReconnectAttempt = now;
     log_message((char*)"Reconnecting to mqtt server ...");
     char topic[256];
     sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_willtopic);
@@ -362,7 +362,7 @@ bool send_command(byte* command, int length) {
   log_message(log_msg);
 
   if (heishamonSettings.logHexdump) logHex((char*)command, length);
-  allowreadtime = millis() + SERIALTIMEOUT; //set allowreadtime when to timeout the answer of this command
+  sendCommandReadTime = millis(); //set sendCommandReadTime when to timeout the answer of this command
   return true;
 }
 
@@ -595,14 +595,18 @@ void setupConditionals() {
   if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings);
 }
 void setup() {
+  
   //first get total memory before we do anything
   getFreeMemory();
 
   //set boottime
   getUptime();
-
+  
+  
   setupSerial();
   setupSerial1();
+  
+  
   Serial.println();
   Serial.println(F("--- HEISHAMON ---"));
   Serial.println(F("starting..."));
@@ -625,8 +629,6 @@ void setup() {
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer.start(DNS_PORT, "*", apIP);
 
-  // wait waittime for the first start in main loop
-  nexttime = millis() + (1000 * heishamonSettings.waitTime);
 }
 
 void send_panasonic_query() {
@@ -643,7 +645,7 @@ void send_optionalpcb_query() {
 
 
 void read_panasonic_data() {
-  if (sending && (millis() > allowreadtime)) {
+  if (sending && ((unsigned long)(millis() - sendCommandReadTime) > SERIALTIMEOUT)) {
     log_message((char*)"Previous read data attempt failed due to timeout!");
     sprintf_P(log_msg, PSTR("Received %d bytes data"), data_length);
     log_message(log_msg);
@@ -688,8 +690,8 @@ void loop() {
   if ((!sending) && (!heishamonSettings.listenonly) && (heishamonSettings.optionalPCB)) send_optionalpcb_query(); //send this as fast as possible or else we could get warnings on heatpump
 
   // run the data query only each WAITTIME
-  if (millis() > nexttime) {
-    nexttime = millis() + (1000 * heishamonSettings.waitTime);
+  if ((unsigned long)(millis() - lastRunTime) > (1000 * heishamonSettings.waitTime)) {
+    lastRunTime = millis();
     //check mqtt
     if ( (WiFi.isConnected()) && (!mqtt_client.connected()) )
     {
