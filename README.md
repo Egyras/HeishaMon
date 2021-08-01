@@ -12,12 +12,11 @@ Suomen kielellä [README_FI.md](README_FI.md) luettavissa täällä.
 *Help on translation to other languages is welcome.*
 
 # Current releases
-Current beta release is version 0.9b. The [compiled binary](binaries/HeishaMon.ino.d1-v0.8b.bin) can be installed on a Wemos D1 mini, on the HeishaMon PCB and generally on any ESP8266 based board compatible with Wemos build settings (at least 4MB flash). You can also download the code and compile it yourself (see required libraries below). \
-Changed from 0.6 to 0.7 is a bug fix for the webinterface which resulted in the page become slow after minutes of having the page open. And from 0.7 to 0.8 is a better S0 kWh meter algoritm. 
+Current release is version 1. The [compiled binary](binaries/HeishaMon.ino.d1-v0.8b.bin) can be installed on a Wemos D1 mini, on the HeishaMon PCB and generally on any ESP8266 based board compatible with Wemos build settings (at least 4MB flash). You can also download the code and compile it yourself (see required libraries below). \
 
 
 # Using the software
-The current arduino beta image is able to communicate with the Panasonic Aquarea H & J-series. [Confirmed by users types of HP you can find here](HeatPumpType.md) \
+HeishaMon is able to communicate with the Panasonic Aquarea H & J-series. [Confirmed by users types of HP you can find here](HeatPumpType.md) \
 If you want to compile this image yourself be sure to use the mentioned libraries and support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that.
 
 When starting for the first time an open-wifi-hotspot will be visible allowing you to configure your wifi network and your MQTT server. Configuration page will be located at http://192.168.4.1 . \
@@ -29,13 +28,18 @@ All received data will be sent to different MQTT topics (see below for topic des
 
 You can connect a 1wire network on GPIO4 which will report in seperate MQTT topics (panasonic_heat_pump/1wire/sensorid).
 
-The software is also able to measure Watt on a S0 port of two kWh meters. You only need to connect GPIO12 and GND to the S0 of one kWh meter and if you need a second kWh meter use GPIO14 and GND. It will report on MQTT topic panasonic_heat_pump/s0/Watt/1 and panasonic_heat_pump/s0/Watt/2 and also in the JSON output. You can replace 'Watt' in the previous topic with 'Watthour' to get consumption counter in kWh.
+The software is also able to measure Watt on a S0 port of two kWh meters. You only need to connect GPIO12 and GND to the S0 of one kWh meter and if you need a second kWh meter use GPIO14 and GND. It will report on MQTT topic panasonic_heat_pump/s0/Watt/1 and panasonic_heat_pump/s0/Watt/2 and also in the JSON output. You can replace 'Watt' in the previous topic with 'Watthour' to get consumption counter in WattHour (per mqtt message) or to 'WatthourTotal' to get the total consumption measured in WattHour.
 
-Updating the firmware is as easy as going to the firmware menu and, after authentication with username 'admin' and password you provided during setup, uploading the binary there.
+Updating the firmware is as easy as going to the firmware menu and, after authentication with username 'admin' and password 'heisha' (or other provided during setup), uploading the binary there.
 
 A json output of all received data (heatpump and 1wire) is available at the url http://heishamon.local/json (replace heishamon.local with the ip address of your heishamon device if MDNS is not working for you).
 
 Within the 'integrations' folder you can find examples how to connect your automation platform to the HeishaMon.
+
+# Debug led indications
+On first boot the debug led will turn on after 10 seconds to let you know that there is no config yet and a HeishaMon-Setup wifi portal should be available.
+A factory reset can be performed on the web interface but if the web interface is unavailable you can perform a double reset. The double reset should be performed not too fast but also not too slow. Usually halve a second between both resets should do the trick. To indicate that the double reset performed a factory reset, the blue led will flash rapidly (You need to press reset again now to start HeishaMon-Setup wifi portal).
+During normal running of the software, the blue led will flash on textual debug output (if enabled in the settings). This would cause the led to flash a few times about each 5 seconds.
 
 # Further information
 Below you can find some technical details about the project. How to build your own cables. How to build your own PCB etc.
@@ -46,16 +50,16 @@ Communication parameters: TTL 5V UART 9600,8,E,1  \
  \
 CN-CNT Pin-out (from top to bottom) \
 1 - +5V (250mA)  \
-2 - 0-5V TX  \
-3 - 0-5V RX  \
+2 - 0-5V TX (from heatpump) \
+3 - 0-5V RX (to heatpump)\
 4 - +12V (250mA) \
 5 - GND \
  \
 CN-NMODE Pin-out (from left to right) \
 "Warning! As printed on the PCB, the left pin is pin 4 and right pin is pin 1. Do not count 1 to 4 from left!  \
 4 - +5V (250mA)  \
-3 - 0-5V TX  \
-2 - 0-5V RX  \
+3 - 0-5V TX (from heatpump) \
+2 - 0-5V RX (to heatpump) \
 1 - GND
 
 

@@ -111,6 +111,19 @@ TOP91 | main/DHW_Heater_Operations_Hours | Electric heater operating time for DH
 TOP92 | main/Heat_Pump_Model | Heat pump model, all values in HeatPumpType.md
 TOP93 | main/Pump_Duty | Pump duty
 TOP94 | main/Zones_State | Zones state (0 = zone1 active, 1 = zone2 active, 2 = zone1 and zone2 active)
+TOP95 | main/Max_Pump_Duty | Max pump duty configured
+TOP96 | main/Heater_Delay_Time | Heater delay time (J-series only)
+TOP97 | main/Heater_Start_Delta | Heater start delta (J-series only)
+TOP98 | main/Heater_Stop_Delta | Heater stop delta (J-series only)
+TOP99 | main/Buffer_Installed | Buffer tank installed
+TOP100 | main/DHW_Installed | DHW tank installed
+TOP101 | main/Solar_Mode | Solar mode (disabled, to buffer, to DHW)
+TOP102 | main/Solar_On_Delta | Solar heating delta on
+TOP103 | main/Solar_Off_Delta | solar heating delta off
+TOP104 | main/Solar_Frost_Protection | Solar frost protection temp
+TOP105 | main/Solar_High_Limit | Solar max temp limit
+
+
 
 All Topics realated with state can have also value -1 - unknown - but only in ubnormal situations.
 
@@ -147,17 +160,21 @@ SET6  | SetZ1CoolRequestTemperature | Set Z1 cool shift or direct cool temperatu
 SET7  | SetZ2HeatRequestTemperature | Set Z2 heat shift or direct heat temperature | -5 to 5 or 20 to max
 SET8  | SetZ2CoolRequestTemperature | Set Z2 cool shift or direct cool temperature | -5 to 5 or 20 to max
 SET9  | SetOperationMode | Sets operating mode | 0=Heat only, 1=Cool only, 2=Auto, 3=DHW only, 4=Heat+DHW, 5=Cool+DHW, 6=Auto+DHW
-SET10 | SetForceDHW | Forces DHW (Operating mode should be firstly set to one with DWH mode (3,4,5 or 6) to be effective. Plese look at SET9 )  | 0, 1
+SET10 | SetForceDHW | Forces DHW (Operating mode should be set first to inlcude DWH mode (operation mode 3,4,5 or 6) to be effective. Please look at SET9 )  | 0, 1
 SET11 | SetDHWTemp | Set DHW target temperature | 40 - 75
 SET12 | SetForceDefrost | Forces defrost routine | 0, 1
 SET13 | SetForceSterilization | Forces DHW sterilization routine | 0, 1
 SET14 | SetPump | Set Water Pump to service mode, max speed | 0, 1
-SET15 | SetPumpSpeed | Set max Water Pump speed in service menu | decimal value translate to hexadecimal in service menu <br/>64 to 254
+SET15 | SetMaxPumpDuty | Set max Water Pump duty in service menu | decimal value translate to hexadecimal in service menu <br/>64 to 254
 SET16 | SetCurves | Set zones heat/cool curves | JSON document (see below)
 SET17 | SetZones | Set zones to active | 0 = zone 1 active, 1 = zone2 active, 2 = zone1 and zone2 active
 SET18 | SetFloorHeatDelta | Set floor heating delta in Kelvin | 1-15
 SET19 | SetFloorCoolDelta | Set floor cooling delta in Kelvin | 1-15
 SET20 | SetDHWHeatDelta | Set DHW heating delta in Kelvin | 1-15
+SET21 | SetHeaterDelayTime | Set heater start delay time (only J-series) | in minutes
+SET22 | SetHeaterStartDelta | Set heater start delta T (only J-series) | in kelvin
+SET23 | SetHeaterStopDelta | Set heater stop delta T (only J-series) | in kelvin
+SET24 | SetMainSchedule | Set weekly schedule | 0=off, 1=on
 
 
 *If you operate your heatpump with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*

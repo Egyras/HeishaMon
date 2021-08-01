@@ -26,7 +26,7 @@
 |  TOP | 21 | 15 |  (hex) 15 - One  Zone and Z1 as room , 19 - One Zone and Z1 as pool, 16 - Two Zones and Z2 as room, 26 - Two Zones ,Z2 as pool| No. of Zones and Zone Destination |
 |  TOP | 22 | 11 |First digit -Z2 ,Second digit Z1 (hex) 1 - water temperature,2 - External Thermostat, 3 - Internal Thermostat, , 4 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
-|  TOP | 24 | 16 | (hex) DHW connected (no solar) =16, DHW not connected=15, no buffer(DHW connected)=16, DHW+Buffer=1A, DHW as buffer for Solar=26, Buffer tank as Buffer for solar=36, 5A - Standard , 6A - Variable  | DHW Connection and Buffer + Solar status , DHW Variable/Standard -All-In-One only |
+|  TOP99+TOP100+TOP101 | 24 | 16 | 1st & 2nd bit Smart DHW -All-In-One only, 3rd & 4th bit = solar buffer (0b01=no solar, 0b10=solar buffer, 0b11=solar dhw), 5th & 6th bit = buffer installed, 7th & 8th bit = DHW installed|
 |  TOP | 25 | 5e | 1st & 2nd bit = 10 <br/> 3rd & 4th bit = b01 no Pad Heater, b10 - Type A, b11 Type B <br/> 5th & 6th bit = b01 - Internal Heater 3kW, b10 - 6kW, b11 - 9kW <br/> 7th & 8th bit = b01 DHW Internal Heater , b10 - DHW External Heater | External Pad Heater <br/> Power of internal heater <br/> DHW heater Internal/External |
 |  TOP | 26 | 55 | (hex) Biwalent Off=55, Biwalent alternative =56, Biwalent parallel=5A | Biwalent settings |
 |  TOP | 27 | 05 | SG Ready Control on/off (bit5and6) ,Demand Control on/off (bit7and8)  | SG Ready Control, Demand Control |
@@ -47,7 +47,7 @@
 |  TOP9 | 42 | b2 | Convert to DEC 178-128 = 50  | DHW Target Temperature [°C] |
 |  TOP45 | 43 | 71 | Convert to DEC 113-128 =-15   | Heat Shift for Holiday mode [°K]  |
 |  TOP25 | 44 | 71 | Convert to DEC 113-128 =-15  | Heat Shift for DHW mode [°K] |
-|  TOP | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
+|  TOP95 | 45 | 97 | (hex) 96 = 97  | Maximum set pump speed |
 |  TOP | 46 | 99 | Convert to DEC 153-128 = 25  | Dry concrete target temperature for actual stage [°C] |
 |  TOP | 47 | 00 |   | 0 byte |
 |  TOP | 48 | 00 |   | 0 byte |
@@ -63,10 +63,10 @@
 |  TOP | 58 | 80 | Convert to DEC-128   | Delta T for Pool [°K] |
 |  TOP | 59 | 85 | Convert to DEC-128  | Delta T for buffer tank [°K]|
 |  TOP | 60 | 15 | Convert to DEC X-1   | Time set for external heaters 20min-3h, step 5min. |
-|  TOP | 61 | 8a | Convert to DEC-128  | ? Possible Solar Connection Set delta T for tank ON (DHW or Buffer) |
-|  TOP | 62 | 85 | Convert to DEC-128 | ? Possible Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
-|  TOP | 63 | 85 | Convert to DEC-128 | ? Possible Set Antifreeze for solar |
-|  TOP | 64 | d0 | Convert to DEC-128 | ? Possible Set Hi limit for solar |
+|  TOP102 | 61 | 8a | Convert to DEC-128  | Solar Connection Set delta T for tank ON (DHW or Buffer) |
+|  TOP103 | 62 | 85 | Convert to DEC-128 | Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
+|  TOP104 | 63 | 85 | Convert to DEC-128 | Set Antifreeze for solar |
+|  TOP105 | 64 | d0 | Convert to DEC-128 | Set Hi limit for solar |
 |  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Bivalent device -15-35[°C]|
 |  TOP | 66 | 78 | Convert to DEC-128  | ? Possible Control pattern in Bivalent set temperature source to start the bivalent heat source |
 |  TOP | 67 | 1f | Convert to DEC X-1  | ?  Possible Bivalent Delay timer to start the bivalent heat source |

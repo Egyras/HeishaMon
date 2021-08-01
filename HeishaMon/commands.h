@@ -21,7 +21,7 @@ extern const char* mqtt_send_raw_value_topic;
 
 unsigned int set_heatpump_state(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_pump(char *msg, unsigned char *cmd, char *log_msg);
-unsigned int set_pump_speed(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_max_pump_duty(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_quiet_mode(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_z1_heat_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_z1_cool_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
@@ -34,12 +34,16 @@ unsigned int set_holiday_mode(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_powerful_mode(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_operation_mode(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_DHW_temp(char *msg, unsigned char *cmd, char *log_msg);
-unsigned int set_curves(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_zones(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_floor_heat_delta(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_floor_cool_delta(char *msg, unsigned char *cmd,char *log_msg);
-unsigned int set_dhw_heat_delta(char *msg, unsigned char *cmd,char *log_msg);
-
+unsigned int set_curves(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_zones(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_floor_heat_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_floor_cool_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_dhw_heat_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_reset(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heater_delay_time(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heater_start_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heater_stop_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_main_schedule(char *msg, unsigned char *cmd, char *log_msg);
 
 //optional pcb commands
 unsigned int set_heat_cool_mode(char *msg, char *log_msg);
@@ -57,19 +61,16 @@ unsigned int set_z2_water_temp(char *msg, char *log_msg);
 unsigned int set_solar_temp(char *msg, char *log_msg);
 unsigned int set_byte_9(char *msg, char *log_msg);
 
-
-
-
 struct {
   const char *name;
   unsigned int (*func)(char *msg, unsigned char *cmd, char *log_msg);
-} commands[] = {
+} commands[] PROGMEM = {
   // set heatpump state to on by sending 1
   { "SetHeatpump", set_heatpump_state },
   // set pump state to on by sending 1
   { "SetPump", set_pump },
-  // set pump speed
-  { "SetPumpSpeed", set_pump_speed },
+  // set max pump duty
+  { "SetMaxPumpDuty", set_max_pump_duty },
   // set 0 for Off mode, set 1 for Quiet mode 1, set 2 for Quiet mode 2, set 3 for Quiet mode 3
   { "SetQuietMode", set_quiet_mode },
   // z1 heat request temp -  set from -5 to 5 to get same temperature shift point or set direct temp
@@ -101,12 +102,17 @@ struct {
   { "SetFloorHeatDelta", set_floor_heat_delta },
   { "SetFloorCoolDelta", set_floor_cool_delta },
   { "SetDHWHeatDelta", set_dhw_heat_delta },
+  { "SetReset", set_reset },
+  { "SetHeaterDelayTime", set_heater_delay_time },
+  { "SetHeaterStartDelta", set_heater_start_delta },
+  { "SetHeaterStopDelta", set_heater_stop_delta },
+  { "SetMainSchedule", set_main_schedule },
 };
 
 struct {
   const char *name;
   unsigned int (*func)(char *msg, char *log_msg);
-} optionalCommands[] = {
+} optionalCommands[] PROGMEM = {
   // optional PCB
   { "SetHeatCoolMode", set_heat_cool_mode },
   { "SetCompressorState", set_compressor_state },
