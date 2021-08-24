@@ -8,6 +8,7 @@ struct s0SettingsStruct {
   byte gpiopin = 255;
   unsigned int ppkwh = 1000; //pulses per Wh of the connected meter
   unsigned int lowerPowerInterval = 60; //configurabel low power interval
+  unsigned int minimalPulseWidth = 50; //configurabel minimal s0 pulse width
 };
 
 struct s0DataStruct {
@@ -16,6 +17,8 @@ struct s0DataStruct {
   unsigned int watt = 0; //calculated average power
   unsigned long lastPulse = 0; //last pulse in millis
   unsigned long nextReport = 0; //next time we reported the s0 value in millis
+  unsigned long goodPulses = 0;
+  unsigned long badPulses = 0;
 };
 
 void initS0Sensors(s0SettingsStruct s0Settings[]);

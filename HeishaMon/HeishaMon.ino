@@ -709,7 +709,9 @@ void loop() {
     message += ESP.getFreeHeap();
     message += F(" bytes ## Wifi: ");
     message += getWifiQuality();
-    message += F("% ## Mqtt reconnects: ");
+    message += F("% (RSSI: ");
+    message += WiFi.RSSI();
+    message += F(") ## Mqtt reconnects: ");
     message += mqttReconnects;
     message += F(" ## Correct data: ");
     message += readpercentage;
