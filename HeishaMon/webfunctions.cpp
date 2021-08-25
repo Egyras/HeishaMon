@@ -185,7 +185,8 @@ void setupWifi(settingsStruct *heishamonSettings) {
 
   if (heishamonSettings->wifi_ssid[0] != '\0') {
     log_message((char *)"Wifi client mode...");
-    WiFi.persistent(true);
+    //WiFi.persistent(true); //breaks stuff
+
     if (heishamonSettings->wifi_password[0] == '\0') {
       WiFi.begin(heishamonSettings->wifi_ssid);
     } else {
@@ -195,12 +196,12 @@ void setupWifi(settingsStruct *heishamonSettings) {
   else {
     log_message((char *)"Wifi hotspot mode...");
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP("HeishaMon-Setup");
+    WiFi.softAP((char*)"HeishaMon-Setup");
   }
 
   if (heishamonSettings->wifi_hostname[0] == '\0') {
     //Set hostname on wifi rather than ESP_xxxxx
-    WiFi.hostname("HeishaMon");
+    WiFi.hostname((char *)"HeishaMon");
   } else {
     WiFi.hostname(heishamonSettings->wifi_hostname);
   }

@@ -125,8 +125,7 @@ void check_wifi()
       lastWifiRetryTimer = millis();
       if (WiFi.softAPSSID() == "") {
         log_message((char *)"WiFi lost, starting setup hotspot...");
-        WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-        WiFi.softAP("HeishaMon-Setup");
+        WiFi.softAP((char*)"HeishaMon-Setup");
       }
       if ((WiFi.status() == WL_DISCONNECTED)  && (WiFi.softAPgetStationNum() == 0 )) {
         log_message((char *)"Retrying configured WiFi, ...");
@@ -145,7 +144,7 @@ void check_wifi()
       log_message((char *)"WiFi (re)connected, shutting down hotspot...");
       WiFi.softAPdisconnect(true);
       MDNS.notifyAPChange();
-      experimental::ESP8266WiFiGratuitous::stationKeepAliveSetIntervalMs(5000); //necessary for some users with bad wifi routers
+
     }
 
     if (firstConnectSinceBoot) { // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
@@ -154,6 +153,7 @@ void check_wifi()
       setupOTA();
       MDNS.begin(heishamonSettings.wifi_hostname);
       MDNS.addService("http", "tcp", 80);
+      experimental::ESP8266WiFiGratuitous::stationKeepAliveSetIntervalMs(5000); //necessary for some users with bad wifi routers
 
       if (heishamonSettings.wifi_ssid[0] == '\0') {
         log_message((char *)"WiFi connected without SSID and password in settings. Must come from persistent memory. Storing in settings.");
@@ -617,6 +617,7 @@ void setup() {
   WiFi.printDiag(Serial);
   loadSettings(&heishamonSettings);
   setupWifi(&heishamonSettings);
+
 
   setupMqtt();
   setupHttp();

@@ -85,7 +85,7 @@ If you have an existing Panasonic CZ-TAW1 WiFi interface that you want to replac
 
 ## Building the arduino image yourself
 boards: \
-esp8266 by esp8266 community version 2.6.3 [Arduino](https://github.com/esp8266/Arduino/releases/tag/2.6.3)
+esp8266 by esp8266 community version 3.0.2 [Arduino](https://github.com/esp8266/Arduino/releases/tag/3.0.2)
 
 All the [libs we use](LIBSUSED.md) necessary for compiling.
 
