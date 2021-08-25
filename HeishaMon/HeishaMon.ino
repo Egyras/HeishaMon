@@ -595,18 +595,18 @@ void setupConditionals() {
   if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings);
 }
 void setup() {
-  
+
   //first get total memory before we do anything
   getFreeMemory();
 
   //set boottime
   getUptime();
-  
-  
+
+
   setupSerial();
   setupSerial1();
-  
-  
+
+
   Serial.println();
   Serial.println(F("--- HEISHAMON ---"));
   Serial.println(F("starting..."));

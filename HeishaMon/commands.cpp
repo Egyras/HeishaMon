@@ -64,7 +64,7 @@ unsigned int set_heatpump_state(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_pump(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_pump_string(msg);
 
   byte pump_state = 16;
@@ -87,7 +87,7 @@ unsigned int set_pump(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_max_pump_duty(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_pumpduty_string(msg);
 
   byte pumpduty = set_pumpduty_string.toInt() + 1;
@@ -107,7 +107,7 @@ unsigned int set_max_pump_duty(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_quiet_mode(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_quiet_mode_string(msg);
 
   byte quiet_mode = (set_quiet_mode_string.toInt() + 1) * 8;
@@ -127,7 +127,7 @@ unsigned int set_quiet_mode(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_z1_heat_request_temperature(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_temperature_string(msg);
 
   byte request_temp = set_temperature_string.toInt() + 128;
@@ -147,7 +147,7 @@ unsigned int set_z1_heat_request_temperature(char *msg, unsigned char *cmd, char
 }
 
 unsigned int set_z1_cool_request_temperature(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_temperature_string(msg);
 
   byte request_temp = set_temperature_string.toInt() + 128;
@@ -167,7 +167,7 @@ unsigned int set_z1_cool_request_temperature(char *msg, unsigned char *cmd, char
 }
 
 unsigned int set_z2_heat_request_temperature(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_temperature_string(msg);
 
   byte request_temp = set_temperature_string.toInt() + 128;
@@ -187,7 +187,7 @@ unsigned int set_z2_heat_request_temperature(char *msg, unsigned char *cmd, char
 }
 
 unsigned int set_z2_cool_request_temperature(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_temperature_string(msg);
 
   byte request_temp = set_temperature_string.toInt() + 128;
@@ -207,7 +207,7 @@ unsigned int set_z2_cool_request_temperature(char *msg, unsigned char *cmd, char
 }
 
 unsigned int set_force_DHW(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_force_DHW_string(msg);
 
   byte force_DHW_mode = 64; //hex 0x40
@@ -230,7 +230,7 @@ unsigned int set_force_DHW(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_force_defrost(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_force_defrost_string(msg);
 
   byte force_defrost_mode = 0;
@@ -253,7 +253,7 @@ unsigned int set_force_defrost(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_force_sterilization(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_force_sterilization_string(msg);
 
   byte force_sterilization_mode = 0;
@@ -276,7 +276,7 @@ unsigned int set_force_sterilization(char *msg, unsigned char *cmd, char *log_ms
 }
 
 unsigned int set_holiday_mode(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_holiday_string(msg);
 
   byte set_holiday = 16; //hex 0x10
@@ -299,7 +299,7 @@ unsigned int set_holiday_mode(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_powerful_mode(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_powerful_string(msg);
 
   byte set_powerful = (set_powerful_string.toInt() ) + 73;
@@ -319,7 +319,7 @@ unsigned int set_powerful_mode(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_DHW_temp(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_DHW_temp_string(msg);
 
   byte set_DHW_temp = set_DHW_temp_string.toInt() + 128;
@@ -339,7 +339,7 @@ unsigned int set_DHW_temp(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_operation_mode(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_mode_string(msg);
 
   byte set_mode;
@@ -405,7 +405,7 @@ unsigned int set_curves(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_zones(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_mode_string(msg);
 
   byte set_mode;
@@ -431,7 +431,7 @@ unsigned int set_zones(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_floor_heat_delta(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_temperature_string(msg);
 
   byte request_temp = set_temperature_string.toInt() + 128;
@@ -451,7 +451,7 @@ unsigned int set_floor_heat_delta(char *msg, unsigned char *cmd, char *log_msg) 
 }
 
 unsigned int set_floor_cool_delta(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_temperature_string(msg);
 
   byte request_temp = set_temperature_string.toInt() + 128;
@@ -471,7 +471,7 @@ unsigned int set_floor_cool_delta(char *msg, unsigned char *cmd, char *log_msg) 
 }
 
 unsigned int set_dhw_heat_delta(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String set_temperature_string(msg);
 
   byte request_temp = set_temperature_string.toInt() + 128;
@@ -515,7 +515,7 @@ unsigned int set_reset(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_heater_delay_time(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String stringValue(msg);
 
   byte byteValue = stringValue.toInt() + 1;
@@ -534,7 +534,7 @@ unsigned int set_heater_delay_time(char *msg, unsigned char *cmd, char *log_msg)
   return sizeof(panasonicSendQuery);
 }
 unsigned int set_heater_start_delta(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String stringValue(msg);
 
   byte byteValue = stringValue.toInt() + 128;
@@ -553,7 +553,7 @@ unsigned int set_heater_start_delta(char *msg, unsigned char *cmd, char *log_msg
   return sizeof(panasonicSendQuery);
 }
 unsigned int set_heater_stop_delta(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String stringValue(msg);
 
   byte byteValue = stringValue.toInt() + 128;
@@ -572,7 +572,7 @@ unsigned int set_heater_stop_delta(char *msg, unsigned char *cmd, char *log_msg)
   return sizeof(panasonicSendQuery);
 }
 unsigned int set_main_schedule(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned int len = 0;
+
   String stringValue(msg);
 
   byte byteValue = 64; //hex 0x40

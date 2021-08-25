@@ -154,7 +154,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
         DeserializationError error = deserializeJson(jsonDoc, buf.get());
         serializeJson(jsonDoc, Serial);
         if (!error) {
-          heishamonSettings->SmartControlSettings.enableHeatCurve =( jsonDoc["enableHeatCurve"] == "enabled" ) ? true : false;
+          heishamonSettings->SmartControlSettings.enableHeatCurve = ( jsonDoc["enableHeatCurve"] == "enabled" ) ? true : false;
           if ( jsonDoc["avgHourHeatCurve"]) heishamonSettings->SmartControlSettings.avgHourHeatCurve = jsonDoc["avgHourHeatCurve"];
           if ( jsonDoc["heatCurveTargetHigh"]) heishamonSettings->SmartControlSettings.heatCurveTargetHigh = jsonDoc["heatCurveTargetHigh"];
           if ( jsonDoc["heatCurveTargetLow"]) heishamonSettings->SmartControlSettings.heatCurveTargetLow = jsonDoc["heatCurveTargetLow"];

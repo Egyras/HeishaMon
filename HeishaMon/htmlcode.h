@@ -571,14 +571,14 @@ static const char webCSS[] PROGMEM =
   "#cli{ background: black; color: white; width: 100%; height: 400px!important; }"
   "</style>";
 
- 
+
 static const char changewifissidJS[] PROGMEM =
   "<script>"
   "function changewifissid() {"
   " var x = document.getElementById(\"wifi_ssid_select\").value;"
   " document.getElementById(\"wifi_ssid_id\").value = x;"
   "}"
-  "</script>"; 
+  "</script>";
 
 static const char populatescanwifiJS[] PROGMEM =
   "<script>"
@@ -590,16 +590,16 @@ static const char populatescanwifiJS[] PROGMEM =
   "   if (request.status === 200) {"
   "      var jsonOptions = JSON.parse(request.responseText);"
   "      document.getElementById('wifi_ssid_select').innerText = null;"
-  "      var defaultoption = document.createElement('option');" 
+  "      var defaultoption = document.createElement('option');"
   "      defaultoption.value = '';"
   "      defaultoption.text = 'Select SSID';"
   "      defaultoption.selected = true;"
   "      defaultoption.hidden = true;"
   "      selectList.appendChild(defaultoption);"
   "      jsonOptions.forEach(function(item) {"
-  "        var option = document.createElement('option');" 
+  "        var option = document.createElement('option');"
   "        option.value = item.ssid;"
-  "        option.text = item.ssid + \" - \" + item.rssi;" 
+  "        option.text = item.ssid + \" - \" + item.rssi;"
   "        selectList.appendChild(option);"
   "      });"
   "       selectList.style.display = \"block\";"

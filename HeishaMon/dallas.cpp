@@ -90,7 +90,7 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
 }
 
 void dallasLoop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
-  if ((DALLASASYNC) && ((unsigned long)(millis() - dallasTimer) > ((1000 * dallasTimerWait)-1000)) ) {
+  if ((DALLASASYNC) && ((unsigned long)(millis() - dallasTimer) > ((1000 * dallasTimerWait) - 1000)) ) {
     DS18B20.requestTemperatures(); // get temperatures for next run 1 second before getting the temperatures (async)
   }
   if ((unsigned long)(millis() - dallasTimer) > (1000 * dallasTimerWait)) {

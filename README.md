@@ -12,7 +12,7 @@ Suomen kielellä [README_FI.md](README_FI.md) luettavissa täällä.
 *Help on translation to other languages is welcome.*
 
 # Current releases
-Current release is version 1. The [compiled binary](binaries/HeishaMon.ino.d1-v0.8b.bin) can be installed on a Wemos D1 mini, on the HeishaMon PCB and generally on any ESP8266 based board compatible with Wemos build settings (at least 4MB flash). You can also download the code and compile it yourself (see required libraries below). \
+Current release is version 2. The [compiled binary](binaries/HeishaMon.ino.d1-v2.0.bin) can be installed on a Wemos D1 mini, on the HeishaMon PCB and generally on any ESP8266 based board compatible with Wemos build settings (at least 4MB flash). You can also download the code and compile it yourself (see required libraries below).
 
 
 # Using the software
@@ -83,11 +83,11 @@ To make things easy you can order a completed PCB from some project members: \
 
 If you have an existing Panasonic CZ-TAW1 WiFi interface that you want to replace with HeishaMon, it is only a matter of plugging the cable out from CZ-TAW1 and reconnecting to your HeishaMon device.
 
-## Building the test arduino image
+## Building the arduino image yourself
 boards: \
 esp8266 by esp8266 community version 2.6.3 [Arduino](https://github.com/esp8266/Arduino/releases/tag/2.6.3)
 
-[libs we use](LIBSUSED.md)
+All the [libs we use](LIBSUSED.md) necessary for compiling.
 
 
 ## MQTT topics
