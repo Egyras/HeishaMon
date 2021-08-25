@@ -491,7 +491,6 @@ unsigned int set_dhw_heat_delta(char *msg, unsigned char *cmd, char *log_msg) {
 }
 
 unsigned int set_reset(char *msg, unsigned char *cmd, char *log_msg) {
-  unsigned  len = 0;
   byte resetRequest = 0;
   String set_reset_string(msg);
 
