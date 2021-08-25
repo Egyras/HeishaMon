@@ -1,6 +1,7 @@
 #include <PubSubClient.h>
 #include "commands.h"
 #include "s0.h"
+#include <RingBuf.h>
 
 #define MQTT_RETAIN_VALUES 1 // do we retain 1wire values?
 
@@ -12,47 +13,34 @@ s0DataStruct actS0Data[NUM_S0_COUNTERS];
 //global array for s0 Settings
 s0SettingsStruct actS0Settings[NUM_S0_COUNTERS];
 
-//volatile pulse detectors for s0
-volatile unsigned long new_pulse_low_s0[2] = {0, 0};
-volatile unsigned long new_pulse_high_s0[2] = {0, 0};
-volatile bool last_state_s0[2] = {HIGH, HIGH};
+//volatile pulse timer ringbuffer for s0
+//pushing timers into a 10 long buffer so we hopefully don't miss pulses while processing noise
+RingBuf<unsigned long, 10> new_pulse_low[2];
+RingBuf<unsigned long, 10> new_pulse_high[2];
 
 //These are the interrupt routines. Make them as short as possible so we don't block other interrupts (for example serial data)
-/* There are situations where a CHANGE on GPIO input is detected from HIGH to HIGH (or maybe also LOW to LOW)
- * So we need an extra check for the pulse changes for FALLING and RISING
- */
-ICACHE_RAM_ATTR void onS0Pulse1() {
-  unsigned long currentTime = millis();
-  if (last_state_s0[0] == LOW ) {
-    if (digitalRead(actS0Settings[0].gpiopin) == HIGH) { //make sure we are high now
-      //this was a rising
-      last_state_s0[0] = HIGH;
-      new_pulse_high_s0[0] = currentTime;
-    }
-  } else {
-    if (digitalRead(actS0Settings[0].gpiopin) == LOW) { //make sure we are low now
-      //this was a falling
-      last_state_s0[0] = LOW;
-      new_pulse_low_s0[0] = currentTime;
-    }
-  }
+//We are using seperate rising and falling routines as 'changing' doesn't seem to work properly. Need to test more.
+ICACHE_RAM_ATTR void onS0Pulse1Rising(); //predefine
+ICACHE_RAM_ATTR void onS0Pulse2Rising(); //predefine
+
+ICACHE_RAM_ATTR void onS0Pulse1Falling() {
+  new_pulse_low[0].push(millis());
+  attachInterrupt(digitalPinToInterrupt(actS0Settings[0].gpiopin), onS0Pulse1Rising, RISING);
 }
 
-ICACHE_RAM_ATTR void onS0Pulse2() {
-  unsigned long currentTime = millis();
-  if (last_state_s0[1] == LOW ) {
-    if (digitalRead(actS0Settings[1].gpiopin) == HIGH) { //make sure we are high now
-      //this was a rising
-      last_state_s0[1] = HIGH;
-      new_pulse_high_s0[1] = currentTime;
-    }
-  } else {
-    if (digitalRead(actS0Settings[1].gpiopin) == LOW) { //make sure we are low now
-      //this was a falling
-      last_state_s0[1] = LOW;
-      new_pulse_low_s0[1] = currentTime;
-    }
-  }
+ICACHE_RAM_ATTR void onS0Pulse1Rising() {
+  new_pulse_high[0].push(millis());
+  attachInterrupt(digitalPinToInterrupt(actS0Settings[0].gpiopin), onS0Pulse1Falling, FALLING);
+}
+
+ICACHE_RAM_ATTR void onS0Pulse2Falling() {
+  new_pulse_low[1].push(millis());
+  attachInterrupt(digitalPinToInterrupt(actS0Settings[1].gpiopin), onS0Pulse2Rising, RISING);
+}
+
+ICACHE_RAM_ATTR void onS0Pulse2Rising() {
+  new_pulse_high[1].push(millis());
+  attachInterrupt(digitalPinToInterrupt(actS0Settings[1].gpiopin), onS0Pulse2Falling, FALLING);
 }
 
 void initS0Sensors(s0SettingsStruct s0Settings[]) {
@@ -62,7 +50,7 @@ void initS0Sensors(s0SettingsStruct s0Settings[]) {
   actS0Settings[0].lowerPowerInterval = s0Settings[0].lowerPowerInterval;
 
   pinMode(actS0Settings[0].gpiopin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(actS0Settings[0].gpiopin), onS0Pulse1, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(actS0Settings[0].gpiopin), onS0Pulse1Falling, FALLING);
   actS0Data[0].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
 
   //setup s0 port 2
@@ -70,7 +58,7 @@ void initS0Sensors(s0SettingsStruct s0Settings[]) {
   actS0Settings[1].ppkwh = s0Settings[1].ppkwh;
   actS0Settings[1].lowerPowerInterval = s0Settings[1].lowerPowerInterval;
   pinMode(actS0Settings[1].gpiopin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(actS0Settings[1].gpiopin), onS0Pulse2, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(actS0Settings[1].gpiopin), onS0Pulse2Falling, FALLING);
   actS0Data[1].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
 }
 
@@ -102,41 +90,42 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
   for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
     char tmp_log_msg[256];
     unsigned long pulseInterval = 0;
-    //first handle new detected pulses
-    noInterrupts();
-    unsigned long new_pulse_low = new_pulse_low_s0[i];
-    unsigned long new_pulse_high = new_pulse_high_s0[i];
-    interrupts();
-    if (new_pulse_high > new_pulse_low) {
-      //pulse detected, now check if it is valid
-      if ( ((new_pulse_high - new_pulse_low) >  actS0Settings[i].minimalPulseWidth) && ((new_pulse_high - new_pulse_low) < 10 * actS0Settings[i].minimalPulseWidth) ) { //within pulse width and pulse width * 10
-        pulseInterval = new_pulse_low - actS0Data[i].lastPulse;
-        if (pulseInterval > actS0Settings[i].minimalPulseWidth ) {
-          sprintf_P(tmp_log_msg, PSTR("S0 port %i pulse counted as valid! (pulse width: %lu, interval: %lu)"),  i + 1, (new_pulse_high - new_pulse_low), pulseInterval);
-          log_message(tmp_log_msg);
-          actS0Data[i].goodPulses++;
-          if (actS0Data[i].lastPulse > 0) { //Do not calculate watt for the first pulse since reboot because we will always report a too high watt. Better to show 0 watt at first pulse.
-            actS0Data[i].watt = (3600000000.0 / pulseInterval) / actS0Settings[i].ppkwh;
-          }
-          actS0Data[i].lastPulse = new_pulse_low;
-          actS0Data[i].pulses++;
+    unsigned long cur_pulse_low = 0;
+    unsigned long cur_pulse_high = 0;
 
-          if ((unsigned long)(actS0Data[i].nextReport - millisThisLoop) > MINREPORTEDS0TIME) { //loop was in standby interval
-            actS0Data[i].nextReport = 0; // report now
+    //first handle new detected pulses
+
+    if (new_pulse_high[i].lockedPop(cur_pulse_high)) { // if there is a rising edge there must be a pulse
+      if (new_pulse_low[i].lockedPop(cur_pulse_low)) { // so get the falling edge time also. We don't need to stop interrupts between popping both values because new values during interrupt will be pushed on the end of the ringbuffer
+        if (cur_pulse_high > cur_pulse_low) { //and then check if indeed the rising edge is after falling edge
+          //pulse detected, now check if it is valid
+          if ( ((cur_pulse_high - cur_pulse_low) >  actS0Settings[i].minimalPulseWidth) && ((cur_pulse_high - cur_pulse_low) < 10 * actS0Settings[i].minimalPulseWidth) ) { //within pulse width and pulse width * 10
+            pulseInterval = cur_pulse_low - actS0Data[i].lastPulse;
+            if (pulseInterval > actS0Settings[i].minimalPulseWidth ) {
+              sprintf_P(tmp_log_msg, PSTR("S0 port %i pulse counted as valid! (pulse width: %lu, interval: %lu)"),  i + 1, (cur_pulse_high - cur_pulse_low), pulseInterval);
+              log_message(tmp_log_msg);
+              actS0Data[i].goodPulses++;
+              if (actS0Data[i].lastPulse > 0) { //Do not calculate watt for the first pulse since reboot because we will always report a too high watt. Better to show 0 watt at first pulse.
+                actS0Data[i].watt = (3600000000.0 / pulseInterval) / actS0Settings[i].ppkwh;
+              }
+              actS0Data[i].lastPulse = cur_pulse_low;
+              actS0Data[i].pulses++;
+
+              if ((unsigned long)(actS0Data[i].nextReport - millisThisLoop) > MINREPORTEDS0TIME) { //loop was in standby interval
+                actS0Data[i].nextReport = 0; // report now
+              }
+            } else {
+              sprintf_P(tmp_log_msg, PSTR("S0 port %i pulse counted as invalid! (pulse width: %lu, interval: %lu)"),  i + 1, (cur_pulse_high - cur_pulse_low), pulseInterval);
+              log_message(tmp_log_msg);
+              actS0Data[i].badPulses++;
+            }
+          } else {
+            sprintf_P(tmp_log_msg, PSTR("S0 port %i pulse reset. Noise detected! (pulse width: %lu)"),  i + 1, (cur_pulse_high - cur_pulse_low));
+            log_message(tmp_log_msg);
+            actS0Data[i].badPulses++;
           }
-        } else {
-          sprintf_P(tmp_log_msg, PSTR("S0 port %i pulse counted as invalid! (pulse width: %lu, interval: %lu)"),  i + 1, (new_pulse_high - new_pulse_low), pulseInterval);
-          log_message(tmp_log_msg);
-          actS0Data[i].badPulses++;
         }
-      } else {
-        sprintf_P(tmp_log_msg, PSTR("S0 port %i pulse reset. Noise detected! (pulse width: %lu)"),  i + 1, (new_pulse_high - new_pulse_low));
-        log_message(tmp_log_msg);
-        actS0Data[i].badPulses++;
       }
-      noInterrupts();
-      new_pulse_high_s0[i] = new_pulse_low_s0[i]; //only need to reset the time for high pulse because low always needs to be first for a valid pulse
-      interrupts();
     }
 
 
