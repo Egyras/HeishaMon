@@ -19,8 +19,8 @@ Current release is version 2. The [compiled binary](binaries/HeishaMon.ino.d1-v2
 HeishaMon is able to communicate with the Panasonic Aquarea H & J-series. [Confirmed by users types of HP you can find here](HeatPumpType.md) \
 If you want to compile this image yourself be sure to use the mentioned libraries and support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that.
 
-When starting for the first time an open-wifi-hotspot will be visible allowing you to configure your wifi network and your MQTT server. Configuration page will be located at http://192.168.4.1 . \
-If you ever want to factory reset, just double reset the esp8266 within 0.1 second. It will then format the filesystem and remove the wifi setting and start the wifi hotspot again. \
+When starting, without a configured wifi, an open-wifi-hotspot will be visible allowing you to configure your wifi network and your MQTT server. Configuration page will be located at http://192.168.4.1 . \
+
 After configuring and booting the image will be able to read and talk to your heatpump. The GPIO13/GPIO15 connection will be used for communications so you can keep your computer/uploader connected to the board if you want. \
 Serial 1 (GPIO2) can be used to connect another serial line (GND and TX from the board only) to read some debugging data.
 
@@ -36,8 +36,6 @@ A json output of all received data (heatpump and 1wire) is available at the url 
 
 Within the 'integrations' folder you can find examples how to connect your automation platform to the HeishaMon.
 
-# First boot
-On boot the HeishaMon (since firmware v2) will start up normally and, because it it is missing a WiFi config, will provide a WiFi hotspot 'HeishaMon-Setup' which allows to to connect to the HeishaMon directly (if not forwarded directly after connecting to this hotspot, browse to http://192.168.4.1). Then you can configure your WiFi and other settings in the Settings menu option. During normal running of the software, the blue led will flash on textual debug output (if enabled in the settings). This would cause the led to flash a few times about each 5 seconds.
 
 # Factory reset
 A factory reset can be performed on the web interface but if the web interface is unavailable you can perform a double reset. The double reset should be performed not too fast but also not too slow. Usually halve a second between both resets should do the trick. To indicate that the double reset performed a factory reset, the blue led will flash rapidly (You need to press reset again now to restart HeishaMon back to normal where a WiFi hotspot should be visible again).
@@ -46,7 +44,7 @@ A factory reset can be performed on the web interface but if the web interface i
 Below you can find some technical details about the project. How to build your own cables. How to build your own PCB etc.
 
 ## Connection details:
-Communication can be established thru one of the two sockets: CN-CNT or CN-NMODE, which are hardwired/shortcut, so there is no possibility to use them both at the same time for more then one device (except sniffing). \
+Communication can be established thru one of the two sockets: CN-CNT or CN-NMODE, which are hardwired/shortcut, so there is no possibility to use them both at the same time for more then one device. So it is not possible to use HeishaMon and the original Panasonic Cloud module together as an active device. It is however possible to put HeishaMon on "Listen Only" mode which will allow HeishaMon and the original Panasonic Cloud module to co-exist. The only downside to this is that HeishaMon is unable to send commands and use the optional PCB option.\
 Communication parameters: TTL 5V UART 9600,8,E,1  \
  \
 CN-CNT Pin-out (from top to bottom) \
