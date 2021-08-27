@@ -68,7 +68,7 @@ String getUptime() {
 
 void loadSettings(settingsStruct *heishamonSettings) {
   //read configuration from FS json
-  log_message("mounting FS...");
+  log_message((char *)"mounting FS...");
 
   if (LittleFS.begin()) {
     log_message((char *)"mounted file system");
@@ -124,7 +124,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
           if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
           if (jsonDoc["s0_2_minpulsewidth"]) heishamonSettings->s0Settings[1].minimalPulseWidth = jsonDoc["s0_2_minpulsewidth"];
         } else {
-          log_message("Failed to load json config, forcing config reset.");
+          log_message((char *)"Failed to load json config, forcing config reset.");
           WiFi.persistent(true);
           WiFi.disconnect();
           WiFi.persistent(false);
@@ -133,7 +133,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
       }
     }
     else {
-      log_message("No config.json exists! Forcing a config reset.");
+      log_message((char *)"No config.json exists! Forcing a config reset.");
       WiFi.persistent(true);
       WiFi.disconnect();
       WiFi.persistent(false);
@@ -141,10 +141,10 @@ void loadSettings(settingsStruct *heishamonSettings) {
 
     if (LittleFS.exists("/heatcurve.json")) {
       //file exists, reading and loading
-      log_message("reading heatingcurve file");
+      log_message((char *)"reading heatingcurve file");
       File configFile = LittleFS.open("/heatcurve.json", "r");
       if (configFile) {
-        log_message("opened heating curve config file");
+        log_message((char *)"opened heating curve config file");
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
         std::unique_ptr<char[]> buf(new char[size]);
@@ -168,7 +168,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
       }
     }
   } else {
-    log_message("failed to mount FS");
+    log_message((char *)"failed to mount FS");
   }
   //end read
 

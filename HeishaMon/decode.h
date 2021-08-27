@@ -27,7 +27,7 @@ String getHeatMode(byte input);
 String getModel(byte input);
 
 static const char *Model[] PROGMEM = {
-  "21", //string representation of number of known models
+  "22", //string representation of number of known models
   "WH-MDC05H3E5",
   "WH-MDC07H3E5",
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5",
@@ -49,6 +49,7 @@ static const char *Model[] PROGMEM = {
   "IDU: WH-SDC0709J3E5, ODU: WH-UD07JE5",
   "IDU: WH-SDC07H3E5-1 ODU: WH-UD07HE5-1",
   "WH-MDC07J3E5",
+  "WH-MDC09J3E5",
 };
 
 static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] = { //stores the bytes #129 to #138 of known models in the same order as the const above
@@ -73,6 +74,7 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] = { //stores
   0x62, 0xD2, 0x0B, 0x43, 0x54, 0x42, 0xD2, 0x0C, 0x46, 0x55,
   0xE2, 0xCF, 0x0C, 0x54, 0x14, 0x12, 0xD0, 0x0B, 0x14, 0x08,
   0xC2, 0xD3, 0x0B, 0x34, 0x65, 0xB2, 0xD3, 0x0B, 0x95, 0x65,
+  0xC2, 0xD3, 0x0B, 0x35, 0x65, 0xB2, 0xD3, 0x0B, 0x96, 0x65,
 };
 
 #define NUMBER_OF_TOPICS 106 //last topic number + 1
