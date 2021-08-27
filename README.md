@@ -36,10 +36,11 @@ A json output of all received data (heatpump and 1wire) is available at the url 
 
 Within the 'integrations' folder you can find examples how to connect your automation platform to the HeishaMon.
 
-# Debug led indications
-On first boot the debug led will turn on after 10 seconds to let you know that there is no config yet and a HeishaMon-Setup wifi portal should be available.
-A factory reset can be performed on the web interface but if the web interface is unavailable you can perform a double reset. The double reset should be performed not too fast but also not too slow. Usually halve a second between both resets should do the trick. To indicate that the double reset performed a factory reset, the blue led will flash rapidly (You need to press reset again now to start HeishaMon-Setup wifi portal).
-During normal running of the software, the blue led will flash on textual debug output (if enabled in the settings). This would cause the led to flash a few times about each 5 seconds.
+# First boot
+On boot the HeishaMon (since firmware v2) will start up normally and, because it it is missing a WiFi config, will provide a WiFi hotspot 'HeishaMon-Setup' which allows to to connect to the HeishaMon directly (if not forwarded directly after connecting to this hotspot, browse to http://192.168.4.1). Then you can configure your WiFi and other settings in the Settings menu option. During normal running of the software, the blue led will flash on textual debug output (if enabled in the settings). This would cause the led to flash a few times about each 5 seconds.
+
+# Factory reset
+A factory reset can be performed on the web interface but if the web interface is unavailable you can perform a double reset. The double reset should be performed not too fast but also not too slow. Usually halve a second between both resets should do the trick. To indicate that the double reset performed a factory reset, the blue led will flash rapidly (You need to press reset again now to restart HeishaMon back to normal where a WiFi hotspot should be visible again).
 
 # Further information
 Below you can find some technical details about the project. How to build your own cables. How to build your own PCB etc.
@@ -94,13 +95,7 @@ All the [libs we use](LIBSUSED.md) necessary for compiling.
 [Current list of documented MQTT topics can be found here](MQTT-Topics.md)
 
 ## DS18b20 1-wire support
-The software also supports ds18b20 1-wire temperature sensors reading. A proper 1-wire configuration (with 4.7kohm pull-up resistor) connected to GPIO4 will be read each configured secs (minimal 5) and send at the panasonic_heat_pump/1wire/"sensor-hex-address" topic.
-
-
-## Protocol info packet:
-To get information from heat pump, "magic" packet should be send to CN-CNT:
-
-`71 6c 01 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 12`
+The software also supports ds18b20 1-wire temperature sensors reading. A proper 1-wire configuration (with 4.7kohm pull-up resistor) connected to GPIO4 will be read each configured secs (minimal 5) and send at the panasonic_heat_pump/1wire/"sensor-hex-address" topic. On the pre-made boards this 4.7kohm resistor is already installed.
 
 
 ## Protocol byte decrypt info:
