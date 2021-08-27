@@ -44,7 +44,8 @@ A factory reset can be performed on the web interface but if the web interface i
 Below you can find some technical details about the project. How to build your own cables. How to build your own PCB etc.
 
 ## Connection details:
-Communication can be established thru one of the two sockets: CN-CNT or CN-NMODE, which are hardwired/shortcut, so there is no possibility to use them both at the same time for more then one device. So it is not possible to use HeishaMon and the original Panasonic Cloud module together as an active device. It is however possible to put HeishaMon on "Listen Only" mode which will allow HeishaMon and the original Panasonic Cloud module to co-exist. The only downside to this is that HeishaMon is unable to send commands and use the optional PCB option.\
+Communication can be established thru one of the two sockets: CN-CNT or CN-NMODE. If you have an existing Panasonic CZ-TAW1 WiFi interface that you want to replace with HeishaMon, it is only a matter of plugging the cable out from CZ-TAW1 and reconnecting to your HeishaMon device. However it is not possible to use HeishaMon and the original CZ-TAW1 module together as an active device. It is however possible to put HeishaMon on "Listen Only" mode which will allow HeishaMon and the original CZ-TAW1 module to co-exist. The only downside to this is that HeishaMon is unable to send commands and use the optional PCB option.\
+
 Communication parameters: TTL 5V UART 9600,8,E,1  \
  \
 CN-CNT Pin-out (from top to bottom) \
@@ -61,6 +62,12 @@ CN-NMODE Pin-out (from left to right) \
 2 - 0-5V RX (to heatpump) \
 1 - GND
 
+HeishaMon will receive power from the Panasonic over the cable (5v power).
+
+## Long distance connection
+It it possible to connect the HeishaMon over a long distance. Up to 5 meter is working with normal cabling. For longer distances a TTL-to-RS485 configuration as show in the picture below is possible. The however requires HeishaMon to be powered externally using 5v power (for example from an USB cable).
+
+![TTL-over-RS485 HeishaMon long distance](optional-long-distance-heishamon.png)
 
 
 ## Where to get connectors
@@ -71,16 +78,14 @@ CN-NMODE Pin-out (from left to right) \
 Use some 24 AWG shielded 4-conductors cable.
 
 
-## How to connect
-The PCB's needed to connect to the heatpump are designed by project members and are listed below. \
+## The HeishaMon hardware itself
+The PCB's needed to connect to the heatpump are designed by project members and are listed below. The most important part of the hardware is a level shifting between 5v from the Panasonic to 3.3v of the HeishaMon and a GPIO13/GPIO15 enable line after boot. \
 [PCD Designs from the project members](PCB_Designs.md) \
 [Picture Wemos D1 beta](WEMOSD1.JPG) \
 [Picture ESP12-F](NewHeishamon.JPG)
 
 To make things easy you can order a completed PCB from some project members: \
 [Tindie shop](https://www.tindie.com/stores/thehognl/) from Igor Ybema (aka TheHogNL) based in the Netherlands
-
-If you have an existing Panasonic CZ-TAW1 WiFi interface that you want to replace with HeishaMon, it is only a matter of plugging the cable out from CZ-TAW1 and reconnecting to your HeishaMon device.
 
 ## Building the arduino image yourself
 boards: \
