@@ -55,13 +55,17 @@ void initDallasSensors(void (*log_message)(char*), unsigned int updateAllDallasT
   if (DALLASASYNC) DS18B20.setWaitForConversion(false); //async 1wire during next loops
 }
 
+void resetlastalldatatime_dallas() {
+  lastalldatatime_dallas = 0;
+}
+
 void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
   char log_msg[256];
   char mqtt_topic[256];
   char valueStr[20];
   bool updatenow = false;
 
-  if ((unsigned long)(millis() > lastalldatatime_dallas) >  (1000 * updateAllDallasTime)) {
+  if ((unsigned long)(millis() - lastalldatatime_dallas) >  (1000 * updateAllDallasTime)) {
     updatenow = true;
     lastalldatatime_dallas = millis();
   }

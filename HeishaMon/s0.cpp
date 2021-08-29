@@ -55,18 +55,27 @@ IRAM_ATTR void onS0Pulse2Rising() {
 
 void initS0Sensors(s0SettingsStruct s0Settings[]) {
   //setup s0 port 1
+
+  //TODO: check if this is still necessary
+  //this still requires a reboot for it to be effective
   actS0Settings[0].gpiopin = s0Settings[0].gpiopin;
   actS0Settings[0].ppkwh = s0Settings[0].ppkwh;
   actS0Settings[0].lowerPowerInterval = s0Settings[0].lowerPowerInterval;
+  actS0Settings[0].minimalPulseWidth = s0Settings[0].minimalPulseWidth;
 
   pinMode(actS0Settings[0].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Settings[0].gpiopin), onS0Pulse1Falling, FALLING);
   actS0Data[0].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
 
   //setup s0 port 2
+
+  //TODO: check if this is still necessary
+  //this still requires a reboot for it to be effective
   actS0Settings[1].gpiopin = s0Settings[1].gpiopin;
   actS0Settings[1].ppkwh = s0Settings[1].ppkwh;
   actS0Settings[1].lowerPowerInterval = s0Settings[1].lowerPowerInterval;
+  actS0Settings[1].minimalPulseWidth = s0Settings[1].minimalPulseWidth;
+  
   pinMode(actS0Settings[1].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Settings[1].gpiopin), onS0Pulse2Falling, FALLING);
   actS0Data[1].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
@@ -79,6 +88,7 @@ void restore_s0_Watthour(int s0Port, float watthour) {
   }
 }
 
+//TODO: check if this is still necessary
 void s0SettingsCorrupt(s0SettingsStruct s0Settings[], void (*log_message)(char*)) {
   for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
     if ((s0Settings[i].gpiopin != actS0Settings[i].gpiopin) || (s0Settings[i].ppkwh != actS0Settings[i].ppkwh) || (s0Settings[i].lowerPowerInterval != actS0Settings[i].lowerPowerInterval)) {
@@ -93,6 +103,7 @@ void s0SettingsCorrupt(s0SettingsStruct s0Settings[], void (*log_message)(char*)
 void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, s0SettingsStruct s0Settings[]) {
 
   //check for corruption
+  //TODO: check if this is still necessary
   s0SettingsCorrupt(s0Settings, log_message);
 
   unsigned long millisThisLoop = millis();
@@ -127,7 +138,7 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
           actS0Data[i].badPulses++;
         }
       } else {
-        sprintf_P(tmp_log_msg, PSTR("S0 port %i pulse reset. Noise detected! (pulse width: %lu)"),  i + 1, curPulseWidth);
+        sprintf_P(tmp_log_msg, PSTR("S0 port %i pulse reset. Noise detected! (pulse width: %lu, minimal need: %lu)"),  i + 1, curPulseWidth, actS0Settings[i].minimalPulseWidth);
         log_message(tmp_log_msg);
         actS0Data[i].badPulses++;
       }

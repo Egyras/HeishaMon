@@ -203,6 +203,8 @@ void mqtt_reconnect()
         sprintf_P(mqtt_topic, PSTR("%s/%s/WatthourTotal/2"), heishamonSettings.mqtt_topic_base, mqtt_topic_s0);
         mqtt_client.subscribe(mqtt_topic);
       }
+      if (heishamonSettings.use_1wire) resetlastalldatatime_dallas; //resend all 1wire values to mqtt
+      resetlastalldatatime; //resend all heatpump values to mqtt
     }
 
 

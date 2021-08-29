@@ -5,6 +5,8 @@
 
 #define MQTT_RETAIN_VALUES 1
 
+void resetlastalldatatime();
+
 void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime);
 void decode_optional_heatpump_data(char* data, String actOptData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime);
 

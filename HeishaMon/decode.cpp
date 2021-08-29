@@ -128,6 +128,11 @@ String getErrorInfo(char* data) { // TOP44 //
   return String(Error_string);
 }
 
+
+void resetlastalldatatime() {
+  lastalldatatime = 0;
+}
+
 // Decode ////////////////////////////////////////////////////////////////////////////
 void decode_heatpump_data(char* data, String actData[], PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {
   char log_msg[256];
