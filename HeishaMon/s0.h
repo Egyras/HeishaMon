@@ -9,6 +9,7 @@ struct s0SettingsStruct {
   unsigned int ppkwh = 1000; //pulses per Wh of the connected meter
   unsigned int lowerPowerInterval = 60; //configurabel low power interval
   unsigned int minimalPulseWidth = 50; //configurabel minimal s0 pulse width
+  unsigned int maximalPulseWidth = 100; //configurabel maximal s0 pulse width
 };
 
 struct s0DataStruct {

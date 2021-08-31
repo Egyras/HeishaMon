@@ -119,10 +119,12 @@ void loadSettings(settingsStruct *heishamonSettings) {
           if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
           if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
           if (jsonDoc["s0_1_minpulsewidth"]) heishamonSettings->s0Settings[0].minimalPulseWidth = jsonDoc["s0_1_minpulsewidth"];
+          if (jsonDoc["s0_1_maxpulsewidth"]) heishamonSettings->s0Settings[0].maximalPulseWidth = jsonDoc["s0_1_maxpulsewidth"];
           if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
           if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
           if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
           if (jsonDoc["s0_2_minpulsewidth"]) heishamonSettings->s0Settings[1].minimalPulseWidth = jsonDoc["s0_2_minpulsewidth"];
+          if (jsonDoc["s0_2_maxpulsewidth"]) heishamonSettings->s0Settings[1].maximalPulseWidth = jsonDoc["s0_2_maxpulsewidth"];
         } else {
           log_message((char *)"Failed to load json config, forcing config reset.");
           WiFi.persistent(true);
@@ -506,10 +508,12 @@ bool handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
       if (httpServer->hasArg("s0_1_ppkwh")) jsonDoc["s0_1_ppkwh"] = httpServer->arg("s0_1_ppkwh");
       if (httpServer->hasArg("s0_1_interval")) jsonDoc["s0_1_interval"] = httpServer->arg("s0_1_interval");
       if (httpServer->hasArg("s0_1_minpulsewidth")) jsonDoc["s0_1_minpulsewidth"] = httpServer->arg("s0_1_minpulsewidth");
+      if (httpServer->hasArg("s0_1_maxpulsewidth")) jsonDoc["s0_1_maxpulsewidth"] = httpServer->arg("s0_1_maxpulsewidth");
       if (httpServer->hasArg("s0_2_gpio")) jsonDoc["s0_2_gpio"] = httpServer->arg("s0_2_gpio");
       if (httpServer->hasArg("s0_2_ppkwh")) jsonDoc["s0_2_ppkwh"] = httpServer->arg("s0_2_ppkwh");
       if (httpServer->hasArg("s0_2_interval")) jsonDoc["s0_2_interval"] = httpServer->arg("s0_2_interval");
       if (httpServer->hasArg("s0_2_minpulsewidth")) jsonDoc["s0_2_minpulsewidth"] = httpServer->arg("s0_2_minpulsewidth");
+      if (httpServer->hasArg("s0_2_maxpulsewidth")) jsonDoc["s0_2_maxpulsewidth"] = httpServer->arg("s0_2_maxpulsewidth");
     } else {
       jsonDoc["use_s0"] = "disabled";
     }
@@ -730,6 +734,9 @@ bool handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
     httptext = httptext + F("S0 port ") + (i + 1) + F(" minimal pulse width:</td><td style=\"text-align:left\">");
     httptext = httptext + F("<input type=\"number\" id=\"s0_minpulsewidth_") + (i + 1) + F("\" name=\"s0_") + (i + 1) + F("_minpulsewidth\" value=\"") + (heishamonSettings->s0Settings[i].minimalPulseWidth) + F("\"> milliseconds");
+    httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+    httptext = httptext + F("S0 port ") + (i + 1) + F(" maximal pulse width:</td><td style=\"text-align:left\">");
+    httptext = httptext + F("<input type=\"number\" id=\"s0_maxpulsewidth_") + (i + 1) + F("\" name=\"s0_") + (i + 1) + F("_maxpulsewidth\" value=\"") + (heishamonSettings->s0Settings[i].maximalPulseWidth) + F("\"> milliseconds");
     httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
     httptext = httptext + F("S0 port ") + (i + 1) + F(" standby/low power usage threshold:</td><td style=\"text-align:left\"><label id=\"s0_minwatt_") + (i + 1) + F("\">") + (int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval) + F("</label> Watt");
     httptext = httptext + F("</td></tr>");
