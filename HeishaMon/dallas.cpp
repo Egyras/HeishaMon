@@ -24,7 +24,7 @@ unsigned long dallasTimer = 0;
 unsigned int updateAllDallasTime = 30000; // will be set using heishmonSettings
 unsigned int dallasTimerWait = 30000; // will be set using heishmonSettings
 
-void initDallasSensors(void (*log_message)(char*), unsigned int updateAllDallasTimeSettings, unsigned int dallasTimerWaitSettings) {
+void initDallasSensors(void (*log_message)(char*), unsigned int updateAllDallasTimeSettings, unsigned int dallasTimerWaitSettings, unsigned int dallasResolution) {
   char log_msg[256];
   updateAllDallasTime = updateAllDallasTimeSettings;
   dallasTimerWait = dallasTimerWaitSettings;
@@ -41,6 +41,7 @@ void initDallasSensors(void (*log_message)(char*), unsigned int updateAllDallasT
   actDallasData = new dallasDataStruct [dallasDevicecount];
   for (int j = 0 ; j < dallasDevicecount; j++) {
     DS18B20.getAddress(actDallasData[j].sensor, j);
+    DS18B20.setResolution(actDallasData[j].sensor, dallasResolution);
   }
 
   DS18B20.requestTemperatures();

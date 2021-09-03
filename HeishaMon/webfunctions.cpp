@@ -111,6 +111,8 @@ void loadSettings(settingsStruct *heishamonSettings) {
           if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
           if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
           if (heishamonSettings->waitDallasTime < 5) heishamonSettings->waitDallasTime = 5;
+          if ( jsonDoc["dallasResolution"]) heishamonSettings->dallasResolution = jsonDoc["dallasResolution"];
+          if ((heishamonSettings->dallasResolution < 9) || (heishamonSettings->dallasResolution > 12) ) heishamonSettings->dallasResolution = 12;
           if ( jsonDoc["updateAllTime"]) heishamonSettings->updateAllTime = jsonDoc["updateAllTime"];
           if (heishamonSettings->updateAllTime < heishamonSettings->waitTime) heishamonSettings->updateAllTime = heishamonSettings->waitTime;
           if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
@@ -426,6 +428,7 @@ void settingsToJson(DynamicJsonDocument &jsonDoc, settingsStruct *heishamonSetti
   }
   jsonDoc["waitTime"] = heishamonSettings->waitTime;
   jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
+  jsonDoc["dallasResolution"] = heishamonSettings->dallasResolution;
   jsonDoc["updateAllTime"] = heishamonSettings->updateAllTime;
   jsonDoc["updataAllDallasTime"] = heishamonSettings->updataAllDallasTime;
 }
@@ -547,6 +550,9 @@ bool handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
     }
     if (httpServer->hasArg("waitDallasTime")) {
       jsonDoc["waitDallasTime"] = httpServer->arg("waitDallasTime");
+    }
+    if (httpServer->hasArg("dallasResolution")) {
+      jsonDoc["dallasResolution"] = httpServer->arg("dallasResolution");
     }
     if (httpServer->hasArg("updateAllTime")) {
       jsonDoc["updateAllTime"] = httpServer->arg("updateAllTime");
@@ -698,6 +704,14 @@ bool handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   httptext = httptext + F("How often all 1wire values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">");
   httptext = httptext + F("<input type=\"number\" name=\"updataAllDallasTime\" value=\"") + heishamonSettings->updataAllDallasTime + F("\"> seconds");
+  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  httptext = httptext + F("DS18b20 temperature resolution:</td><td style=\"text-align:left\">");
+  String checked[4] = {"","","",""};
+  if ((heishamonSettings->dallasResolution >= 9) && (heishamonSettings->dallasResolution<=12)) checked[heishamonSettings->dallasResolution-9] = "checked";
+  httptext = httptext + F("<input type=\"radio\" id=\"9-bit\" name=\"dallasResolution\" value=\"9\" ") + checked[0] +F("><label for=\"9-bit\"> 9-bit </label>");  
+  httptext = httptext + F("<input type=\"radio\" id=\"10-bit\" name=\"dallasResolution\" value=\"10\" ") + checked[1] +F("><label for=\"10-bit\"> 10-bit </label>");  
+  httptext = httptext + F("<input type=\"radio\" id=\"11-bit\" name=\"dallasResolution\" value=\"11\" ") + checked[2] +F("><label for=\"11-bit\"> 11-bit </label>");  
+  httptext = httptext + F("<input type=\"radio\" id=\"12-bit\" name=\"dallasResolution\" value=\"12\" ") + checked[3] +F("><label for=\"12-bit\"> 12-bit </label>");  
   httptext = httptext + F("</td></tr>");
   httptext = httptext + F("</table>");
 

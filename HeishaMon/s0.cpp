@@ -46,6 +46,7 @@ IRAM_ATTR void countPulse(int i) {
     actS0Data[i].pulses++;
     actS0Data[i].pulsesTotal++;
     actS0Data[i].goodPulses++;
+    actS0Data[i].avgPulseWidth = ((actS0Data[i].avgPulseWidth * (actS0Data[i].goodPulses-1)) + curPulseWidth ) / actS0Data[i].goodPulses;
     badEdge[i] = false; //set it to false again to allow to count two bad edges as a new bad pulse because we know we had a good pulse now
   } else {
     if (badEdge[i]) actS0Data[i].badPulses++; //there was already an edge before so count this one as a bad pulse
@@ -144,8 +145,6 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
 
       //debug
       /*
-      sprintf_P(log_msg, PSTR("Pulses seen on S0 port %d: Good: %lu Bad: %lu"), (i + 1),  actS0Data[i].goodPulses, actS0Data[i].badPulses );
-      log_message(log_msg);
       noInterrupts();
       int j = 0;
       while (allLastEdgeS0Index[i] > 0) {
@@ -158,6 +157,9 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
       interrupts();
       */
       //end debug
+
+      sprintf_P(log_msg, PSTR("Pulses seen on S0 port %d: Good: %lu Bad: %lu Average good pulse width: %i"), (i + 1),  actS0Data[i].goodPulses, actS0Data[i].badPulses, actS0Data[i].avgPulseWidth);
+      log_message(log_msg);
 
       sprintf_P(log_msg, PSTR("Measured Watthour on S0 port %d: %.2f"), (i + 1),  Watthour );
       log_message(log_msg);
@@ -190,6 +192,7 @@ String s0TableOutput() {
     tablePulses[i] = actS0Data[i].pulsesTotal;
     output = output + F("<td>") + (actS0Data[i].pulsesTotal * ( 1000.0 / actS0Settings[i].ppkwh)) + F("</td>");
     output = output + F("<td>") + (100 * (actS0Data[i].goodPulses + 1) / (actS0Data[i].goodPulses + actS0Data[i].badPulses + 1)) + F("% </td>");
+    output = output + F("<td>") + actS0Data[i].avgPulseWidth + F("</td>");
     output = output + F("</tr>");
   }
   return output;
@@ -206,6 +209,7 @@ String s0JsonOutput() {
     jsonPulses[i] = actS0Data[i].pulsesTotal;
     output = output + F("\"WatthourTotal\": \"") + (actS0Data[i].pulsesTotal * ( 1000.0 / actS0Settings[i].ppkwh)) + F("\"");
     output = output + F("\"PulseQuality\": \"") + (100 * (actS0Data[i].goodPulses + 1) / (actS0Data[i].goodPulses + actS0Data[i].badPulses + 1)) + F("\"");
+    output = output + F("\"AvgPulseWidth\": \"") + actS0Data[i].avgPulseWidth + F("\"");
     output = output + F("}");
     if (i < NUM_S0_COUNTERS - 1) output = output + F(",");
   }

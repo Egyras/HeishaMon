@@ -15,6 +15,7 @@ static IPAddress apIP(192, 168, 4, 1);
 struct settingsStruct {
   unsigned int waitTime = 5; // how often data is read from heatpump
   unsigned int waitDallasTime = 5; // how often temps are read from 1wire
+  unsigned int dallasResolution = 12; // dallas temp resolution (9 to 12)
   unsigned int updateAllTime = 300; // how often all data is resend to mqtt
   unsigned int updataAllDallasTime = 300; //how often all 1wire data is resent to mqtt
 

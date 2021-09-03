@@ -567,7 +567,7 @@ void switchSerial() {
 
   setupGPIO(heishamonSettings.gpioSettings); //switch extra GPIOs to configured mode
 
-  //enable gpio15 after boot using gpio5 (D1)
+  //enable gpio15 after boot using gpio5 (D1) which enables the level shifter for the tx to panasonic
   pinMode(5, OUTPUT);
   digitalWrite(5, HIGH);
 }
@@ -593,7 +593,7 @@ void setupConditionals() {
   }
 
   //these two after optional pcb because it needs to send a datagram fast after boot
-  if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
+  if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime, heishamonSettings.dallasResolution);
   if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings);
 }
 void setup() {
