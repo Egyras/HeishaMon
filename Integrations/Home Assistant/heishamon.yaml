@@ -561,7 +561,7 @@ sensor:
     state_topic: "panasonic_heat_pump/s0/WatthourTotal/1"
     unit_of_measurement: 'kWh'
     value_template: >-
-      {{ (value | int) / 1000}}'
+      {{ (value | int) / 1000}}
 
   #S0 kWh Meter 2 - Assumed to measure the backup heater consumption
   - platform: mqtt
