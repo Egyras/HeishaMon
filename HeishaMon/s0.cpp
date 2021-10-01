@@ -207,8 +207,8 @@ String s0JsonOutput() {
     output = output + F("\"Watt\": \"") + actS0Data[i].watt + F("\",");
     output = output + F("\"Watthour\": \"") + ((actS0Data[i].pulsesTotal - jsonPulses[i]) * ( 1000.0 / actS0Settings[i].ppkwh)) + F("\",");
     jsonPulses[i] = actS0Data[i].pulsesTotal;
-    output = output + F("\"WatthourTotal\": \"") + (actS0Data[i].pulsesTotal * ( 1000.0 / actS0Settings[i].ppkwh)) + F("\"");
-    output = output + F("\"PulseQuality\": \"") + (100 * (actS0Data[i].goodPulses + 1) / (actS0Data[i].goodPulses + actS0Data[i].badPulses + 1)) + F("\"");
+    output = output + F("\"WatthourTotal\": \"") + (actS0Data[i].pulsesTotal * ( 1000.0 / actS0Settings[i].ppkwh)) + F("\",");
+    output = output + F("\"PulseQuality\": \"") + (100 * (actS0Data[i].goodPulses + 1) / (actS0Data[i].goodPulses + actS0Data[i].badPulses + 1)) + F("\",");
     output = output + F("\"AvgPulseWidth\": \"") + actS0Data[i].avgPulseWidth + F("\"");
     output = output + F("}");
     if (i < NUM_S0_COUNTERS - 1) output = output + F(",");
