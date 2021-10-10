@@ -10,6 +10,7 @@
 
 #include <ArduinoJson.h>
 
+#include "src/common/timerqueue.h"
 #include "webfunctions.h"
 #include "decode.h"
 #include "commands.h"
@@ -97,6 +98,9 @@ WiFiClient mqtt_wifi_client;
 PubSubClient mqtt_client(mqtt_wifi_client);
 
 bool firstConnectSinceBoot = true; //if this is true there is no first connection made yet
+
+struct timerqueue_t **timerqueue = NULL;
+int timerqueue_size = 0;
 
 /*
  *  check_wifi will process wifi reconnecting managing
@@ -596,6 +600,15 @@ void setupConditionals() {
   if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime, heishamonSettings.dallasResolution);
   if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings);
 }
+
+
+void timer_cb(int nr) {
+  sprintf_P(log_msg, PSTR("%d seconds timer interval"), nr);
+  log_message(log_msg);
+
+  timerqueue_insert(nr, 0, nr);
+}
+
 void setup() {
 
   //first get total memory before we do anything
@@ -632,6 +645,9 @@ void setup() {
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer.start(DNS_PORT, "*", apIP);
 
+  timerqueue_insert(1, 0, 1);
+  timerqueue_insert(5, 0, 5);
+  timerqueue_insert(60, 0, 60);
 }
 
 void send_panasonic_query() {
@@ -760,4 +776,6 @@ void loop() {
       MDNS.announce();
     }
   }
+  
+  timerqueue_update();
 }
