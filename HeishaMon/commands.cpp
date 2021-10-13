@@ -478,7 +478,7 @@ unsigned int set_dhw_heat_delta(char *msg, unsigned char *cmd, char *log_msg) {
 
   {
     char tmp[256] = { 0 };
-    snprintf_P(tmp, 255, PSTR("set floor heat delta to %d"), request_temp - 128 );
+    snprintf_P(tmp, 255, PSTR("set DHW heat delta to %d"), request_temp - 128 );
     memcpy(log_msg, tmp, sizeof(tmp));
   }
 
