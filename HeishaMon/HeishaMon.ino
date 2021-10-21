@@ -45,7 +45,7 @@ bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
 #define MQTTRECONNECTTIMER 30000 //it takes 30 secs for each mqtt server reconnect attempt
 unsigned long lastMqttReconnectAttempt = 0;
 
-#define WIFIRETRYTIMER 10000 // switch between hotspot and configured SSID each 10 secs if SSID is lost
+#define WIFIRETRYTIMER 15000 // switch between hotspot and configured SSID each 10 secs if SSID is lost
 unsigned long lastWifiRetryTimer = 0;
 
 unsigned long lastRunTime = 0;
@@ -645,9 +645,10 @@ void setup() {
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer.start(DNS_PORT, "*", apIP);
 
-  timerqueue_insert(1, 0, 1);
-  timerqueue_insert(5, 0, 5);
-  timerqueue_insert(60, 0, 60);
+  //timerqueue tests
+  //timerqueue_insert(1, 0, 1);
+  //timerqueue_insert(5, 0, 5);
+  //timerqueue_insert(60, 0, 60);
 }
 
 void send_panasonic_query() {
