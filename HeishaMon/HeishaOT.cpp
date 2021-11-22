@@ -128,9 +128,9 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
 
       } break;
     case OpenThermMessageID::TSet: {
-        float data = ot.getFloat(request);
+        heishaOTData.chSetpoint = ot.getFloat(request);
         char str[200];
-        sprintf((char *)&str, "%.*f", 4, data);
+        sprintf((char *)&str, "%.*f", 4, heishaOTData.chSetpoint);
         sprintf(log_msg, "OpenTherm: Ta-set: %s", str);
         log_message(log_msg);
         otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::TSet, request & 0xffff);

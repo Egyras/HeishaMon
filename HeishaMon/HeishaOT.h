@@ -9,6 +9,7 @@ struct heishaOTDataStruct {
   bool chEnable;
   float roomTemp;
   float roomTempSet;
+  float chSetpoint;
   //slave values
   float outsideTemp = 0;
   float inletTemp = 0;

@@ -86,7 +86,7 @@ bool OpenTherm::sendRequestAync(unsigned long request)
   sendBit(HIGH); //stop bit
   setIdleState();
 
-  status = OpenThermStatus::RESPONSE_WAITING;
+  status = OpenThermStatus::RECEIVE_WAITING;
   responseTimestamp = micros();
   return true;
 }
@@ -134,7 +134,7 @@ void IRAM_ATTR OpenTherm::handleInterrupt()
       smartPowerState = MEDIUM_POWER;
       return;
     }
-    if ((status == OpenThermStatus::RESPONSE_START_BIT) && (smartPowerState == MEDIUM_POWER) && ((newTs - responseTimestamp) > 15000)) {
+    if ((status == OpenThermStatus::RECEIVE_START_BIT) && (smartPowerState == MEDIUM_POWER) && ((newTs - responseTimestamp) > 15000)) {
       //this is a MEDIUM to LOW request
       logicalSendHigh = !logicalSendHigh;
       setIdleState();
@@ -147,7 +147,7 @@ void IRAM_ATTR OpenTherm::handleInterrupt()
   if (isReady())
   {
     if (isSlave && readState() == logicalReceiveHigh) {
-      status = OpenThermStatus::RESPONSE_WAITING;
+      status = OpenThermStatus::RECEIVE_WAITING;
     }
     else {
       return;
@@ -155,28 +155,28 @@ void IRAM_ATTR OpenTherm::handleInterrupt()
   }
 
 
-  if (status == OpenThermStatus::RESPONSE_WAITING) {
+  if (status == OpenThermStatus::RECEIVE_WAITING) {
     if (readState() == logicalReceiveHigh) {
-      status = OpenThermStatus::RESPONSE_START_BIT;
+      status = OpenThermStatus::RECEIVE_START_BIT;
       responseTimestamp = newTs;
     }
     else {
-      status = OpenThermStatus::RESPONSE_INVALID;
+      status = OpenThermStatus::RECEIVE_INVALID;
       responseTimestamp = newTs;
     }
   }
-  else if (status == OpenThermStatus::RESPONSE_START_BIT) {
+  else if (status == OpenThermStatus::RECEIVE_START_BIT) {
     if ((newTs - responseTimestamp < 750) && readState() == !logicalReceiveHigh) {
-      status = OpenThermStatus::RESPONSE_RECEIVING;
+      status = OpenThermStatus::RECEIVE_DATA;
       responseTimestamp = newTs;
       responseBitIndex = 0;
     }
     else {
-      status = OpenThermStatus::RESPONSE_INVALID;
+      status = OpenThermStatus::RECEIVE_INVALID;
       responseTimestamp = newTs;
     }
   }
-  else if (status == OpenThermStatus::RESPONSE_RECEIVING) {
+  else if (status == OpenThermStatus::RECEIVE_DATA) {
     if ((newTs - responseTimestamp) > 750) {
       if (responseBitIndex < 32) {
         response = (response << 1) | !(readState() == logicalReceiveHigh);
@@ -184,7 +184,7 @@ void IRAM_ATTR OpenTherm::handleInterrupt()
         responseBitIndex++;
       }
       else { //stop bit
-        status = OpenThermStatus::RESPONSE_READY;
+        status = OpenThermStatus::RECEIVE_READY;
         responseTimestamp = newTs;
       }
     }
@@ -200,7 +200,7 @@ void OpenTherm::process()
 
   unsigned long newTs = micros();
 
-  if (st == OpenThermStatus::RESPONSE_START_BIT && (readState() == LOW) && ((newTs - ts) > 5000000) ) { //short circuit detected, act as on/off
+  if (st == OpenThermStatus::RECEIVE_START_BIT && (readState() == LOW) && ((newTs - ts) > 5000000) ) { //short circuit detected, act as on/off
     //Serial.println("Short circuit, switch to on/off");
     status = OpenThermStatus::ON_OFF;
     return;
@@ -233,14 +233,14 @@ void OpenTherm::process()
       processResponseCallback(response, responseStatus);
     }
   }
-  else if (st == OpenThermStatus::RESPONSE_INVALID) {
+  else if (st == OpenThermStatus::RECEIVE_INVALID) {
     status = OpenThermStatus::DELAY;
     responseStatus = OpenThermResponseStatus::INVALID;
     if (processResponseCallback != NULL) {
       processResponseCallback(response, responseStatus);
     }
   }
-  else if (st == OpenThermStatus::RESPONSE_READY) {
+  else if (st == OpenThermStatus::RECEIVE_READY) {
     status = OpenThermStatus::DELAY;
     responseStatus = (isSlave ? isValidRequest(response) : isValidResponse(response)) ? OpenThermResponseStatus::SUCCESS : OpenThermResponseStatus::INVALID;
     if (processResponseCallback != NULL) {
@@ -252,7 +252,7 @@ void OpenTherm::process()
       status = OpenThermStatus::READY;
     }
   }
-  else if (isSlave && smartPowerEnabled && (st == OpenThermStatus::RESPONSE_START_BIT) && ((newTs - ts) > 5000) ) {
+  else if (isSlave && smartPowerEnabled && (st == OpenThermStatus::RECEIVE_START_BIT) && ((newTs - ts) > 5000) ) {
     if (smartPowerState == LOW_POWER) { // currently in normal mode
       logicalSendHigh = !logicalSendHigh;
       logicalReceiveHigh = !logicalReceiveHigh;
