@@ -1,6 +1,9 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
 
+
+#define INITIALQUERYSIZE 7
+extern byte initialQuery[INITIALQUERYSIZE];
 #define PANASONICQUERYSIZE 110
 extern byte panasonicQuery[PANASONICQUERYSIZE];
 

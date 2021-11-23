@@ -649,6 +649,15 @@ void setup() {
   //timerqueue_insert(1, 0, 1);
   //timerqueue_insert(5, 0, 5);
   //timerqueue_insert(60, 0, 60);
+
+  //maybe necessary but for now disable. CZ-TAW1 sends this query on boot
+  //if (!heishamonSettings.listenonly) send_initial_query();
+}
+
+void send_initial_query() {
+  String message = F("Requesting initial start query");
+  log_message((char*)message.c_str());
+  send_command(initialQuery, INITIALQUERYSIZE);
 }
 
 void send_panasonic_query() {
