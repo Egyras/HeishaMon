@@ -569,10 +569,7 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
     case WEBSERVER_CLIENT_WRITE: {
         switch (client->route) {
           case 0: {
-              if (client->content == 0) {
-                webserver_send(client, 404, (char *)"text/plain", 13);
-                webserver_send_content_P(client, PSTR("404 Not Found"), 13);
-              }
+              webserver_send(client, 404, (char *)"text/plain", 0);
               return 0;
             } break;
           case 1: {
@@ -675,9 +672,7 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               return -1;
             } break;
           default: {
-              if (client->route != 0) {
-                header->ptr += sprintf((char *)header->buffer, "Access-Control-Allow-Origin: *");
-              }
+              header->ptr += sprintf((char *)header->buffer, "Access-Control-Allow-Origin: *");
             } break;
         }
         return 0;
