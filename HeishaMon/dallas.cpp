@@ -105,26 +105,33 @@ void dallasLoop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqt
   }
 }
 
-String dallasJsonOutput() {
-  String output = F("[");
-  for (int i = 0; i < dallasDevicecount; i++) {
-    output = output + F("{");
-    output = output + F("\"Sensor\": \"") + actDallasData[i].address + F("\",");
-    output = output + F("\"Temperature\": \"") + actDallasData[i].temperature + F("\"");
-    output = output + F("}");
-    if (i < dallasDevicecount - 1) output = output + F(",");
+void dallasJsonOutput(struct webserver_t *client) {
+  webserver_send_content_P(client, PSTR("["), 1);
+
+  for(int i = 0; i < dallasDevicecount; i++) {
+    webserver_send_content_P(client, PSTR("{\"Sensor\":\""), 11);
+    webserver_send_content(client, actDallasData[i].address, strlen(actDallasData[i].address));
+    webserver_send_content_P(client, PSTR("\",\"Temperature\":\""), 17);
+    char str[64];
+    dtostrf(actDallasData[i].temperature,0,2,str);
+    webserver_send_content(client, str, strlen(str));
+    if(i < dallasDevicecount - 1) {
+      webserver_send_content_P(client, PSTR("\"},"), 3);
+    } else {
+      webserver_send_content_P(client, PSTR("\"}"), 2);
+    }
   }
-  output = output + "]";
-  return output;
+  webserver_send_content_P(client, PSTR("]"), 1);
 }
 
-String dallasTableOutput() {
-  String output = "";
+void dallasTableOutput(struct webserver_t *client) {
   for (int i = 0; i < dallasDevicecount; i++) {
-    output = output + F("<tr>");
-    output = output + F("<td>") + actDallasData[i].address + F("</td>");
-    output = output + F("<td>") + actDallasData[i].temperature + F("</td>");
-    output = output + F("</tr>");
+    webserver_send_content_P(client, PSTR("<tr><td>"), 8);
+    webserver_send_content(client, actDallasData[i].address, strlen(actDallasData[i].address));
+    webserver_send_content_P(client, PSTR("</td><td>"), 9);
+    char str[64];
+    dtostrf(actDallasData[i].temperature,0,2,str);
+    webserver_send_content(client, str, strlen(str));
+    webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   }
-  return output;
 }

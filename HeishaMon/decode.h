@@ -28,6 +28,8 @@ String getEnergy(byte input);
 String getHeatMode(byte input);
 String getModel(byte input);
 
+static const char _unknown[] PROGMEM = "unknown";
+
 static const char *Model[] PROGMEM = {
   "23", //string representation of number of known models
   "WH-MDC05H3E5",
