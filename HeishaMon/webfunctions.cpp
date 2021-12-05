@@ -110,14 +110,14 @@ char *getUptime(void) {
   uint8_t  sec = rem % 60;
 
   unsigned int len = snprintf_P(NULL, 0, PSTR("%d day%s %d hour%s %d minute%s %d second%s"), d, (d == 1) ? "" : "s", h, (h == 1) ? "" : "s", m, (m == 1) ? "" : "s", sec, (sec == 1) ? "" : "s");
-  char *str = (char *)malloc(len+2);
-  if(str == NULL) {
+  char *str = (char *)malloc(len + 2);
+  if (str == NULL) {
     Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
     ESP.restart();
     exit(-1);
   }
-  memset(str, 0, len+2);
-  snprintf_P(str, len+1, PSTR("%d day%s %d hour%s %d minute%s %d second%s"), d, (d == 1) ? "" : "s", h, (h == 1) ? "" : "s", m, (m == 1) ? "" : "s", sec, (sec == 1) ? "" : "s");
+  memset(str, 0, len + 2);
+  snprintf_P(str, len + 1, PSTR("%d day%s %d hour%s %d minute%s %d second%s"), d, (d == 1) ? "" : "s", h, (h == 1) ? "" : "s", m, (m == 1) ? "" : "s", sec, (sec == 1) ? "" : "s");
   return str;
 }
 
@@ -237,44 +237,44 @@ void setupWifi(settingsStruct *heishamonSettings) {
 }
 
 int handleFactoryReset(struct webserver_t *client) {
-  switch(client->content) {
+  switch (client->content) {
     case 0: {
-      webserver_send(client, 200, (char *)"text/html", 0);
-      webserver_send_content_P(client, webHeader, strlen_P(webHeader));
-      webserver_send_content_P(client, webCSS, strlen_P(webCSS));
-      webserver_send_content_P(client, refreshMeta, strlen_P(refreshMeta));
-    } break;
+        webserver_send(client, 200, (char *)"text/html", 0);
+        webserver_send_content_P(client, webHeader, strlen_P(webHeader));
+        webserver_send_content_P(client, webCSS, strlen_P(webCSS));
+        webserver_send_content_P(client, refreshMeta, strlen_P(refreshMeta));
+      } break;
     case 1: {
-      webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
-      webserver_send_content_P(client, webBodyRebootWarning, strlen_P(webBodyRebootWarning));
-      webserver_send_content_P(client, menuJS, strlen_P(menuJS));
-      webserver_send_content_P(client, webFooter, strlen_P(webFooter));
-    } break;
+        webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
+        webserver_send_content_P(client, webBodyRebootWarning, strlen_P(webBodyRebootWarning));
+        webserver_send_content_P(client, menuJS, strlen_P(menuJS));
+        webserver_send_content_P(client, webFooter, strlen_P(webFooter));
+      } break;
     case 2: {
-      timerqueue_insert(1, 0, -1); // Start reboot sequence
-    } break;
+        timerqueue_insert(1, 0, -1); // Start reboot sequence
+      } break;
   }
 
   return 0;
 }
 
 int handleReboot(struct webserver_t *client) {
-  switch(client->content) {
+  switch (client->content) {
     case 0: {
-      webserver_send(client, 200, (char *)"text/html", 0);
-      webserver_send_content_P(client, webHeader, strlen_P(webHeader));
-      webserver_send_content_P(client, webCSS, strlen_P(webCSS));
-      webserver_send_content_P(client, refreshMeta, strlen_P(refreshMeta));
-    } break;
+        webserver_send(client, 200, (char *)"text/html", 0);
+        webserver_send_content_P(client, webHeader, strlen_P(webHeader));
+        webserver_send_content_P(client, webCSS, strlen_P(webCSS));
+        webserver_send_content_P(client, refreshMeta, strlen_P(refreshMeta));
+      } break;
     case 1: {
-      webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
-      webserver_send_content_P(client, webBodyRebootWarning, strlen_P(webBodyRebootWarning));
-      webserver_send_content_P(client, menuJS, strlen_P(menuJS));
-      webserver_send_content_P(client, webFooter, strlen_P(webFooter));
-    } break;
+        webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
+        webserver_send_content_P(client, webBodyRebootWarning, strlen_P(webBodyRebootWarning));
+        webserver_send_content_P(client, menuJS, strlen_P(menuJS));
+        webserver_send_content_P(client, webFooter, strlen_P(webFooter));
+      } break;
     case 2: {
-      timerqueue_insert(5, 0, -2); // Start reboot sequence
-    } break;
+        timerqueue_insert(5, 0, -2); // Start reboot sequence
+      } break;
   }
 
   return 0;
@@ -364,94 +364,94 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
   jsonDoc["use_s0"] = String("");
 
   struct websettings_t *tmp = websettings;
-  while(tmp) {
-    if(strcmp(tmp->name.c_str(), "wifi_hostname") == 0) {
+  while (tmp) {
+    if (strcmp(tmp->name.c_str(), "wifi_hostname") == 0) {
       jsonDoc["wifi_hostname"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "mqtt_topic_base") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "mqtt_topic_base") == 0) {
       jsonDoc["mqtt_topic_base"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "mqtt_server") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "mqtt_server") == 0) {
       jsonDoc["mqtt_server"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "mqtt_port") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "mqtt_port") == 0) {
       jsonDoc["mqtt_port"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "mqtt_username") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "mqtt_username") == 0) {
       jsonDoc["mqtt_username"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "mqtt_password") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "mqtt_password") == 0) {
       jsonDoc["mqtt_password"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "use_1wire") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "use_1wire") == 0) {
       jsonDoc["use_1wire"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "use_s0") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "use_s0") == 0) {
       jsonDoc["use_s0"] = tmp->value;
-      if(strcmp(tmp->value.c_str(), "enabled") == 0) {
+      if (strcmp(tmp->value.c_str(), "enabled") == 0) {
         use_s0 = tmp->value.c_str();
       }
-    } else if(strcmp(tmp->name.c_str(), "listenonly") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "listenonly") == 0) {
       jsonDoc["listenonly"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "logMqtt") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "logMqtt") == 0) {
       jsonDoc["logMqtt"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "logHexdump") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "logHexdump") == 0) {
       jsonDoc["logHexdump"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "logSerial1") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "logSerial1") == 0) {
       jsonDoc["logSerial1"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "optionalPCB") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "optionalPCB") == 0) {
       jsonDoc["optionalPCB"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "waitTime") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "waitTime") == 0) {
       jsonDoc["waitTime"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "waitDallasTime") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "waitDallasTime") == 0) {
       jsonDoc["waitDallasTime"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "updateAllTime") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "updateAllTime") == 0) {
       jsonDoc["updateAllTime"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "dallasResolution") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "dallasResolution") == 0) {
       jsonDoc["dallasResolution"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "updataAllDallasTime") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "updataAllDallasTime") == 0) {
       jsonDoc["updataAllDallasTime"] = tmp->value;
-    } else if(strcmp(tmp->name.c_str(), "wifi_ssid") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "wifi_ssid") == 0) {
       wifi_ssid = tmp->value.c_str();
-    } else if(strcmp(tmp->name.c_str(), "wifi_password") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "wifi_password") == 0) {
       wifi_password = tmp->value.c_str();
-    } else if(strcmp(tmp->name.c_str(), "new_ota_password") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "new_ota_password") == 0) {
       new_ota_password = tmp->value.c_str();
-    } else if(strcmp(tmp->name.c_str(), "current_ota_password") == 0) {
+    } else if (strcmp(tmp->name.c_str(), "current_ota_password") == 0) {
       current_ota_password = tmp->value.c_str();
     }
     tmp = tmp->next;
   }
 
   tmp = websettings;
-  while(tmp) {
-    if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_gpio") == 0) {
+  while (tmp) {
+    if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_gpio") == 0) {
       jsonDoc["s0_1_gpio"] = tmp->value;
-    } else if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_ppkwh") == 0) {
+    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_ppkwh") == 0) {
       jsonDoc["s0_1_ppkwh"] = tmp->value;
-    } else if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_interval") == 0) {
+    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_interval") == 0) {
       jsonDoc["s0_1_interval"] = tmp->value;
-    } else if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_minpulsewidth") == 0) {
+    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_minpulsewidth") == 0) {
       jsonDoc["s0_1_minpulsewidth"] = tmp->value;
-    } else if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_maxpulsewidth") == 0) {
+    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_maxpulsewidth") == 0) {
       jsonDoc["s0_1_maxpulsewidth"] = tmp->value;
-    } else if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_gpio") == 0) {
+    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_gpio") == 0) {
       jsonDoc["s0_2_gpio"] = tmp->value;
-    } else if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
+    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
       jsonDoc["s0_2_ppkwh"] = tmp->value;
-    } else if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
+    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
       jsonDoc["s0_2_ppkwh"] = tmp->value;
-    } else if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_interval") == 0) {
+    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_interval") == 0) {
       jsonDoc["s0_2_interval"] = tmp->value;
-    } else if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_minpulsewidth") == 0) {
+    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_minpulsewidth") == 0) {
       jsonDoc["s0_2_minpulsewidth"] = tmp->value;
-    } else if(use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_maxpulsewidth") == 0) {
+    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_maxpulsewidth") == 0) {
       jsonDoc["s0_2_maxpulsewidth"] = tmp->value;
     }
     tmp = tmp->next;
   }
 
-  while(websettings) {
+  while (websettings) {
     tmp = websettings;
     websettings = websettings->next;
     free(tmp);
   }
 
-  if(new_ota_password != NULL && strlen(new_ota_password) > 0 && current_ota_password != NULL && strlen(current_ota_password) > 0) {
-    if(strcmp(heishamonSettings->ota_password, current_ota_password) == 0) {
+  if (new_ota_password != NULL && strlen(new_ota_password) > 0 && current_ota_password != NULL && strlen(current_ota_password) > 0) {
+    if (strcmp(heishamonSettings->ota_password, current_ota_password) == 0) {
       jsonDoc["ota_password"] = new_ota_password;
     } else {
       client->route = 111;
@@ -459,15 +459,15 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
     }
   }
 
-  if(wifi_password != NULL && wifi_ssid != NULL && strlen(wifi_ssid) > 0 && strlen(wifi_password) > 0) {
-    if(strcmp(jsonDoc["wifi_ssid"], wifi_ssid) != 0 || strcmp(jsonDoc["wifi_password"], wifi_password) != 0) {
+  if (wifi_password != NULL && wifi_ssid != NULL && strlen(wifi_ssid) > 0 && strlen(wifi_password) > 0) {
+    if (strcmp(jsonDoc["wifi_ssid"], wifi_ssid) != 0 || strcmp(jsonDoc["wifi_password"], wifi_password) != 0) {
       reconnectWiFi = true;
     }
   }
-  if(wifi_ssid != NULL) {
+  if (wifi_ssid != NULL) {
     jsonDoc["wifi_ssid"] = String(wifi_ssid);
   }
-  if(wifi_password != NULL) {
+  if (wifi_password != NULL) {
     jsonDoc["wifi_password"] = String(wifi_password);
   }
 
@@ -476,7 +476,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
   saveJsonToConfig(jsonDoc); //save to config file
   loadSettings(heishamonSettings); //load config file to current settings
 
-  if(reconnectWiFi) {
+  if (reconnectWiFi) {
     client->route = 112;
     return 0;
   }
@@ -487,10 +487,10 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 
 int cacheSettings(struct webserver_t *client, struct arguments_t * args) {
   struct websettings_t *tmp = websettings;
-  while(tmp) {
-    if(strcmp(tmp->name.c_str(), (char *)args->name) == 0) {
-      char *cpy = (char *)malloc(args->len+1);
-      memset(cpy, 0, args->len+1);
+  while (tmp) {
+    if (strcmp(tmp->name.c_str(), (char *)args->name) == 0) {
+      char *cpy = (char *)malloc(args->len + 1);
+      memset(cpy, 0, args->len + 1);
       memcpy(cpy, args->value, args->len);
       tmp->value += cpy;
       free(cpy);
@@ -498,9 +498,9 @@ int cacheSettings(struct webserver_t *client, struct arguments_t * args) {
     }
     tmp = tmp->next;
   }
-  if(tmp == NULL) {
+  if (tmp == NULL) {
     websettings_t *node = new websettings_t;
-    if(node == NULL) {
+    if (node == NULL) {
       Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
       ESP.restart();
       exit(-1);
@@ -508,14 +508,14 @@ int cacheSettings(struct webserver_t *client, struct arguments_t * args) {
     node->next = NULL;
     node->name += (char *)args->name;
 
-    if(args->value != NULL) {
-      char *cpy = (char *)malloc(args->len+1);
-      if(node == NULL) {
+    if (args->value != NULL) {
+      char *cpy = (char *)malloc(args->len + 1);
+      if (node == NULL) {
         Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
         ESP.restart();
         exit(-1);
       }
-      memset(cpy, 0, args->len+1);
+      memset(cpy, 0, args->len + 1);
       strncpy(cpy, (char *)args->value, args->len);
       node->value += cpy;
       free(cpy);
@@ -529,259 +529,259 @@ int cacheSettings(struct webserver_t *client, struct arguments_t * args) {
 }
 
 int settingsNewPassword(struct webserver_t *client, settingsStruct *heishamonSettings) {
-  switch(client->content) {
+  switch (client->content) {
     case 0: {
-      webserver_send(client, 200, (char *)"text/html", 0);
-      webserver_send_content_P(client, webHeader, strlen_P(webHeader));
-      webserver_send_content_P(client, webCSS, strlen_P(webCSS));
-      webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
-    } break;
+        webserver_send(client, 200, (char *)"text/html", 0);
+        webserver_send_content_P(client, webHeader, strlen_P(webHeader));
+        webserver_send_content_P(client, webCSS, strlen_P(webCSS));
+        webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
+      } break;
     case 1: {
-      webserver_send_content_P(client, webBodySettings1, strlen_P(webBodySettings1));
-      webserver_send_content_P(client, webBodySettingsResetPasswordWarning, strlen_P(webBodySettingsResetPasswordWarning));
-    } break;
+        webserver_send_content_P(client, webBodySettings1, strlen_P(webBodySettings1));
+        webserver_send_content_P(client, webBodySettingsResetPasswordWarning, strlen_P(webBodySettingsResetPasswordWarning));
+      } break;
     case 2: {
-      webserver_send_content_P(client, refreshMeta, strlen_P(refreshMeta));
-      webserver_send_content_P(client, webFooter, strlen_P(webFooter));
-    } break;
+        webserver_send_content_P(client, refreshMeta, strlen_P(refreshMeta));
+        webserver_send_content_P(client, webFooter, strlen_P(webFooter));
+      } break;
     case 3: {
-      setupConditionals();
-    } break;
+        setupConditionals();
+      } break;
   }
 
   return 0;
 }
 
 int settingsReconnectWifi(struct webserver_t *client, settingsStruct *heishamonSettings) {
-  switch(client->content) {
+  switch (client->content) {
     case 0: {
-      webserver_send(client, 200, (char *)"text/html", 0);
-      webserver_send_content_P(client, webHeader, strlen_P(webHeader));
-      webserver_send_content_P(client, webCSS, strlen_P(webCSS));
-      webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
-    } break;
+        webserver_send(client, 200, (char *)"text/html", 0);
+        webserver_send_content_P(client, webHeader, strlen_P(webHeader));
+        webserver_send_content_P(client, webCSS, strlen_P(webCSS));
+        webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
+      } break;
     case 1: {
-      webserver_send_content_P(client, webBodySettings1, strlen_P(webBodySettings1));
-      webserver_send_content_P(client, settingsForm, strlen_P(settingsForm));
-      webserver_send_content_P(client, menuJS, strlen_P(menuJS));
-    } break;
+        webserver_send_content_P(client, webBodySettings1, strlen_P(webBodySettings1));
+        webserver_send_content_P(client, settingsForm, strlen_P(settingsForm));
+        webserver_send_content_P(client, menuJS, strlen_P(menuJS));
+      } break;
     case 2: {
-      webserver_send_content_P(client, webBodySettingsNewWifiWarning, strlen_P(webBodySettingsNewWifiWarning));
-      webserver_send_content_P(client, refreshMeta, strlen_P(refreshMeta));
-      webserver_send_content_P(client, webFooter, strlen_P(webFooter));
-    } break;
+        webserver_send_content_P(client, webBodySettingsNewWifiWarning, strlen_P(webBodySettingsNewWifiWarning));
+        webserver_send_content_P(client, refreshMeta, strlen_P(refreshMeta));
+        webserver_send_content_P(client, webFooter, strlen_P(webFooter));
+      } break;
     case 3: {
-      setupWifi(heishamonSettings);
-    } break;
+        setupWifi(heishamonSettings);
+      } break;
   }
 
   return 0;
 }
 
 int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
-  switch(client->content) {
+  switch (client->content) {
     case 0: {
-      webserver_send(client, 200, (char *)"application/json", 0);
-      webserver_send_content_P(client, PSTR("{\"wifi_hostname\":\""), 18);
-      webserver_send_content(client, heishamonSettings->wifi_hostname, strlen(heishamonSettings->wifi_hostname));
-      webserver_send_content_P(client, PSTR("\",\"wifi_ssid\":\""), 15);
-      webserver_send_content(client, heishamonSettings->wifi_ssid, strlen(heishamonSettings->wifi_ssid));
-    } break;
+        webserver_send(client, 200, (char *)"application/json", 0);
+        webserver_send_content_P(client, PSTR("{\"wifi_hostname\":\""), 18);
+        webserver_send_content(client, heishamonSettings->wifi_hostname, strlen(heishamonSettings->wifi_hostname));
+        webserver_send_content_P(client, PSTR("\",\"wifi_ssid\":\""), 15);
+        webserver_send_content(client, heishamonSettings->wifi_ssid, strlen(heishamonSettings->wifi_ssid));
+      } break;
     case 1: {
-      webserver_send_content_P(client, PSTR("\",\"wifi_password\":\""), 19);
-      webserver_send_content(client, heishamonSettings->wifi_password, strlen(heishamonSettings->wifi_password));
-      webserver_send_content_P(client, PSTR("\",\"current_ota_password\":\""), 26);
-      webserver_send_content_P(client, PSTR("\",\"new_ota_password\":\""), 22);
-    } break;
+        webserver_send_content_P(client, PSTR("\",\"wifi_password\":\""), 19);
+        webserver_send_content(client, heishamonSettings->wifi_password, strlen(heishamonSettings->wifi_password));
+        webserver_send_content_P(client, PSTR("\",\"current_ota_password\":\""), 26);
+        webserver_send_content_P(client, PSTR("\",\"new_ota_password\":\""), 22);
+      } break;
     case 2: {
-      webserver_send_content_P(client, PSTR("\",\"mqtt_topic_base\":\""), 21);
-      webserver_send_content(client, heishamonSettings->mqtt_topic_base, strlen(heishamonSettings->mqtt_topic_base));
-      webserver_send_content_P(client, PSTR("\",\"mqtt_server\":\""), 17);
-      webserver_send_content(client, heishamonSettings->mqtt_server, strlen(heishamonSettings->mqtt_server));
-    } break;
+        webserver_send_content_P(client, PSTR("\",\"mqtt_topic_base\":\""), 21);
+        webserver_send_content(client, heishamonSettings->mqtt_topic_base, strlen(heishamonSettings->mqtt_topic_base));
+        webserver_send_content_P(client, PSTR("\",\"mqtt_server\":\""), 17);
+        webserver_send_content(client, heishamonSettings->mqtt_server, strlen(heishamonSettings->mqtt_server));
+      } break;
     case 3: {
-      webserver_send_content_P(client, PSTR("\",\"mqtt_port\":\""), 15);
-      webserver_send_content(client, heishamonSettings->mqtt_port, strlen(heishamonSettings->mqtt_port));
-      webserver_send_content_P(client, PSTR("\",\"mqtt_username\":\""), 19);
-      webserver_send_content(client, heishamonSettings->mqtt_username, strlen(heishamonSettings->mqtt_username));
-    } break;
+        webserver_send_content_P(client, PSTR("\",\"mqtt_port\":\""), 15);
+        webserver_send_content(client, heishamonSettings->mqtt_port, strlen(heishamonSettings->mqtt_port));
+        webserver_send_content_P(client, PSTR("\",\"mqtt_username\":\""), 19);
+        webserver_send_content(client, heishamonSettings->mqtt_username, strlen(heishamonSettings->mqtt_username));
+      } break;
     case 4: {
-      webserver_send_content_P(client, PSTR("\",\"mqtt_password\":\""), 19);
-      webserver_send_content(client, heishamonSettings->mqtt_password, strlen(heishamonSettings->mqtt_password));
-      webserver_send_content_P(client, PSTR("\",\"waitTime\":"), 13);
+        webserver_send_content_P(client, PSTR("\",\"mqtt_password\":\""), 19);
+        webserver_send_content(client, heishamonSettings->mqtt_password, strlen(heishamonSettings->mqtt_password));
+        webserver_send_content_P(client, PSTR("\",\"waitTime\":"), 13);
 
-      char str[20];
-      itoa(heishamonSettings->waitTime, str, 10);
-      webserver_send_content(client, str, strlen(str));
-    } break;
+        char str[20];
+        itoa(heishamonSettings->waitTime, str, 10);
+        webserver_send_content(client, str, strlen(str));
+      } break;
     case 5: {
-      char str[20];
-      webserver_send_content_P(client, PSTR(",\"updateAllTime\":"), 17);
+        char str[20];
+        webserver_send_content_P(client, PSTR(",\"updateAllTime\":"), 17);
 
-      itoa(heishamonSettings->updateAllTime, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa(heishamonSettings->updateAllTime, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"listenonly\":"), 14);
+        webserver_send_content_P(client, PSTR(",\"listenonly\":"), 14);
 
-      itoa(heishamonSettings->listenonly, str, 10);
-      webserver_send_content(client, str, strlen(str));
-    } break;
+        itoa(heishamonSettings->listenonly, str, 10);
+        webserver_send_content(client, str, strlen(str));
+      } break;
     case 6: {
-      char str[20];
-      webserver_send_content_P(client, PSTR(",\"logMqtt\":"), 11);
+        char str[20];
+        webserver_send_content_P(client, PSTR(",\"logMqtt\":"), 11);
 
-      itoa(heishamonSettings->logMqtt, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa(heishamonSettings->logMqtt, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"logHexdump\":"), 14);
+        webserver_send_content_P(client, PSTR(",\"logHexdump\":"), 14);
 
-      itoa(heishamonSettings->logHexdump, str, 10);
-      webserver_send_content(client, str, strlen(str));
-    } break;
+        itoa(heishamonSettings->logHexdump, str, 10);
+        webserver_send_content(client, str, strlen(str));
+      } break;
     case 7: {
-      char str[20];
-      webserver_send_content_P(client, PSTR(",\"logSerial1\":"), 14);
+        char str[20];
+        webserver_send_content_P(client, PSTR(",\"logSerial1\":"), 14);
 
-      itoa(heishamonSettings->logSerial1, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa(heishamonSettings->logSerial1, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"optionalPCB\":"), 15);
+        webserver_send_content_P(client, PSTR(",\"optionalPCB\":"), 15);
 
-      itoa(heishamonSettings->optionalPCB, str, 10);
-      webserver_send_content(client, str, strlen(str));
-    } break;
+        itoa(heishamonSettings->optionalPCB, str, 10);
+        webserver_send_content(client, str, strlen(str));
+      } break;
     case 8: {
-      char str[20];
-      webserver_send_content_P(client, PSTR(",\"use_1wire\":"), 13);
+        char str[20];
+        webserver_send_content_P(client, PSTR(",\"use_1wire\":"), 13);
 
-      itoa(heishamonSettings->use_1wire, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa(heishamonSettings->use_1wire, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"waitDallasTime\":"), 18);
+        webserver_send_content_P(client, PSTR(",\"waitDallasTime\":"), 18);
 
-      itoa(heishamonSettings->waitDallasTime, str, 10);
-      webserver_send_content(client, str, strlen(str));
-    } break;
+        itoa(heishamonSettings->waitDallasTime, str, 10);
+        webserver_send_content(client, str, strlen(str));
+      } break;
     case 9: {
-      char str[20];
-      webserver_send_content_P(client, PSTR(",\"updataAllDallasTime\":"), 23);
+        char str[20];
+        webserver_send_content_P(client, PSTR(",\"updataAllDallasTime\":"), 23);
 
-      itoa(heishamonSettings->updataAllDallasTime, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa(heishamonSettings->updataAllDallasTime, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"dallasResolution\":"), 20);
+        webserver_send_content_P(client, PSTR(",\"dallasResolution\":"), 20);
 
-      itoa(heishamonSettings->dallasResolution , str, 10);
-      webserver_send_content(client, str, strlen(str));
-    } break;
+        itoa(heishamonSettings->dallasResolution , str, 10);
+        webserver_send_content(client, str, strlen(str));
+      } break;
     case 10: {
-      char str[20];
-      webserver_send_content_P(client, PSTR(",\"use_s0\":"), 10);
+        char str[20];
+        webserver_send_content_P(client, PSTR(",\"use_s0\":"), 10);
 
-      itoa(heishamonSettings->use_s0, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa(heishamonSettings->use_s0, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"s0_1_gpio\":"), 13);
+        webserver_send_content_P(client, PSTR(",\"s0_1_gpio\":"), 13);
 
-      int i = 0;
+        int i = 0;
 
-      if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_1;  //dirty hack
-      itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_1;  //dirty hack
+        itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"s0_1_ppkwh\":"), 14);
+        webserver_send_content_P(client, PSTR(",\"s0_1_ppkwh\":"), 14);
 
-      itoa(heishamonSettings->s0Settings[i].ppkwh, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa(heishamonSettings->s0Settings[i].ppkwh, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"s0_1_interval\":"), 17);
+        webserver_send_content_P(client, PSTR(",\"s0_1_interval\":"), 17);
 
-      itoa(heishamonSettings->s0Settings[i].lowerPowerInterval, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa(heishamonSettings->s0Settings[i].lowerPowerInterval, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"s0_1_minpulsewidth\":"), 22);
+        webserver_send_content_P(client, PSTR(",\"s0_1_minpulsewidth\":"), 22);
 
-      itoa(heishamonSettings->s0Settings[i].minimalPulseWidth, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa(heishamonSettings->s0Settings[i].minimalPulseWidth, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"s0_1_maxpulsewidth\":"), 22);
+        webserver_send_content_P(client, PSTR(",\"s0_1_maxpulsewidth\":"), 22);
 
-      itoa(heishamonSettings->s0Settings[i].maximalPulseWidth, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa(heishamonSettings->s0Settings[i].maximalPulseWidth, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"s0_1_minwatt\":"), 16);
+        webserver_send_content_P(client, PSTR(",\"s0_1_minwatt\":"), 16);
 
-      itoa((int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval), str, 10);
-      webserver_send_content(client, str, strlen(str));
+        itoa((int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval), str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      webserver_send_content_P(client, PSTR(",\"s0_2_gpio\":"), 13);
-    } break;
+        webserver_send_content_P(client, PSTR(",\"s0_2_gpio\":"), 13);
+      } break;
     case 11: {
-      char str[20];
-      int i = 1;
-      
-      if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_2;  //dirty hack
-      itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        char str[20];
+        int i = 1;
 
-      webserver_send_content_P(client, PSTR(",\"s0_2_ppkwh\":"), 14);
+        if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_2;  //dirty hack
+        itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      itoa(heishamonSettings->s0Settings[i].ppkwh, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        webserver_send_content_P(client, PSTR(",\"s0_2_ppkwh\":"), 14);
 
-      webserver_send_content_P(client, PSTR(",\"s0_2_interval\":"), 17);
+        itoa(heishamonSettings->s0Settings[i].ppkwh, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      itoa(heishamonSettings->s0Settings[i].lowerPowerInterval, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        webserver_send_content_P(client, PSTR(",\"s0_2_interval\":"), 17);
 
-      webserver_send_content_P(client, PSTR(",\"s0_2_minpulsewidth\":"), 22);
+        itoa(heishamonSettings->s0Settings[i].lowerPowerInterval, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      itoa(heishamonSettings->s0Settings[i].minimalPulseWidth, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        webserver_send_content_P(client, PSTR(",\"s0_2_minpulsewidth\":"), 22);
 
-      webserver_send_content_P(client, PSTR(",\"s0_2_maxpulsewidth\":"), 22);
+        itoa(heishamonSettings->s0Settings[i].minimalPulseWidth, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      itoa(heishamonSettings->s0Settings[i].maximalPulseWidth, str, 10);
-      webserver_send_content(client, str, strlen(str));
+        webserver_send_content_P(client, PSTR(",\"s0_2_maxpulsewidth\":"), 22);
 
-      webserver_send_content_P(client, PSTR(",\"s0_2_minwatt\":"), 16);
+        itoa(heishamonSettings->s0Settings[i].maximalPulseWidth, str, 10);
+        webserver_send_content(client, str, strlen(str));
 
-      itoa((int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval), str, 10);
-      webserver_send_content(client, str, strlen(str));
+        webserver_send_content_P(client, PSTR(",\"s0_2_minwatt\":"), 16);
 
-      webserver_send_content_P(client, PSTR("}"), 1);
-    } break;
+        itoa((int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval), str, 10);
+        webserver_send_content(client, str, strlen(str));
+
+        webserver_send_content_P(client, PSTR("}"), 1);
+      } break;
   }
   return 0;
 }
 
 int handleSettings(struct webserver_t *client) {
-  switch(client->content) {
+  switch (client->content) {
     case 0: {
-      webserver_send(client, 200, (char *)"text/html", 0);
-      webserver_send_content_P(client, webHeader, strlen_P(webHeader));
-      webserver_send_content_P(client, webCSS, strlen_P(webCSS));
-      webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
-      webserver_send_content_P(client, webBodySettings1, strlen_P(webBodySettings1));
-    } break;
+        webserver_send(client, 200, (char *)"text/html", 0);
+        webserver_send_content_P(client, webHeader, strlen_P(webHeader));
+        webserver_send_content_P(client, webCSS, strlen_P(webCSS));
+        webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
+        webserver_send_content_P(client, webBodySettings1, strlen_P(webBodySettings1));
+      } break;
     case 1: {
-      webserver_send_content_P(client, settingsForm, strlen_P(settingsForm));
-      webserver_send_content_P(client, menuJS, strlen_P(menuJS));
-      webserver_send_content_P(client, settingsJS, strlen_P(settingsJS));
-      webserver_send_content_P(client, populatescanwifiJS, strlen_P(populatescanwifiJS));
-    } break;
+        webserver_send_content_P(client, settingsForm, strlen_P(settingsForm));
+        webserver_send_content_P(client, menuJS, strlen_P(menuJS));
+        webserver_send_content_P(client, settingsJS, strlen_P(settingsJS));
+        webserver_send_content_P(client, populatescanwifiJS, strlen_P(populatescanwifiJS));
+      } break;
     case 2: {
-      webserver_send_content_P(client, changewifissidJS, strlen_P(changewifissidJS));
-      webserver_send_content_P(client, populategetsettingsJS, strlen_P(populategetsettingsJS));
-      webserver_send_content_P(client, webFooter, strlen_P(webFooter));
-    } break;
+        webserver_send_content_P(client, changewifissidJS, strlen_P(changewifissidJS));
+        webserver_send_content_P(client, populategetsettingsJS, strlen_P(populategetsettingsJS));
+        webserver_send_content_P(client, webFooter, strlen_P(webFooter));
+      } break;
   }
 
   return 0;
 }
 
 int handleWifiScan(struct webserver_t *client) {
-  if(client->content == 0) {
+  if (client->content == 0) {
     webserver_send(client, 200, (char *)"application/json", 0);
     char *str = (char *)wifiJsonList.c_str();
     webserver_send_content(client, str, strlen(str));
@@ -792,12 +792,12 @@ int handleWifiScan(struct webserver_t *client) {
 }
 
 int handleDebug(struct webserver_t *client, char *hex, byte hex_len) {
-  if(client->content == 0) {
+  if (client->content == 0) {
     webserver_send(client, 200, (char *)"text/plain", 0);
     char log_msg[254];
 
 
-    #define LOGHEXBYTESPERLINE 32
+#define LOGHEXBYTESPERLINE 32
     for (int i = 0; i < hex_len; i += LOGHEXBYTESPERLINE) {
       char buffer [(LOGHEXBYTESPERLINE * 3) + 1];
       buffer[LOGHEXBYTESPERLINE * 3] = '\0';
@@ -829,70 +829,70 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
 }
 
 int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings) {
-  switch(client->content) {
+  switch (client->content) {
     case 0: {
-      webserver_send(client, 200, (char *)"text/html", 0);
-      webserver_send_content_P(client, webHeader, strlen_P(webHeader));
-      webserver_send_content_P(client, webCSS, strlen_P(webCSS));
-      webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
-      webserver_send_content_P(client, webBodyRoot1, strlen_P(webBodyRoot1));
-    } break;
+        webserver_send(client, 200, (char *)"text/html", 0);
+        webserver_send_content_P(client, webHeader, strlen_P(webHeader));
+        webserver_send_content_P(client, webCSS, strlen_P(webCSS));
+        webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
+        webserver_send_content_P(client, webBodyRoot1, strlen_P(webBodyRoot1));
+      } break;
     case 1: {
-      webserver_send_content_P(client, heishamon_version, strlen_P(heishamon_version));
-      webserver_send_content_P(client, webBodyRoot2, strlen_P(webBodyRoot2));
-      if(heishamonSettings->use_1wire) {
-        webserver_send_content_P(client, webBodyRootDallasTab, strlen_P(webBodyRootDallasTab));
-      }
-      if(heishamonSettings->use_s0) {
-        webserver_send_content_P(client, webBodyRootS0Tab, strlen_P(webBodyRootS0Tab));
-      }
-      webserver_send_content_P(client, webBodyRootConsoleTab, strlen_P(webBodyRootConsoleTab));
-    } break;
+        webserver_send_content_P(client, heishamon_version, strlen_P(heishamon_version));
+        webserver_send_content_P(client, webBodyRoot2, strlen_P(webBodyRoot2));
+        if (heishamonSettings->use_1wire) {
+          webserver_send_content_P(client, webBodyRootDallasTab, strlen_P(webBodyRootDallasTab));
+        }
+        if (heishamonSettings->use_s0) {
+          webserver_send_content_P(client, webBodyRootS0Tab, strlen_P(webBodyRootS0Tab));
+        }
+        webserver_send_content_P(client, webBodyRootConsoleTab, strlen_P(webBodyRootConsoleTab));
+      } break;
     case 2: {
-      webserver_send_content_P(client, webBodyEndDiv, strlen_P(webBodyEndDiv));
-      webserver_send_content_P(client, webBodyRootStatusWifi, strlen_P(webBodyRootStatusWifi));
-      char str[200];
-      itoa(getWifiQuality(), str, 10);
-      webserver_send_content(client, (char *)str, strlen(str));
-      webserver_send_content_P(client, webBodyRootStatusMemory, strlen_P(webBodyRootStatusMemory));
-    } break;
+        webserver_send_content_P(client, webBodyEndDiv, strlen_P(webBodyEndDiv));
+        webserver_send_content_P(client, webBodyRootStatusWifi, strlen_P(webBodyRootStatusWifi));
+        char str[200];
+        itoa(getWifiQuality(), str, 10);
+        webserver_send_content(client, (char *)str, strlen(str));
+        webserver_send_content_P(client, webBodyRootStatusMemory, strlen_P(webBodyRootStatusMemory));
+      } break;
     case 3: {
-      char str[200];
-      itoa(getFreeMemory(), str, 10);
-      webserver_send_content(client, (char *)str, strlen(str));
-      webserver_send_content_P(client, webBodyRootStatusReceived, strlen_P(webBodyRootStatusReceived));
-      str[200];
-      itoa(readpercentage, str, 10);
-      webserver_send_content(client, (char *)str, strlen(str));
-    } break;
+        char str[200];
+        itoa(getFreeMemory(), str, 10);
+        webserver_send_content(client, (char *)str, strlen(str));
+        webserver_send_content_P(client, webBodyRootStatusReceived, strlen_P(webBodyRootStatusReceived));
+        str[200];
+        itoa(readpercentage, str, 10);
+        webserver_send_content(client, (char *)str, strlen(str));
+      } break;
     case 4: {
-      webserver_send_content_P(client, webBodyRootStatusReconnects, strlen_P(webBodyRootStatusReconnects));
-      char str[200];
-      itoa(mqttReconnects, str, 10);
-      webserver_send_content(client, (char *)str, strlen(str));
-      webserver_send_content_P(client, webBodyRootStatusUptime, strlen_P(webBodyRootStatusUptime));
-      char *up = getUptime();
-      webserver_send_content(client, up, strlen(up));
-      free(up);
-    } break;
+        webserver_send_content_P(client, webBodyRootStatusReconnects, strlen_P(webBodyRootStatusReconnects));
+        char str[200];
+        itoa(mqttReconnects, str, 10);
+        webserver_send_content(client, (char *)str, strlen(str));
+        webserver_send_content_P(client, webBodyRootStatusUptime, strlen_P(webBodyRootStatusUptime));
+        char *up = getUptime();
+        webserver_send_content(client, up, strlen(up));
+        free(up);
+      } break;
     case 5: {
-      webserver_send_content_P(client, webBodyEndDiv, strlen_P(webBodyEndDiv));
-      webserver_send_content_P(client, webBodyRootHeatpumpValues, strlen_P(webBodyRootHeatpumpValues));
-      if(heishamonSettings->use_1wire) {
-        webserver_send_content_P(client, webBodyRootDallasValues, strlen_P(webBodyRootDallasValues));
-      }
-      if(heishamonSettings->use_s0) {
-        webserver_send_content_P(client, webBodyRootS0Values, strlen_P(webBodyRootS0Values));
-      }
-      webserver_send_content_P(client, webBodyRootConsole, strlen_P(webBodyRootConsole));
-      webserver_send_content_P(client, menuJS, strlen_P(menuJS));
-    } break;
+        webserver_send_content_P(client, webBodyEndDiv, strlen_P(webBodyEndDiv));
+        webserver_send_content_P(client, webBodyRootHeatpumpValues, strlen_P(webBodyRootHeatpumpValues));
+        if (heishamonSettings->use_1wire) {
+          webserver_send_content_P(client, webBodyRootDallasValues, strlen_P(webBodyRootDallasValues));
+        }
+        if (heishamonSettings->use_s0) {
+          webserver_send_content_P(client, webBodyRootS0Values, strlen_P(webBodyRootS0Values));
+        }
+        webserver_send_content_P(client, webBodyRootConsole, strlen_P(webBodyRootConsole));
+        webserver_send_content_P(client, menuJS, strlen_P(menuJS));
+      } break;
     case 6: {
-      webserver_send_content_P(client, refreshJS, strlen_P(refreshJS));
-      webserver_send_content_P(client, selectJS, strlen_P(selectJS));
-      webserver_send_content_P(client, websocketJS, strlen_P(websocketJS));
-      webserver_send_content_P(client, webFooter, strlen_P(webFooter));
-    } break;
+        webserver_send_content_P(client, refreshJS, strlen_P(refreshJS));
+        webserver_send_content_P(client, selectJS, strlen_P(selectJS));
+        webserver_send_content_P(client, websocketJS, strlen_P(websocketJS));
+        webserver_send_content_P(client, webFooter, strlen_P(webFooter));
+      } break;
   }
   return 0;
 }
@@ -900,25 +900,25 @@ int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconne
 int handleTableRefresh(struct webserver_t *client, String actData[]) {
   int ret = 0;
 
-  if(client->route == 11) {
-    if(client->content == 0) {
+  if (client->route == 11) {
+    if (client->content == 0) {
       webserver_send(client, 200, (char *)"text/html", 0);
       dallasTableOutput(client);
     }
-  } else if(client->route == 12) {
-    if(client->content == 0) {
+  } else if (client->route == 12) {
+    if (client->content == 0) {
       webserver_send(client, 200, (char *)"text/html", 0);
       s0TableOutput(client);
     }
-  } else if(client->route == 10) {
-    if(client->content == 0) {
+  } else if (client->route == 10) {
+    if (client->content == 0) {
       webserver_send(client, 200, (char *)"text/html", 0);
     }
-    if(client->content < NUMBER_OF_TOPICS) {
-      for(uint8_t topic = client->content; topic < NUMBER_OF_TOPICS && topic < client->content + 4; topic++) {
+    if (client->content < NUMBER_OF_TOPICS) {
+      for (uint8_t topic = client->content; topic < NUMBER_OF_TOPICS && topic < client->content + 4; topic++) {
         String topicdesc;
         const char *valuetext = "value";
-        if(strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
+        if (strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
           topicdesc = topicDescription[topic][1];
         } else {
           int value = actData[topic].toInt();
@@ -967,14 +967,14 @@ int handleTableRefresh(struct webserver_t *client, String actData[]) {
 }
 
 int handleJsonOutput(struct webserver_t *client, String actData[]) {
-  if(client->content == 0) {
+  if (client->content == 0) {
     webserver_send(client, 200, (char *)"application/json", 0);
     webserver_send_content_P(client, PSTR("{\"heatpump\":["), 13);
-  } else if(client->content < NUMBER_OF_TOPICS) {
-    for(uint8_t topic = client->content; topic < NUMBER_OF_TOPICS && topic < client->content + 4; topic++) {
+  } else if (client->content < NUMBER_OF_TOPICS) {
+    for (uint8_t topic = client->content; topic < NUMBER_OF_TOPICS && topic < client->content + 4; topic++) {
       PGM_P topicdesc;
       const char *valuetext = "value";
-      if(strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
+      if (strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
         topicdesc = topicDescription[topic][1];
       } else {
         int value = actData[topic].toInt();
@@ -1011,20 +1011,20 @@ int handleJsonOutput(struct webserver_t *client, String actData[]) {
 
       webserver_send_content_P(client, PSTR("\"}"), 2);
 
-      if(topic < NUMBER_OF_TOPICS - 1) {
+      if (topic < NUMBER_OF_TOPICS - 1) {
         webserver_send_content_P(client, PSTR(","), 1);
       }
     }
     // The webserver also increases by 1
     client->content += 3;
-    if(client->content > NUMBER_OF_TOPICS) {
+    if (client->content > NUMBER_OF_TOPICS) {
       client->content = NUMBER_OF_TOPICS;
     }
-  } else if(client->content == NUMBER_OF_TOPICS+1) {
+  } else if (client->content == NUMBER_OF_TOPICS + 1) {
     webserver_send_content_P(client, PSTR("],\"1wire\":"), 10);
 
     dallasJsonOutput(client);
-  } else if(client->content == NUMBER_OF_TOPICS+2) {
+  } else if (client->content == NUMBER_OF_TOPICS + 2) {
     webserver_send_content_P(client, PSTR(",\"s0\":"), 6);
 
     s0JsonOutput(client);
@@ -1035,7 +1035,7 @@ int handleJsonOutput(struct webserver_t *client, String actData[]) {
 }
 
 int showFirmware(struct webserver_t *client) {
-  if(client->content == 0) {
+  if (client->content == 0) {
     webserver_send(client, 200, (char *)"text/html", 0);
     webserver_send_content_P(client, webHeader, strlen_P(webHeader));
     webserver_send_content_P(client, webCSS, strlen_P(webCSS));
@@ -1048,45 +1048,45 @@ int showFirmware(struct webserver_t *client) {
 }
 
 int showFirmwareSuccess(struct webserver_t *client) {
-  if(client->content == 0) {
+  if (client->content == 0) {
     webserver_send(client, 200, (char *)"text/html", strlen_P(firmwareSuccessResponse));
     webserver_send_content_P(client, firmwareSuccessResponse, strlen_P(firmwareSuccessResponse));
   }
   return 0;
 }
 
-static void printUpdateError(char **out, uint8_t size){
-	uint8_t len = 0;
+static void printUpdateError(char **out, uint8_t size) {
+  uint8_t len = 0;
   len = snprintf_P(*out, size, PSTR("<br />ERROR[%u]: "), Update.getError());
-  if(Update.getError() == UPDATE_ERROR_OK){
+  if (Update.getError() == UPDATE_ERROR_OK) {
     snprintf_P(&(*out)[len], size - len, PSTR("No Error"));
-  } else if(Update.getError() == UPDATE_ERROR_WRITE){
+  } else if (Update.getError() == UPDATE_ERROR_WRITE) {
     snprintf_P(&(*out)[len], size - len, PSTR("Flash Write Failed"));
-  } else if(Update.getError() == UPDATE_ERROR_ERASE){
+  } else if (Update.getError() == UPDATE_ERROR_ERASE) {
     snprintf_P(&(*out)[len], size - len, PSTR("Flash Erase Failed"));
-  } else if(Update.getError() == UPDATE_ERROR_READ){
+  } else if (Update.getError() == UPDATE_ERROR_READ) {
     snprintf_P(&(*out)[len], size - len, PSTR("Flash Read Failed"));
-  } else if(Update.getError() == UPDATE_ERROR_SPACE){
+  } else if (Update.getError() == UPDATE_ERROR_SPACE) {
     snprintf_P(&(*out)[len], size - len, PSTR("Not Enough Space"));
-  } else if(Update.getError() == UPDATE_ERROR_SIZE){
+  } else if (Update.getError() == UPDATE_ERROR_SIZE) {
     snprintf_P(&(*out)[len], size - len, PSTR("Bad Size Given"));
-  } else if(Update.getError() == UPDATE_ERROR_STREAM){
+  } else if (Update.getError() == UPDATE_ERROR_STREAM) {
     snprintf_P(&(*out)[len], size - len, PSTR("Stream Read Timeout"));
 #ifdef UPDATE_ERROR_NO_DATA
-  } else if(Update.getError() == UPDATE_ERROR_NO_DATA){
+  } else if (Update.getError() == UPDATE_ERROR_NO_DATA) {
     snprintf_P(&(*out)[len], size - len, PSTR("No data supplied"));
 #endif
-  } else if(Update.getError() == UPDATE_ERROR_MD5){
-    snprintf_P(&(*out)[len], size - len,PSTR("MD5 Failed\n"));
-  } else if(Update.getError() == UPDATE_ERROR_SIGN){
+  } else if (Update.getError() == UPDATE_ERROR_MD5) {
+    snprintf_P(&(*out)[len], size - len, PSTR("MD5 Failed\n"));
+  } else if (Update.getError() == UPDATE_ERROR_SIGN) {
     snprintf_P(&(*out)[len], size - len, PSTR("Signature verification failed"));
-  } else if(Update.getError() == UPDATE_ERROR_FLASH_CONFIG){
+  } else if (Update.getError() == UPDATE_ERROR_FLASH_CONFIG) {
     snprintf_P(&(*out)[len], size - len, PSTR("Flash config wrong real: %d IDE: %d\n"), ESP.getFlashChipRealSize(), ESP.getFlashChipSize());
-  } else if(Update.getError() == UPDATE_ERROR_NEW_FLASH_CONFIG){
+  } else if (Update.getError() == UPDATE_ERROR_NEW_FLASH_CONFIG) {
     snprintf_P(&(*out)[len], size - len, PSTR("new Flash config wrong real: %d\n"), ESP.getFlashChipRealSize());
-  } else if(Update.getError() == UPDATE_ERROR_MAGIC_BYTE){
+  } else if (Update.getError() == UPDATE_ERROR_MAGIC_BYTE) {
     snprintf_P(&(*out)[len], size - len, PSTR("Magic byte is wrong, not 0xE9"));
-  } else if (Update.getError() == UPDATE_ERROR_BOOTSTRAP){
+  } else if (Update.getError() == UPDATE_ERROR_BOOTSTRAP) {
     snprintf_P(&(*out)[len], size - len, PSTR("Invalid bootstrapping state, reset ESP8266 before updating"));
   } else {
     snprintf_P(&(*out)[len], size - len, PSTR("UNKNOWN"));
@@ -1095,11 +1095,11 @@ static void printUpdateError(char **out, uint8_t size){
 
 
 int showFirmwareFail(struct webserver_t *client) {
-  if(client->content == 0) {
+  if (client->content == 0) {
     char str[256] = { '\0' }, *p = str;
     printUpdateError(&p, sizeof(str));
 
-    webserver_send(client, 200, (char *)"text/html", strlen_P(firmwareFailResponse)+strlen(str));
+    webserver_send(client, 200, (char *)"text/html", strlen_P(firmwareFailResponse) + strlen(str));
     webserver_send_content_P(client, firmwareFailResponse, strlen_P(firmwareFailResponse));
     webserver_send_content(client, str, strlen(str));
   }

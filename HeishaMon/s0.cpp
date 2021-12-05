@@ -19,8 +19,8 @@ volatile bool badEdge[NUM_S0_COUNTERS] = {0, 0}; //two edges is a pulse, so stor
 
 //for debug
 /*
-volatile unsigned long allLastEdgeS0[2][20];
-volatile int allLastEdgeS0Index[2] = {0, 0};
+  volatile unsigned long allLastEdgeS0[2][20];
+  volatile int allLastEdgeS0Index[2] = {0, 0};
 */
 
 IRAM_ATTR void countPulse(int i) {
@@ -28,10 +28,10 @@ IRAM_ATTR void countPulse(int i) {
   volatile unsigned long curPulseWidth = newEdgeS0 - lastEdgeS0[i];
   // debug
   /*
-  if (allLastEdgeS0Index[i] < 20) {
+    if (allLastEdgeS0Index[i] < 20) {
     allLastEdgeS0[i][allLastEdgeS0Index[i]] = curPulseWidth;
     allLastEdgeS0Index[i]++;
-  }
+    }
   */
   // end debug
   if ((curPulseWidth >=  actS0Settings[i].minimalPulseWidth) && (curPulseWidth <= actS0Settings[i].maximalPulseWidth) ) {
@@ -46,7 +46,7 @@ IRAM_ATTR void countPulse(int i) {
     actS0Data[i].pulses++;
     actS0Data[i].pulsesTotal++;
     actS0Data[i].goodPulses++;
-    actS0Data[i].avgPulseWidth = ((actS0Data[i].avgPulseWidth * (actS0Data[i].goodPulses-1)) + curPulseWidth ) / actS0Data[i].goodPulses;
+    actS0Data[i].avgPulseWidth = ((actS0Data[i].avgPulseWidth * (actS0Data[i].goodPulses - 1)) + curPulseWidth ) / actS0Data[i].goodPulses;
     badEdge[i] = false; //set it to false again to allow to count two bad edges as a new bad pulse because we know we had a good pulse now
   } else {
     if (badEdge[i]) actS0Data[i].badPulses++; //there was already an edge before so count this one as a bad pulse
@@ -145,16 +145,16 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
 
       //debug
       /*
-      noInterrupts();
-      int j = 0;
-      while (allLastEdgeS0Index[i] > 0) {
+        noInterrupts();
+        int j = 0;
+        while (allLastEdgeS0Index[i] > 0) {
         allLastEdgeS0Index[i]--;
         sprintf_P(log_msg, PSTR("Pulse widths seen on S0 port %d: Width: %lu"), (i + 1),  allLastEdgeS0[i][j] );
         //log_message(log_msg);
         Serial1.println(log_msg);
         j++;
-      }
-      interrupts();
+        }
+        interrupts();
       */
       //end debug
 
@@ -188,7 +188,7 @@ void s0TableOutput(struct webserver_t *client) {
     webserver_send_content_P(client, PSTR("<tr><td>"), 8);
 
     char str[12];
-    itoa(i+1, str, 10);
+    itoa(i + 1, str, 10);
     webserver_send_content(client, str, strlen(str));
 
     webserver_send_content_P(client, PSTR("</td><td>"), 9);
@@ -198,7 +198,7 @@ void s0TableOutput(struct webserver_t *client) {
 
     webserver_send_content_P(client, PSTR("</td><td>"), 9);
 
-    itoa(((actS0Data[i].pulsesTotal - tablePulses[i]) * ( 1000.0/actS0Settings[i].ppkwh)), str, 10);
+    itoa(((actS0Data[i].pulsesTotal - tablePulses[i]) * ( 1000.0 / actS0Settings[i].ppkwh)), str, 10);
     webserver_send_content(client, str, strlen(str));
 
     tablePulses[i] = actS0Data[i].pulsesTotal;
@@ -207,7 +207,7 @@ void s0TableOutput(struct webserver_t *client) {
 
     itoa((actS0Data[i].pulsesTotal * (1000.0 / actS0Settings[i].ppkwh)), str, 10);
     webserver_send_content(client, str, strlen(str));
-    
+
     webserver_send_content_P(client, PSTR("</td><td>"), 9);
 
     itoa((100 * (actS0Data[i].goodPulses + 1) / (actS0Data[i].goodPulses + actS0Data[i].badPulses + 1)), str, 10);
@@ -230,7 +230,7 @@ void s0JsonOutput(struct webserver_t *client) {
     webserver_send_content_P(client, PSTR("{\"S0 port\":\""), 12);
 
     char str[12];
-    itoa(i+1, str, 10);
+    itoa(i + 1, str, 10);
     webserver_send_content(client, str, strlen(str));
 
     webserver_send_content_P(client, PSTR("\",\"Watt\":\""), 10);
@@ -240,7 +240,7 @@ void s0JsonOutput(struct webserver_t *client) {
 
     webserver_send_content_P(client, PSTR("\",\"Watthour\":\""), 14);
 
-    itoa(((actS0Data[i].pulsesTotal - tablePulses[i]) * (1000.0/actS0Settings[i].ppkwh)), str, 10);
+    itoa(((actS0Data[i].pulsesTotal - tablePulses[i]) * (1000.0 / actS0Settings[i].ppkwh)), str, 10);
     webserver_send_content(client, str, strlen(str));
 
     jsonPulses[i] = actS0Data[i].pulsesTotal;
@@ -260,7 +260,7 @@ void s0JsonOutput(struct webserver_t *client) {
     itoa(actS0Data[i].avgPulseWidth, str, 10);
     webserver_send_content(client, str, strlen(str));
 
-    if(i < NUM_S0_COUNTERS - 1) {
+    if (i < NUM_S0_COUNTERS - 1) {
       webserver_send_content_P(client, PSTR("\"},"), 3);
     } else {
       webserver_send_content_P(client, PSTR("\"}"), 2);

@@ -103,28 +103,28 @@ struct timerqueue_t **timerqueue = NULL;
 int timerqueue_size = 0;
 
 /*
- *  check_wifi will process wifi reconnecting managing
- */
+    check_wifi will process wifi reconnecting managing
+*/
 void check_wifi()
 {
   if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
     /*
-     *  if we are not connected to an AP
-     *  we must be in softAP so respond to DNS
-     */
+        if we are not connected to an AP
+        we must be in softAP so respond to DNS
+    */
     dnsServer.processNextRequest();
 
     /* we need to stop reconnecting to a configured wifi network if there is a hotspot user connected
-     *  also, do not disconnect if wifi network scan is active
-     */
+        also, do not disconnect if wifi network scan is active
+    */
     if ((heishamonSettings.wifi_ssid[0] != '\0') && (WiFi.status() != WL_DISCONNECTED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0))  {
       log_message((char *)"WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid...");
       WiFi.disconnect(true);
     }
 
     /*  only start this routine if timeout on
-     *  reconnecting to AP and SSID is set
-     */
+        reconnecting to AP and SSID is set
+    */
     if ((heishamonSettings.wifi_ssid[0] != '\0') && ((unsigned long)(millis() - lastWifiRetryTimer) > WIFIRETRYTIMER ) )  {
       lastWifiRetryTimer = millis();
       if (WiFi.softAPSSID() == "") {
@@ -437,254 +437,254 @@ void setupOTA() {
 }
 
 int8_t webserver_cb(struct webserver_t *client, void *dat) {
-  switch(client->step) {
+  switch (client->step) {
     case WEBSERVER_CLIENT_REQUEST_METHOD: {
-      if(strcmp((char *)dat, "POST") == 0) {
-        client->route = 110;
-      }
-      return 0;
-    } break;
-    case WEBSERVER_CLIENT_REQUEST_URI: {
-      if(strcmp((char *)dat, "/") == 0) {
-        client->route = 1;
-      } else if(strcmp((char *)dat, "/tablerefresh") == 0) {
-        client->route = 10;
-      } else if(strcmp((char *)dat, "/json") == 0) {
-        client->route = 20;
-      } else if(strcmp((char *)dat, "/reboot") == 0) {
-        client->route = 30;
-      } else if(strcmp((char *)dat, "/debug") == 0) {
-        client->route = 40;
-        log_message((char*)"Debug URL requested");
-      } else if(strcmp((char *)dat, "/wifiscan") == 0) {
-        client->route = 50;
-      } else if(strcmp((char *)dat, "/togglelog") == 0) {
-        client->route = 1;
-        log_message((char*)"Toggled mqtt log flag");
-        heishamonSettings.logMqtt ^= true;
-      } else if(strcmp((char *)dat, "/togglehexdump") == 0) {
-        client->route = 1;
-        log_message((char*)"Toggled hexdump log flag");
-        heishamonSettings.logHexdump ^= true;
-      } else if(strcmp((char *)dat, "/hotspot-detect.html") == 0 ||
-                strcmp((char *)dat, "/fwlink") == 0 ||
-                strcmp((char *)dat, "/generate_204") == 0 ||
-                strcmp((char *)dat, "/gen_204") == 0 ||
-                strcmp((char *)dat, "/popup") == 0) {
-        client->route = 80;
-      } else if(strcmp((char *)dat, "/factoryreset") == 0) {
-        client->route = 90;
-      } else if(strcmp((char *)dat, "/command") == 0) {
-        RESTmsg.clear();
-        client->route = 100;
-      } else if(client->route == 110) {
-        // Only accept settings POST requests
-        if(strcmp((char *)dat, "/savesettings") == 0) {
+        if (strcmp((char *)dat, "POST") == 0) {
           client->route = 110;
-        } else if(strcmp((char *)dat, "/firmware") == 0) {
-          client->route = 150;
-
-          Update.runAsync(true);
-          if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)){
-            Update.printError(Serial1);
-          }
-        } else {
-          return -1;
         }
-      } else if(strcmp((char *)dat, "/settings") == 0) {
-        client->route = 120;
-      } else if(strcmp((char *)dat, "/getsettings") == 0) {
-        client->route = 130;
-      } else if(strcmp((char *)dat, "/firmware") == 0) {
-        client->route = 140;
-      } else {
-        client->route = 0;
-      }
+        return 0;
+      } break;
+    case WEBSERVER_CLIENT_REQUEST_URI: {
+        if (strcmp((char *)dat, "/") == 0) {
+          client->route = 1;
+        } else if (strcmp((char *)dat, "/tablerefresh") == 0) {
+          client->route = 10;
+        } else if (strcmp((char *)dat, "/json") == 0) {
+          client->route = 20;
+        } else if (strcmp((char *)dat, "/reboot") == 0) {
+          client->route = 30;
+        } else if (strcmp((char *)dat, "/debug") == 0) {
+          client->route = 40;
+          log_message((char*)"Debug URL requested");
+        } else if (strcmp((char *)dat, "/wifiscan") == 0) {
+          client->route = 50;
+        } else if (strcmp((char *)dat, "/togglelog") == 0) {
+          client->route = 1;
+          log_message((char*)"Toggled mqtt log flag");
+          heishamonSettings.logMqtt ^= true;
+        } else if (strcmp((char *)dat, "/togglehexdump") == 0) {
+          client->route = 1;
+          log_message((char*)"Toggled hexdump log flag");
+          heishamonSettings.logHexdump ^= true;
+        } else if (strcmp((char *)dat, "/hotspot-detect.html") == 0 ||
+                   strcmp((char *)dat, "/fwlink") == 0 ||
+                   strcmp((char *)dat, "/generate_204") == 0 ||
+                   strcmp((char *)dat, "/gen_204") == 0 ||
+                   strcmp((char *)dat, "/popup") == 0) {
+          client->route = 80;
+        } else if (strcmp((char *)dat, "/factoryreset") == 0) {
+          client->route = 90;
+        } else if (strcmp((char *)dat, "/command") == 0) {
+          RESTmsg.clear();
+          client->route = 100;
+        } else if (client->route == 110) {
+          // Only accept settings POST requests
+          if (strcmp((char *)dat, "/savesettings") == 0) {
+            client->route = 110;
+          } else if (strcmp((char *)dat, "/firmware") == 0) {
+            client->route = 150;
 
-      return 0;
-    } break;
-    case WEBSERVER_CLIENT_ARGS: {
-      struct arguments_t *args = (struct arguments_t *)dat;
-      switch(client->route) {
-        case 10: {
-          if(strcmp((char *)args->name, "1wire") == 0) {
-            client->route = 11;
-          } else if(strcmp((char *)args->name, "s0") == 0) {
-            client->route = 12;
-          }
-        } break;
-        case 100: {
-          unsigned char cmd[256] = { 0 };
-          char cpy[args->len+1];
-          char log_msg[256] = { 0 };
-          unsigned int len = 0;
-
-          memset(&cpy, 0, args->len+1);
-          snprintf((char *)&cpy, args->len, "%.*s", args->len, args->value);
-
-          for(uint8_t x = 0; x < sizeof(commands) / sizeof(commands[0]); x++) {
-            if(strcmp((char *)args->name, commands[x].name) == 0) {
-              len = commands[x].func(cpy, cmd, log_msg);
-              RESTmsg = RESTmsg + log_msg + "\n";
-              log_message(log_msg);
-              send_command(cmd, len);
-            }
-          }
-
-          memset(&cmd, 256, 0);
-          memset(&log_msg, 256, 0);
-
-          if(heishamonSettings.optionalPCB) {
-            //optional commands
-            for (uint8_t x = 0; x < sizeof(optionalCommands) / sizeof(optionalCommands[0]); x++) {
-              if (strcmp((char *)args->name, optionalCommands[x].name) == 0) {
-                len = optionalCommands[x].func(cpy, log_msg);
-                RESTmsg = RESTmsg + log_msg + "\n";
-                log_message(log_msg);
-              }
-            }
-          }
-        } break;
-        case 110: {
-          return cacheSettings(client, args);
-        } break;
-        case 150: {
-          if(uploadpercentage != (unsigned int)(((float)client->readlen/(float)client->totallen)*100)) {
-            uploadpercentage = (unsigned int)(((float)client->readlen/(float)client->totallen)*100);
-            sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage);
-            log_message(log_msg);
-          }
-          if(!Update.hasError() && strcmp((char *)args->name, "firmware") == 0){
-            if(Update.write((uint8_t *)args->value, args->len) != args->len){
+            Update.runAsync(true);
+            if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
               Update.printError(Serial1);
             }
+          } else {
+            return -1;
           }
-        } break;
-      }
-    } break;
+        } else if (strcmp((char *)dat, "/settings") == 0) {
+          client->route = 120;
+        } else if (strcmp((char *)dat, "/getsettings") == 0) {
+          client->route = 130;
+        } else if (strcmp((char *)dat, "/firmware") == 0) {
+          client->route = 140;
+        } else {
+          client->route = 0;
+        }
+
+        return 0;
+      } break;
+    case WEBSERVER_CLIENT_ARGS: {
+        struct arguments_t *args = (struct arguments_t *)dat;
+        switch (client->route) {
+          case 10: {
+              if (strcmp((char *)args->name, "1wire") == 0) {
+                client->route = 11;
+              } else if (strcmp((char *)args->name, "s0") == 0) {
+                client->route = 12;
+              }
+            } break;
+          case 100: {
+              unsigned char cmd[256] = { 0 };
+              char cpy[args->len + 1];
+              char log_msg[256] = { 0 };
+              unsigned int len = 0;
+
+              memset(&cpy, 0, args->len + 1);
+              snprintf((char *)&cpy, args->len, "%.*s", args->len, args->value);
+
+              for (uint8_t x = 0; x < sizeof(commands) / sizeof(commands[0]); x++) {
+                if (strcmp((char *)args->name, commands[x].name) == 0) {
+                  len = commands[x].func(cpy, cmd, log_msg);
+                  RESTmsg = RESTmsg + log_msg + "\n";
+                  log_message(log_msg);
+                  send_command(cmd, len);
+                }
+              }
+
+              memset(&cmd, 256, 0);
+              memset(&log_msg, 256, 0);
+
+              if (heishamonSettings.optionalPCB) {
+                //optional commands
+                for (uint8_t x = 0; x < sizeof(optionalCommands) / sizeof(optionalCommands[0]); x++) {
+                  if (strcmp((char *)args->name, optionalCommands[x].name) == 0) {
+                    len = optionalCommands[x].func(cpy, log_msg);
+                    RESTmsg = RESTmsg + log_msg + "\n";
+                    log_message(log_msg);
+                  }
+                }
+              }
+            } break;
+          case 110: {
+              return cacheSettings(client, args);
+            } break;
+          case 150: {
+              if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 100)) {
+                uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 100);
+                sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage);
+                log_message(log_msg);
+              }
+              if (!Update.hasError() && strcmp((char *)args->name, "firmware") == 0) {
+                if (Update.write((uint8_t *)args->value, args->len) != args->len) {
+                  Update.printError(Serial1);
+                }
+              }
+            } break;
+        }
+      } break;
     case WEBSERVER_CLIENT_HEADER: {
-      struct arguments_t *args = (struct arguments_t *)dat;
-      return 0;
-    } break;
+        struct arguments_t *args = (struct arguments_t *)dat;
+        return 0;
+      } break;
     case WEBSERVER_CLIENT_WRITE: {
-      switch(client->route) {
-        case 0: {
-          if(client->content == 0) {
-            webserver_send(client, 404, (char *)"text/plain", 13);
-            webserver_send_content_P(client, PSTR("404 Not Found"), 13);
-          }
-          return 0;
-        } break;
-        case 1: {
-          return handleRoot(client, readpercentage, mqttReconnects, &heishamonSettings);
-        } break;
-        case 10:
-        case 11:
-        case 12: {
-          return handleTableRefresh(client, actData);
-        } break;
-        case 20: {
-          return handleJsonOutput(client, actData);
-        } break;
-        case 30: {
-          return handleReboot(client);
-        } break;
-        case 40: {
-          return handleDebug(client, (char *)data, 203);
-        } break;
-        case 50: {
-          return handleWifiScan(client);
-        } break;
-        case 80: {
-          return handleSettings(client);
-        } break;
-        case 90: {
-          return handleFactoryReset(client);
-        } break;
-        case 100: {
-          if(client->content == 0) {
-            webserver_send(client, 200, (char *)"text/plain", 0);
-            char *str = (char *)RESTmsg.c_str();
-            webserver_send_content(client, (char *)str, strlen(str));
-            RESTmsg.clear();
-          }
-          return 0;
-        } break;
-        case 110: {
-          int ret = saveSettings(client, &heishamonSettings);
-          switch(client->route) {
-            case 111: {
+        switch (client->route) {
+          case 0: {
+              if (client->content == 0) {
+                webserver_send(client, 404, (char *)"text/plain", 13);
+                webserver_send_content_P(client, PSTR("404 Not Found"), 13);
+              }
+              return 0;
+            } break;
+          case 1: {
+              return handleRoot(client, readpercentage, mqttReconnects, &heishamonSettings);
+            } break;
+          case 10:
+          case 11:
+          case 12: {
+              return handleTableRefresh(client, actData);
+            } break;
+          case 20: {
+              return handleJsonOutput(client, actData);
+            } break;
+          case 30: {
+              return handleReboot(client);
+            } break;
+          case 40: {
+              return handleDebug(client, (char *)data, 203);
+            } break;
+          case 50: {
+              return handleWifiScan(client);
+            } break;
+          case 80: {
+              return handleSettings(client);
+            } break;
+          case 90: {
+              return handleFactoryReset(client);
+            } break;
+          case 100: {
+              if (client->content == 0) {
+                webserver_send(client, 200, (char *)"text/plain", 0);
+                char *str = (char *)RESTmsg.c_str();
+                webserver_send_content(client, (char *)str, strlen(str));
+                RESTmsg.clear();
+              }
+              return 0;
+            } break;
+          case 110: {
+              int ret = saveSettings(client, &heishamonSettings);
+              switch (client->route) {
+                case 111: {
+                    return settingsNewPassword(client, &heishamonSettings);
+                  } break;
+                case 112: {
+                    return settingsReconnectWifi(client, &heishamonSettings);
+                  } break;
+                case 113: {
+                    webserver_send(client, 301, (char *)"text/plain", 0);
+                  } break;
+              }
+              return 0;
+            } break;
+          case 111: {
               return settingsNewPassword(client, &heishamonSettings);
             } break;
-            case 112: {
+          case 112: {
               return settingsReconnectWifi(client, &heishamonSettings);
             } break;
-            case 113: {
+          case 120: {
+              return handleSettings(client);
+            } break;
+          case 130: {
+              return getSettings(client, &heishamonSettings);
+            } break;
+          case 140: {
+              return showFirmware(client);
+            } break;
+          case 150: {
+              if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 100)) {
+                uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 100);
+                sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage);
+                log_message(log_msg);
+              }
+              if (Update.end(true)) {
+                log_message((char *)"Update Success");
+                timerqueue_insert(15, 0, -2); // Start reboot sequence
+                return showFirmwareSuccess(client);
+              } else {
+                Update.printError(Serial1);
+                return showFirmwareFail(client);
+              }
+            } break;
+          default: {
               webserver_send(client, 301, (char *)"text/plain", 0);
             } break;
-          }
-          return 0;
-        } break;
-        case 111: {
-          return settingsNewPassword(client, &heishamonSettings);
-        } break;
-        case 112: {
-          return settingsReconnectWifi(client, &heishamonSettings);
-        } break;
-        case 120: {
-          return handleSettings(client);
-        } break;
-        case 130: {
-          return getSettings(client, &heishamonSettings);
-        } break;
-        case 140: {
-          return showFirmware(client);
-        } break;
-        case 150: {
-          if(uploadpercentage != (unsigned int)(((float)client->readlen/(float)client->totallen)*100)) {
-            uploadpercentage = (unsigned int)(((float)client->readlen/(float)client->totallen)*100);
-            sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage);
-            log_message(log_msg);
-          }
-          if(Update.end(true)){
-            log_message((char *)"Update Success");
-            timerqueue_insert(15, 0, -2); // Start reboot sequence
-            return showFirmwareSuccess(client);
-          } else {
-            Update.printError(Serial1);
-            return showFirmwareFail(client);
-          }
-        } break;
-        default: {
-          webserver_send(client, 301, (char *)"text/plain", 0);
-        } break;
-      }
-      return -1;
-    } break;
+        }
+        return -1;
+      } break;
     case WEBSERVER_CLIENT_CREATE_HEADER: {
-      struct header_t *header = (struct header_t *)dat;
-      switch(client->route) {
-        case 113: {
-          header->ptr += sprintf((char *)header->buffer, "Location: /settings");
-          return -1;
-        } break;
-        case 0:
-        case 60:
-        case 70: {
-          header->ptr += sprintf((char *)header->buffer, "Location: /");
-          return -1;
-        } break;
-        default: {
-          if(client->route != 0) {
-            header->ptr += sprintf((char *)header->buffer, "Access-Control-Allow-Origin: *");
-          }
-        } break;
-      }
-      return 0;
-    } break;
+        struct header_t *header = (struct header_t *)dat;
+        switch (client->route) {
+          case 113: {
+              header->ptr += sprintf((char *)header->buffer, "Location: /settings");
+              return -1;
+            } break;
+          case 0:
+          case 60:
+          case 70: {
+              header->ptr += sprintf((char *)header->buffer, "Location: /");
+              return -1;
+            } break;
+          default: {
+              if (client->route != 0) {
+                header->ptr += sprintf((char *)header->buffer, "Access-Control-Allow-Origin: *");
+              }
+            } break;
+        }
+        return 0;
+      } break;
     default: {
-      return 0;
-    } break;
+        return 0;
+      } break;
   }
   return 0;
 }
@@ -785,19 +785,19 @@ void timer_cb(int nr) {
   sprintf_P(log_msg, PSTR("%d seconds timer interval"), nr);
   log_message(log_msg);
 
-  if(nr > 0) {
+  if (nr > 0) {
     timerqueue_insert(nr, 0, nr);
   } else {
-    switch(nr) {
+    switch (nr) {
       case -1: {
-        LittleFS.begin();
-        LittleFS.format();
-        WiFi.disconnect(true);
-        timerqueue_insert(1, 0, -2);
-      } break;
+          LittleFS.begin();
+          LittleFS.format();
+          WiFi.disconnect(true);
+          timerqueue_insert(1, 0, -2);
+        } break;
       case -2: {
-        ESP.restart();
-      } break;
+          ESP.restart();
+        } break;
     }
   }
 
@@ -949,6 +949,8 @@ void loop() {
     stats += ESP.getVcc() / 1024.0;
     stats += F(",\"free memory\":");
     stats += getFreeMemory();
+    stats += F(",\"free heap\":");
+    stats += ESP.getFreeHeap();
     stats += F(",\"wifi\":");
     stats += getWifiQuality();
     stats += F(",\"mqtt reconnects\":");
@@ -982,6 +984,6 @@ void loop() {
       MDNS.announce();
     }
   }
-  
+
   timerqueue_update();
 }
