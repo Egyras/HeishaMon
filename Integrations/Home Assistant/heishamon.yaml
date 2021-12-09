@@ -606,15 +606,17 @@ sensor:
         friendly_name: "Aquarea COP"
         unit_of_measurement: "x"
         value_template: >-
-          {%- if states('sensor.heishamon_w_production') != "Unknown" -%}
-            {%- if states('sensor.heishamon_w_consumption') > "0" -%}
-              {{ '%0.1f' % ((states('sensor.heishamon_w_production') | float ) / (states('sensor.heishamon_w_consumption') | float)) }}
-            {%- else -%}
-              0.0
-            {%- endif -%}
+          {%- if states('sensor.heishamon_w_consumption') | float > 0 -%}
+            {{ '%0.1f' % ((states('sensor.heishamon_w_production') | float ) / (states('sensor.heishamon_w_consumption') | float )) }}
           {%- else -%}
-            n/a
+            0.0
           {%- endif -%}
+        availability_template: >-
+          {%- if is_number(states('sensor.heishamon_w_consumption')) and is_number(states('sensor.heishamon_w_production')) %}
+            true
+          {%- else %}
+            false
+          {%- endif %}
 
 
 
