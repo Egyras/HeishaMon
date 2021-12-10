@@ -636,13 +636,13 @@ sensor:
   #Calculation Energy consumed (kWh) - DHW
   - platform: integration
     source: sensor.aquarea_dhw_power_consumed
-    name: aquarea_dhw_power_consumed_kwh
+    name: Aquarea DHW Energy Consumed
     unit_prefix: k
     method: left
   #Calculation Energy consumed (kWh) - Heat    
   - platform: integration
     source: sensor.aquarea_power_consumed
-    name: aquarea_power_consumed_kwh
+    name: Aquarea Heat Energy Consumed
     unit_prefix: k
     method: left
 
