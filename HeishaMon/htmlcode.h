@@ -602,13 +602,13 @@ static const char populatescanwifiJS[] PROGMEM =
   "</script>";
 
 static const char settingsForm[] PROGMEM =
-  "<div class=\"w3-container w3-center\">"
+  "<div class=\"w3-container w3-center\" id=\"loading_settings\">"
+  "       <h2>Please wait, loading saved settings...</h2>"
+  "</div>"
+  "<div class=\"w3-container w3-center\" id=\"settings_form\" style=\"display:none\">"
   "  <h2>Settings</h2>"
   "  <form accept-charset=\"UTF-8\" action=\"/savesettings\" method=\"POST\">"
   "    <table style=\"width:100%\">"
-  "      <tr>"
-  "        <th colspan=\"2\" id=\"loading_settings\" style=\"text-align:center; width: 100%; color: #f44336;\">Please wait, loading saved settings...</th>"
-  "      </tr>"
   "      <tr>"
   "        <td style=\"text-align:right; width: 50%\">"
   "          Hostname:</td>"
@@ -858,7 +858,7 @@ static const char settingsForm[] PROGMEM =
   "      </tr>"
   "    </table>"
   "    <br><br>"
-  "    <input class=\"w3-green w3-button\" type=\"submit\" value=\"Save\">"
+  "    <input class=\"w3-green w3-button\" type=\"submit\" id=\"save_settings\" value=\"Save\">"
   "  </form>"
   "  <br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\">Factory reset</a>"
   "</div>";
@@ -895,7 +895,8 @@ const char populategetsettingsJS[] PROGMEM =
   "            };"
   "          };"
   "        };"
-  "        document.getElementById(\"loading_settings\").parentNode.style.display = \"none\";"
+  "        document.getElementById(\"loading_settings\").style.display = \"none\";"
+  "        document.getElementById(\"settings_form\").style.display = \"block\";"
   "        changeMinWatt(1);"
   "        changeMinWatt(2);"
   "      };"
