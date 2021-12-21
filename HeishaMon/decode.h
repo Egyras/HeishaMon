@@ -86,7 +86,7 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] = { //stores
 #define NUMBER_OF_TOPICS 106 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
 
-static const char *optTopics[] PROGMEM = {
+static const char optTopics[][20] PROGMEM = {
   "Z1_Water_Pump", // OPT0
   "Z1_Mixing_Valve", // OPT1
   "Z2_Water_Pump", // OPT2
@@ -96,7 +96,7 @@ static const char *optTopics[] PROGMEM = {
   "Alarm_State", // OPT6
 };
 
-static const char *topics[] PROGMEM = {
+static const char topics[][40] PROGMEM = {
   "Heatpump_State",          //TOP0
   "Pump_Flow",               //TOP1
   "Force_DHW_State",         //TOP2
