@@ -497,11 +497,18 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
           if (strcmp((char *)dat, "/savesettings") == 0) {
             client->route = 110;
           } else if (strcmp((char *)dat, "/firmware") == 0) {
-            client->route = 150;
-
-            Update.runAsync(true);
-            if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
-              Update.printError(Serial1);
+            if (!Update.isRunning()) {
+              Update.runAsync(true);
+              if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
+                Update.printError(Serial1);
+                return -1;
+              } else {
+                client->route = 150;
+              }
+            } else {
+              Serial1.println("New firmware update client, while previous isn't finished yet! Assume broken connection, abort!");
+              Update.end();
+              return -1;
             }
           } else {
             return -1;
@@ -535,7 +542,7 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               unsigned int len = 0;
 
               memset(&cpy, 0, args->len + 1);
-              snprintf((char *)&cpy, args->len, "%.*s", args->len, args->value);
+              snprintf((char *)&cpy, args->len + 1, "%.*s", args->len, args->value);
 
               for (uint8_t x = 0; x < sizeof(commands) / sizeof(commands[0]); x++) {
                 if (strcmp((char *)args->name, commands[x].name) == 0) {
@@ -564,14 +571,28 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               return cacheSettings(client, args);
             } break;
           case 150: {
-              if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 100)) {
-                uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 100);
-                sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage);
-                log_message(log_msg);
-              }
-              if (!Update.hasError() && strcmp((char *)args->name, "firmware") == 0) {
-                if (Update.write((uint8_t *)args->value, args->len) != args->len) {
-                  Update.printError(Serial1);
+              if (!Update.hasError()) {
+                if (strcmp((char *)args->name, "md5") == 0) {
+
+                  char md5[args->len + 1];
+                  memset(&md5, 0, args->len + 1);
+                  snprintf((char *)&md5, args->len + 1, "%.*s", args->len, args->value);
+                  sprintf_P(log_msg, PSTR("Firmware MD5 expected: %s"), md5);
+                  log_message(log_msg);
+                  if (!Update.setMD5(md5)) {
+                    log_message((char *)"Failed to set expected update file MD5!");
+                    Update.end(false);
+                  }
+                } else if (!Update.hasError() && strcmp((char *)args->name, "firmware") == 0) {
+                  if (Update.write((uint8_t *)args->value, args->len) != args->len) {
+                    Update.printError(Serial1);
+                  } else {
+                    if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 20)) {
+                      uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 20);
+                      sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage * 5);
+                      log_message(log_msg);
+                    }
+                  }
                 }
               }
             } break;
@@ -653,14 +674,11 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               return showFirmware(client);
             } break;
           case 150: {
-              if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 100)) {
-                uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 100);
-                sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage);
-                log_message(log_msg);
-              }
               if (Update.end(true)) {
-                log_message((char *)"Update Success");
-                timerqueue_insert(15, 0, -2); // Start reboot sequence
+                String updateHash = Update.md5String();
+                sprintf_P(log_msg, PSTR("Uploading success. MD5: %s"), updateHash.c_str());
+                log_message(log_msg);
+                timerqueue_insert(2, 0, -2); // Start reboot sequence
                 return showFirmwareSuccess(client);
               } else {
                 Update.printError(Serial1);
