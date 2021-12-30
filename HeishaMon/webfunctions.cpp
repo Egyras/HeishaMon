@@ -983,7 +983,7 @@ int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconne
   return 0;
 }
 
-int handleTableRefresh(struct webserver_t *client, String actData[]) {
+int handleTableRefresh(struct webserver_t *client, char* actData) {
   int ret = 0;
 
   if (client->route == 11) {
@@ -1007,7 +1007,7 @@ int handleTableRefresh(struct webserver_t *client, String actData[]) {
         if (strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
           topicdesc = topicDescription[topic][1];
         } else {
-          int value = actData[topic].toInt();
+          int value = getDataValue(actData, topic).toInt();
           int maxvalue = atoi(topicDescription[topic][0]);
           if ((value < 0) || (value > maxvalue)) {
             topicdesc = _unknown;
@@ -1025,10 +1025,11 @@ int handleTableRefresh(struct webserver_t *client, String actData[]) {
 
         webserver_send_content_P(client, PSTR("</td><td>"), 9);
         webserver_send_content_P(client, topics[topic], strlen_P(topics[topic]));
-		webserver_send_content_P(client, PSTR("</td><td>"), 9);
+        webserver_send_content_P(client, PSTR("</td><td>"), 9);
 
         {
-          char *str = (char *)actData[topic].c_str();
+          String dataValue = getDataValue(actData, topic);
+          char* str = (char *)dataValue.c_str();
           webserver_send_content(client, str, strlen(str));
         }
 
@@ -1048,18 +1049,18 @@ int handleTableRefresh(struct webserver_t *client, String actData[]) {
   return 0;
 }
 
-int handleJsonOutput(struct webserver_t *client, String actData[]) {
+int handleJsonOutput(struct webserver_t *client, char* actData) {
   if (client->content == 0) {
     webserver_send(client, 200, (char *)"application/json", 0);
     webserver_send_content_P(client, PSTR("{\"heatpump\":["), 13);
   } else if (client->content < NUMBER_OF_TOPICS) {
-    for (uint8_t topic = client->content; topic < NUMBER_OF_TOPICS && topic < client->content + 4; topic++) {
+    for (uint8_t topic = client->content - 1; topic < NUMBER_OF_TOPICS && topic < client->content + 4; topic++) {
       PGM_P topicdesc;
       const char *valuetext = "value";
       if (strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
         topicdesc = topicDescription[topic][1];
       } else {
-        int value = actData[topic].toInt();
+        int value = getDataValue(actData, topic).toInt();
         int maxvalue = atoi(topicDescription[topic][0]);
         if ((value < 0) || (value > maxvalue)) {
           topicdesc = _unknown;
@@ -1083,8 +1084,9 @@ int handleJsonOutput(struct webserver_t *client, String actData[]) {
       webserver_send_content_P(client, PSTR("\",\"Value\":\""), 11);
 
       {
-        char *str = (char *)actData[topic].c_str();
-        webserver_send_content_P(client, str, strlen(str));
+        String dataValue = getDataValue(actData, topic);
+        char* str = (char *)dataValue.c_str();
+        webserver_send_content(client, str, strlen(str));
       }
 
       webserver_send_content_P(client, PSTR("\",\"Description\":\""), 17);

@@ -65,9 +65,11 @@ static int uploadpercentage = 0;
 char data[MAXDATASIZE] = { '\0' };
 byte  data_length = 0;
 
-// store actual data in an String array
-String actData[NUMBER_OF_TOPICS];
-String actOptData[NUMBER_OF_OPT_TOPICS];
+// store actual data 
+#define DATASIZE 203
+char actData[DATASIZE] = { '\0' };
+#define OPTDATASIZE 20
+char actOptData[OPTDATASIZE]  = { '\0' };
 String RESTmsg = "";
 
 // log message to sprintf to
@@ -316,15 +318,17 @@ bool readSerial()
       log_message((char*)"Checksum and header received ok!");
       goodreads++;
 
-      if (data_length == 203) { //for now only return true for this datagram because we can not decode the shorter datagram yet
-        data_length = 0;
+      if (data_length == DATASIZE) { //decode the normal data
         decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
+        memcpy(actData,data,DATASIZE);
+        data_length = 0;
         return true;
       }
-      else if (data_length == 20 ) { //optional pcb acknowledge answer
+      else if (data_length == OPTDATASIZE ) { //optional pcb acknowledge answer
         log_message((char*)"Received optional PCB ack answer. Decoding this in OPT topics.");
-        data_length = 0;
         decode_optional_heatpump_data(data, actOptData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
+        memcpy(actOptData,data,OPTDATASIZE);
+        data_length = 0;
         return true;
       }
       else {
