@@ -305,35 +305,47 @@ sensor:
     name: Aquarea Actual Tank Temperature
     state_topic: "panasonic_heat_pump/main/DHW_Temp"
     unit_of_measurement: '°C'
+    state_class: 'measurement'
 
   #TOP11 - Compressor Operating Time
   - platform: mqtt
     name: Aquarea Compressor Operating Hours
     state_topic: "panasonic_heat_pump/main/Operations_Hours"
     unit_of_measurement: 'Hours'
+    state_class: total
 
   #TOP12 - Compressor On/Off cycle number
   - platform: mqtt
     name: Aquarea Compressor Start/Stop Counter
     state_topic: "panasonic_heat_pump/main/Operations_Counter"
+    state_class: total
+
 
   #TOP14 - Outdoor unit ambient temperature
   - platform: mqtt
     name: Aquarea Outdoor Ambient
     state_topic: "panasonic_heat_pump/main/Outside_Temp"
     unit_of_measurement: '°C'
+    state_class: 'measurement'
 
   #TOP15 - Heating power produced
   - platform: mqtt
     name: Aquarea Power Produced
     state_topic: "panasonic_heat_pump/main/Heat_Energy_Production"
     unit_of_measurement: 'W'
+    device_class: 'power'
+    state_class: 'measurement'
+    force_update: true
 
   #TOP16 - Heating power consumed
   - platform: mqtt
     name: Aquarea Power Consumed
     state_topic: "panasonic_heat_pump/main/Heat_Energy_Consumption"
     unit_of_measurement: 'W'
+    device_class: 'power'
+    state_class: 'measurement'
+    force_update: true
+
 
   #TOP17 - Heating powerful mode
   - platform: mqtt
@@ -406,12 +418,18 @@ sensor:
     name: Aquarea DHW Power Produced
     state_topic: "panasonic_heat_pump/main/DHW_Energy_Production"
     unit_of_measurement: 'W'
+    device_class: 'power'
+    state_class: 'measurement'
+    force_update: true
 
   #TOP41 - DHW power consumed
   - platform: mqtt
     name: Aquarea DHW Power Consumed
     state_topic: "panasonic_heat_pump/main/DHW_Energy_Consumption"
     unit_of_measurement: 'W'
+    device_class: 'power'
+    state_class: 'measurement'
+    force_update: true
 
   #TOP44 - Last active error
   - platform: mqtt
@@ -615,7 +633,18 @@ sensor:
           {%- else -%}
             n/a
           {%- endif -%}
-
+  #Calculation Energy consumed (kWh) - DHW
+  - platform: integration
+    source: sensor.aquarea_dhw_power_consumed
+    name: Aquarea DHW Energy Consumed
+    unit_prefix: k
+    method: left
+  #Calculation Energy consumed (kWh) - Heat    
+  - platform: integration
+    source: sensor.aquarea_power_consumed
+    name: Aquarea Heat Energy Consumed
+    unit_prefix: k
+    method: left
 
 
 # switch #
