@@ -93,7 +93,7 @@ struct WiFiClient {
 
 typedef struct webserver_t {
   tcp_pcb *pcb;
-  WiFiClient client;
+  WiFiClient *client;
   unsigned long lastseen;
   uint8_t active:1;
   uint8_t reqtype:1;
@@ -112,6 +112,7 @@ typedef struct webserver_t {
   webserver_cb_t *callback;
   unsigned char buffer[WEBSERVER_BUFFER_SIZE];
   char *boundary;
+  void *userdata;
 } webserver_t;
 
 typedef struct webserver_client_t {
