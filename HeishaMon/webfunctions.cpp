@@ -1002,20 +1002,6 @@ int handleTableRefresh(struct webserver_t *client, char* actData) {
     }
     if (client->content < NUMBER_OF_TOPICS) {
       for (uint8_t topic = client->content; topic < NUMBER_OF_TOPICS && topic < client->content + 4; topic++) {
-        String topicdesc;
-        const char *valuetext = "value";
-        if (strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
-          topicdesc = topicDescription[topic][1];
-        } else {
-          int value = getDataValue(actData, topic).toInt();
-          int maxvalue = atoi(topicDescription[topic][0]);
-          if ((value < 0) || (value > maxvalue)) {
-            topicdesc = _unknown;
-          }
-          else {
-            topicdesc = topicDescription[topic][value + 1]; //plus one, because 0 is the maxvalue container
-          }
-        }
 
         webserver_send_content_P(client, PSTR("<tr><td>TOP"), 11);
 
@@ -1028,16 +1014,24 @@ int handleTableRefresh(struct webserver_t *client, char* actData) {
         webserver_send_content_P(client, PSTR("</td><td>"), 9);
 
         {
-          String dataValue = getDataValue(actData, topic);
+          String dataValue = actData[0] == '\0' ? "" : getDataValue(actData, topic);
           char* str = (char *)dataValue.c_str();
           webserver_send_content(client, str, strlen(str));
         }
 
         webserver_send_content_P(client, PSTR("</td><td>"), 9);
 
-        {
-          char *str = (char *)topicdesc.c_str();
-          webserver_send_content(client, str, strlen(str));
+        int maxvalue = atoi(topicDescription[topic][0]);
+        int value = actData[0] == '\0' ? 0 : getDataValue(actData, topic).toInt();
+        if (maxvalue == 0) { //this takes the special case where the description is a real value description instead of a mode, so value should take first index (= 0 + 1)
+          value = 0;
+        }
+        if ((value < 0) || (value > maxvalue)) {
+          webserver_send_content_P(client, _unknown, strlen_P(_unknown));
+        }
+        else {
+          webserver_send_content_P(client, topicDescription[topic][value + 1], strlen_P(topicDescription[topic][value + 1]));
+
         }
 
         webserver_send_content_P(client, PSTR("</td></tr>"), 10);
@@ -1054,20 +1048,7 @@ int handleJsonOutput(struct webserver_t *client, char* actData) {
     webserver_send(client, 200, (char *)"application/json", 0);
     webserver_send_content_P(client, PSTR("{\"heatpump\":["), 13);
   } else if (client->content < NUMBER_OF_TOPICS) {
-    for (uint8_t topic = client->content - 1; topic < NUMBER_OF_TOPICS && topic < client->content + 4; topic++) {
-      PGM_P topicdesc;
-      const char *valuetext = "value";
-      if (strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
-        topicdesc = topicDescription[topic][1];
-      } else {
-        int value = getDataValue(actData, topic).toInt();
-        int maxvalue = atoi(topicDescription[topic][0]);
-        if ((value < 0) || (value > maxvalue)) {
-          topicdesc = _unknown;
-        } else {
-          topicdesc = topicDescription[topic][value + 1]; //plus one, because 0 is the maxvalue container
-        }
-      }
+    for (uint8_t topic = client->content - 1; topic < NUMBER_OF_TOPICS && topic < client->content + 4 ; topic++) {
 
       webserver_send_content_P(client, PSTR("{\"Topic\":\"TOP"), 13);
 
@@ -1091,7 +1072,17 @@ int handleJsonOutput(struct webserver_t *client, char* actData) {
 
       webserver_send_content_P(client, PSTR("\",\"Description\":\""), 17);
 
-      webserver_send_content_P(client, topicdesc, strlen_P(topicdesc));
+      int maxvalue = atoi(topicDescription[topic][0]);
+      int value = actData[0] == '\0' ? 0 : getDataValue(actData, topic).toInt();
+      if (maxvalue == 0) { //this takes the special case where the description is a real value description instead of a mode, so value should take first index (= 0 + 1)
+        value = 0;
+      }
+      if ((value < 0) || (value > maxvalue)) {
+        webserver_send_content_P(client, _unknown, strlen_P(_unknown));
+      }
+      else {
+        webserver_send_content_P(client, topicDescription[topic][value + 1], strlen_P(topicDescription[topic][value + 1]));
+      }
 
       webserver_send_content_P(client, PSTR("\"}"), 2);
 
