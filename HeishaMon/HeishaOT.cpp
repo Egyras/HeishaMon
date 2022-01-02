@@ -1,5 +1,6 @@
 #include "OpenTherm.h"
 #include "HeishaOT.h"
+#include "decode.h"
 
 OpenTherm ot(inOTPin, outOTPin, true);
 
@@ -258,11 +259,11 @@ void HeishaOTSetup() {
   ot.begin(handleOTInterrupt, processOTRequest);
 }
 
-void HeishaOTLoop(String actData[], PubSubClient &mqtt_client, char* mqtt_topic_base) {
-  heishaOTData.outsideTemp = actData[14].toFloat();
-  heishaOTData.inletTemp = actData[5].toFloat(); 
-  heishaOTData.outletTemp = actData[6].toFloat(); 
-  heishaOTData.flameState = (actData[8].toInt() > 0 ) ? true : false;
+void HeishaOTLoop(char * actData, PubSubClient &mqtt_client, char* mqtt_topic_base) {
+  heishaOTData.outsideTemp = getDataValue(actData,14).toFloat();
+  heishaOTData.inletTemp = getDataValue(actData,5).toFloat(); 
+  heishaOTData.outletTemp = getDataValue(actData,6).toFloat(); 
+  heishaOTData.flameState = (getDataValue(actData,8).toInt() > 0 ) ? true : false;
     
   // opentherm loop
   if (otResponse && ot.isReady()) {

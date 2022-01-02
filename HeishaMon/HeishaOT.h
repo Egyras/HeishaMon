@@ -18,4 +18,4 @@ struct heishaOTDataStruct {
 };
 
 void HeishaOTSetup();
-void HeishaOTLoop(String actData[], PubSubClient &mqtt_client, char* mqtt_topic_base);
+void HeishaOTLoop(char *actDat, PubSubClient &mqtt_client, char* mqtt_topic_base);
