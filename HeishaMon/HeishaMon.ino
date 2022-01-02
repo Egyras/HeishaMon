@@ -879,7 +879,6 @@ void setup() {
   //timerqueue_insert(5, 0, 5);
   //timerqueue_insert(60, 0, 60);
 
-
   //maybe necessary but for now disable. CZ-TAW1 sends this query on boot
   //if (!heishamonSettings.listenonly) send_initial_query();
   
