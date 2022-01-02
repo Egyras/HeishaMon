@@ -58,7 +58,7 @@ static const char *Model[] PROGMEM = {
   "IDU: WH-SDC0305J3E5 ODU: WH-UD05JE5",
 };
 
-static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] = { //stores the bytes #129 to #138 of known models in the same order as the const above
+static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { //stores the bytes #129 to #138 of known models in the same order as the const above
   0xE2, 0xCF, 0x0B, 0x13, 0x33, 0x32, 0xD1, 0x0C, 0x16, 0x33,
   0xE2, 0xCF, 0x0B, 0x14, 0x33, 0x42, 0xD1, 0x0B, 0x17, 0x33,
   0xE2, 0xCF, 0x0D, 0x77, 0x09, 0x12, 0xD0, 0x0B, 0x05, 0x11,
