@@ -260,9 +260,9 @@ void HeishaOTSetup() {
 }
 
 void HeishaOTLoop(char * actData, PubSubClient &mqtt_client, char* mqtt_topic_base) {
-  heishaOTData.outsideTemp = getDataValue(actData,14).toFloat();
-  heishaOTData.inletTemp = getDataValue(actData,5).toFloat(); 
-  heishaOTData.outletTemp = getDataValue(actData,6).toFloat(); 
+  heishaOTData.outsideTemp = actData[0] == '\0' ? 0 : getDataValue(actData,14).toFloat();
+  heishaOTData.inletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData,5).toFloat(); 
+  heishaOTData.outletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData,6).toFloat(); 
   heishaOTData.flameState = (getDataValue(actData,8).toInt() > 0 ) ? true : false;
     
   // opentherm loop
