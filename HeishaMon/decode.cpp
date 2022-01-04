@@ -131,6 +131,7 @@ String getErrorInfo(char* data) { // TOP44 //
 
 void resetlastalldatatime() {
   lastalldatatime = 0;
+  lastalloptdatatime = 0;
 }
 
 String getDataValue(char* data, unsigned int Topic_Number) {
@@ -201,15 +202,14 @@ String getOptDataValue(char* data, unsigned int Topic_Number) {
 // Decode ////////////////////////////////////////////////////////////////////////////
 void decode_heatpump_data(char* data, char* actData, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {
   bool updatenow = false;
-
+  if ((lastalldatatime == 0) || ((unsigned long)(millis() - lastalldatatime) > (1000 * updateAllTime))) {
+    updatenow = true;
+    lastalldatatime = millis();
+  }
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS ; Topic_Number++) {
     String Topic_Value;
     Topic_Value = getDataValue(data, Topic_Number);
 
-    if ((unsigned long)(millis() - lastalldatatime) > (1000 * updateAllTime)) {
-      updatenow = true;
-      lastalldatatime = millis();
-    }
     if ((updatenow) || ( getDataValue(actData, Topic_Number) != Topic_Value )) {
       char log_msg[256];
       char mqtt_topic[256];
@@ -223,15 +223,14 @@ void decode_heatpump_data(char* data, char* actData, PubSubClient &mqtt_client, 
 
 void decode_optional_heatpump_data(char* data, char* actOptData, PubSubClient & mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {
   bool updatenow = false;
-
+  if ((lastalloptdatatime == 0) || ((unsigned long)(millis() - lastalloptdatatime) > (1000 * updateAllTime))) {
+    updatenow = true;
+    lastalloptdatatime = millis();
+  }
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_OPT_TOPICS ; Topic_Number++) {
     String Topic_Value;
     Topic_Value = getOptDataValue(data, Topic_Number);
 
-    if ((unsigned long)(millis() - lastalloptdatatime) > (1000 * updateAllTime)) {
-      updatenow = true;
-      lastalloptdatatime = millis();
-    }
     if ((updatenow) || ( getDataValue(actOptData, Topic_Number) != Topic_Value )) {
       char log_msg[256];
       char mqtt_topic[256];

@@ -65,7 +65,7 @@ static int uploadpercentage = 0;
 char data[MAXDATASIZE] = { '\0' };
 byte  data_length = 0;
 
-// store actual data 
+// store actual data
 #define DATASIZE 203
 char actData[DATASIZE] = { '\0' };
 #define OPTDATASIZE 20
@@ -188,7 +188,7 @@ void check_wifi()
 void mqtt_reconnect()
 {
   unsigned long now = millis();
-  if ((unsigned long)(now - lastMqttReconnectAttempt) > MQTTRECONNECTTIMER) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when lastMqttReconnectAttempt is still 0
+  if ((lastMqttReconnectAttempt == 0) || ((unsigned long)(now - lastMqttReconnectAttempt) > MQTTRECONNECTTIMER)) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when lastMqttReconnectAttempt is still 0
     lastMqttReconnectAttempt = now;
     log_message((char*)"Reconnecting to mqtt server ...");
     char topic[256];
@@ -212,8 +212,10 @@ void mqtt_reconnect()
         sprintf_P(mqtt_topic, PSTR("%s/%s/WatthourTotal/2"), heishamonSettings.mqtt_topic_base, mqtt_topic_s0);
         mqtt_client.subscribe(mqtt_topic);
       }
-      if (heishamonSettings.use_1wire) resetlastalldatatime_dallas; //resend all 1wire values to mqtt
-      resetlastalldatatime; //resend all heatpump values to mqtt
+      if (mqttReconnects == 1) { //only resend all data on first connect to mqtt so a data bomb like and bad mqtt server will not cause a reconnect bomb everytime
+        if (heishamonSettings.use_1wire) resetlastalldatatime_dallas(); //resend all 1wire values to mqtt
+        resetlastalldatatime(); //resend all heatpump values to mqtt
+      }
     }
   }
 }
