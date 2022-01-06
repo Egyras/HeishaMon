@@ -1171,7 +1171,7 @@ static void printUpdateError(char **out, uint8_t size) {
 
 int showFirmwareFail(struct webserver_t *client) {
   if (client->content == 0) {
-    char str[256] = { '\0' }, *p = str;
+    char str[255] = { '\0' }, *p = str;
     printUpdateError(&p, sizeof(str));
 
     webserver_send(client, 200, (char *)"text/html", strlen_P(firmwareFailResponse) + strlen(str));

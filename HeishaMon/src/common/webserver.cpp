@@ -1730,7 +1730,7 @@ err_t webserver_client(void *arg, tcp_pcb *pcb, err_t err) {
       tcp_recv(pcb, &webserver_async_receive);
       tcp_sent(pcb, &webserver_sent);
       // 15 seconds timer
-      tcp_poll(pcb, &webserver_poll, WEBSERVER_CLIENT_TIMEOUT*2);
+      tcp_poll(pcb, &webserver_poll, WEBSERVER_CLIENT_TIMEOUT / 1000);
       break;
     }
   }
