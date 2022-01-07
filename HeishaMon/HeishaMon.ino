@@ -226,9 +226,10 @@ void log_message(char* string)
   rawtime = time(NULL);
   struct tm *timeinfo = localtime(&rawtime);
   char timestring[32];
-  strftime(timestring,32,"%c",timeinfo);
-  char log_line[320];
-  sprintf(log_line,"%s (%lu): %s",timestring,millis(),string);
+  strftime(timestring, 32, "%c", timeinfo);
+  size_t len = strlen(string) + strlen(timestring) + 20; //+20 long enough to contain millis()
+  char* log_line = (char *) malloc(len);
+  snprintf(log_line, len, "%s (%lu): %s", timestring, millis(), string);
 
   if (heishamonSettings.logSerial1) {
     Serial1.println(log_line);
@@ -250,6 +251,7 @@ void log_message(char* string)
   if (webSocket.connectedClients() > 0) {
     webSocket.broadcastTXT(log_line, strlen(log_line));
   }
+  free(log_line);
 }
 
 void logHex(char *hex, byte hex_len) {
