@@ -1833,7 +1833,7 @@ void webserver_loop(void) {
   }
 
 #if defined(ESP8266)
-  while(sync_server.hasClient()) {
+  if(sync_server.hasClient()) {
     for(i=0;i<WEBSERVER_MAX_CLIENTS;i++) {
       if(clients[i].data.active == 0) {
         clients[i].data.client = new WiFiClient(sync_server.available());
