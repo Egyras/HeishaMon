@@ -499,12 +499,6 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
     tmp = tmp->next;
   }
 
-  while (websettings) {
-    tmp = websettings;
-    websettings = websettings->next;
-    free(tmp);
-  }
-
   if (new_ota_password != NULL && strlen(new_ota_password) > 0 && current_ota_password != NULL && strlen(current_ota_password) > 0) {
     if (strcmp(heishamonSettings->ota_password, current_ota_password) == 0) {
       jsonDoc["ota_password"] = new_ota_password;
@@ -528,6 +522,12 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 
   saveJsonToConfig(jsonDoc); //save to config file
   loadSettings(heishamonSettings); //load config file to current settings
+
+  while (websettings) {
+    tmp = websettings;
+    websettings = websettings->next;
+    delete tmp;
+  }
 
   if (reconnectWiFi) {
     client->route = 112;
@@ -560,7 +560,6 @@ int cacheSettings(struct webserver_t *client, struct arguments_t * args) {
     }
     node->next = NULL;
     node->name += (char *)args->name;
-
     if (args->value != NULL) {
       char *cpy = (char *)malloc(args->len + 1);
       if (node == NULL) {
