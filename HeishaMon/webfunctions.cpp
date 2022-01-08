@@ -402,6 +402,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
   const char *use_s0 = NULL;
 
   bool reconnectWiFi = false;
+  bool wrongPassword = false;
   DynamicJsonDocument jsonDoc(1024);
 
   settingsToJson(jsonDoc, heishamonSettings); //stores current settings in a json document
@@ -503,8 +504,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
     if (strcmp(heishamonSettings->ota_password, current_ota_password) == 0) {
       jsonDoc["ota_password"] = new_ota_password;
     } else {
-      client->route = 111;
-      return 0;
+      wrongPassword = true;
     }
   }
 
@@ -529,6 +529,11 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
     delete tmp;
   }
 
+  if (wrongPassword) {
+    client->route = 111;
+    return 0;
+  }
+  
   if (reconnectWiFi) {
     client->route = 112;
     return 0;
