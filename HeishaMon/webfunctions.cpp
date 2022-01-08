@@ -819,8 +819,6 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
 }
 
 int handleSettings(struct webserver_t *client) {
-
-  uint16_t size = sizeof(tzdata) / sizeof(tzdata[0]);
   if (client->content == 0) {
     webserver_send(client, 200, (char *)"text/html", 0);
     webserver_send_content_P(client, webHeader, strlen_P(webHeader));
@@ -829,25 +827,15 @@ int handleSettings(struct webserver_t *client) {
   } else if (client->content == 1) {
     webserver_send_content_P(client, webBodySettings1, strlen_P(webBodySettings1));
     webserver_send_content_P(client, settingsForm1, strlen_P(settingsForm1));
-  } else if (client->content >= 2 && client->content < size + 2) {
-    webserver_send_content_P(client, PSTR("<option value=\""), 15);
-
-    char str[20];
-    itoa(client->content - 2, str, 10);
-    webserver_send_content(client, str, strlen(str));
-
-    webserver_send_content_P(client, PSTR("\">"), 2);
-
-    webserver_send_content_P(client, tzdata[client->content - 2].name, strlen_P(tzdata[client->content - 2].name));
-    webserver_send_content_P(client, PSTR("</option>"), 9);
-  } else if (client->content == size + 2) {
+    webserver_send_content_P(client, tzDataOptions, strlen_P(tzDataOptions));
+  } else if (client->content == 2) {
     webserver_send_content_P(client, settingsForm2, strlen_P(settingsForm2));
     webserver_send_content_P(client, menuJS, strlen_P(menuJS));
     webserver_send_content_P(client, settingsJS, strlen_P(settingsJS));
-    webserver_send_content_P(client, populatescanwifiJS, strlen_P(populatescanwifiJS));
-  } else if (client->content == size + 3) {
-    webserver_send_content_P(client, changewifissidJS, strlen_P(changewifissidJS));
     webserver_send_content_P(client, populategetsettingsJS, strlen_P(populategetsettingsJS));
+  } else if (client->content == 3) {
+    webserver_send_content_P(client, populatescanwifiJS, strlen_P(populatescanwifiJS));
+    webserver_send_content_P(client, changewifissidJS, strlen_P(changewifissidJS));
     webserver_send_content_P(client, webFooter, strlen_P(webFooter));
   }
 
