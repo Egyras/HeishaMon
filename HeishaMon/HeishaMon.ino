@@ -110,6 +110,7 @@ int timerqueue_size = 0;
 */
 void check_wifi()
 {
+
   if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
     /*
         if we are not connected to an AP
@@ -151,7 +152,6 @@ void check_wifi()
       log_message((char *)"WiFi (re)connected, shutting down hotspot...");
       WiFi.softAPdisconnect(true);
       MDNS.notifyAPChange();
-
     }
 
     if (firstConnectSinceBoot) { // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
@@ -324,14 +324,14 @@ bool readSerial()
 
       if (data_length == DATASIZE) { //decode the normal data
         decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-        memcpy(actData,data,DATASIZE);
+        memcpy(actData, data, DATASIZE);
         data_length = 0;
         return true;
       }
       else if (data_length == OPTDATASIZE ) { //optional pcb acknowledge answer
         log_message((char*)"Received optional PCB ack answer. Decoding this in OPT topics.");
         decode_optional_heatpump_data(data, actOptData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-        memcpy(actOptData,data,OPTDATASIZE);
+        memcpy(actOptData, data, OPTDATASIZE);
         data_length = 0;
         return true;
       }
@@ -829,6 +829,9 @@ void timer_cb(int nr) {
         } break;
       case -2: {
           ESP.restart();
+        } break;
+      case -3: {
+          setupWifi(&heishamonSettings);
         } break;
     }
   }
