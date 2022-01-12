@@ -575,9 +575,8 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               return cacheSettings(client, args);
             } break;
           case 150: {
-              if (!Update.hasError()) {
-                if (strcmp((char *)args->name, "md5") == 0) {
-
+              if (Update.isRunning() && (!Update.hasError())) {
+                if ((strcmp((char *)args->name, "md5") == 0) && (args->len > 0)) {
                   char md5[args->len + 1];
                   memset(&md5, 0, args->len + 1);
                   snprintf((char *)&md5, args->len + 1, "%.*s", args->len, args->value);
@@ -587,9 +586,10 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
                     log_message((char *)"Failed to set expected update file MD5!");
                     Update.end(false);
                   }
-                } else if (!Update.hasError() && strcmp((char *)args->name, "firmware") == 0) {
+                } else if (strcmp((char *)args->name, "firmware") == 0) {
                   if (Update.write((uint8_t *)args->value, args->len) != args->len) {
                     Update.printError(Serial1);
+                    Update.end(false);
                   } else {
                     if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 20)) {
                       uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 20);
@@ -678,16 +678,17 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               return showFirmware(client);
             } break;
           case 150: {
-              if (Update.end(true)) {
-                String updateHash = Update.md5String();
-                sprintf_P(log_msg, PSTR("Uploading success. MD5: %s"), updateHash.c_str());
-                log_message(log_msg);
-                timerqueue_insert(2, 0, -2); // Start reboot sequence
-                return showFirmwareSuccess(client);
-              } else {
-                Update.printError(Serial1);
-                return showFirmwareFail(client);
+              if (Update.isRunning()) {
+                if (Update.end(true)) {
+                  log_message((char*)"Firmware update success");
+                  timerqueue_insert(2, 0, -2); // Start reboot sequence
+                  return showFirmwareSuccess(client);
+                } else {
+                  Update.printError(Serial1);
+                  return showFirmwareFail(client);
+                }
               }
+              return 0;
             } break;
           default: {
               webserver_send(client, 301, (char *)"text/plain", 0);

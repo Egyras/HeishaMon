@@ -955,14 +955,10 @@ const char populategetsettingsJS[] PROGMEM =
   "</script>";
 
 static const char showFirmwarePage[] PROGMEM =
-  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
-  "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
-  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
-  "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
-  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
-  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
-  "</div>"
   "<script>"
+  "  document.body.onload=function() {"
+  "    startWebsockets();"
+  "  };"
   "  function getMD5(){"
   "    var filename = document.getElementById(\"firmware\").value;"
   "    var splitstr = filename.split('-')[2];"
@@ -972,18 +968,26 @@ static const char showFirmwarePage[] PROGMEM =
   "        document.getElementById(\"md5\").value = md5;"
   "      }"
   "    }"
-  ""
-  ""
   "  }"
   "</script>"
+  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
+  "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
+  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
+  "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
+  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
+  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
+  "</div>"
   "<div class=\"w3-container w3-center\">"
-  "   <form method=\"POST\" action=\"\" enctype=\"multipart/form-data\">"
+  "   <form method=\"POST\" action=\"\" onsubmit=\"submitButton.disabled = true;\" enctype=\"multipart/form-data\">"
   "       <h2>Firmware:</h2>"
   "       <input type=\"file\" accept=\".bin,.bin.gz\" id=\"firmware\" name=\"firmware\" onchange=\"getMD5();\"><br><br>"
-  "       <label for=\"md5\">MD5 checksum:</label><input type=\"text\" id=\"md5\" name=\"md5\" value=\"\" size=\"32\" minlength=\"32\" maxlength=\"32\"><br><br>"
-  "       <input type=\"submit\" value=\"Update Firmware\">"
+  "       <label for=\"md5\">MD5 checksum:</label><input type=\"text\" id=\"md5\" name=\"md5\" value=\"\" size=\"32\" minlength=\"32\" maxlength=\"32\"><br><br><b>Warning</b><br>If you leave the MD5 checksum empty there will be no check on the uploaded firmware which could cause a bricked HeishaMon!<br>In this case but also other unforseen errors during update requires you to be able to restore the firmware using a TTL cable!<br><br>"
+  "       <input type=\"submit\" name=\"submitButton\" value=\"Update Firmware\">"
   "   </form>"
-  "</div>";
+  "</div>"
+  "<div id=\"Console\" class=\"w3-container w3-center\">"
+  "<h2>Console output</h2>"
+  "<textarea id=\"cli\" disabled></textarea><br /><input type=\"checkbox\" id=\"autoscroll\" checked=\"checked\">Enable autoscroll</div>";
 
 static const char firmwareSuccessResponse[] PROGMEM =
   "<META http-equiv=\"refresh\" content=\"15;URL=/\">Update success! Rebooting...";
