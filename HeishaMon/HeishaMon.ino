@@ -110,8 +110,11 @@ int timerqueue_size = 0;
 */
 void check_wifi()
 {
-
-  if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
+  if ((WiFi.status() != WL_CONNECTED) && (WiFi.localIP()))  {
+    // special case where it seems that we are not connect but we do have working IP (causing the -1% wifi signal), do a reset.
+    log_message((char *)"Weird case, WiFi seems disconnected but is not. Resetting WiFi!");
+    setupWifi(&heishamonSettings); 
+  } else if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
     /*
         if we are not connected to an AP
         we must be in softAP so respond to DNS
