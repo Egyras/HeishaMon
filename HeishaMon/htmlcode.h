@@ -956,9 +956,6 @@ const char populategetsettingsJS[] PROGMEM =
 
 static const char showFirmwarePage[] PROGMEM =
   "<script>"
-  "  document.body.onload=function() {"
-  "    startWebsockets();"
-  "  };"
   "  function getMD5(){"
   "    var filename = document.getElementById(\"firmware\").value;"
   "    var splitstr = filename.split('-')[2];"
@@ -969,6 +966,41 @@ static const char showFirmwarePage[] PROGMEM =
   "      }"
   "    }"
   "  }"
+  "  function reloadHome() {"
+  "    setTimeout(function() {window.location.href = \"/\";}, 15000);"
+  "  }"
+  "  function _(el) {  "
+  "    return document.getElementById(el);  "
+  "  }  "
+  "  "
+  "  function uploadFile() {  "
+  "    _(\"updatebutton\").disabled = true;"
+  "    _(\"status\").innerText = \"\";"
+  "    var file = _(\"firmware\").files[0];  "
+  "    var formdata = new FormData();  "
+  "    formdata.append(\"firmware\", file);  "
+  "    var md5 = document.getElementById(\"md5\").value;"
+  "    formdata.append(\"md5\", md5);"
+  "    var request = new XMLHttpRequest();  "
+  "    request.upload.addEventListener(\"progress\", progressHandler, false);"
+  "    request.onreadystatechange = function(response) {"
+  "      if (request.readyState === 4) {"
+  "        _(\"status\").innerText = request.responseText;"
+  "        if (request.responseText.includes(\"success\")) { "
+  "          reloadHome();"
+  "        } else {"
+  "          _(\"updatebutton\").disabled = false;"
+  "        };"
+  "      };"
+  "    };"
+  "    request.open(\"POST\", \"/firmware\");"
+  "    request.send(formdata);"
+  "  }  "
+  "  "
+  "  function progressHandler(event) {  "
+  "    var percent = (event.loaded / event.total) * 100;  "
+  "    _(\"progressBar\").value = Math.round(percent);  "
+  "  }  "
   "</script>"
   "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
   "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
@@ -978,22 +1010,19 @@ static const char showFirmwarePage[] PROGMEM =
   "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
   "</div>"
   "<div class=\"w3-container w3-center\">"
-  "   <form method=\"POST\" action=\"\" onsubmit=\"submitButton.disabled = true;\" enctype=\"multipart/form-data\">"
+  "   <form method=\"POST\" action=\"\" enctype=\"multipart/form-data\">"
   "       <h2>Firmware:</h2>"
   "       <input type=\"file\" accept=\".bin,.bin.gz\" id=\"firmware\" name=\"firmware\" onchange=\"getMD5();\"><br><br>"
   "       <label for=\"md5\">MD5 checksum:</label><input type=\"text\" id=\"md5\" name=\"md5\" value=\"\" size=\"32\" minlength=\"32\" maxlength=\"32\"><br><br><b>Warning</b><br>If you leave the MD5 checksum empty there will be no check on the uploaded firmware which could cause a bricked HeishaMon!<br>In this case but also other unforseen errors during update requires you to be able to restore the firmware using a TTL cable!<br><br>"
-  "       <input type=\"submit\" name=\"submitButton\" value=\"Update Firmware\">"
   "   </form>"
-  "</div>"
-  "<div id=\"Console\" class=\"w3-container w3-center\">"
-  "<h2>Console output</h2>"
-  "<textarea id=\"cli\" disabled></textarea><br /><input type=\"checkbox\" id=\"autoscroll\" checked=\"checked\">Enable autoscroll</div>";
+  "   <button id=\"updatebutton\" onclick=\"uploadFile()\">Update Firmware</button><br><progress id=\"progressBar\" value=\"0\" max=\"100\" style=\"width:300px;\"></progress><p id=\"status\"></p>"
+  "</div>";
 
 static const char firmwareSuccessResponse[] PROGMEM =
-  "<META http-equiv=\"refresh\" content=\"15;URL=/\">Update success! Rebooting...";
+  "Update success! Rebooting. This page will refresh afterwards.";
 
 static const char firmwareFailResponse[] PROGMEM =
-  "<META http-equiv=\"refresh\" content=\"15;URL=/firmware\">Update failed! Please try again...";
+  "Update failed! Please try again...";
 
 // https://github.com/nayarsystems/posix_tz_db
 struct tzStruct {

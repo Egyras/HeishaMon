@@ -1097,9 +1097,8 @@ int showFirmware(struct webserver_t *client) {
     webserver_send_content_P(client, webHeader, strlen_P(webHeader));
     webserver_send_content_P(client, webCSS, strlen_P(webCSS));
     webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
-    webserver_send_content_P(client, showFirmwarePage, strlen_P(showFirmwarePage));
   } else  if (client->content == 1) {
-    webserver_send_content_P(client, websocketJS, strlen_P(websocketJS));
+    webserver_send_content_P(client, showFirmwarePage, strlen_P(showFirmwarePage));
     webserver_send_content_P(client, menuJS, strlen_P(menuJS));
     webserver_send_content_P(client, webFooter, strlen_P(webFooter));
   }
@@ -1117,7 +1116,7 @@ int showFirmwareSuccess(struct webserver_t *client) {
 
 static void printUpdateError(char **out, uint8_t size) {
   uint8_t len = 0;
-  len = snprintf_P(*out, size, PSTR("<br />ERROR[%u]: "), Update.getError());
+  len = snprintf_P(*out, size, PSTR("ERROR[%u]: "), Update.getError());
   if (Update.getError() == UPDATE_ERROR_OK) {
     snprintf_P(&(*out)[len], size - len, PSTR("No Error"));
   } else if (Update.getError() == UPDATE_ERROR_WRITE) {
