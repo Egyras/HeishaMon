@@ -66,7 +66,7 @@ static int uploadpercentage = 0;
 char data[MAXDATASIZE] = { '\0' };
 byte  data_length = 0;
 
-// store actual data 
+// store actual data
 #define DATASIZE 203
 char actData[DATASIZE] = { '\0' };
 #define OPTDATASIZE 20
@@ -112,7 +112,11 @@ int timerqueue_size = 0;
 */
 void check_wifi()
 {
-  if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
+  if ((WiFi.status() != WL_CONNECTED) && (WiFi.localIP()))  {
+    // special case where it seems that we are not connect but we do have working IP (causing the -1% wifi signal), do a reset.
+    log_message((char *)"Weird case, WiFi seems disconnected but is not. Resetting WiFi!");
+    setupWifi(&heishamonSettings); 
+  } else if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
     /*
         if we are not connected to an AP
         we must be in softAP so respond to DNS
@@ -153,7 +157,6 @@ void check_wifi()
       log_message((char *)"WiFi (re)connected, shutting down hotspot...");
       WiFi.softAPdisconnect(true);
       MDNS.notifyAPChange();
-
     }
 
     if (firstConnectSinceBoot) { // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
@@ -190,7 +193,7 @@ void check_wifi()
 void mqtt_reconnect()
 {
   unsigned long now = millis();
-  if ((unsigned long)(now - lastMqttReconnectAttempt) > MQTTRECONNECTTIMER) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when lastMqttReconnectAttempt is still 0
+  if ((lastMqttReconnectAttempt == 0) || ((unsigned long)(now - lastMqttReconnectAttempt) > MQTTRECONNECTTIMER)) { //only try reconnect each MQTTRECONNECTTIMER seconds or on boot when lastMqttReconnectAttempt is still 0
     lastMqttReconnectAttempt = now;
     log_message((char*)"Reconnecting to mqtt server ...");
     char topic[256];
@@ -214,8 +217,10 @@ void mqtt_reconnect()
         sprintf_P(mqtt_topic, PSTR("%s/%s/WatthourTotal/2"), heishamonSettings.mqtt_topic_base, mqtt_topic_s0);
         mqtt_client.subscribe(mqtt_topic);
       }
-      if (heishamonSettings.use_1wire) resetlastalldatatime_dallas; //resend all 1wire values to mqtt
-      resetlastalldatatime; //resend all heatpump values to mqtt
+      if (mqttReconnects == 1) { //only resend all data on first connect to mqtt so a data bomb like and bad mqtt server will not cause a reconnect bomb everytime
+        if (heishamonSettings.use_1wire) resetlastalldatatime_dallas(); //resend all 1wire values to mqtt
+        resetlastalldatatime(); //resend all heatpump values to mqtt
+      }
     }
   }
 }
@@ -226,9 +231,10 @@ void log_message(char* string)
   rawtime = time(NULL);
   struct tm *timeinfo = localtime(&rawtime);
   char timestring[32];
-  strftime(timestring,32,"%c",timeinfo);
-  char log_line[320];
-  sprintf(log_line,"%s (%lu): %s",timestring,millis(),string);
+  strftime(timestring, 32, "%c", timeinfo);
+  size_t len = strlen(string) + strlen(timestring) + 20; //+20 long enough to contain millis()
+  char* log_line = (char *) malloc(len);
+  snprintf(log_line, len, "%s (%lu): %s", timestring, millis(), string);
 
   if (heishamonSettings.logSerial1) {
     Serial1.println(log_line);
@@ -250,6 +256,7 @@ void log_message(char* string)
   if (webSocket.connectedClients() > 0) {
     webSocket.broadcastTXT(log_line, strlen(log_line));
   }
+  free(log_line);
 }
 
 void logHex(char *hex, byte hex_len) {
@@ -322,14 +329,14 @@ bool readSerial()
 
       if (data_length == DATASIZE) { //decode the normal data
         decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-        memcpy(actData,data,DATASIZE);
+        memcpy(actData, data, DATASIZE);
         data_length = 0;
         return true;
       }
       else if (data_length == OPTDATASIZE ) { //optional pcb acknowledge answer
         log_message((char*)"Received optional PCB ack answer. Decoding this in OPT topics.");
         decode_optional_heatpump_data(data, actOptData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-        memcpy(actOptData,data,OPTDATASIZE);
+        memcpy(actOptData, data, OPTDATASIZE);
         data_length = 0;
         return true;
       }
@@ -573,9 +580,8 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               return cacheSettings(client, args);
             } break;
           case 150: {
-              if (!Update.hasError()) {
-                if (strcmp((char *)args->name, "md5") == 0) {
-
+              if (Update.isRunning() && (!Update.hasError())) {
+                if ((strcmp((char *)args->name, "md5") == 0) && (args->len > 0)) {
                   char md5[args->len + 1];
                   memset(&md5, 0, args->len + 1);
                   snprintf((char *)&md5, args->len + 1, "%.*s", args->len, args->value);
@@ -585,9 +591,10 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
                     log_message((char *)"Failed to set expected update file MD5!");
                     Update.end(false);
                   }
-                } else if (!Update.hasError() && strcmp((char *)args->name, "firmware") == 0) {
+                } else if (strcmp((char *)args->name, "firmware") == 0) {
                   if (Update.write((uint8_t *)args->value, args->len) != args->len) {
                     Update.printError(Serial1);
+                    Update.end(false);
                   } else {
                     if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 20)) {
                       uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 20);
@@ -676,16 +683,17 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               return showFirmware(client);
             } break;
           case 150: {
-              if (Update.end(true)) {
-                String updateHash = Update.md5String();
-                sprintf_P(log_msg, PSTR("Uploading success. MD5: %s"), updateHash.c_str());
-                log_message(log_msg);
-                timerqueue_insert(2, 0, -2); // Start reboot sequence
-                return showFirmwareSuccess(client);
-              } else {
-                Update.printError(Serial1);
-                return showFirmwareFail(client);
+              if (Update.isRunning()) {
+                if (Update.end(true)) {
+                  log_message((char*)"Firmware update success");
+                  timerqueue_insert(2, 0, -2); // Start reboot sequence
+                  return showFirmwareSuccess(client);
+                } else {
+                  Update.printError(Serial1);
+                  return showFirmwareFail(client);
+                }
               }
+              return 0;
             } break;
           default: {
               webserver_send(client, 301, (char *)"text/plain", 0);
@@ -827,6 +835,9 @@ void timer_cb(int nr) {
         } break;
       case -2: {
           ESP.restart();
+        } break;
+      case -3: {
+          setupWifi(&heishamonSettings);
         } break;
     }
   }

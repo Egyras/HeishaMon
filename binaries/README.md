@@ -6,4 +6,5 @@ The LittleFS versions will, after updating to this version, reset your HeishaMon
 From version 1.0 some topics are changed so you need to update your automation for this.
 The sensors are now in /main/ (before /sdc/) and the commands are expected in /commands/ (before in root topic). Check MQTT-Topics.md for the overview of all topics
 
+The latest production release is v2.0. If you decide to try out a later development version, you should be able to restore the firmware using a USB-TTL cable as sometimes upgrading to a development versions seems to fail and brick the heishamon pcb.
 

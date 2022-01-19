@@ -66,7 +66,7 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
   char valueStr[20];
   bool updatenow = false;
 
-  if ((unsigned long)(millis() - lastalldatatime_dallas) >  (1000 * updateAllDallasTime)) {
+  if ((lastalldatatime_dallas == 0) || ((unsigned long)(millis() - lastalldatatime_dallas) >  (1000 * updateAllDallasTime))) {
     updatenow = true;
     lastalldatatime_dallas = millis();
   }

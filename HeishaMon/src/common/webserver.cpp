@@ -1730,7 +1730,7 @@ err_t webserver_client(void *arg, tcp_pcb *pcb, err_t err) {
       tcp_recv(pcb, &webserver_async_receive);
       tcp_sent(pcb, &webserver_sent);
       // 15 seconds timer
-      tcp_poll(pcb, &webserver_poll, WEBSERVER_CLIENT_TIMEOUT*2);
+      tcp_poll(pcb, &webserver_poll, WEBSERVER_CLIENT_TIMEOUT / 1000);
       break;
     }
   }
@@ -1833,7 +1833,7 @@ void webserver_loop(void) {
   }
 
 #if defined(ESP8266)
-  while(sync_server.hasClient()) {
+  if(sync_server.hasClient()) {
     for(i=0;i<WEBSERVER_MAX_CLIENTS;i++) {
       if(clients[i].data.active == 0) {
         clients[i].data.client = new WiFiClient(sync_server.available());
