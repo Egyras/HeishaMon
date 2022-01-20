@@ -231,7 +231,7 @@ void decode_optional_heatpump_data(char* data, char* actOptData, PubSubClient & 
     String Topic_Value;
     Topic_Value = getOptDataValue(data, Topic_Number);
 
-    if ((updatenow) || ( getDataValue(actOptData, Topic_Number) != Topic_Value )) {
+    if ((updatenow) || ( getOptDataValue(actOptData, Topic_Number) != Topic_Value )) {
       char log_msg[256];
       char mqtt_topic[256];
       sprintf_P(log_msg, PSTR("received OPT%d %s: %s"), Topic_Number, optTopics[Topic_Number], Topic_Value.c_str());
