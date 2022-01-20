@@ -328,6 +328,11 @@ bool readSerial()
       if (data_length == DATASIZE) { //decode the normal data
         decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
         memcpy(actData, data, DATASIZE);
+        {
+          char mqtt_topic[256];
+          sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
+          mqtt_client.publish(mqtt_topic, (const uint8_t *)actData, DATASIZE, false); //do not retain this raw data
+        }
         data_length = 0;
         return true;
       }
