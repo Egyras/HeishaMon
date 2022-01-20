@@ -15,6 +15,8 @@ struct heishaOTDataStruct {
   float inletTemp = 0;
   float outletTemp = 0;
   bool flameState = false;
+  bool chState = false;
+  bool dhwState = false;
 };
 
 void HeishaOTSetup();

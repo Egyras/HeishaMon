@@ -115,7 +115,7 @@ void check_wifi()
   if ((WiFi.status() != WL_CONNECTED) && (WiFi.localIP()))  {
     // special case where it seems that we are not connect but we do have working IP (causing the -1% wifi signal), do a reset.
     log_message((char *)"Weird case, WiFi seems disconnected but is not. Resetting WiFi!");
-    setupWifi(&heishamonSettings); 
+    setupWifi(&heishamonSettings);
   } else if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
     /*
         if we are not connected to an AP
@@ -221,6 +221,7 @@ void mqtt_reconnect()
         if (heishamonSettings.use_1wire) resetlastalldatatime_dallas(); //resend all 1wire values to mqtt
         resetlastalldatatime(); //resend all heatpump values to mqtt
       }
+      mqtt_client.subscribe("panasonic_heat_pump/raw/data"); //subscribe to raw heatpump data over MQTT
     }
   }
 }
@@ -330,6 +331,11 @@ bool readSerial()
       if (data_length == DATASIZE) { //decode the normal data
         decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
         memcpy(actData, data, DATASIZE);
+        {
+          char mqtt_topic[256];
+          sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
+          mqtt_client.publish(mqtt_topic, (const uint8_t *)actData, DATASIZE, MQTT_RETAIN_VALUES);
+        }
         data_length = 0;
         return true;
       }
@@ -432,6 +438,12 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     {
       char* topic_sendcommand = topic_command + 9; //strip the first 9 "commands/" from the topic to get what we need
       send_heatpump_command(topic_sendcommand, msg, send_command, log_message, heishamonSettings.optionalPCB);
+    } else if (strcmp((char*)"panasonic_heat_pump/raw", topic) == 0)  // check for raw heatpump input
+    {
+      sprintf_P(log_msg, PSTR("Received raw heatpump data from MQTT"));
+      log_message(log_msg);
+      decode_heatpump_data(msg, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
+      memcpy(actData, msg, DATASIZE);
     }
     mqttcallbackinprogress = false;
   }
@@ -892,7 +904,7 @@ void setup() {
 
   //maybe necessary but for now disable. CZ-TAW1 sends this query on boot
   //if (!heishamonSettings.listenonly) send_initial_query();
-  
+
   //OT begin must be after serial setup
   HeishaOTSetup();
 }
