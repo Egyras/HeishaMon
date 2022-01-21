@@ -199,6 +199,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
           if ( jsonDoc["wifi_hostname"] ) strncpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], sizeof(heishamonSettings->wifi_hostname));
           if ( jsonDoc["ota_password"] ) strncpy(heishamonSettings->ota_password, jsonDoc["ota_password"], sizeof(heishamonSettings->ota_password));
           if ( jsonDoc["mqtt_topic_base"] ) strncpy(heishamonSettings->mqtt_topic_base, jsonDoc["mqtt_topic_base"], sizeof(heishamonSettings->mqtt_topic_base));
+          if ( jsonDoc["mqtt_topic_listen"] ) strncpy(heishamonSettings->mqtt_topic_listen, jsonDoc["mqtt_topic_listen"], sizeof(heishamonSettings->mqtt_topic_listen));
           if ( jsonDoc["mqtt_server"] ) strncpy(heishamonSettings->mqtt_server, jsonDoc["mqtt_server"], sizeof(heishamonSettings->mqtt_server));
           if ( jsonDoc["mqtt_port"] ) strncpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], sizeof(heishamonSettings->mqtt_port));
           if ( jsonDoc["mqtt_username"] ) strncpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], sizeof(heishamonSettings->mqtt_username));
@@ -208,6 +209,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
           heishamonSettings->use_1wire = ( jsonDoc["use_1wire"] == "enabled" ) ? true : false;
           heishamonSettings->use_s0 = ( jsonDoc["use_s0"] == "enabled" ) ? true : false;
           heishamonSettings->listenonly = ( jsonDoc["listenonly"] == "enabled" ) ? true : false;
+          heishamonSettings->listenmqtt = ( jsonDoc["listenmqtt"] == "enabled" ) ? true : false;
           heishamonSettings->logMqtt = ( jsonDoc["logMqtt"] == "enabled" ) ? true : false;
           heishamonSettings->logHexdump = ( jsonDoc["logHexdump"] == "enabled" ) ? true : false;
           heishamonSettings->logSerial1 = ( jsonDoc["logSerial1"] == "enabled" ) ? true : false;
@@ -338,6 +340,7 @@ void settingsToJson(DynamicJsonDocument &jsonDoc, settingsStruct *heishamonSetti
   jsonDoc["wifi_ssid"] = heishamonSettings->wifi_ssid;
   jsonDoc["ota_password"] = heishamonSettings->ota_password;
   jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
+  jsonDoc["mqtt_topic_listen"] = heishamonSettings->mqtt_topic_listen;
   jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
   jsonDoc["mqtt_port"] = heishamonSettings->mqtt_port;
   jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
@@ -356,6 +359,11 @@ void settingsToJson(DynamicJsonDocument &jsonDoc, settingsStruct *heishamonSetti
     jsonDoc["listenonly"] = "enabled";
   } else {
     jsonDoc["listenonly"] = "disabled";
+  }
+  if (heishamonSettings->listenmqtt) {
+    jsonDoc["listenmqtt"] = "enabled";
+  } else {
+    jsonDoc["listenmqtt"] = "disabled";
   }
   if (heishamonSettings->logMqtt) {
     jsonDoc["logMqtt"] = "enabled";
@@ -408,6 +416,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
   settingsToJson(jsonDoc, heishamonSettings); //stores current settings in a json document
 
   jsonDoc["listenonly"] = String("");
+  jsonDoc["listenmqtt"] = String("");
   jsonDoc["logMqtt"] = String("");
   jsonDoc["logHexdump"] = String("");
   jsonDoc["logSerial1"] = String("");
@@ -421,6 +430,8 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
       jsonDoc["wifi_hostname"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_topic_base") == 0) {
       jsonDoc["mqtt_topic_base"] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "mqtt_topic_listen") == 0) {
+      jsonDoc["mqtt_topic_listen"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_server") == 0) {
       jsonDoc["mqtt_server"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_port") == 0) {
@@ -438,6 +449,8 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
       }
     } else if (strcmp(tmp->name.c_str(), "listenonly") == 0) {
       jsonDoc["listenonly"] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "listenmqtt") == 0) {
+      jsonDoc["listenmqtt"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "logMqtt") == 0) {
       jsonDoc["logMqtt"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "logHexdump") == 0) {
@@ -696,7 +709,17 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
       } break;
     case 6: {
         char str[20];
-        webserver_send_content_P(client, PSTR(",\"logMqtt\":"), 11);
+        webserver_send_content_P(client, PSTR(",\"listenmqtt\":"), 14);
+
+        itoa(heishamonSettings->listenmqtt, str, 10);
+        webserver_send_content(client, str, strlen(str));
+
+        webserver_send_content_P(client, PSTR(",\"mqtt_topic_listen\":\""), 22);
+        webserver_send_content(client, heishamonSettings->mqtt_topic_listen, strlen(heishamonSettings->mqtt_topic_listen));
+      } break;
+    case 7: {
+        char str[20];
+        webserver_send_content_P(client, PSTR("\",\"logMqtt\":"), 12);
 
         itoa(heishamonSettings->logMqtt, str, 10);
         webserver_send_content(client, str, strlen(str));
@@ -706,7 +729,7 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         itoa(heishamonSettings->logHexdump, str, 10);
         webserver_send_content(client, str, strlen(str));
       } break;
-    case 7: {
+    case 8: {
         char str[20];
         webserver_send_content_P(client, PSTR(",\"logSerial1\":"), 14);
 
@@ -718,7 +741,7 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         itoa(heishamonSettings->optionalPCB, str, 10);
         webserver_send_content(client, str, strlen(str));
       } break;
-    case 8: {
+    case 9: {
         char str[20];
         webserver_send_content_P(client, PSTR(",\"use_1wire\":"), 13);
 
@@ -730,7 +753,7 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         itoa(heishamonSettings->waitDallasTime, str, 10);
         webserver_send_content(client, str, strlen(str));
       } break;
-    case 9: {
+    case 10: {
         char str[20];
         webserver_send_content_P(client, PSTR(",\"updataAllDallasTime\":"), 23);
 
@@ -742,7 +765,7 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         itoa(heishamonSettings->dallasResolution , str, 10);
         webserver_send_content(client, str, strlen(str));
       } break;
-    case 10: {
+    case 11: {
         char str[20];
         webserver_send_content_P(client, PSTR(",\"use_s0\":"), 10);
 
@@ -784,7 +807,7 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
 
         webserver_send_content_P(client, PSTR(",\"s0_2_gpio\":"), 13);
       } break;
-    case 11: {
+    case 12: {
         char str[20];
         int i = 1;
 

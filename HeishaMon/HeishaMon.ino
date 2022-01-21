@@ -221,7 +221,10 @@ void mqtt_reconnect()
         if (heishamonSettings.use_1wire) resetlastalldatatime_dallas(); //resend all 1wire values to mqtt
         resetlastalldatatime(); //resend all heatpump values to mqtt
       }
-      mqtt_client.subscribe("panasonic_heat_pump/raw/data"); //subscribe to raw heatpump data over MQTT
+      if ( heishamonSettings.listenonly && heishamonSettings.listenmqtt ) { 
+        sprintf(topic, "%s/raw/data", heishamonSettings.mqtt_topic_listen); 
+        mqtt_client.subscribe(topic); //subscribe to raw heatpump data over MQTT
+      }
     }
   }
 }
@@ -438,7 +441,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     {
       char* topic_sendcommand = topic_command + 9; //strip the first 9 "commands/" from the topic to get what we need
       send_heatpump_command(topic_sendcommand, msg, send_command, log_message, heishamonSettings.optionalPCB);
-    } else if (strcmp((char*)"panasonic_heat_pump/raw", topic) == 0)  // check for raw heatpump input
+    } else if (strcmp((char*)"panasonic_heat_pump/raw/data", topic) == 0)  // check for raw heatpump input
     {
       sprintf_P(log_msg, PSTR("Received raw heatpump data from MQTT"));
       log_message(log_msg);
