@@ -17,7 +17,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         unsigned long data = ot.getUInt(request);
         unsigned int CHEnable = (data >> 8) & (1 << 0);
         heishaOTData.chEnable = (bool)CHEnable;
-        unsigned int DHWEnable = ((data >> 8) & (1 << 1)) >> 1;        
+        unsigned int DHWEnable = ((data >> 8) & (1 << 1)) >> 1;
         unsigned int Cooling = ((data >> 8) & (1 << 2)) >> 2;
         unsigned int OTCEnable = ((data >> 8) & (1 << 3)) >> 3;
         unsigned int CH2Enable = ((data >> 8) & (1 << 4)) >> 4;
@@ -36,6 +36,11 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         unsigned int CoolingStatus = false;
         unsigned int CH2 = false;
         unsigned int DiagInd = false;
+        sprintf(log_msg,
+                "OpenTherm: Send status: CH: %d, Flame:%d, DHW:%d",
+                CHMode, FlameStatus, DHWMode
+               );
+        log_message(log_msg);
         unsigned int responsedata = FaultInd | (CHMode << 1) | (DHWMode << 2) | (FlameStatus << 3) | (CoolingStatus << 4) | (CH2 << 5) | (DiagInd << 6);
         otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::Status, responsedata);
       } break;
@@ -260,13 +265,13 @@ void HeishaOTSetup() {
 }
 
 void HeishaOTLoop(char * actData, PubSubClient &mqtt_client, char* mqtt_topic_base) {
-  heishaOTData.outsideTemp = actData[0] == '\0' ? 0 : getDataValue(actData,14).toFloat();
-  heishaOTData.inletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData,5).toFloat(); 
-  heishaOTData.outletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData,6).toFloat(); 
-  heishaOTData.flameState = actData[0] == '\0' ? 0 : ((getDataValue(actData,8).toInt() > 0 ) ? true : false); //compressor freq as flame on state
-  heishaOTData.chState = actData[0] == '\0' ? 0 : ((getDataValue(actData,20).toInt() == 0 ) ? true : false); // 3-way valve on room
-  heishaOTData.dhwState = actData[0] == '\0' ? 0 : ((getDataValue(actData,20).toInt() == 1 ) ? true : false); /// 3-way valve on dhw
-    
+  heishaOTData.outsideTemp = actData[0] == '\0' ? 0 : getDataValue(actData, 14).toFloat();
+  heishaOTData.inletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData, 5).toFloat();
+  heishaOTData.outletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData, 6).toFloat();
+  heishaOTData.flameState = actData[0] == '\0' ? 0 : ((getDataValue(actData, 8).toInt() > 0 ) ? true : false); //compressor freq as flame on state
+  heishaOTData.chState = actData[0] == '\0' ? 0 : (((getDataValue(actData, 8).toInt() > 0 ) && (getDataValue(actData, 20).toInt() == 0 )) ? true : false); // 3-way valve on room
+  heishaOTData.dhwState = actData[0] == '\0' ? 0 : (((getDataValue(actData, 8).toInt() > 0 ) && (getDataValue(actData, 20).toInt() == 1 )) ? true : false); /// 3-way valve on dhw
+
   // opentherm loop
   if (otResponse && ot.isReady()) {
     ot.sendResponse(otResponse);
