@@ -36,7 +36,7 @@ ESP8266WebServer httpServer(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
 ESP8266HTTPUpdateServer httpUpdater;
 
-settingsStruct heishamonSettings;
+SettingsStruct heishamonSettings;
 
 bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
@@ -123,10 +123,16 @@ void check_wifi()
      */
     if ((heishamonSettings.wifi_ssid[0] != '\0') && ((unsigned long)(millis() - lastWifiRetryTimer) > WIFIRETRYTIMER ) )  {
       lastWifiRetryTimer = millis();
-      if (WiFi.softAPSSID() == "") {
+      if ((WiFi.softAPSSID() == "") && heishamonSettings.hotspot_mode != HotspotMode::None) {
         log_message((char *)"WiFi lost, starting setup hotspot...");
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-        WiFi.softAP("HeishaMon-Setup");
+        if (heishamonSettings.hotspot_mode == HotspotMode::Secured) {
+          // Create secured hotspot
+          WiFi.softAP(heishamonSettings.hotspot_ssid, heishamonSettings.wifi_password);
+        } else {
+          // Create unsecured hotspot
+          WiFi.softAP(heishamonSettings.hotspot_ssid);
+        }
       }
       if ((WiFi.status() == WL_DISCONNECTED)  && (WiFi.softAPgetStationNum() == 0 )) {
         log_message((char *)"Retrying configured WiFi, ...");
@@ -160,7 +166,7 @@ void check_wifi()
         WiFi.SSID().toCharArray(heishamonSettings.wifi_ssid, 40);
         WiFi.psk().toCharArray(heishamonSettings.wifi_password, 40);
         DynamicJsonDocument jsonDoc(1024);
-        settingsToJson(jsonDoc, &heishamonSettings); //stores current settings in a json document
+        heishamonSettings.toJson(jsonDoc); //stores current settings in a json document
         saveJsonToConfig(jsonDoc); //save to config file
       }
     }

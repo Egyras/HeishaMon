@@ -12,6 +12,7 @@
 #define UPTIME_OVERFLOW 4294967295 // Uptime overflow value
 
 static int numSsid = 0;
+char htmlBuf[256];
 
 void log_message(char* string);
 
@@ -64,7 +65,7 @@ String getUptime() {
   return String(uptime);
 }
 
-void loadSettings(settingsStruct *heishamonSettings) {
+void loadSettings(SettingsStruct *heishamonSettings) {
   //read configuration from FS json
   log_message("mounting FS...");
 
@@ -88,37 +89,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
         log_message(log_msg);
         if (!error) {
           log_message((char *)"\nparsed json");
-          //read updated parameters, make sure no overflow
-          if ( jsonDoc["wifi_ssid"] ) strncpy(heishamonSettings->wifi_ssid, jsonDoc["wifi_ssid"], sizeof(heishamonSettings->wifi_ssid));
-          if ( jsonDoc["wifi_password"] ) strncpy(heishamonSettings->wifi_password, jsonDoc["wifi_password"], sizeof(heishamonSettings->wifi_password));
-          if ( jsonDoc["wifi_hostname"] ) strncpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], sizeof(heishamonSettings->wifi_hostname));
-          if ( jsonDoc["ota_password"] ) strncpy(heishamonSettings->ota_password, jsonDoc["ota_password"], sizeof(heishamonSettings->ota_password));
-          if ( jsonDoc["mqtt_topic_base"] ) strncpy(heishamonSettings->mqtt_topic_base, jsonDoc["mqtt_topic_base"], sizeof(heishamonSettings->mqtt_topic_base));
-          if ( jsonDoc["mqtt_server"] ) strncpy(heishamonSettings->mqtt_server, jsonDoc["mqtt_server"], sizeof(heishamonSettings->mqtt_server));
-          if ( jsonDoc["mqtt_port"] ) strncpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], sizeof(heishamonSettings->mqtt_port));
-          if ( jsonDoc["mqtt_username"] ) strncpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], sizeof(heishamonSettings->mqtt_username));
-          if ( jsonDoc["mqtt_password"] ) strncpy(heishamonSettings->mqtt_password, jsonDoc["mqtt_password"], sizeof(heishamonSettings->mqtt_password));
-          heishamonSettings->use_1wire = ( jsonDoc["use_1wire"] == "enabled" ) ? true : false;
-          heishamonSettings->use_s0 = ( jsonDoc["use_s0"] == "enabled" ) ? true : false;
-          heishamonSettings->listenonly = ( jsonDoc["listenonly"] == "enabled" ) ? true : false;
-          heishamonSettings->logMqtt = ( jsonDoc["logMqtt"] == "enabled" ) ? true : false;
-          heishamonSettings->logHexdump = ( jsonDoc["logHexdump"] == "enabled" ) ? true : false;
-          heishamonSettings->logSerial1 = ( jsonDoc["logSerial1"] == "enabled" ) ? true : false;
-          heishamonSettings->optionalPCB = ( jsonDoc["optionalPCB"] == "enabled" ) ? true : false;
-          if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
-          if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
-          if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
-          if (heishamonSettings->waitDallasTime < 5) heishamonSettings->waitDallasTime = 5;
-          if ( jsonDoc["updateAllTime"]) heishamonSettings->updateAllTime = jsonDoc["updateAllTime"];
-          if (heishamonSettings->updateAllTime < heishamonSettings->waitTime) heishamonSettings->updateAllTime = heishamonSettings->waitTime;
-          if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
-          if (heishamonSettings->updataAllDallasTime < heishamonSettings->waitDallasTime) heishamonSettings->updataAllDallasTime = heishamonSettings->waitDallasTime;
-          if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
-          if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
-          if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
-          if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
-          if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
-          if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
+          heishamonSettings->fromJson(jsonDoc);
         } else {
           log_message("Failed to load json config, forcing config reset.");
           WiFi.persistent(true);
@@ -170,7 +141,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
 
 }
 
-void setupWifi(settingsStruct *heishamonSettings) {
+void setupWifi(SettingsStruct *heishamonSettings) {
 
   log_message((char *)"Wifi reconnecting with new configuration...");
   //no sleep wifi
@@ -191,7 +162,7 @@ void setupWifi(settingsStruct *heishamonSettings) {
   else {
     log_message((char *)"Wifi hotspot mode...");
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP("HeishaMon-Setup");
+    WiFi.softAP(heishamonSettings->hotspot_ssid); // Initial hotspot is always unsecured
   }
 
   if (heishamonSettings->wifi_hostname[0] == '\0') {
@@ -204,7 +175,7 @@ void setupWifi(settingsStruct *heishamonSettings) {
   WiFi.scanNetworksAsync(getWifiScanResults);
 }
 
-void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings) {
+void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReconnects, SettingsStruct *heishamonSettings) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -371,58 +342,6 @@ void handleReboot(ESP8266WebServer *httpServer) {
   ESP.restart();
 }
 
-void settingsToJson(DynamicJsonDocument &jsonDoc, settingsStruct *heishamonSettings) {
-  //set jsonDoc with current settings
-  jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
-  jsonDoc["wifi_password"] = heishamonSettings->wifi_password;
-  jsonDoc["wifi_ssid"] = heishamonSettings->wifi_ssid;
-  jsonDoc["ota_password"] = heishamonSettings->ota_password;
-  jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
-  jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
-  jsonDoc["mqtt_port"] = heishamonSettings->mqtt_port;
-  jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
-  jsonDoc["mqtt_password"] = heishamonSettings->mqtt_password;
-  if (heishamonSettings->use_1wire) {
-    jsonDoc["use_1wire"] = "enabled";
-  } else {
-    jsonDoc["use_1wire"] = "disabled";
-  }
-  if (heishamonSettings->use_s0) {
-    jsonDoc["use_s0"] = "enabled";
-  } else {
-    jsonDoc["use_s0"] = "disabled";
-  }
-  if (heishamonSettings->listenonly) {
-    jsonDoc["listenonly"] = "enabled";
-  } else {
-    jsonDoc["listenonly"] = "disabled";
-  }
-  if (heishamonSettings->logMqtt) {
-    jsonDoc["logMqtt"] = "enabled";
-  } else {
-    jsonDoc["logMqtt"] = "disabled";
-  }
-  if (heishamonSettings->logHexdump) {
-    jsonDoc["logHexdump"] = "enabled";
-  } else {
-    jsonDoc["logHexdump"] = "disabled";
-  }
-  if (heishamonSettings->logSerial1) {
-    jsonDoc["logSerial1"] = "enabled";
-  } else {
-    jsonDoc["logSerial1"] = "disabled";
-  }
-  if (heishamonSettings->optionalPCB) {
-    jsonDoc["optionalPCB"] = "enabled";
-  } else {
-    jsonDoc["optionalPCB"] = "disabled";
-  }
-  jsonDoc["waitTime"] = heishamonSettings->waitTime;
-  jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
-  jsonDoc["updateAllTime"] = heishamonSettings->updateAllTime;
-  jsonDoc["updataAllDallasTime"] = heishamonSettings->updataAllDallasTime;
-}
-
 void saveJsonToConfig(DynamicJsonDocument &jsonDoc) {
   if (LittleFS.begin()) {
     File configFile = LittleFS.open("/config.json", "w");
@@ -433,32 +352,89 @@ void saveJsonToConfig(DynamicJsonDocument &jsonDoc) {
   }
 }
 
-bool handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings) {
+String htmlTextBox(String name, String value, const char* type = "text", const char* additionalAttrs = "")
+{
+  snprintf(
+    htmlBuf,
+    sizeof(htmlBuf),
+    "<input type='%s' name='%s' value='%s' %s/>",
+    type,
+    name.c_str(),
+    value.c_str(),
+    additionalAttrs
+    );
+  return String(htmlBuf);
+}
+
+String htmlCheckbox(String name, bool value, const char* additionalAttrs = "") {
+  const char* checked = value ? "checked" : "";
+  snprintf(
+    htmlBuf,
+    sizeof(htmlBuf),
+    "<input type='checkbox' name='%s' value='enabled' %s %s/>",
+    name.c_str(),
+    value,
+    checked,
+    additionalAttrs);
+  return String(htmlBuf);
+}
+
+String htmlRadioButton(String name, String label, int value, int currentValue) {
+  const char* checked = (value == currentValue) ? "checked" : "";
+  snprintf(
+    htmlBuf,
+    sizeof(htmlBuf),
+    "<input type='radio' name='%s' value='%d' %s/><label for='%s'>%s</label>",
+    name.c_str(),
+    value,
+    checked,
+    name.c_str(),
+    label.c_str());
+  return String(htmlBuf);
+}
+
+String htmlOption(String value, String label, bool selected) {
+  const char* selectedStr = selected ? "selected" : "";
+  snprintf(
+    htmlBuf,
+    sizeof(htmlBuf),
+    "<option value='%s' %s/>%s</option>",
+    value.c_str(),
+    selectedStr,
+    label.c_str());
+  return String(htmlBuf);
+}
+
+bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSettings) {
   //check if POST was made with save settings
   if (httpServer->args()) {
     bool reconnectWiFi = false;
-    DynamicJsonDocument jsonDoc(1024);
 
-    settingsToJson(jsonDoc, heishamonSettings); //stores current settings in a json document
+    DynamicJsonDocument jsonDoc(1024);
+    heishamonSettings->toJson(jsonDoc);  //stores current settings in a json document
 
     //then overwrite with new settings
-    if (httpServer->hasArg("wifi_hostname")) {
-      jsonDoc["wifi_hostname"] = httpServer->arg("wifi_hostname");
+    if (httpServer->hasArg(Settings::hotspot_mode)) {
+      jsonDoc[Settings::hotspot_mode] = httpServer->arg(Settings::hotspot_mode);
     }
-    if (httpServer->hasArg("wifi_ssid") && httpServer->hasArg("wifi_password")) {
-      if (strcmp(jsonDoc["wifi_ssid"], httpServer->arg("wifi_ssid").c_str()) != 0 || strcmp(jsonDoc["wifi_password"], httpServer->arg("wifi_password").c_str()) != 0) {
+    if (httpServer->hasArg(Settings::wifi_hostname)) {
+      jsonDoc[Settings::wifi_hostname] = httpServer->arg(Settings::wifi_hostname);
+    }
+    if (httpServer->hasArg(Settings::wifi_ssid) && httpServer->hasArg(Settings::wifi_password)) {
+      if (strcmp(jsonDoc[Settings::wifi_ssid], httpServer->arg(Settings::wifi_ssid).c_str())
+        || strcmp(jsonDoc[Settings::wifi_password], httpServer->arg(Settings::wifi_password).c_str()) != 0) {
         reconnectWiFi = true;
       }
     }
-    if (httpServer->hasArg("wifi_ssid")) {
-      jsonDoc["wifi_ssid"] = httpServer->arg("wifi_ssid").c_str();
+    if (httpServer->hasArg(Settings::wifi_ssid)) {
+      jsonDoc[Settings::wifi_ssid] = httpServer->arg(Settings::wifi_ssid).c_str();
     }
-    if (httpServer->hasArg("wifi_password")) {
-      jsonDoc["wifi_password"] = httpServer->arg("wifi_password").c_str();
+    if (httpServer->hasArg(Settings::wifi_password)) {
+      jsonDoc[Settings::wifi_password] = httpServer->arg(Settings::wifi_password).c_str();
     }
     if (httpServer->hasArg("new_ota_password") && (httpServer->arg("new_ota_password") != NULL) && (httpServer->arg("current_ota_password") != NULL) ) {
       if (httpServer->hasArg("current_ota_password") && (strcmp(heishamonSettings->ota_password, httpServer->arg("current_ota_password").c_str()) == 0 )) {
-        jsonDoc["ota_password"] = httpServer->arg("new_ota_password");
+        jsonDoc[Settings::ota_password] = httpServer->arg("new_ota_password");
       }
       else {
         httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
@@ -475,73 +451,47 @@ bool handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
         return true;
       }
     }
-    if (httpServer->hasArg("mqtt_topic_base")) {
-      jsonDoc["mqtt_topic_base"] = httpServer->arg("mqtt_topic_base");
+    if (httpServer->hasArg(Settings::mqtt_topic_base)) {
+      jsonDoc[Settings::mqtt_topic_base] = httpServer->arg(Settings::mqtt_topic_base);
     }
-    if (httpServer->hasArg("mqtt_server")) {
-      jsonDoc["mqtt_server"] = httpServer->arg("mqtt_server");
+    if (httpServer->hasArg(Settings::mqtt_server)) {
+      jsonDoc[Settings::mqtt_server] = httpServer->arg(Settings::mqtt_server);
     }
-    if (httpServer->hasArg("mqtt_port")) {
-      jsonDoc["mqtt_port"] = httpServer->arg("mqtt_port");
+    if (httpServer->hasArg(Settings::mqtt_port)) {
+      jsonDoc[Settings::mqtt_port] = httpServer->arg(Settings::mqtt_port);
     }
-    if (httpServer->hasArg("mqtt_username")) {
-      jsonDoc["mqtt_username"] = httpServer->arg("mqtt_username");
+    if (httpServer->hasArg(Settings::mqtt_username)) {
+      jsonDoc[Settings::mqtt_username] = httpServer->arg(Settings::mqtt_username);
     }
-    if (httpServer->hasArg("mqtt_password")) {
-      jsonDoc["mqtt_password"] = httpServer->arg("mqtt_password");
+    if (httpServer->hasArg(Settings::mqtt_password)) {
+      jsonDoc[Settings::mqtt_password] = httpServer->arg(Settings::mqtt_password);
     }
-    if (httpServer->hasArg("use_1wire")) {
-      jsonDoc["use_1wire"] = "enabled";
-    } else {
-      jsonDoc["use_1wire"] = "disabled";
+    jsonDoc[Settings::use_1wire] = toString(httpServer->hasArg(Settings::use_1wire));
+    jsonDoc[Settings::use_s0] = toString(httpServer->hasArg(Settings::use_s0));
+    if (httpServer->hasArg(Settings::use_s0)) {
+      if (httpServer->hasArg(Settings::s0_1_gpio)) jsonDoc[Settings::s0_1_gpio] = httpServer->arg(Settings::s0_1_gpio);
+      if (httpServer->hasArg(Settings::s0_1_ppkwh)) jsonDoc[Settings::s0_1_ppkwh] = httpServer->arg(Settings::s0_1_ppkwh);
+      if (httpServer->hasArg(Settings::s0_1_interval)) jsonDoc[Settings::s0_1_interval] = httpServer->arg(Settings::s0_1_interval);
+      if (httpServer->hasArg(Settings::s0_2_gpio)) jsonDoc[Settings::s0_2_gpio] = httpServer->arg(Settings::s0_2_gpio);
+      if (httpServer->hasArg(Settings::s0_2_ppkwh)) jsonDoc[Settings::s0_2_ppkwh] = httpServer->arg(Settings::s0_2_ppkwh);
+      if (httpServer->hasArg(Settings::s0_2_interval)) jsonDoc[Settings::s0_2_interval] = httpServer->arg(Settings::s0_2_interval);
     }
-    if (httpServer->hasArg("use_s0")) {
-      jsonDoc["use_s0"] = "enabled";
-      if (httpServer->hasArg("s0_1_gpio")) jsonDoc["s0_1_gpio"] = httpServer->arg("s0_1_gpio");
-      if (httpServer->hasArg("s0_1_ppkwh")) jsonDoc["s0_1_ppkwh"] = httpServer->arg("s0_1_ppkwh");
-      if (httpServer->hasArg("s0_1_interval")) jsonDoc["s0_1_interval"] = httpServer->arg("s0_1_interval");
-      if (httpServer->hasArg("s0_2_gpio")) jsonDoc["s0_2_gpio"] = httpServer->arg("s0_2_gpio");
-      if (httpServer->hasArg("s0_2_ppkwh")) jsonDoc["s0_2_ppkwh"] = httpServer->arg("s0_2_ppkwh");
-      if (httpServer->hasArg("s0_2_interval")) jsonDoc["s0_2_interval"] = httpServer->arg("s0_2_interval");
-    } else {
-      jsonDoc["use_s0"] = "disabled";
+    jsonDoc[Settings::listenonly] = toString(httpServer->hasArg(Settings::listenonly));
+    jsonDoc[Settings::logMqtt] = toString(httpServer->hasArg(Settings::logMqtt));
+    jsonDoc[Settings::logHexdump] = toString(httpServer->hasArg(Settings::logHexdump));
+    jsonDoc[Settings::logSerial1] = toString(httpServer->hasArg(Settings::logSerial1));
+    jsonDoc[Settings::optionalPCB] = toString(httpServer->hasArg(Settings::optionalPCB));
+    if (httpServer->hasArg(Settings::waitTime)) {
+      jsonDoc[Settings::waitTime] = httpServer->arg(Settings::waitTime);
     }
-    if (httpServer->hasArg("listenonly")) {
-      jsonDoc["listenonly"] = "enabled";
-    } else {
-      jsonDoc["listenonly"] = "disabled";
+    if (httpServer->hasArg(Settings::waitDallasTime)) {
+      jsonDoc[Settings::waitDallasTime] = httpServer->arg(Settings::waitDallasTime);
     }
-    if (httpServer->hasArg("logMqtt")) {
-      jsonDoc["logMqtt"] = "enabled";
-    } else {
-      jsonDoc["logMqtt"] = "disabled";
+    if (httpServer->hasArg(Settings::updateAllTime)) {
+      jsonDoc[Settings::updateAllTime] = httpServer->arg(Settings::updateAllTime);
     }
-    if (httpServer->hasArg("logHexdump")) {
-      jsonDoc["logHexdump"] = "enabled";
-    } else {
-      jsonDoc["logHexdump"] = "disabled";
-    }
-    if (httpServer->hasArg("logSerial1")) {
-      jsonDoc["logSerial1"] = "enabled";
-    } else {
-      jsonDoc["logSerial1"] = "disabled";
-    }
-    if (httpServer->hasArg("optionalPCB")) {
-      jsonDoc["optionalPCB"] = "enabled";
-    } else {
-      jsonDoc["optionalPCB"] = "disabled";
-    }
-    if (httpServer->hasArg("waitTime")) {
-      jsonDoc["waitTime"] = httpServer->arg("waitTime");
-    }
-    if (httpServer->hasArg("waitDallasTime")) {
-      jsonDoc["waitDallasTime"] = httpServer->arg("waitDallasTime");
-    }
-    if (httpServer->hasArg("updateAllTime")) {
-      jsonDoc["updateAllTime"] = httpServer->arg("updateAllTime");
-    }
-    if (httpServer->hasArg("updataAllDallasTime")) {
-      jsonDoc["updataAllDallasTime"] = httpServer->arg("updataAllDallasTime");
+    if (httpServer->hasArg(Settings::updataAllDallasTime)) {
+      jsonDoc[Settings::updataAllDallasTime] = httpServer->arg(Settings::updataAllDallasTime);
     }
 
     saveJsonToConfig(jsonDoc); //save to config file
@@ -562,8 +512,6 @@ bool handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
       setupWifi(heishamonSettings);
       return true;
     }
-
-
   }
 
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
@@ -573,165 +521,153 @@ bool handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   httpServer->sendContent_P(webBodyStart);
   httpServer->sendContent_P(webBodySettings1);
 
-  String httptext = F("<div class=\"w3-container w3-center\">");
-  httptext = httptext + F("<h2>Settings</h2>");
-  httptext = httptext + F("<form enctype=\"multipart/form-data\" accept-charset=\"UTF-8\" action=\"/settings\" method=\"POST\">");
-  httptext = httptext + F("<table style=\"width:100%\">");
-  httptext = httptext + F("<tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Hostname:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"text\" name=\"wifi_hostname\" value=\"") + heishamonSettings->wifi_hostname + F("\">");
-  httptext = httptext + F("</td></tr>");
-  httptext = httptext + F("<tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Wifi SSID:</td><td style=\"text-align:left\">");
+  String html = F("<div class=\"w3-container w3-center\">");
+  html += F("<h2>Settings</h2>");
+  html += F("<form enctype=\"multipart/form-data\" accept-charset=\"UTF-8\" action=\"/settings\" method=\"POST\">");
+  html += F("<table style=\"width:100%\">");
+  html += F("<tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Hostname:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::wifi_hostname, heishamonSettings->wifi_hostname);
+  html += F("</td></tr>");
+  html += F("<tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Wifi SSID:</td><td style=\"text-align:left\">");
   // wifi scan select box
-  httptext = httptext + F("<input list=\"available_ssid\" name=\"wifi_ssid\" id=\"wifi_ssid_id\" value=\"") + heishamonSettings->wifi_ssid + F("\">");
-  httptext = httptext + F("<select id=\"wifi_ssid_select\" style=\"display:none\" onchange=\"changewifissid()\">");
-  httptext = httptext + F("<option hidden selected value=\"\">Select SSID</option>");
-  httptext = httptext + F("</select>");
+  html += F("<input list=\"available_ssid\" name=\"wifi_ssid\" id=\"wifi_ssid_id\" value=\"");
+  html += heishamonSettings->wifi_ssid;
+  html += F("\">");
+  html += F("<select id=\"wifi_ssid_select\" style=\"display:none\" onchange=\"changewifissid()\">");
+  html += F("<option hidden selected value=\"\">Select SSID</option>");
+  html += F("</select>");
   //
-  httptext = httptext + F("</td></tr>");
-  httptext = httptext + F("<tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Wifi password:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"password\" name=\"wifi_password\" value=\"") + heishamonSettings->wifi_password + F("\">");
-  httptext = httptext + F("</td></tr>");
-  httptext = httptext + F("<tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Update username:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<label name=\"username\">admin</label>");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Current update password:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"password\" name=\"current_ota_password\" value=\"\"> default password: \"heisha\"");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("New update password:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"password\" name=\"new_ota_password\" value=\"\">");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Mqtt topic base:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"text\" name=\"mqtt_topic_base\" value=\"") + heishamonSettings->mqtt_topic_base + F("\">");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Mqtt server:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"text\" name=\"mqtt_server\" value=\"") + heishamonSettings->mqtt_server + F("\">");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Mqtt port:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"number\" name=\"mqtt_port\" value=\"") + heishamonSettings->mqtt_port + F("\">");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Mqtt username:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"text\" name=\"mqtt_username\" value=\"") + heishamonSettings->mqtt_username + F("\">");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Mqtt password:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"password\" name=\"mqtt_password\" value=\"") + heishamonSettings->mqtt_password + F("\">");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("How often new values are collected from heatpump:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"number\" name=\"waitTime\" value=\"") + heishamonSettings->waitTime + F("\"> seconds  (min 5 sec)");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("How often all heatpump values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"number\" name=\"updateAllTime\" value=\"") + heishamonSettings->updateAllTime + F("\"> seconds");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("</td></tr>");
+  html += F("<tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Wifi password:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::wifi_password, heishamonSettings->wifi_password, "password");
+  html += F("</td></tr>");
 
-  httpServer->sendContent(httptext);
-  httptext = F("Listen only mode:</td><td style=\"text-align:left\">");
-  if (heishamonSettings->listenonly) {
-    httptext = httptext + F("<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\" checked >");
-  } else {
-    httptext = httptext + F("<input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">");
-  }
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Debug log to MQTT topic from start:</td><td style=\"text-align:left\">");
-  if (heishamonSettings->logMqtt) {
-    httptext = httptext + F("<input type=\"checkbox\" name=\"logMqtt\" value=\"enabled\" checked >");
-  } else {
-    httptext = httptext + F("<input type=\"checkbox\" name=\"logMqtt\" value=\"enabled\">");
-  }
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Debug log hexdump enable from start:</td><td style=\"text-align:left\">");
-  if (heishamonSettings->logHexdump) {
-    httptext = httptext + F("<input type=\"checkbox\" name=\"logHexdump\" value=\"enabled\" checked >");
-  } else {
-    httptext = httptext + F("<input type=\"checkbox\" name=\"logHexdump\" value=\"enabled\">");
-  }
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Debug log to serial1 (GPIO2):</td><td style=\"text-align:left\">");
-  if (heishamonSettings->logSerial1) {
-    httptext = httptext + F("<input type=\"checkbox\" name=\"logSerial1\" value=\"enabled\" checked >");
-  } else {
-    httptext = httptext + F("<input type=\"checkbox\" name=\"logSerial1\" value=\"enabled\">");
-  }
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Emulate optional PCB:</td><td style=\"text-align:left\">");
-  if (heishamonSettings->optionalPCB) {
-    httptext = httptext + F("<input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\" checked >");
-  } else {
-    httptext = httptext + F("<input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">");
-  }
-  httptext = httptext + F("</td></tr>");
-  httptext = httptext + F("</table>");
+  html += F("<tr><td style=\"text-align:right; width: 50%\">");
+  html += F("What if WiFi connection is lost?</td><td style=\"text-align:left\">");
+  html += htmlRadioButton(Settings::hotspot_mode, F("Wait until it comes back"), HotspotMode::None, heishamonSettings->hotspot_mode);
+  html += F("<br/>");
+  html += htmlRadioButton(Settings::hotspot_mode, F("Open secured hotspot"), HotspotMode::Secured, heishamonSettings->hotspot_mode);
+  html += F("<br/>");
+  html += htmlRadioButton(Settings::hotspot_mode, F("Open unsecured hotspot"), HotspotMode::Unsecured, heishamonSettings->hotspot_mode);
+  html += F("</td></tr>");
 
-  httpServer->sendContent(httptext);
+  html += F("<tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Update username:</td><td style=\"text-align:left\">");
+  html += F("<label name=\"username\">admin</label>");
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Current update password:</td><td style=\"text-align:left\">");
+  html += htmlTextBox("current_ota_password", "", "password");
+  html += F(" default password: \"heisha\"");
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("New update password:</td><td style=\"text-align:left\">");
+  html += htmlTextBox("new_ota_password", "", "password");
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+
+  httpServer->sendContent(html);
+
+  html = F("Mqtt topic base:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::mqtt_topic_base, heishamonSettings->mqtt_topic_base);
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Mqtt server:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::mqtt_server, heishamonSettings->mqtt_server);
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Mqtt port:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::mqtt_port, heishamonSettings->mqtt_port);
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Mqtt username:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::mqtt_username, heishamonSettings->mqtt_username);
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+/*
+  html += F("Mqtt password:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::mqtt_password, heishamonSettings->mqtt_password, "password");
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("How often new values are collected from heatpump:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::waitTime, String(heishamonSettings->waitTime), "number");
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("How often all heatpump values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::updateAllTime, String(heishamonSettings->updateAllTime), "number");
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+*/
+  httpServer->sendContent(html);
+
+  html = F("Listen only mode:</td><td style=\"text-align:left\">");
+  html += htmlCheckbox(Settings::listenonly, heishamonSettings->listenonly);
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Debug log to MQTT topic from start:</td><td style=\"text-align:left\">");
+  html += htmlCheckbox(Settings::logMqtt, heishamonSettings->logMqtt);
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Debug log hexdump enable from start:</td><td style=\"text-align:left\">");
+  html += htmlCheckbox(Settings::logHexdump, heishamonSettings->logHexdump);
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Debug log to serial1 (GPIO2):</td><td style=\"text-align:left\">");
+  html += htmlCheckbox(Settings::logSerial1, heishamonSettings->logSerial1);
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Emulate optional PCB:</td><td style=\"text-align:left\">");
+  html += htmlCheckbox(Settings::optionalPCB, heishamonSettings->optionalPCB);
+  html += F("</td></tr>");
+  html += F("</table>");
+
+  httpServer->sendContent(html);
 
   // 1wire
-  httptext = F("<table style=\"width:100%\">");
-  httptext = httptext + F("<tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Use 1wire DS18b20:</td><td style=\"text-align:left\">");
-  if (heishamonSettings->use_1wire) {
-    httptext = httptext + F("<input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\" checked >");
-    httptext = httptext + F("</td></tr>");
-    httptext = httptext + F("</table>");
-    httptext = httptext + F("<table id=\"dallassettings\" style=\"display: table; width:100%\">");
-  } else {
-    httptext = httptext + F("<input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\">");
-    httptext = httptext + F("</td></tr>");
-    httptext = httptext + F("</table>");
-    httptext = httptext + F("<table id=\"dallassettings\" style=\"display: none; width:100%\">");
-  }
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("How often new values are collected from 1wire:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"number\" name=\"waitDallasTime\" value=\"") + heishamonSettings->waitDallasTime + F("\"> seconds (min 5 sec)");
-  httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("How often all 1wire values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">");
-  httptext = httptext + F("<input type=\"number\" name=\"updataAllDallasTime\" value=\"") + heishamonSettings->updataAllDallasTime + F("\"> seconds");
-  httptext = httptext + F("</td></tr>");
-  httptext = httptext + F("</table>");
+  html = F("<table style=\"width:100%\">");
+  html += F("<tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Use 1wire DS18b20:</td><td style=\"text-align:left\">");
+  html += htmlCheckbox(Settings::use_1wire, heishamonSettings->use_1wire, "onclick='ShowHideDallasTable(this)'");
+  html += F("</td></tr>");
+  html += F("</table>");
+  html += F("<table id=\"dallassettings\" style=\"display: table; width:100%\">");
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("How often new values are collected from 1wire:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::waitDallasTime, String(heishamonSettings->waitDallasTime), "number");
+  html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+  html += F("How often all 1wire values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">");
+  html += htmlTextBox(Settings::updataAllDallasTime, String(heishamonSettings->updataAllDallasTime), "number");
+  html += F("</td></tr>");
+  html += F("</table>");
 
-  httpServer->sendContent(httptext);
+  httpServer->sendContent(html);
   // s0
-  httptext = F("<table style=\"width:100%\">");
-  httptext = httptext + F("<tr><td style=\"text-align:right; width: 50%\">");
-  httptext = httptext + F("Use s0 kWh metering:</td><td style=\"text-align:left\">");
-  if (heishamonSettings->use_s0) {
-    httptext = httptext + F("<input type=\"checkbox\" onclick=\"ShowHideS0Table(this)\" name=\"use_s0\" value=\"enabled\" checked >");
-    httptext = httptext + F("</td></tr>");
-    httptext = httptext + F("</table>");
-    httptext = httptext + F("<table id=\"s0settings\" style=\"display: table; width:100%\">");
-  } else {
-    httptext = httptext + F("<input type=\"checkbox\" onclick=\"ShowHideS0Table(this)\" name=\"use_s0\" value=\"enabled\">");
-    httptext = httptext + F("</td></tr>");
-    httptext = httptext + F("</table>");
-    httptext = httptext + F("<table id=\"s0settings\" style=\"display: none; width:100%\">");
-  }
+  html = F("<table style=\"width:100%\">");
+  html += F("<tr><td style=\"text-align:right; width: 50%\">");
+  html += F("Use s0 kWh metering:</td><td style=\"text-align:left\">");
+  html += htmlCheckbox(Settings::use_s0, heishamonSettings->use_s0, "onclick='ShowHideS0Table(this)'");
+  html += F("</td></tr>");
+  html += F("</table>");
+  html += F("<table id=\"s0settings\" style=\"display: table; width:100%\">");
   //begin default S0 pins hack
   if (heishamonSettings->s0Settings[0].gpiopin == 255) heishamonSettings->s0Settings[0].gpiopin = DEFAULT_S0_PIN_1;
   if (heishamonSettings->s0Settings[1].gpiopin == 255) heishamonSettings->s0Settings[1].gpiopin = DEFAULT_S0_PIN_2;
   //end default S0 pins hack
   for (int i = 0; i < NUM_S0_COUNTERS; i++) {
-    httptext = httptext + F("<tr><td style=\"text-align:right; width: 50%\">");
-    httptext = httptext + F("S0 port ") + (i + 1) + F(" GPIO:</td><td style=\"text-align:left\">");
-    httptext = httptext + F("<input type=\"number\" name=\"s0_") + (i + 1) + F("_gpio\" value=\"") + heishamonSettings->s0Settings[i].gpiopin + F("\">");
-    httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-    httptext = httptext + F("S0 port ") + (i + 1) + F(" imp/kwh:</td><td style=\"text-align:left\">");
-    httptext = httptext + F("<input type=\"number\" id=\"s0_ppkwh_") + (i + 1) + F("\" onchange=\"changeMinWatt(") + (i + 1) + F(")\" name=\"s0_") + (i + 1) + F("_ppkwh\" value=\"") + (heishamonSettings->s0Settings[i].ppkwh) + F("\">");
-    httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-    httptext = httptext + F("S0 port ") + (i + 1) + F(" reporting interval during standby/low power usage:</td><td style=\"text-align:left\">");
-    httptext = httptext + F("<input type=\"number\" id=\"s0_interval_") + (i + 1) + F("\" onchange=\"changeMinWatt(") + (i + 1) + F(")\" name=\"s0_") + (i + 1) + F("_interval\" value=\"") + (heishamonSettings->s0Settings[i].lowerPowerInterval) + F("\"> seconds");
-    httptext = httptext + F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
-    httptext = httptext + F("S0 port ") + (i + 1) + F(" standby/low power usage threshold:</td><td style=\"text-align:left\"><label id=\"s0_minwatt_") + (i + 1) + F("\">") + (int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval) + F("</label> Watt");
-    httptext = httptext + F("</td></tr>");
+    String s0PortLabel = F("S0 port ");
+    s0PortLabel += i + 1;
+    String s0Prefix = F("s0_");
+    s0Prefix += i + 1;
+    html += F("<tr><td style=\"text-align:right; width: 50%\">");
+    html += s0PortLabel + F(" GPIO:</td><td style=\"text-align:left\">");
+    html += htmlTextBox(s0Prefix + F("_gpio"), String(heishamonSettings->s0Settings[i].gpiopin), "number");
+    html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+    html += s0PortLabel + F(" imp/kwh:</td><td style=\"text-align:left\">");
+    html += htmlTextBox(s0Prefix + F("_ppkwh"), String(heishamonSettings->s0Settings[i].ppkwh), "number");
+    html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+    html += s0PortLabel + F(" reporting interval during standby/low power usage:</td><td style=\"text-align:left\">");
+    html += htmlTextBox(s0Prefix + F("_interval"), String(heishamonSettings->s0Settings[i].lowerPowerInterval), "number");
+    html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
+    html += s0PortLabel + F(" standby/low power usage threshold:</td><td style=\"text-align:left\"><label id=\"s0_minwatt_") + (i + 1) + F("\">") + (int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval) + F("</label> Watt");
+    html += F("</td></tr>");
   }
-  httptext = httptext + F("</table>");
+  html += F("</table>");
 
-  httptext = httptext + F("<br><br>");
-  httptext = httptext + F("<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save\">");
-  httptext = httptext + F("</form>");
-  httptext = httptext + F("<br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\" >Factory reset</a>");
-  httptext = httptext + F("</div>");
-  httpServer->sendContent(httptext);
+  html += F("<br><br>");
+  html += F("<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save\">");
+  html += F("</form>");
+  html += F("<br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\" >Factory reset</a>");
+  html += F("</div>");
+  httpServer->sendContent(html);
 
   httpServer->sendContent_P(menuJS);
   httpServer->sendContent_P(settingsJS);
@@ -744,15 +680,10 @@ bool handleSettings(ESP8266WebServer *httpServer, settingsStruct *heishamonSetti
   /*
    * need to reload some settings in main loop if save was done
    */
-  if (httpServer->args()) {
-    return true;
-  }
-  else {
-    return false;
-  }
+  return httpServer->args();
 }
 
-void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonSettings, String actData[]) {
+void handleSmartcontrol(ESP8266WebServer *httpServer, SettingsStruct *heishamonSettings, String actData[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
@@ -761,8 +692,8 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
   httpServer->sendContent_P(webBodySmartcontrol1);
   httpServer->sendContent_P(webBodySmartcontrol2);
 
-  String httptext = F("<form action=\"/smartcontrol\" method=\"POST\">");
-  httpServer->sendContent(httptext);
+  String html = F("<form action=\"/smartcontrol\" method=\"POST\">");
+  httpServer->sendContent(html);
   httpServer->sendContent_P(webBodyEndDiv);
 
   //Heating curve
@@ -772,11 +703,7 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
   if (httpServer->args()) {
     DynamicJsonDocument jsonDoc(1024);
     //set jsonDoc with current settings
-    if ( heishamonSettings->SmartControlSettings.enableHeatCurve) {
-      jsonDoc["enableHeatCurve"] = "enabled";
-    } else {
-      jsonDoc["enableHeatCurve"] = "disabled";
-    }
+    jsonDoc["enableHeatCurve"] = toString(heishamonSettings->SmartControlSettings.enableHeatCurve);
     jsonDoc["avgHourHeatCurve"] = heishamonSettings->SmartControlSettings.avgHourHeatCurve;
     jsonDoc["heatCurveTargetHigh"] = heishamonSettings->SmartControlSettings.heatCurveTargetHigh;
     jsonDoc["heatCurveTargetLow"] = heishamonSettings->SmartControlSettings.heatCurveTargetLow;
@@ -787,11 +714,7 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
     }
 
     //then overwrite with new settings
-    if (httpServer->hasArg("heatingcurve")) {
-      jsonDoc["enableHeatCurve"] = "enabled";
-    } else {
-      jsonDoc["enableHeatCurve"] = "disabled";
-    }
+    jsonDoc["enableHeatCurve"] = toString(httpServer->hasArg("heatingcurve"));
     if (httpServer->hasArg("average-time")) {
       jsonDoc["avgHourHeatCurve"] = httpServer->arg("average-time");
     }
@@ -807,113 +730,12 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
     if (httpServer->hasArg("hcol")) {
       jsonDoc["heatCurveOutLow"] = httpServer->arg("hcol");
     }
-    if (httpServer->hasArg("lookup0")) {
-      jsonDoc["heatCurveLookup"][0] = httpServer->arg("lookup0");
-    }
-    if (httpServer->hasArg("lookup1")) {
-      jsonDoc["heatCurveLookup"][1] = httpServer->arg("lookup1");
-    }
-    if (httpServer->hasArg("lookup2")) {
-      jsonDoc["heatCurveLookup"][2] = httpServer->arg("lookup2");
-    }
-    if (httpServer->hasArg("lookup3")) {
-      jsonDoc["heatCurveLookup"][3] = httpServer->arg("lookup3");
-    }
-    if (httpServer->hasArg("lookup4")) {
-      jsonDoc["heatCurveLookup"][4] = httpServer->arg("lookup4");
-    }
-    if (httpServer->hasArg("lookup5")) {
-      jsonDoc["heatCurveLookup"][5] = httpServer->arg("lookup5");
-    }
-    if (httpServer->hasArg("lookup6")) {
-      jsonDoc["heatCurveLookup"][6] = httpServer->arg("lookup6");
-    }
-    if (httpServer->hasArg("lookup7")) {
-      jsonDoc["heatCurveLookup"][7] = httpServer->arg("lookup7");
-    }
-    if (httpServer->hasArg("lookup8")) {
-      jsonDoc["heatCurveLookup"][8] = httpServer->arg("lookup8");
-    }
-    if (httpServer->hasArg("lookup9")) {
-      jsonDoc["heatCurveLookup"][9] = httpServer->arg("lookup9");
-    }
-    if (httpServer->hasArg("lookup10")) {
-      jsonDoc["heatCurveLookup"][10] = httpServer->arg("lookup10");
-    }
-    if (httpServer->hasArg("lookup11")) {
-      jsonDoc["heatCurveLookup"][11] = httpServer->arg("lookup11");
-    }
-    if (httpServer->hasArg("lookup12")) {
-      jsonDoc["heatCurveLookup"][12] = httpServer->arg("lookup12");
-    }
-    if (httpServer->hasArg("lookup13")) {
-      jsonDoc["heatCurveLookup"][13] = httpServer->arg("lookup13");
-    }
-    if (httpServer->hasArg("lookup14")) {
-      jsonDoc["heatCurveLookup"][14] = httpServer->arg("lookup14");
-    }
-    if (httpServer->hasArg("lookup15")) {
-      jsonDoc["heatCurveLookup"][15] = httpServer->arg("lookup15");
-    }
-    if (httpServer->hasArg("lookup16")) {
-      jsonDoc["heatCurveLookup"][16] = httpServer->arg("lookup16");
-    }
-    if (httpServer->hasArg("lookup17")) {
-      jsonDoc["heatCurveLookup"][17] = httpServer->arg("lookup17");
-    }
-    if (httpServer->hasArg("lookup18")) {
-      jsonDoc["heatCurveLookup"][18] = httpServer->arg("lookup18");
-    }
-    if (httpServer->hasArg("lookup19")) {
-      jsonDoc["heatCurveLookup"][19] = httpServer->arg("lookup19");
-    }
-    if (httpServer->hasArg("lookup20")) {
-      jsonDoc["heatCurveLookup"][20] = httpServer->arg("lookup20");
-    }
-    if (httpServer->hasArg("lookup21")) {
-      jsonDoc["heatCurveLookup"][21] = httpServer->arg("lookup21");
-    }
-    if (httpServer->hasArg("lookup22")) {
-      jsonDoc["heatCurveLookup"][22] = httpServer->arg("lookup22");
-    }
-    if (httpServer->hasArg("lookup23")) {
-      jsonDoc["heatCurveLookup"][23] = httpServer->arg("lookup23");
-    }
-    if (httpServer->hasArg("lookup24")) {
-      jsonDoc["heatCurveLookup"][24] = httpServer->arg("lookup24");
-    }
-    if (httpServer->hasArg("lookup25")) {
-      jsonDoc["heatCurveLookup"][25] = httpServer->arg("lookup25");
-    }
-    if (httpServer->hasArg("lookup26")) {
-      jsonDoc["heatCurveLookup"][26] = httpServer->arg("lookup26");
-    }
-    if (httpServer->hasArg("lookup27")) {
-      jsonDoc["heatCurveLookup"][27] = httpServer->arg("lookup27");
-    }
-    if (httpServer->hasArg("lookup28")) {
-      jsonDoc["heatCurveLookup"][28] = httpServer->arg("lookup28");
-    }
-    if (httpServer->hasArg("lookup29")) {
-      jsonDoc["heatCurveLookup"][29] = httpServer->arg("lookup29");
-    }
-    if (httpServer->hasArg("lookup30")) {
-      jsonDoc["heatCurveLookup"][30] = httpServer->arg("lookup30");
-    }
-    if (httpServer->hasArg("lookup31")) {
-      jsonDoc["heatCurveLookup"][31] = httpServer->arg("lookup31");
-    }
-    if (httpServer->hasArg("lookup32")) {
-      jsonDoc["heatCurveLookup"][32] = httpServer->arg("lookup32");
-    }
-    if (httpServer->hasArg("lookup33")) {
-      jsonDoc["heatCurveLookup"][33] = httpServer->arg("lookup33");
-    }
-    if (httpServer->hasArg("lookup34")) {
-      jsonDoc["heatCurveLookup"][34] = httpServer->arg("lookup34");
-    }
-    if (httpServer->hasArg("lookup35")) {
-      jsonDoc["heatCurveLookup"][35] = httpServer->arg("lookup35");
+    for (int i = 0; i < 36; i++) {
+      String argName = F("lookup");
+      argName += i;
+      if (httpServer->hasArg(argName)) {
+        jsonDoc["heatCurveLookup"][i] = httpServer->arg(argName);
+      }
     }
 
     if (LittleFS.begin()) {
@@ -936,61 +758,42 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
 
   int heatingMode = actData[76].toInt();
   if (heatingMode == 1) {
-    httptext = F("<div class=\"w3-row-padding\"><div class=\"w3-half\">");
-    if (heishamonSettings->SmartControlSettings.enableHeatCurve == true) {
-      httptext = httptext + F("<input class=\"w3-check\" type=\"checkbox\" name=\"heatingcurve\" checked>");
-    } else {
-      httptext = httptext + F("<input class=\"w3-check\" type=\"checkbox\" name=\"heatingcurve\">");
+    html = F("<div class=\"w3-row-padding\"><div class=\"w3-half\">");
+    html += htmlCheckbox(F("heatingcurve"), heishamonSettings->SmartControlSettings.enableHeatCurve, "class='w3-check'");
+    html += F("<label>Enable smart heating curve</label></div><div class=\"w3-half\"><select class=\"w3-select\" name=\"average-time\">");
+    for (int i = 0; i <= 48; i += 12) {
+      String label;
+      if (i == 0) label = F("No average on outside temperature");
+      else {
+        label = F("Average outside temperature over last ");
+        label += i;
+        label += " hours";
+      }      
+      html += htmlOption(String(i), label, heishamonSettings->SmartControlSettings.avgHourHeatCurve == i);
     }
-    httptext = httptext + F("<label>Enable smart heating curve</label></div><div class=\"w3-half\"><select class=\"w3-select\" name=\"average-time\">");
-    if (heishamonSettings->SmartControlSettings.avgHourHeatCurve == 0) {
-      httptext = httptext + F("<option value=\"0\" selected>No average on outside temperature</option>");
-    } else {
-      httptext = httptext + F("<option value=\"0\">No average on outside temperature</option>");
-    }
-    if (heishamonSettings->SmartControlSettings.avgHourHeatCurve == 12) {
-      httptext = httptext + F("<option value=\"12\" selected>Average outside temperature over last 12 hours</option>");
-    } else {
-      httptext = httptext + F("<option value=\"12\">Average outside temperature over last 12 hours</option>");
-    }
-    if (heishamonSettings->SmartControlSettings.avgHourHeatCurve == 24) {
-      httptext = httptext + F("<option value=\"24\" selected>Average outside temperature over last 24 hours</option>");
-    } else {
-      httptext = httptext + F("<option value=\"24\">Average outside temperature over last 24 hours</option>");
-    }
-    if (heishamonSettings->SmartControlSettings.avgHourHeatCurve == 36) {
-      httptext = httptext + F("<option value=\"36\" selected>Average outside temperature over last 36 hours</option>");
-    } else {
-      httptext = httptext + F("<option value=\"36\">Average outside temperature over last 36 hours</option>");
-    }
-    if (heishamonSettings->SmartControlSettings.avgHourHeatCurve == 48) {
-      httptext = httptext + F("<option value=\"48\" selected>Average outside temperature over last 48 hours</option>");
-    } else {
-      httptext = httptext + F("<option value=\"48\">Average outside temperature over last 48 hours</option>");
-    }
-    httptext = httptext + F("</select></div></div><br><div class=\"w3-row-padding\"><div class=\"w3-half\"><label>Heating Curve Target High Temp</label>");
-    httptext = httptext + F("<input class=\"w3-input w3-border\" type=\"number\" name=\"hcth\" id=\"hcth\" value=\"") + heishamonSettings->SmartControlSettings.heatCurveTargetHigh + F("\" min=\"20\" max=\"60\" required>");
-    httptext = httptext + F("</div><div class=\"w3-half\"><label>Heating Curve Target Low Temp</label>");
-    httptext = httptext + F("<input class=\"w3-input w3-border\" type=\"number\" name=\"hctl\" id=\"hctl\" value=\"") + heishamonSettings->SmartControlSettings.heatCurveTargetLow + F("\" min=\"20\" max=\"60\" required>");
-    httptext = httptext + F("</div></div><div class=\"w3-row-padding\"><div class=\"w3-half\"><label>Heating Curve Outside High Temp</label>");
-    httptext = httptext + F("<input class=\"w3-input w3-border\" type=\"number\" name=\"hcoh\" id=\"hcoh\" value=\"") + heishamonSettings->SmartControlSettings.heatCurveOutHigh + F("\" min=\"-20\" max=\"15\" required>");
-    httptext = httptext + F("</div><div class=\"w3-half\"><label>Heating Curve Outside Low Temp</label>");
-    httptext = httptext + F("<input class=\"w3-input w3-border\" type=\"number\" name=\"hcol\" id=\"hcol\" value=\"") + heishamonSettings->SmartControlSettings.heatCurveOutLow + F("\" min=\"-20\" max=\"15\" required>");
-    httptext = httptext + F("</div></div><br><br>");
-    httptext = httptext + F("<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">");
-    httptext = httptext + F("<div class=\"w3-panel w3-red\">");
-    httptext = httptext + F("<p>");
-    httptext = httptext + getAvgOutsideTemp();
-    httptext = httptext + F("</p>");
-    httpServer->sendContent(httptext);
+    html += F("</select></div></div><br><div class=\"w3-row-padding\"><div class=\"w3-half\"><label>Heating Curve Target High Temp</label>");
+    html += htmlTextBox("hcth", String(heishamonSettings->SmartControlSettings.heatCurveTargetHigh), "number", "id='hcth' class='w3-input w3-border' min='20' max='60' required");
+    html += F("</div><div class=\"w3-half\"><label>Heating Curve Target Low Temp</label>");
+    html += htmlTextBox("hctl", String(heishamonSettings->SmartControlSettings.heatCurveTargetLow), "number", "id='hctl' class='w3-input w3-border' min='20' max='60' required");
+    html += F("</div></div><div class=\"w3-row-padding\"><div class=\"w3-half\"><label>Heating Curve Outside High Temp</label>");
+    html += htmlTextBox("hcoh", String(heishamonSettings->SmartControlSettings.heatCurveOutHigh), "number", "id='hcoh' class='w3-input w3-border' min='-20' max='15' required");
+    html += F("</div><div class=\"w3-half\"><label>Heating Curve Outside Low Temp</label>");
+    html += htmlTextBox("hcol", String(heishamonSettings->SmartControlSettings.heatCurveOutLow), "number", "id='hcol' class='w3-input w3-border' min='-20' max='15' required");
+    html += F("</div></div><br><br>");
+    html += F("<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">");
+    html += F("<div class=\"w3-panel w3-red\">");
+    html += F("<p>");
+    html += getAvgOutsideTemp();
+    html += F("</p>");
+    httpServer->sendContent(html);
     httpServer->sendContent_P(webBodyEndDiv);
 
     httpServer->sendContent_P(webBodySmartcontrolHeatingcurveSVG);
     httpServer->sendContent_P(webBodySmartcontrolHeatingcurve2);
     httpServer->sendContent_P(webBodyEndDiv);
   } else {
-    httptext = F("Heating mode must be \"direct heating\" to enable this option");
-    httpServer->sendContent(httptext);
+    html = F("Heating mode must be \"direct heating\" to enable this option");
+    httpServer->sendContent(html);
     httpServer->sendContent_P(webBodyEndDiv);
   }
 
@@ -998,13 +801,13 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, settingsStruct *heishamonS
 
   //Other example
   //  httpServer->sendContent_P(webBodySmartcontrolOtherexample);
-  //  httptext = "...Loading...";
-  //  httptext = httptext + "";
-  //  httpServer->sendContent(httptext);
+  //  html = "...Loading...";
+  //  html += "";
+  //  httpServer->sendContent(html);
   //  httpServer->sendContent_P(webBodyEndDiv);
 
-  httptext = "</form>";
-  httpServer->sendContent(httptext);
+  html = "</form>";
+  httpServer->sendContent(html);
   httpServer->sendContent_P(webBodyEndDiv);
 
   httpServer->sendContent_P(menuJS);
@@ -1021,7 +824,7 @@ void handleWifiScan(ESP8266WebServer *httpServer) {
   httpServer->send(200, "application/json", "");
 
   if (numSsid > 0) { //found wifi networks
-    String httptext = "[";
+    String html = "[";
     int indexes[numSsid];
     for (int i = 0; i < numSsid; i++) { //fill the sorted list with normal indexes first
       indexes[i] = i;
@@ -1049,13 +852,13 @@ void handleWifiScan(ESP8266WebServer *httpServer) {
     for (int i = 0; i < numSsid; i++) { //then output json
       if (indexes[i] == -1) continue;
       if (!firstSSID) {
-        httptext = httptext + ",";
+        html += ",";
       }
-      httptext = httptext + "{\"ssid\":\"" + WiFi.SSID(indexes[i]) + "\", \"rssi\": \"" + dBmToQuality(WiFi.RSSI(indexes[i])) + "%\"}";
+      html += "{\"ssid\":\"" + WiFi.SSID(indexes[i]) + "\", \"rssi\": \"" + dBmToQuality(WiFi.RSSI(indexes[i])) + "%\"}";
       firstSSID = false;
     }
-    httptext = httptext + "]";
-    httpServer->sendContent(httptext);
+    html += "]";
+    httpServer->sendContent(html);
   }
   httpServer->sendContent("");
   httpServer->client().stop();
@@ -1073,7 +876,7 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
   httpServer->sendHeader("Access-Control-Allow-Origin", "*");
   httpServer->send(200, "text/plain", "");
 
-  String httptext = "";
+  String html = "";
   if (httpServer->method() == HTTP_GET) {
     for (uint8_t i = 0; i < httpServer->args(); i++) {
       unsigned char cmd[256] = { 0 };
@@ -1083,7 +886,8 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
       for (uint8_t x = 0; x < sizeof(commands) / sizeof(commands[0]); x++) {
         if (strcmp(httpServer->argName(i).c_str(), commands[x].name) == 0) {
           len = commands[x].func((char *)httpServer->arg(i).c_str(), cmd, log_msg);
-          httptext = httptext + log_msg + "\n";
+          html += log_msg;
+          html += F("\n");
           log_message(log_msg);
           send_command(cmd, len);
         }
@@ -1099,7 +903,8 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
         for (uint8_t x = 0; x < sizeof(optionalCommands) / sizeof(optionalCommands[0]); x++) {
           if (strcmp(httpServer->argName(i).c_str(), optionalCommands[x].name) == 0) {
             len = optionalCommands[x].func((char *)httpServer->arg(i).c_str(), log_msg);
-            httptext = httptext + log_msg + "\n";
+            html += log_msg;
+            html += F("\n");
             log_message(log_msg);
           }
         }
@@ -1107,7 +912,7 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
     }
   }
 
-  httpServer->sendContent(httptext);
+  httpServer->sendContent(html);
   httpServer->sendContent("");
   httpServer->client().stop();
 }
