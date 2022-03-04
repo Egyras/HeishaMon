@@ -597,7 +597,7 @@ void setupConditionals() {
   }
 
   //these two after optional pcb because it needs to send a datagram fast after boot
-  if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime);
+  if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updateAllDallasTime, heishamonSettings.waitDallasTime);
   if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings);
 }
 void setup() {
@@ -608,10 +608,8 @@ void setup() {
   //set boottime
   getUptime();
   
-  
   setupSerial();
   setupSerial1();
-  
   
   Serial.println();
   Serial.println(F("--- HEISHAMON ---"));
@@ -627,7 +625,17 @@ void setup() {
   setupMqtt();
   setupHttp();
 
-  switchSerial(); //switch serial to gpio13/gpio15
+  bool debugOutputOnSerial = false;
+  #ifdef DEBUG_ESP_PORT
+  debugOutputOnSerial = (&DEBUG_ESP_PORT == &Serial);
+  #endif
+  if (debugOutputOnSerial) {
+    Serial.println(F("WARNING: DEBUG_ESP_PORT is set to Serial. Not switching Serial; heatpump communication won't work."));
+  }
+  else {
+    switchSerial(); //switch serial to gpio13/gpio15
+  }
+
   WiFi.printDiag(Serial1);
 
   setupConditionals(); //setup for routines based on settings
