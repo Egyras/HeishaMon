@@ -3,35 +3,39 @@
 #include "smartcontrol.h"
 #include "ArduinoJson.h"
 
-// Constants for names of settings
 struct Settings {
-    static const char* hotspot_mode;
-    static const char* wifi_ssid;
-    static const char* wifi_password;
-    static const char* wifi_hostname;
-    static const char* ota_password;
-    static const char* mqtt_topic_base;
-    static const char* mqtt_server;
-    static const char* mqtt_port;
-    static const char* mqtt_username;
-    static const char* mqtt_password;
-    static const char* use_1wire;
-    static const char* use_s0;
-    static const char* listenonly;
-    static const char* logMqtt;
-    static const char* logHexdump;
-    static const char* logSerial1;
-    static const char* optionalPCB;
-    static const char* waitTime;
-    static const char* waitDallasTime;
-    static const char* updateAllTime;
-    static const char* updataAllDallasTime;
-    static const char* s0_1_gpio;
-    static const char* s0_1_ppkwh;
-    static const char* s0_1_interval;
-    static const char* s0_2_gpio;
-    static const char* s0_2_ppkwh;
-    static const char* s0_2_interval;
+  // Constants for names of settings (used in JSON and HTTP POST)
+  static const char* hotspot_mode;
+  static const char* wifi_ssid;
+  static const char* wifi_password;
+  static const char* wifi_hostname;
+  static const char* ota_password;
+  static const char* mqtt_topic_base;
+  static const char* mqtt_server;
+  static const char* mqtt_port;
+  static const char* mqtt_username;
+  static const char* mqtt_password;
+  static const char* use_1wire;
+  static const char* use_s0;
+  static const char* listenonly;
+  static const char* logMqtt;
+  static const char* logHexdump;
+  static const char* logSerial1;
+  static const char* optionalPCB;
+  static const char* waitTime;
+  static const char* waitDallasTime;
+  static const char* updateAllTime;
+  static const char* updateAllDallasTime;
+  static const char* s0_1_gpio;
+  static const char* s0_1_ppkwh;
+  static const char* s0_1_interval;
+  static const char* s0_2_gpio;
+  static const char* s0_2_ppkwh;
+  static const char* s0_2_interval;
+
+  // Conversion of boolean value to/from string
+  static const char* toString(bool value);
+  static bool toBool(const char* value);
 };
 
 enum HotspotMode {
@@ -45,7 +49,7 @@ struct SettingsStruct {
   unsigned int waitTime = 5; // how often data is read from heatpump
   unsigned int waitDallasTime = 5; // how often temps are read from 1wire
   unsigned int updateAllTime = 300; // how often all data is resend to mqtt
-  unsigned int updataAllDallasTime = 300; //how often all 1wire data is resent to mqtt
+  unsigned int updateAllDallasTime = 300; //how often all 1wire data is resent to mqtt
 
   const char* hotspot_ssid = "HeishaMon-Setup";
   HotspotMode hotspot_mode = HotspotMode::Unsecured;
@@ -76,6 +80,3 @@ struct SettingsStruct {
   void fromJson(DynamicJsonDocument& jsonDoc);
   void toJson(DynamicJsonDocument& jsonDoc);
 };
-
-extern const char* toString(bool value);
-extern bool toBool(const char* value);

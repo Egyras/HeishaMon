@@ -20,7 +20,7 @@ const char* Settings::optionalPCB = "optionalPCB";
 const char* Settings::waitTime = "waitTime";
 const char* Settings::waitDallasTime = "waitDallasTime";
 const char* Settings::updateAllTime = "updateAllTime";
-const char* Settings::updataAllDallasTime = "updataAllDallasTime";
+const char* Settings::updateAllDallasTime = "updataAllDallasTime"; // NOTE: typo for backwards compatibility
 const char* Settings::s0_1_gpio = "s0_1_gpio";
 const char* Settings::s0_1_ppkwh = "s0_1_ppkwh";
 const char* Settings::s0_1_interval = "s0_1_interval";
@@ -31,14 +31,14 @@ const char* Settings::s0_2_interval = "s0_2_interval";
 const char* enabled = "enabled";
 const char* disabled = "disabled";
 
-const char* toString(bool value)
+const char* Settings::toString(bool value)
 {
     return value ? enabled : disabled;
 }
 
-bool toBool(const char* value)
+bool Settings::toBool(const char* value)
 {
-    return value == enabled;
+    return (strcmp(value, enabled) == 0);
 }
 
 void SettingsStruct::fromJson(DynamicJsonDocument& jsonDoc)
@@ -53,21 +53,21 @@ void SettingsStruct::fromJson(DynamicJsonDocument& jsonDoc)
     if (jsonDoc[Settings::mqtt_port]) strncpy(mqtt_port, jsonDoc[Settings::mqtt_port], sizeof(mqtt_port));
     if (jsonDoc[Settings::mqtt_username]) strncpy(mqtt_username, jsonDoc[Settings::mqtt_username], sizeof(mqtt_username));
     if (jsonDoc[Settings::mqtt_password]) strncpy(mqtt_password, jsonDoc[Settings::mqtt_password], sizeof(mqtt_password));
-    use_1wire = toBool(jsonDoc[Settings::use_1wire]);
-    use_s0 = toBool(jsonDoc[Settings::use_s0]);
-    listenonly = toBool(jsonDoc[Settings::listenonly]);
-    logMqtt = toBool(jsonDoc[Settings::logMqtt]);
-    logHexdump = toBool(jsonDoc[Settings::logHexdump]);
-    logSerial1 = toBool(jsonDoc[Settings::logSerial1]);
-    optionalPCB = toBool(jsonDoc[Settings::optionalPCB]);
+    use_1wire = Settings::toBool(jsonDoc[Settings::use_1wire]);
+    use_s0 = Settings::toBool(jsonDoc[Settings::use_s0]);
+    listenonly = Settings::toBool(jsonDoc[Settings::listenonly]);
+    logMqtt = Settings::toBool(jsonDoc[Settings::logMqtt]);
+    logHexdump = Settings::toBool(jsonDoc[Settings::logHexdump]);
+    logSerial1 = Settings::toBool(jsonDoc[Settings::logSerial1]);
+    optionalPCB = Settings::toBool(jsonDoc[Settings::optionalPCB]);
     if (jsonDoc[Settings::waitTime]) waitTime = jsonDoc[Settings::waitTime];
     if (waitTime < 5) waitTime = 5;
     if (jsonDoc[Settings::waitDallasTime]) waitDallasTime = jsonDoc[Settings::waitDallasTime];
     if (waitDallasTime < 5) waitDallasTime = 5;
     if (jsonDoc[Settings::updateAllTime]) updateAllTime = jsonDoc[Settings::updateAllTime];
     if (updateAllTime < waitTime) updateAllTime = waitTime;
-    if (jsonDoc[Settings::updataAllDallasTime]) updataAllDallasTime = jsonDoc[Settings::updataAllDallasTime];
-    if (updataAllDallasTime < waitDallasTime) updataAllDallasTime = waitDallasTime;
+    if (jsonDoc[Settings::updateAllDallasTime]) updateAllDallasTime = jsonDoc[Settings::updateAllDallasTime];
+    if (updateAllDallasTime < waitDallasTime) updateAllDallasTime = waitDallasTime;
     if (jsonDoc[Settings::s0_1_gpio]) s0Settings[0].gpiopin = jsonDoc[Settings::s0_1_gpio];
     if (jsonDoc[Settings::s0_1_ppkwh]) s0Settings[0].ppkwh = jsonDoc[Settings::s0_1_ppkwh];
     if (jsonDoc[Settings::s0_1_interval]) s0Settings[0].lowerPowerInterval = jsonDoc[Settings::s0_1_interval];
@@ -89,15 +89,15 @@ void SettingsStruct::toJson(DynamicJsonDocument& jsonDoc)
     jsonDoc[Settings::mqtt_port] = mqtt_port;
     jsonDoc[Settings::mqtt_username] = mqtt_username;
     jsonDoc[Settings::mqtt_password] = mqtt_password;
-    jsonDoc[Settings::use_1wire] = toString(use_1wire);
-    jsonDoc[Settings::use_s0] = toString(use_s0);
-    jsonDoc[Settings::listenonly] = toString(listenonly);
-    jsonDoc[Settings::logMqtt] = toString(logMqtt);
-    jsonDoc[Settings::logHexdump] = toString(logHexdump);
-    jsonDoc[Settings::logSerial1] = toString(logSerial1);
-    jsonDoc[Settings::optionalPCB] = toString(optionalPCB);
+    jsonDoc[Settings::use_1wire] = Settings::toString(use_1wire);
+    jsonDoc[Settings::use_s0] = Settings::toString(use_s0);
+    jsonDoc[Settings::listenonly] = Settings::toString(listenonly);
+    jsonDoc[Settings::logMqtt] = Settings::toString(logMqtt);
+    jsonDoc[Settings::logHexdump] = Settings::toString(logHexdump);
+    jsonDoc[Settings::logSerial1] = Settings::toString(logSerial1);
+    jsonDoc[Settings::optionalPCB] = Settings::toString(optionalPCB);
     jsonDoc[Settings::waitTime] = waitTime;
     jsonDoc[Settings::waitDallasTime] = waitDallasTime;
     jsonDoc[Settings::updateAllTime] = updateAllTime;
-    jsonDoc[Settings::updataAllDallasTime] = updataAllDallasTime;
+    jsonDoc[Settings::updateAllDallasTime] = updateAllDallasTime;
 }
