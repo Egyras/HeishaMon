@@ -968,7 +968,7 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
   httpServer->sendHeader("Access-Control-Allow-Origin", "*");
   httpServer->send(200, "text/plain", "");
 
-  String html = "";
+  String response = "";
   if (httpServer->method() == HTTP_GET) {
     for (uint8_t i = 0; i < httpServer->args(); i++) {
       unsigned char cmd[256] = { 0 };
@@ -978,8 +978,8 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
       for (uint8_t x = 0; x < sizeof(commands) / sizeof(commands[0]); x++) {
         if (strcmp(httpServer->argName(i).c_str(), commands[x].name) == 0) {
           len = commands[x].func((char *)httpServer->arg(i).c_str(), cmd, log_msg);
-          html += log_msg;
-          html += F("\n");
+          response += log_msg;
+          response += F("\n");
           log_message(log_msg);
           send_command(cmd, len);
         }
@@ -995,8 +995,8 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
         for (uint8_t x = 0; x < sizeof(optionalCommands) / sizeof(optionalCommands[0]); x++) {
           if (strcmp(httpServer->argName(i).c_str(), optionalCommands[x].name) == 0) {
             len = optionalCommands[x].func((char *)httpServer->arg(i).c_str(), log_msg);
-            html += log_msg;
-            html += F("\n");
+            response += log_msg;
+            response += F("\n");
             log_message(log_msg);
           }
         }
@@ -1004,7 +1004,7 @@ void handleREST(ESP8266WebServer *httpServer, bool optionalPCB) {
     }
   }
 
-  httpServer->sendContent(html);
+  httpServer->sendContent(response);
   httpServer->sendContent("");
   httpServer->client().stop();
 }
