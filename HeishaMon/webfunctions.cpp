@@ -916,7 +916,7 @@ void handleWifiScan(ESP8266WebServer *httpServer) {
   httpServer->send(200, "application/json", "");
 
   if (numSsid > 0) { //found wifi networks
-    String html = "[";
+    String response = "[";
     int indexes[numSsid];
     for (int i = 0; i < numSsid; i++) { //fill the sorted list with normal indexes first
       indexes[i] = i;
@@ -944,13 +944,13 @@ void handleWifiScan(ESP8266WebServer *httpServer) {
     for (int i = 0; i < numSsid; i++) { //then output json
       if (indexes[i] == -1) continue;
       if (!firstSSID) {
-        html += ",";
+        response += ",";
       }
-      html += "{\"ssid\":\"" + WiFi.SSID(indexes[i]) + "\", \"rssi\": \"" + dBmToQuality(WiFi.RSSI(indexes[i])) + "%\"}";
+      response += "{\"ssid\":\"" + WiFi.SSID(indexes[i]) + "\", \"rssi\": \"" + dBmToQuality(WiFi.RSSI(indexes[i])) + "%\"}";
       firstSSID = false;
     }
-    html += "]";
-    httpServer->sendContent(html);
+    response += "]";
+    httpServer->sendContent(response);
   }
   httpServer->sendContent("");
   httpServer->client().stop();
