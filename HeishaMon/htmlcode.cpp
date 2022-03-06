@@ -7,6 +7,7 @@ String Html::leftMenu(String currentUrl) {
     String html = F("<div  id='leftMenu' class='w3-sidebar w3-bar-block w3-card w3-animate-left' style='display:none'>");
     if (currentUrl != F("/")) html += menuItem(F("Home"), F("/"));
     if (currentUrl != F("/topics")) html += menuItem(F("Select topics"), F("/topics"));
+    if (currentUrl != F("/stats")) html += menuItem(F("Statistics"), F("/stats"));
     if (currentUrl != F("/settings")) html += menuItem(F("Settings"), F("/settings"));
     html += menuItem(F("Firmware"), F("/firmware"));
     html += menuItem(F("Reboot"), F("/reboot"));

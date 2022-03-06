@@ -7,6 +7,7 @@
 #include <LittleFS.h>
 #include "dallas.h"
 #include "settings.h"
+#include "stats.h"
 
 static IPAddress apIP(192, 168, 4, 1);
 
@@ -26,6 +27,7 @@ void saveJsonToConfig(DynamicJsonDocument &jsonDoc);
 void loadSettings(SettingsStruct *heishamonSettings);
 bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSettings);
 void handleTopicSelection(ESP8266WebServer& httpServer, SettingsStruct& settings);
+void handleTopicStats(ESP8266WebServer& httpServer, Stats* topicStats, uint32_t& statsUpdates, SettingsStruct& settings);
 void handleWifiScan(ESP8266WebServer *httpServer);
 void handleSmartcontrol(ESP8266WebServer *httpServer, SettingsStruct *heishamonSettings, String actData[]);
 void handleREST(ESP8266WebServer *httpServer, bool optionalPCB);

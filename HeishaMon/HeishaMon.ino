@@ -13,6 +13,7 @@
 #include "webfunctions.h"
 #include "decode.h"
 #include "commands.h"
+#include "stats.h"
 
 DNSServer dnsServer;
 
@@ -67,6 +68,9 @@ byte  data_length = 0;
 // store actual data in an String array
 String actData[NUMBER_OF_TOPICS];
 String actOptData[NUMBER_OF_OPT_TOPICS];
+
+Stats selectedTopicStats[MAX_SELECTED_TOPICS];
+uint32_t selectedTopicStatsUpdates = 0;
 
 // log message to sprintf to
 char log_msg[256];
@@ -269,6 +273,20 @@ bool isValidReceiveChecksum() {
   return (chk == 0); //all received bytes + checksum should result in 0
 }
 
+void updateSelectedTopicStats() {
+  if (heishamonSettings.selected_topics_count == 0) return;
+
+  for (int i = 0; i < heishamonSettings.selected_topics_count; i++) {
+    int selectedTopic = heishamonSettings.selected_topics[i];
+    float topicValue = actData[selectedTopic].toFloat();
+    selectedTopicStats[i].update(topicValue);
+  }
+  selectedTopicStatsUpdates++;
+  #ifdef DEBUG_ESP_PORT
+    DEBUG_ESP_PORT.printf("Updated selected topics stats %u times.\n", selectedTopicStatsUpdates);
+  #endif
+}
+
 bool readSerial()
 {
   if (data_length == 0 ) totalreads++; //this is the start of a new read
@@ -311,6 +329,7 @@ bool readSerial()
       if (data_length == 203) { //for now only return true for this datagram because we can not decode the shorter datagram yet
         data_length = 0;
         decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
+        updateSelectedTopicStats();
         return true;
       }
       else if (data_length == 20 ) { //optional pcb acknowledge answer
@@ -469,6 +488,9 @@ void setupHttp() {
   });
   httpServer.on("/topics", [] {
     handleTopicSelection(httpServer, heishamonSettings);
+  });
+  httpServer.on("/stats", [] {
+    handleTopicStats(httpServer, selectedTopicStats, selectedTopicStatsUpdates, heishamonSettings);
   });
   httpServer.on("/wifiscan", [] {
     handleWifiScan(&httpServer);

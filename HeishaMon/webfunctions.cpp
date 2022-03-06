@@ -685,6 +685,9 @@ void handleTopicSelection(ESP8266WebServer& httpServer, SettingsStruct& settings
     settings.toJson(jsonDoc);
     saveJsonToConfig(jsonDoc);
   }
+  else {
+    httpServer.sendContent(F("<p>Select the topics to be shown on the Home screen.</p>"));
+  }
 
   httpServer.sendContent(F("<form method='POST' action=''>"));
   httpServer.sendContent(F("<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th></tr></thead><tbody>"));
@@ -712,6 +715,58 @@ void handleTopicSelection(ESP8266WebServer& httpServer, SettingsStruct& settings
   httpServer.sendContent(F("</tbody></table>"));
   httpServer.sendContent(F("<input class='w3-green w3-button' type='submit' value='Save'>"));
   httpServer.sendContent(F("</form>"));
+
+  httpServer.sendContent_P(menuJS);
+  httpServer.sendContent_P(webFooter);
+  httpServer.sendContent("");
+  httpServer.client().stop();
+}
+
+void handleTopicStats(ESP8266WebServer& httpServer, Stats* topicStats, uint32_t& statsUpdates, SettingsStruct& settings) {
+  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer.send(200, "text/html", "");
+  httpServer.sendContent_P(webHeader);
+  httpServer.sendContent_P(webCSS);
+  httpServer.sendContent_P(webBodyStart);
+  httpServer.sendContent(Html::leftMenu(httpServer.uri()));
+
+  String html = F("<p>");
+  if (httpServer.hasArg("reset")) {
+    for (int i = 0; i < settings.selected_topics_count; i++) {
+      topicStats[i].reset();
+    }
+    statsUpdates = 0;
+
+    html += F("Statistics reset.</p>");
+  } else {
+    html += statsUpdates;
+    html += F(" statistics updates. <a href='?reset'>Reset statistics</a></p>");
+  }
+  httpServer.sendContent(html);
+
+  httpServer.sendContent(F("<table class='w3-table-all'>"));
+  httpServer.sendContent(F("<thead><tr class='w3-red'><th>Topic</th><th>Name</th><th>Min</th><th>Max</th><th>Avg</th></tr></thead>"));
+  httpServer.sendContent(F("<tbody>"));
+
+  for (int i = 0; i < settings.selected_topics_count; i++) {
+    int topicId = settings.selected_topics[i];
+    const Stats& selectedTopicStats = topicStats[i];
+
+    String htmlTableRow = F("<tr><td>TOP");
+    htmlTableRow += topicId;
+    htmlTableRow += F("</td><td>");
+    htmlTableRow += topics[topicId];
+    htmlTableRow += F("</td><td>");
+    htmlTableRow += String(selectedTopicStats.min, 1);
+    htmlTableRow += F("</td><td>");
+    htmlTableRow += String(selectedTopicStats.max, 1);
+    htmlTableRow += F("</td><td>");
+    htmlTableRow += String(selectedTopicStats.avg(statsUpdates), 1);
+    htmlTableRow += F("</td></tr>");
+    httpServer.sendContent(htmlTableRow);
+  }
+
+  httpServer.sendContent(F("</tbody></table>"));
 
   httpServer.sendContent_P(menuJS);
   httpServer.sendContent_P(webFooter);
