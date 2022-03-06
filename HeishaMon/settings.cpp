@@ -27,6 +27,8 @@ const char* Settings::s0_1_interval = "s0_1_interval";
 const char* Settings::s0_2_gpio = "s0_2_gpio";
 const char* Settings::s0_2_ppkwh = "s0_2_ppkwh";
 const char* Settings::s0_2_interval = "s0_2_interval";
+const char* Settings::show_all_topics = "show_all_topics";
+const char* Settings::selected_topics = "selected_topics";
 
 const char* enabled = "enabled";
 const char* disabled = "disabled";
@@ -41,7 +43,7 @@ bool Settings::toBool(const char* value)
     return (strcmp(value, enabled) == 0);
 }
 
-void SettingsStruct::fromJson(DynamicJsonDocument& jsonDoc)
+void SettingsStruct::fromJson(JsonDocument& jsonDoc)
 {
     if (jsonDoc[Settings::hotspot_mode]) hotspot_mode = (HotspotMode)atoi(jsonDoc[Settings::hotspot_mode]);
     if (jsonDoc[Settings::wifi_ssid]) strncpy(wifi_ssid, jsonDoc[Settings::wifi_ssid], sizeof(wifi_ssid));
@@ -74,9 +76,14 @@ void SettingsStruct::fromJson(DynamicJsonDocument& jsonDoc)
     if (jsonDoc[Settings::s0_2_gpio]) s0Settings[1].gpiopin = jsonDoc[Settings::s0_2_gpio];
     if (jsonDoc[Settings::s0_2_ppkwh]) s0Settings[1].ppkwh = jsonDoc[Settings::s0_2_ppkwh];
     if (jsonDoc[Settings::s0_2_interval] ) s0Settings[1].lowerPowerInterval = jsonDoc[Settings::s0_2_interval];
+    if (jsonDoc[Settings::selected_topics]) {
+        JsonArray jsonSelectedTopics = jsonDoc[Settings::selected_topics].as<JsonArray>();
+        selected_topics_count = jsonSelectedTopics.size();
+        copyArray(jsonSelectedTopics, selected_topics); 
+    }
 }
 
-void SettingsStruct::toJson(DynamicJsonDocument& jsonDoc)
+void SettingsStruct::toJson(JsonDocument& jsonDoc)
 {
     char hotspotModeBuf[4];
     jsonDoc[Settings::hotspot_mode] = itoa(hotspot_mode, hotspotModeBuf, 10);
@@ -100,4 +107,7 @@ void SettingsStruct::toJson(DynamicJsonDocument& jsonDoc)
     jsonDoc[Settings::waitDallasTime] = waitDallasTime;
     jsonDoc[Settings::updateAllTime] = updateAllTime;
     jsonDoc[Settings::updateAllDallasTime] = updateAllDallasTime;
+
+    JsonArray jsonSelectedTopics = jsonDoc[Settings::selected_topics].to<JsonArray>();
+    copyArray(selected_topics, selected_topics_count, jsonSelectedTopics);
 }

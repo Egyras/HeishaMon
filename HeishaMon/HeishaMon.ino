@@ -447,7 +447,7 @@ void setupHttp() {
     handleREST(&httpServer, heishamonSettings.optionalPCB);
   });
   httpServer.on("/tablerefresh", [] {
-    handleTableRefresh(&httpServer, actData);
+    handleTableRefresh(&httpServer, actData, heishamonSettings);
   });
   httpServer.on("/json", [] {
     handleJsonOutput(&httpServer, actData);
@@ -466,6 +466,9 @@ void setupHttp() {
       // reload some settings during runtime
       setupConditionals();
     }
+  });
+  httpServer.on("/topics", [] {
+    handleTopicSelection(httpServer, heishamonSettings);
   });
   httpServer.on("/wifiscan", [] {
     handleWifiScan(&httpServer);

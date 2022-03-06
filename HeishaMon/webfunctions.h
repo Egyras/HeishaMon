@@ -17,7 +17,7 @@ int getWifiQuality(void);
 int getFreeMemory(void);
 
 void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReconnects, SettingsStruct *heishamonSettings);
-void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]);
+void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], SettingsStruct& settings);
 void handleJsonOutput(ESP8266WebServer *httpServer, String actData[]);
 void handleFactoryReset(ESP8266WebServer *httpServer);
 void handleReboot(ESP8266WebServer *httpServer);
@@ -25,6 +25,7 @@ void handleDebug(ESP8266WebServer *httpServer, char *hex, byte hex_len);
 void saveJsonToConfig(DynamicJsonDocument &jsonDoc);
 void loadSettings(SettingsStruct *heishamonSettings);
 bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSettings);
+void handleTopicSelection(ESP8266WebServer& httpServer, SettingsStruct& settings);
 void handleWifiScan(ESP8266WebServer *httpServer);
 void handleSmartcontrol(ESP8266WebServer *httpServer, SettingsStruct *heishamonSettings, String actData[]);
 void handleREST(ESP8266WebServer *httpServer, bool optionalPCB);

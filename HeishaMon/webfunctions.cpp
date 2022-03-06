@@ -12,10 +12,8 @@
 #define UPTIME_OVERFLOW 4294967295 // Uptime overflow value
 
 static int numSsid = 0;
-char htmlBuf[256];
 
 void log_message(char* string);
-
 
 void getWifiScanResults(int networksFound) {
   numSsid = networksFound;
@@ -89,6 +87,10 @@ void loadSettings(SettingsStruct *heishamonSettings) {
         log_message(log_msg);
         if (!error) {
           log_message((char *)"\nparsed json");
+          #ifdef DEBUG_ESP_PORT
+            DEBUG_ESP_PORT.println(F("Loading settings from JSON:"));
+            serializeJsonPretty(jsonDoc, DEBUG_ESP_PORT);
+          #endif
           heishamonSettings->fromJson(jsonDoc);
         } else {
           log_message("Failed to load json config, forcing config reset.");
@@ -181,13 +183,14 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReco
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(webCSS);
   httpServer->sendContent_P(webBodyStart);
-  httpServer->sendContent_P(webBodyRoot1);
-  httpServer->sendContent(heishamon_version);
-  httpServer->sendContent_P(webBodyRoot2);
+  httpServer->sendContent(Html::leftMenu(httpServer->uri()));
 
+  // Tabs
+  httpServer->sendContent_P(webBodyRootHeatpumpTab);
   if (heishamonSettings->use_1wire) httpServer->sendContent_P(webBodyRootDallasTab);
   if (heishamonSettings->use_s0) httpServer->sendContent_P(webBodyRootS0Tab);
   httpServer->sendContent_P(webBodyRootConsoleTab);
+
   httpServer->sendContent_P(webBodyEndDiv);
 
   httpServer->sendContent_P(webBodyRootStatusWifi);
@@ -202,7 +205,18 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReco
   httpServer->sendContent(getUptime());
   httpServer->sendContent_P(webBodyEndDiv);
 
-  httpServer->sendContent_P(webBodyRootHeatpumpValues);
+  httpServer->sendContent_P(webBodyRootHeatpumpHeader);
+  heishamonSettings->show_all_topics = httpServer->hasArg(Settings::show_all_topics); 
+  if (heishamonSettings->show_all_topics || heishamonSettings->selected_topics_count == 0) {
+    httpServer->sendContent(F("Showing all topics. "));
+    if (heishamonSettings->selected_topics_count > 0) {
+      httpServer->sendContent(F("<a href='?show_selected'>Show selected topics.</a>"));
+    }
+  } else {
+    httpServer->sendContent(F("Showing <a href='/topics'>selected topics</a>. <a href='?show_all_topics'>Show all topics.</a>"));
+  }
+  httpServer->sendContent_P(webBodyRootHeatpumpTable);
+
   if (heishamonSettings->use_1wire)httpServer->sendContent_P(webBodyRootDallasValues);
   if (heishamonSettings->use_s0)  httpServer->sendContent_P(webBodyRootS0Values);
   httpServer->sendContent_P(webBodyRootConsole);
@@ -216,7 +230,7 @@ void handleRoot(ESP8266WebServer *httpServer, float readpercentage, int mqttReco
   httpServer->client().stop();
 }
 
-void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]) {
+void handleTableRefresh(ESP8266WebServer *httpServer, String actData[], SettingsStruct& settings) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   if (httpServer->hasArg("1wire")) {
@@ -224,7 +238,14 @@ void handleTableRefresh(ESP8266WebServer *httpServer, String actData[]) {
   } else if (httpServer->hasArg("s0")) {
     httpServer->sendContent(s0TableOutput());
   } else {
+    bool onlySelectedTopics = !settings.show_all_topics && (settings.selected_topics_count > 0);
+    int i = 0;
     for (unsigned int topic = 0 ; topic < NUMBER_OF_TOPICS ; topic++) {
+      if (onlySelectedTopics) {
+        if (i == settings.selected_topics_count) break;
+        if (topic != settings.selected_topics[i]) continue;
+        i++;
+      }
       String topicdesc;
       const char *valuetext = "value";
       if (strcmp_P(valuetext, topicDescription[topic][0]) == 0) {
@@ -346,62 +367,14 @@ void saveJsonToConfig(DynamicJsonDocument &jsonDoc) {
   if (LittleFS.begin()) {
     File configFile = LittleFS.open("/config.json", "w");
     if (configFile) {
+      #ifdef DEBUG_ESP_PORT
+      DEBUG_ESP_PORT.println("Writing JSON to config file:");
+      serializeJsonPretty(jsonDoc, DEBUG_ESP_PORT);
+      #endif
       serializeJson(jsonDoc, configFile);
       configFile.close();
     }
   }
-}
-
-String htmlTextBox(String name, String value, const char* type = "text", const char* additionalAttrs = "")
-{
-  snprintf(
-    htmlBuf,
-    sizeof(htmlBuf),
-    "<input type='%s' name='%s' value='%s' %s/>",
-    type,
-    name.c_str(),
-    value.c_str(),
-    additionalAttrs
-    );
-  return String(htmlBuf);
-}
-
-String htmlCheckbox(String name, bool value, const char* additionalAttrs = "") {
-  const char* checked = value ? "checked" : "";
-  snprintf(
-    htmlBuf,
-    sizeof(htmlBuf),
-    "<input type='checkbox' name='%s' value='enabled' %s %s/>",
-    name.c_str(),
-    checked,
-    additionalAttrs);
-  return String(htmlBuf);
-}
-
-String htmlRadioButton(String name, String label, int value, int currentValue) {
-  const char* checked = (value == currentValue) ? "checked" : "";
-  snprintf(
-    htmlBuf,
-    sizeof(htmlBuf),
-    "<input type='radio' name='%s' value='%d' %s/><label for='%s'>%s</label>",
-    name.c_str(),
-    value,
-    checked,
-    name.c_str(),
-    label.c_str());
-  return String(htmlBuf);
-}
-
-String htmlOption(String value, String label, bool selected) {
-  const char* selectedStr = selected ? "selected" : "";
-  snprintf(
-    htmlBuf,
-    sizeof(htmlBuf),
-    "<option value='%s' %s/>%s</option>",
-    value.c_str(),
-    selectedStr,
-    label.c_str());
-  return String(htmlBuf);
 }
 
 bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSettings) {
@@ -441,7 +414,7 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
         httpServer->sendContent_P(webHeader);
         httpServer->sendContent_P(webCSS);
         httpServer->sendContent_P(webBodyStart);
-        httpServer->sendContent_P(webBodySettings1);
+        httpServer->sendContent(Html::leftMenu(httpServer->uri()));
         httpServer->sendContent_P(webBodySettingsResetPasswordWarning);
         httpServer->sendContent_P(refreshMeta);
         httpServer->sendContent_P(webFooter);
@@ -502,7 +475,7 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
       httpServer->sendContent_P(webHeader);
       httpServer->sendContent_P(webCSS);
       httpServer->sendContent_P(webBodyStart);
-      httpServer->sendContent_P(webBodySettings1);
+      httpServer->sendContent(Html::leftMenu(httpServer->uri()));
       httpServer->sendContent_P(webBodySettingsNewWifiWarning);
       httpServer->sendContent_P(refreshMeta);
       httpServer->sendContent_P(webFooter);
@@ -518,7 +491,7 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(webCSS);
   httpServer->sendContent_P(webBodyStart);
-  httpServer->sendContent_P(webBodySettings1);
+  httpServer->sendContent(Html::leftMenu(httpServer->uri()));
 
   String html = F("<div class=\"w3-container w3-center\">");
   html += F("<h2>Settings</h2>");
@@ -526,7 +499,7 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
   html += F("<table style=\"width:100%\">");
   html += F("<tr><td style=\"text-align:right; width: 50%\">");
   html += F("Hostname:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::wifi_hostname, heishamonSettings->wifi_hostname);
+  html += Html::textBox(Settings::wifi_hostname, heishamonSettings->wifi_hostname);
   html += F("</td></tr>");
   html += F("<tr><td style=\"text-align:right; width: 50%\">");
   html += F("Wifi SSID:</td><td style=\"text-align:left\">");
@@ -541,16 +514,16 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
   html += F("</td></tr>");
   html += F("<tr><td style=\"text-align:right; width: 50%\">");
   html += F("Wifi password:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::wifi_password, heishamonSettings->wifi_password, "password");
+  html += Html::textBox(Settings::wifi_password, heishamonSettings->wifi_password, "password");
   html += F("</td></tr>");
 
   html += F("<tr><td style=\"text-align:right; width: 50%\">");
   html += F("What if WiFi connection is lost?</td><td style=\"text-align:left\">");
-  html += htmlRadioButton(Settings::hotspot_mode, F("Wait until it comes back"), HotspotMode::None, heishamonSettings->hotspot_mode);
+  html += Html::radioButton(Settings::hotspot_mode, F("Wait until it comes back"), HotspotMode::None, heishamonSettings->hotspot_mode);
   html += F("<br/>");
-  html += htmlRadioButton(Settings::hotspot_mode, F("Open secured hotspot"), HotspotMode::Secured, heishamonSettings->hotspot_mode);
+  html += Html::radioButton(Settings::hotspot_mode, F("Open secured hotspot"), HotspotMode::Secured, heishamonSettings->hotspot_mode);
   html += F("<br/>");
-  html += htmlRadioButton(Settings::hotspot_mode, F("Open unsecured hotspot"), HotspotMode::Unsecured, heishamonSettings->hotspot_mode);
+  html += Html::radioButton(Settings::hotspot_mode, F("Open unsecured hotspot"), HotspotMode::Unsecured, heishamonSettings->hotspot_mode);
   html += F("</td></tr>");
 
   html += F("<tr><td style=\"text-align:right; width: 50%\">");
@@ -558,53 +531,53 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
   html += F("<label name=\"username\">admin</label>");
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("Current update password:</td><td style=\"text-align:left\">");
-  html += htmlTextBox("current_ota_password", "", "password");
+  html += Html::textBox("current_ota_password", "", "password");
   html += F(" default password: \"heisha\"");
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("New update password:</td><td style=\"text-align:left\">");
-  html += htmlTextBox("new_ota_password", "", "password");
+  html += Html::textBox("new_ota_password", "", "password");
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
 
   httpServer->sendContent(html);
 
   html = F("Mqtt topic base:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::mqtt_topic_base, heishamonSettings->mqtt_topic_base);
+  html += Html::textBox(Settings::mqtt_topic_base, heishamonSettings->mqtt_topic_base);
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("Mqtt server:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::mqtt_server, heishamonSettings->mqtt_server);
+  html += Html::textBox(Settings::mqtt_server, heishamonSettings->mqtt_server);
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("Mqtt port:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::mqtt_port, heishamonSettings->mqtt_port);
+  html += Html::textBox(Settings::mqtt_port, heishamonSettings->mqtt_port);
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("Mqtt username:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::mqtt_username, heishamonSettings->mqtt_username);
+  html += Html::textBox(Settings::mqtt_username, heishamonSettings->mqtt_username);
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("Mqtt password:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::mqtt_password, heishamonSettings->mqtt_password, "password");
+  html += Html::textBox(Settings::mqtt_password, heishamonSettings->mqtt_password, "password");
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("How often new values are collected from heatpump:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::waitTime, String(heishamonSettings->waitTime), "number");
+  html += Html::textBox(Settings::waitTime, String(heishamonSettings->waitTime), "number");
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("How often all heatpump values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::updateAllTime, String(heishamonSettings->updateAllTime), "number");
+  html += Html::textBox(Settings::updateAllTime, String(heishamonSettings->updateAllTime), "number");
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
 
   httpServer->sendContent(html);
 
   html = F("Listen only mode:</td><td style=\"text-align:left\">");
-  html += htmlCheckbox(Settings::listenonly, heishamonSettings->listenonly);
+  html += Html::checkbox(Settings::listenonly, heishamonSettings->listenonly);
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("Debug log to MQTT topic from start:</td><td style=\"text-align:left\">");
-  html += htmlCheckbox(Settings::logMqtt, heishamonSettings->logMqtt);
+  html += Html::checkbox(Settings::logMqtt, heishamonSettings->logMqtt);
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("Debug log hexdump enable from start:</td><td style=\"text-align:left\">");
-  html += htmlCheckbox(Settings::logHexdump, heishamonSettings->logHexdump);
+  html += Html::checkbox(Settings::logHexdump, heishamonSettings->logHexdump);
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("Debug log to serial1 (GPIO2):</td><td style=\"text-align:left\">");
-  html += htmlCheckbox(Settings::logSerial1, heishamonSettings->logSerial1);
+  html += Html::checkbox(Settings::logSerial1, heishamonSettings->logSerial1);
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("Emulate optional PCB:</td><td style=\"text-align:left\">");
-  html += htmlCheckbox(Settings::optionalPCB, heishamonSettings->optionalPCB);
+  html += Html::checkbox(Settings::optionalPCB, heishamonSettings->optionalPCB);
   html += F("</td></tr>");
   html += F("</table>");
 
@@ -614,7 +587,7 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
   html = F("<table style=\"width:100%\">");
   html += F("<tr><td style=\"text-align:right; width: 50%\">");
   html += F("Use 1wire DS18b20:</td><td style=\"text-align:left\">");
-  html += htmlCheckbox(Settings::use_1wire, heishamonSettings->use_1wire, "onclick='ShowHideDallasTable(this)'");
+  html += Html::checkbox(Settings::use_1wire, heishamonSettings->use_1wire, "onclick='ShowHideDallasTable(this)'");
   html += F("</td></tr>");
   html += F("</table>");
   html += F("<table id=\"dallassettings\" style=\"display:");
@@ -622,10 +595,10 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
   html += F("; width:100%\">");
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("How often new values are collected from 1wire:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::waitDallasTime, String(heishamonSettings->waitDallasTime), "number");
+  html += Html::textBox(Settings::waitDallasTime, String(heishamonSettings->waitDallasTime), "number");
   html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
   html += F("How often all 1wire values are retransmitted to MQTT broker:</td><td style=\"text-align:left\">");
-  html += htmlTextBox(Settings::updateAllDallasTime, String(heishamonSettings->updateAllDallasTime), "number");
+  html += Html::textBox(Settings::updateAllDallasTime, String(heishamonSettings->updateAllDallasTime), "number");
   html += F("</td></tr>");
   html += F("</table>");
 
@@ -634,7 +607,7 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
   html = F("<table style=\"width:100%\">");
   html += F("<tr><td style=\"text-align:right; width: 50%\">");
   html += F("Use s0 kWh metering:</td><td style=\"text-align:left\">");
-  html += htmlCheckbox(Settings::use_s0, heishamonSettings->use_s0, "onclick='ShowHideS0Table(this)'");
+  html += Html::checkbox(Settings::use_s0, heishamonSettings->use_s0, "onclick='ShowHideS0Table(this)'");
   html += F("</td></tr>");
   html += F("</table>");
   html += F("<table id=\"s0settings\" style=\"display:");
@@ -651,13 +624,13 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
     s0Prefix += i + 1;
     html += F("<tr><td style=\"text-align:right; width: 50%\">");
     html += s0PortLabel + F(" GPIO:</td><td style=\"text-align:left\">");
-    html += htmlTextBox(s0Prefix + F("_gpio"), String(heishamonSettings->s0Settings[i].gpiopin), "number");
+    html += Html::textBox(s0Prefix + F("_gpio"), String(heishamonSettings->s0Settings[i].gpiopin), "number");
     html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
     html += s0PortLabel + F(" imp/kwh:</td><td style=\"text-align:left\">");
-    html += htmlTextBox(s0Prefix + F("_ppkwh"), String(heishamonSettings->s0Settings[i].ppkwh), "number");
+    html += Html::textBox(s0Prefix + F("_ppkwh"), String(heishamonSettings->s0Settings[i].ppkwh), "number");
     html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
     html += s0PortLabel + F(" reporting interval during standby/low power usage:</td><td style=\"text-align:left\">");
-    html += htmlTextBox(s0Prefix + F("_interval"), String(heishamonSettings->s0Settings[i].lowerPowerInterval), "number");
+    html += Html::textBox(s0Prefix + F("_interval"), String(heishamonSettings->s0Settings[i].lowerPowerInterval), "number");
     html += F("</td></tr><tr><td style=\"text-align:right; width: 50%\">");
     html += s0PortLabel + F(" standby/low power usage threshold:</td><td style=\"text-align:left\"><label id=\"s0_minwatt_") + (i + 1) + F("\">") + (int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval) + F("</label> Watt");
     html += F("</td></tr>");
@@ -685,13 +658,74 @@ bool handleSettings(ESP8266WebServer *httpServer, SettingsStruct *heishamonSetti
   return httpServer->args();
 }
 
+void handleTopicSelection(ESP8266WebServer& httpServer, SettingsStruct& settings) {
+  httpServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  httpServer.send(200, "text/html", "");
+  httpServer.sendContent_P(webHeader);
+  httpServer.sendContent_P(webCSS);
+  httpServer.sendContent_P(webBodyStart);
+  httpServer.sendContent(Html::leftMenu(httpServer.uri()));
+
+  if (httpServer.args() > 0) {
+    int selectedTopicsCount = 0;
+    for (int i = 0; i < httpServer.args(); i++) {
+      String argName = httpServer.argName(i);
+      if (!argName.startsWith("TOP")) continue;
+      if (selectedTopicsCount == MAX_SELECTED_TOPICS) break;
+      settings.selected_topics[selectedTopicsCount++] = argName.substring(3).toInt();
+    }
+    settings.selected_topics_count = selectedTopicsCount;
+
+    String html = F("<p>Selected ");
+    html += selectedTopicsCount;
+    html += F(" topics.</p>");
+    httpServer.sendContent(html);
+
+    DynamicJsonDocument jsonDoc(1024);
+    settings.toJson(jsonDoc);
+    saveJsonToConfig(jsonDoc);
+  }
+
+  httpServer.sendContent(F("<form method='POST' action=''>"));
+  httpServer.sendContent(F("<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th></tr></thead><tbody>"));
+
+  int i = 0;
+  for (int topic = 0; topic < NUMBER_OF_TOPICS; topic++) {
+    bool isSelected = false;
+    if (i < settings.selected_topics_count) {
+      isSelected = (topic == settings.selected_topics[i]);
+      if (isSelected) i++;
+    }
+
+    String topicId = F("TOP");
+    topicId += topic;
+
+    String htmlTableRow = F("<tr><td>");
+    htmlTableRow += Html::checkbox(topicId, isSelected);
+    htmlTableRow += topicId;
+    htmlTableRow += F("</td><td>");
+    htmlTableRow += topics[topic];
+    htmlTableRow += F("</td></tr>");
+    httpServer.sendContent(htmlTableRow);
+  }
+
+  httpServer.sendContent(F("</tbody></table>"));
+  httpServer.sendContent(F("<input class='w3-green w3-button' type='submit' value='Save'>"));
+  httpServer.sendContent(F("</form>"));
+
+  httpServer.sendContent_P(menuJS);
+  httpServer.sendContent_P(webFooter);
+  httpServer.sendContent("");
+  httpServer.client().stop();
+}
+
 void handleSmartcontrol(ESP8266WebServer *httpServer, SettingsStruct *heishamonSettings, String actData[]) {
   httpServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   httpServer->send(200, "text/html", "");
   httpServer->sendContent_P(webHeader);
   httpServer->sendContent_P(webCSS);
   httpServer->sendContent_P(webBodyStart);
-  httpServer->sendContent_P(webBodySmartcontrol1);
+  httpServer->sendContent(Html::leftMenu(httpServer->uri()));
   httpServer->sendContent_P(webBodySmartcontrol2);
 
   String html = F("<form action=\"/smartcontrol\" method=\"POST\">");
@@ -762,7 +796,7 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, SettingsStruct *heishamonS
   int heatingMode = (heatingModeStr.length() > 0) ? heatingModeStr.toInt() : 1;
   if (heatingMode == 1) {
     html = F("<div class=\"w3-row-padding\"><div class=\"w3-half\">");
-    html += htmlCheckbox(F("heatingcurve"), heishamonSettings->SmartControlSettings.enableHeatCurve, "class='w3-check'");
+    html += Html::checkbox(F("heatingcurve"), heishamonSettings->SmartControlSettings.enableHeatCurve, "class='w3-check'");
     html += F("<label>Enable smart heating curve</label></div><div class=\"w3-half\"><select class=\"w3-select\" name=\"average-time\">");
     for (int i = 0; i <= 48; i += 12) {
       String label;
@@ -772,16 +806,16 @@ void handleSmartcontrol(ESP8266WebServer *httpServer, SettingsStruct *heishamonS
         label += i;
         label += " hours";
       }      
-      html += htmlOption(String(i), label, heishamonSettings->SmartControlSettings.avgHourHeatCurve == i);
+      html += Html::option(String(i), label, heishamonSettings->SmartControlSettings.avgHourHeatCurve == i);
     }
     html += F("</select></div></div><br><div class=\"w3-row-padding\"><div class=\"w3-half\"><label>Heating Curve Target High Temp</label>");
-    html += htmlTextBox("hcth", String(heishamonSettings->SmartControlSettings.heatCurveTargetHigh), "number", "id='hcth' class='w3-input w3-border' min='20' max='60' required");
+    html += Html::textBox("hcth", String(heishamonSettings->SmartControlSettings.heatCurveTargetHigh), "number", "id='hcth' class='w3-input w3-border' min='20' max='60' required");
     html += F("</div><div class=\"w3-half\"><label>Heating Curve Target Low Temp</label>");
-    html += htmlTextBox("hctl", String(heishamonSettings->SmartControlSettings.heatCurveTargetLow), "number", "id='hctl' class='w3-input w3-border' min='20' max='60' required");
+    html += Html::textBox("hctl", String(heishamonSettings->SmartControlSettings.heatCurveTargetLow), "number", "id='hctl' class='w3-input w3-border' min='20' max='60' required");
     html += F("</div></div><div class=\"w3-row-padding\"><div class=\"w3-half\"><label>Heating Curve Outside High Temp</label>");
-    html += htmlTextBox("hcoh", String(heishamonSettings->SmartControlSettings.heatCurveOutHigh), "number", "id='hcoh' class='w3-input w3-border' min='-20' max='15' required");
+    html += Html::textBox("hcoh", String(heishamonSettings->SmartControlSettings.heatCurveOutHigh), "number", "id='hcoh' class='w3-input w3-border' min='-20' max='15' required");
     html += F("</div><div class=\"w3-half\"><label>Heating Curve Outside Low Temp</label>");
-    html += htmlTextBox("hcol", String(heishamonSettings->SmartControlSettings.heatCurveOutLow), "number", "id='hcol' class='w3-input w3-border' min='-20' max='15' required");
+    html += Html::textBox("hcol", String(heishamonSettings->SmartControlSettings.heatCurveOutLow), "number", "id='hcol' class='w3-input w3-border' min='-20' max='15' required");
     html += F("</div></div><br><br>");
     html += F("<input class=\"w3-green w3-button\" type=\"submit\" value=\"Save and reboot\">");
     html += F("<div class=\"w3-panel w3-red\">");

@@ -1,3 +1,15 @@
+#include <Arduino.h>
+
+class Html {
+  public:
+    static String leftMenu(String currentUrl);
+    static String menuItem(String name, String url);
+    static String textBox(String name, String value, const char* type = "text", const char* additionalAttrs = "");
+    static String checkbox(String name, bool value, const char* additionalAttrs = "");
+    static String radioButton(String name, String label, int value, int currentValue);
+    static String option(String value, String label, bool selected);
+};
+
 static const char webHeader[] PROGMEM  =
   "<!DOCTYPE html>"
   "<html>"
@@ -156,29 +168,8 @@ static const char settingsJS[] PROGMEM =
   " }"
   "</script>";*/
 
-static const char webBodyRoot1[] PROGMEM =
-  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
-  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
-  "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
-  "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
-  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
-  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
-  "<hr><div class=\"w3-text-grey\">Version: ";
 
-/* ORIGINAL VERSION with smart control (currently hidden feature)
-  static const char webBodyRoot1[] PROGMEM =
-  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
-  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
-  "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
-  "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
-  "<a href=\"/smartcontrol\" class=\"w3-bar-item w3-button\">Smart Control</a>"
-  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
-  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
-  "<hr><div class=\"w3-text-grey\">Version: ";
-*/
-
-static const char webBodyRoot2[] PROGMEM =
-  "<br><a href=\"https://github.com/Egyras/HeishaMon\">Heishamon software</a></div><hr></div>"
+static const char webBodyRootHeatpumpTab[] PROGMEM =
   "<div class=\"w3-bar w3-red\">"
   "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Heatpump')\">Heatpump</button>";
 
@@ -195,9 +186,11 @@ static const char webBodyRootStatusReceived[] PROGMEM =  "%<br>Correct received 
 static const char webBodyRootStatusReconnects[] PROGMEM =  "%<br>MQTT reconnects: ";
 static const char webBodyRootStatusUptime[] PROGMEM =   "<br>Uptime: ";
 
-static const char webBodyRootHeatpumpValues[] PROGMEM =
+static const char webBodyRootHeatpumpHeader[] PROGMEM =
   "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">"
-  "<h2>Current heatpump values</h2>"
+  "<h2>Current heatpump values</h2>";
+
+static const char webBodyRootHeatpumpTable[] PROGMEM =
   "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
 
 static const char webBodyRootDallasValues[] PROGMEM =
@@ -243,25 +236,6 @@ static const char webBodySettingsSaveMessage[] PROGMEM =
   "<div class=\"w3-container w3-center\">"
   "<p><b>Configuration saved</b><br /><br />"
   "Rebooting</p>"
-  "</div>";
-
-static const char webBodySettings1[] PROGMEM =
-  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
-  "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
-  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
-  "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
-  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
-  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
-  "</div>";
-
-static const char webBodySmartcontrol1[] PROGMEM =
-  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
-  "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
-  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
-  "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
-  "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
-  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
-  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
   "</div>";
 
 static const char webBodySmartcontrol2[] PROGMEM =

@@ -3,6 +3,8 @@
 #include "smartcontrol.h"
 #include "ArduinoJson.h"
 
+#define MAX_SELECTED_TOPICS 64
+
 struct Settings {
   // Constants for names of settings (used in JSON and HTTP POST)
   static const char* hotspot_mode;
@@ -32,6 +34,8 @@ struct Settings {
   static const char* s0_2_gpio;
   static const char* s0_2_ppkwh;
   static const char* s0_2_interval;
+  static const char* show_all_topics;
+  static const char* selected_topics;
 
   // Conversion of boolean value to/from string
   static const char* toString(bool value);
@@ -77,6 +81,10 @@ struct SettingsStruct {
   gpioSettingsStruct gpioSettings;
   SmartControlSettingsStruct SmartControlSettings;
 
-  void fromJson(DynamicJsonDocument& jsonDoc);
-  void toJson(DynamicJsonDocument& jsonDoc);
+  bool show_all_topics = false;
+  uint8_t selected_topics_count = 0;
+  uint8_t selected_topics[MAX_SELECTED_TOPICS];
+
+  void fromJson(JsonDocument& jsonDoc);
+  void toJson(JsonDocument& jsonDoc);
 };
