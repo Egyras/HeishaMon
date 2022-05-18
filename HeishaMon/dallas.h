@@ -1,3 +1,6 @@
+#ifndef _DALLAS_H_
+#define _DALLAS_H_
+
 #include <PubSubClient.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -18,3 +21,5 @@ void dallasLoop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqt
 void initDallasSensors(void (*log_message)(char*), unsigned int updataAllDallasTimeSettings, unsigned int dallasTimerWaitSettings, unsigned int dallasResolution);
 void dallasJsonOutput(struct webserver_t *client);
 void dallasTableOutput(struct webserver_t *client);
+
+#endif
