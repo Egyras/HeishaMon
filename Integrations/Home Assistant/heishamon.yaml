@@ -220,380 +220,361 @@ input_select:
 
 # sensor #
 ##########
-sensor:
-  #TOP0 - Power state
-  - platform: mqtt
-    name: Aquarea Power State
-    state_topic: "panasonic_heat_pump/main/Heatpump_State"
-    value_template: >-
-      {%- if value == "0" -%}
-        Off
-      {%- elif value == "1" -%}
-        On
-      {%- endif -%}
+mqtt:
+  sensor:
+    #TOP0 - Power state
+    - name: Aquarea Power State
+      state_topic: "panasonic_heat_pump/main/Heatpump_State"
+      value_template: >-
+        {%- if value == "0" -%}
+          Off
+        {%- elif value == "1" -%}
+          On
+        {%- endif -%}
 
-  #TOP1 - Pumpflow
-  - platform: mqtt
-    name: Aquarea Pump Flow
-    state_topic: "panasonic_heat_pump/main/Pump_Flow"
-    unit_of_measurement: 'L/min'
+    #TOP1 - Pumpflow
+    - name: Aquarea Pump Flow
+      state_topic: "panasonic_heat_pump/main/Pump_Flow"
+      unit_of_measurement: 'L/min'
 
-  #TOP2 - Force DHW
-  - platform: mqtt
-    name: Aquarea Force DHW Mode
-    state_topic: "panasonic_heat_pump/main/Force_DHW_State"
-    value_template: >-
-      {%- if value == "0" -%}
-        Off
-      {%- elif value == "1" -%}
-        On
-      {%- endif -%}
+    #TOP2 - Force DHW
+    - name: Aquarea Force DHW Mode
+      state_topic: "panasonic_heat_pump/main/Force_DHW_State"
+      value_template: >-
+        {%- if value == "0" -%}
+          Off
+        {%- elif value == "1" -%}
+          On
+        {%- endif -%}
 
   #TOP4 - Heat mode (Hot water, Heat or Hot water + heat)
-  - platform: mqtt
-    name: Aquarea Mode
-    state_topic: "panasonic_heat_pump/main/Operating_Mode_State"
-    value_template: >-
-      {%- if value == "0" -%}
-        Heat
-      {%- elif value == "1" -%}
-        Cool
-      {%- elif value == "2" -%}
-        Auto
-      {%- elif value == "3" -%}
-        DHW
-      {%- elif value == "4" -%}
-        Heat+DHW
-      {%- elif value == "5" -%}
-        Cool+DHW
-      {%- elif value == "6" -%}
-        Auto+DHW
-      {%- endif -%}
+    - name: Aquarea Mode
+      state_topic: "panasonic_heat_pump/main/Operating_Mode_State"
+      value_template: >-
+        {%- if value == "0" -%}
+          Heat
+        {%- elif value == "1" -%}
+          Cool
+        {%- elif value == "2" -%}
+          Auto
+        {%- elif value == "3" -%}
+          DHW
+        {%- elif value == "4" -%}
+          Heat+DHW
+        {%- elif value == "5" -%}
+          Cool+DHW
+        {%- elif value == "6" -%}
+          Auto+DHW
+        {%- endif -%}
       
-  #TOP5 - Water inlet temp
-  - platform: mqtt
-    name: Aquarea Inlet Temperature
-    state_topic: "panasonic_heat_pump/main/Main_Inlet_Temp"
-    unit_of_measurement: '°C'
+    #TOP5 - Water inlet temp
+    - name: Aquarea Inlet Temperature
+      state_topic: "panasonic_heat_pump/main/Main_Inlet_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP6 - Water outlet temp
-  - platform: mqtt
-    name: Aquarea Outlet Temperature
-    state_topic: "panasonic_heat_pump/main/Main_Outlet_Temp"
-    unit_of_measurement: '°C'
+    #TOP6 - Water outlet temp
+    - name: Aquarea Outlet Temperature
+      state_topic: "panasonic_heat_pump/main/Main_Outlet_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP7 - Water outlet target temp
-  - platform: mqtt
-    name: Aquarea Outlet Target Temperature
-    state_topic: "panasonic_heat_pump/main/Main_Target_Temp"
-    unit_of_measurement: '°C'
+    #TOP7 - Water outlet target temp
+    - name: Aquarea Outlet Target Temperature
+      state_topic: "panasonic_heat_pump/main/Main_Target_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP8 - Compressor frequency
-  - platform: mqtt
-    name: Aquarea Compressor Frequency
-    state_topic: "panasonic_heat_pump/main/Compressor_Freq"
-    unit_of_measurement: 'Hz'
+    #TOP8 - Compressor frequency
+    - name: Aquarea Compressor Frequency
+      state_topic: "panasonic_heat_pump/main/Compressor_Freq"
+      unit_of_measurement: 'Hz'
 
-  #TOP9 - Tank set temperature
-  - platform: mqtt
-    name: Aquarea Tank Set Temperature
-    state_topic: "panasonic_heat_pump/main/DHW_Target_Temp"
-    unit_of_measurement: '°C'
+    #TOP9 - Tank set temperature
+    - name: Aquarea Tank Set Temperature
+      state_topic: "panasonic_heat_pump/main/DHW_Target_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP10 - Tank current temperature
-  - platform: mqtt
-    name: Aquarea Actual Tank Temperature
-    state_topic: "panasonic_heat_pump/main/DHW_Temp"
-    unit_of_measurement: '°C'
-    state_class: 'measurement'
+    #TOP10 - Tank current temperature
+    - name: Aquarea Actual Tank Temperature
+      state_topic: "panasonic_heat_pump/main/DHW_Temp"
+      unit_of_measurement: '°C'
+      state_class: 'measurement'
 
-  #TOP11 - Compressor Operating Time
-  - platform: mqtt
-    name: Aquarea Compressor Operating Hours
-    state_topic: "panasonic_heat_pump/main/Operations_Hours"
-    unit_of_measurement: 'Hours'
-    state_class: total
+    #TOP11 - Compressor Operating Time
+    - name: Aquarea Compressor Operating Hours
+      state_topic: "panasonic_heat_pump/main/Operations_Hours"
+      unit_of_measurement: 'Hours'
+      state_class: total
 
-  #TOP12 - Compressor On/Off cycle number
-  - platform: mqtt
-    name: Aquarea Compressor Start/Stop Counter
-    state_topic: "panasonic_heat_pump/main/Operations_Counter"
-    state_class: total
+    #TOP12 - Compressor On/Off cycle number
+    - name: Aquarea Compressor Start/Stop Counter
+      state_topic: "panasonic_heat_pump/main/Operations_Counter"
+      state_class: total
 
+    #TOP14 - Outdoor unit ambient temperature
+    - name: Aquarea Outdoor Ambient
+      state_topic: "panasonic_heat_pump/main/Outside_Temp"
+      unit_of_measurement: '°C'
+      state_class: 'measurement'
 
-  #TOP14 - Outdoor unit ambient temperature
-  - platform: mqtt
-    name: Aquarea Outdoor Ambient
-    state_topic: "panasonic_heat_pump/main/Outside_Temp"
-    unit_of_measurement: '°C'
-    state_class: 'measurement'
+    #TOP15 - Heating power produced
+    - name: Aquarea Power Produced
+      state_topic: "panasonic_heat_pump/main/Heat_Energy_Production"
+      unit_of_measurement: 'W'
+      device_class: 'power'
+      state_class: 'measurement'
+      force_update: true
 
-  #TOP15 - Heating power produced
-  - platform: mqtt
-    name: Aquarea Power Produced
-    state_topic: "panasonic_heat_pump/main/Heat_Energy_Production"
-    unit_of_measurement: 'W'
-    device_class: 'power'
-    state_class: 'measurement'
-    force_update: true
+    #TOP16 - Heating power consumed
+    - name: Aquarea Power Consumed
+      state_topic: "panasonic_heat_pump/main/Heat_Energy_Consumption"
+      unit_of_measurement: 'W'
+      device_class: 'power'
+      state_class: 'measurement'
+      force_update: true
 
-  #TOP16 - Heating power consumed
-  - platform: mqtt
-    name: Aquarea Power Consumed
-    state_topic: "panasonic_heat_pump/main/Heat_Energy_Consumption"
-    unit_of_measurement: 'W'
-    device_class: 'power'
-    state_class: 'measurement'
-    force_update: true
+    #TOP17 - Heating powerful mode
+    - name: Aquarea Powerful Mode
+      state_topic: "panasonic_heat_pump/main/Powerful_Mode_Time"
+      unit_of_measurement: 'Min'
+      value_template: >-
+        {{ (value | int) * 30 }}
 
+    #TOP18 - Heating quiet mode
+    - name: Aquarea Quiet Mode
+      state_topic: "panasonic_heat_pump/main/Quiet_Mode_Level"
+      value_template: >-
+        {%- if value == "4" -%}
+          Scheduled
+        {%- elif value == "0" -%}
+          Off
+        {%- else -%}
+          {{ value }}
+        {%- endif -%}
 
-  #TOP17 - Heating powerful mode
-  - platform: mqtt
-    name: Aquarea Powerful Mode
-    state_topic: "panasonic_heat_pump/main/Powerful_Mode_Time"
-    unit_of_measurement: 'Min'
-    value_template: >-
-      {{ (value | int) * 30 }}
+    #TOP19 - Holiday Mode
+    - name: Aquarea Holiday Mode
+      state_topic: "panasonic_heat_pump/main/Holiday_Mode_State"
+      value_template: >-
+        {%- if value == "0" -%}
+          Off
+        {%- elif value == "1" -%}
+          On
+        {%- endif -%}
 
-  #TOP18 - Heating quiet mode
-  - platform: mqtt
-    name: Aquarea Quiet Mode
-    state_topic: "panasonic_heat_pump/main/Quiet_Mode_Level"
-    value_template: >-
-      {%- if value == "4" -%}
-        Scheduled
-      {%- elif value == "0" -%}
-        Off
-      {%- else -%}
-        {{ value }}
-      {%- endif -%}
+    #TOP20 - 3-way valve state
+    - name: Aquarea 3-way Valve
+      state_topic: "panasonic_heat_pump/main/ThreeWay_Valve_State"
+      value_template: >-
+        {%- if value == "0" -%}
+          Room
+        {%- elif value == "1" -%}
+          Tank
+        {%- endif -%}
 
-  #TOP19 - Holiday Mode
-  - platform: mqtt
-    name: Aquarea Holiday Mode
-    state_topic: "panasonic_heat_pump/main/Holiday_Mode_State"
-    value_template: >-
-      {%- if value == "0" -%}
-        Off
-      {%- elif value == "1" -%}
-        On
-      {%- endif -%}
+    #TOP21 - Outside pipe temp
+    - name: Aquarea Outdoor Pipe Temperature
+      state_topic: "panasonic_heat_pump/main/Outside_Pipe_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP20 - 3-way valve state
-  - platform: mqtt
-    name: Aquarea 3-way Valve
-    state_topic: "panasonic_heat_pump/main/ThreeWay_Valve_State"
-    value_template: >-
-      {%- if value == "0" -%}
-        Room
-      {%- elif value == "1" -%}
-        Tank
-      {%- endif -%}
+    #TOP26 - Defrost state
+    - name: Aquarea Defrost State
+      state_topic: "panasonic_heat_pump/main/Defrosting_State"
+      value_template: >-
+        {%- if value == "0" -%}
+          Inactive
+        {%- elif value == "1" -%}
+          Active
+        {%- endif -%}
 
-  #TOP21 - Outside pipe temp
-  - platform: mqtt
-    name: Aquarea Outdoor Pipe Temperature
-    state_topic: "panasonic_heat_pump/main/Outside_Pipe_Temp"
-    unit_of_measurement: '°C'
+    #TOP27 - Heatshift Temperature
+    - name: Aquarea Heatshift Temperature
+      state_topic: "panasonic_heat_pump/main/Z1_Heat_Request_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP26 - Defrost state
-  - platform: mqtt
-    name: Aquarea Defrost State
-    state_topic: "panasonic_heat_pump/main/Defrosting_State"
-    value_template: >-
-      {%- if value == "0" -%}
-        Inactive
-      {%- elif value == "1" -%}
-        Active
-      {%- endif -%}
+    #TOP40 - DHW power produced
+    - name: Aquarea DHW Power Produced
+      state_topic: "panasonic_heat_pump/main/DHW_Energy_Production"
+      unit_of_measurement: 'W'
+      device_class: 'power'
+      state_class: 'measurement'
+      force_update: true
 
-  #TOP27 - Heatshift Temperature
-  - platform: mqtt
-    name: Aquarea Heatshift Temperature
-    state_topic: "panasonic_heat_pump/main/Z1_Heat_Request_Temp"
-    unit_of_measurement: '°C'
+    #TOP41 - DHW power consumed
+    - name: Aquarea DHW Power Consumed
+      state_topic: "panasonic_heat_pump/main/DHW_Energy_Consumption"
+      unit_of_measurement: 'W'
+      device_class: 'power'
+      state_class: 'measurement'
+      force_update: true
 
-  #TOP40 - DHW power produced
-  - platform: mqtt
-    name: Aquarea DHW Power Produced
-    state_topic: "panasonic_heat_pump/main/DHW_Energy_Production"
-    unit_of_measurement: 'W'
-    device_class: 'power'
-    state_class: 'measurement'
-    force_update: true
+    #TOP44 - Last active error
+    - name: Aquarea Last Error
+      state_topic: "panasonic_heat_pump/main/Error"
 
-  #TOP41 - DHW power consumed
-  - platform: mqtt
-    name: Aquarea DHW Power Consumed
-    state_topic: "panasonic_heat_pump/main/DHW_Energy_Consumption"
-    unit_of_measurement: 'W'
-    device_class: 'power'
-    state_class: 'measurement'
-    force_update: true
+    #TOP49 - Main HEX Outlet temp
+    - name: Aquarea Main HEX Outlet Temperature
+      state_topic: "panasonic_heat_pump/main/Main_Hex_Outlet_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP44 - Last active error
-  - platform: mqtt
-    name: Aquarea Last Error
-    state_topic: "panasonic_heat_pump/main/Error"
+    #TOP50 - Discharge temp
+    - name: Aquarea Discharge Temperature
+      state_topic: "panasonic_heat_pump/main/Discharge_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP49 - Main HEX Outlet temp
-  - platform: mqtt
-    name: Aquarea Main HEX Outlet Temperature
-    state_topic: "panasonic_heat_pump/main/Main_Hex_Outlet_Temp"
-    unit_of_measurement: '°C'
+    #TOP51 - Inside Pipe temp
+    - name: Aquarea Inside Pipe Temperature
+      state_topic: "panasonic_heat_pump/main/Inside_Pipe_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP50 - Discharge temp
-  - platform: mqtt
-    name: Aquarea Discharge Temperature
-    state_topic: "panasonic_heat_pump/main/Discharge_Temp"
-    unit_of_measurement: '°C'
+    #TOP52 - Defrost temp
+    - name: Aquarea Defrost Temperature
+      state_topic: "panasonic_heat_pump/main/Defrost_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP51 - Inside Pipe temp
-  - platform: mqtt
-    name: Aquarea Inside Pipe Temperature
-    state_topic: "panasonic_heat_pump/main/Inside_Pipe_Temp"
-    unit_of_measurement: '°C'
+    #TOP53 - Eva Outlet temp
+    - name: Aquarea Eva Outlet Temperature
+      state_topic: "panasonic_heat_pump/main/Eva_Outlet_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP52 - Defrost temp
-  - platform: mqtt
-    name: Aquarea Defrost Temperature
-    state_topic: "panasonic_heat_pump/main/Defrost_Temp"
-    unit_of_measurement: '°C'
+    #TOP54 - Bypass Outlet temp
+    - name: Aquarea Bypass Outlet Temperature
+      state_topic: "panasonic_heat_pump/main/Bypass_Outlet_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP53 - Eva Outlet temp
-  - platform: mqtt
-    name: Aquarea Eva Outlet Temperature
-    state_topic: "panasonic_heat_pump/main/Eva_Outlet_Temp"
-    unit_of_measurement: '°C'
+    #TOP55 - lpm temp
+    - name: Aquarea Ipm Temperature
+      state_topic: "panasonic_heat_pump/main/Ipm_Temp"
+      unit_of_measurement: '°C'
 
-  #TOP54 - Bypass Outlet temp
-  - platform: mqtt
-    name: Aquarea Bypass Outlet Temperature
-    state_topic: "panasonic_heat_pump/main/Bypass_Outlet_Temp"
-    unit_of_measurement: '°C'
+    #TOP58 - Tank electric heater allowed state
+    - name: Aquarea Tank Heater Enabled
+      state_topic: "panasonic_heat_pump/main/DHW_Heater_State"
+      value_template: >-
+        {%- if value == "0" -%}
+          Off
+        {%- elif value == "1" -%}
+          On
+        {%- endif -%}
 
-  #TOP55 - lpm temp
-  - platform: mqtt
-    name: Aquarea Ipm Temperature
-    state_topic: "panasonic_heat_pump/main/Ipm_Temp"
-    unit_of_measurement: '°C'
+    #TOP59 - Water electric heater allowed state
+    - name: Aquarea Room Heater Enabled
+      state_topic: "panasonic_heat_pump/main/Room_Heater_State"
+      value_template: >-
+        {%- if value == "0" -%}
+          Off
+        {%- elif value == "1" -%}
+          On
+        {%- endif -%}
 
-  #TOP58 - Tank electric heater allowed state
-  - platform: mqtt
-    name: Aquarea Tank Heater Enabled
-    state_topic: "panasonic_heat_pump/main/DHW_Heater_State"
-    value_template: >-
-      {%- if value == "0" -%}
-        Off
-      {%- elif value == "1" -%}
-        On
-      {%- endif -%}
+    #TOP60 - Internal heater state
+    - name: Aquarea Internal Heater State
+      state_topic: "panasonic_heat_pump/main/Internal_Heater_State"
+      value_template: >-
+        {%- if value == "0" -%}
+          Off
+        {%- elif value == "1" -%}
+          On
+        {%- endif -%}
 
-  #TOP59 - Water electric heater allowed state
-  - platform: mqtt
-    name: Aquarea Room Heater Enabled
-    state_topic: "panasonic_heat_pump/main/Room_Heater_State"
-    value_template: >-
-      {%- if value == "0" -%}
-        Off
-      {%- elif value == "1" -%}
-        On
-      {%- endif -%}
+    #TOP61 - External heater state
+    - name: Aquarea External Heater State
+      state_topic: "panasonic_heat_pump/main/External_Heater_State"
+      value_template: >-
+        {%- if value == "0" -%}
+          Off
+        {%- elif value == "1" -%}
+          On
+        {%- endif -%}
 
-  #TOP60 - Internal heater state
-  - platform: mqtt
-    name: Aquarea Internal Heater State
-    state_topic: "panasonic_heat_pump/main/Internal_Heater_State"
-    value_template: >-
-      {%- if value == "0" -%}
-        Off
-      {%- elif value == "1" -%}
-        On
-      {%- endif -%}
+    #TOP62 - Fan1 speed
+    - name: Aquarea Fan 1 Speed
+      state_topic: "panasonic_heat_pump/main/Fan1_Motor_Speed"
+      unit_of_measurement: "R/min"
 
-  #TOP61 - External heater state
-  - platform: mqtt
-    name: Aquarea External Heater State
-    state_topic: "panasonic_heat_pump/main/External_Heater_State"
-    value_template: >-
-      {%- if value == "0" -%}
-        Off
-      {%- elif value == "1" -%}
-        On
-      {%- endif -%}
+    #TOP63 - Fan2 speed
+    - name: Aquarea Fan 2 Speed
+      state_topic: "panasonic_heat_pump/main/Fan2_Motor_Speed"
+      unit_of_measurement: "R/min"
 
+    #TOP64 - High pressure
+    - name: Aquarea High pressure
+      state_topic: "panasonic_heat_pump/main/High_Pressure"
+      unit_of_measurement: "Kgf/cm2"
 
-  #TOP62 - Fan1 speed
-  - platform: mqtt
-    name: Aquarea Fan 1 Speed
-    state_topic: "panasonic_heat_pump/main/Fan1_Motor_Speed"
-    unit_of_measurement: "R/min"
-
-  #TOP63 - Fan2 speed
-  - platform: mqtt
-    name: Aquarea Fan 2 Speed
-    state_topic: "panasonic_heat_pump/main/Fan2_Motor_Speed"
-    unit_of_measurement: "R/min"
-
-  #TOP64 - High pressure
-  - platform: mqtt
-    name: Aquarea High pressure
-    state_topic: "panasonic_heat_pump/main/High_Pressure"
-    unit_of_measurement: "Kgf/cm2"
-
-  #TOP65 - Pump speed
-  - platform: mqtt
-    name: Aquarea Pump Speed
-    state_topic: "panasonic_heat_pump/main/Pump_Speed"
-    unit_of_measurement: "R/min"
+    #TOP65 - Pump speed
+    - name: Aquarea Pump Speed
+      state_topic: "panasonic_heat_pump/main/Pump_Speed"
+      unit_of_measurement: "R/min"
 
   #TOP66 - Low pressure
-  - platform: mqtt
-    name: Aquarea Low pressure
-    state_topic: "panasonic_heat_pump/main/Low_Pressure"
-    unit_of_measurement: "Kgf/cm2"
+    - name: Aquarea Low pressure
+      state_topic: "panasonic_heat_pump/main/Low_Pressure"
+      unit_of_measurement: "Kgf/cm2"
 
-  #TOP66 - Compressor Current
-  - platform: mqtt
-    name: Aquarea Compressor Current
-    state_topic: "panasonic_heat_pump/main/Compressor_Current"
-    unit_of_measurement: "A"
+    #TOP67 - Compressor Current
+    - name: Aquarea Compressor Current
+      state_topic: "panasonic_heat_pump/main/Compressor_Current"
+      unit_of_measurement: "A"
 
-  ##1-Wire - Example, replace with correct sensor ID
-  #- platform: mqtt
-  #  name: 1-wire sensor temperature
-  #  state_topic: "panasonic_heat_pump/1wire/1234567890abcdef"
-  #  unit_of_measurement: '°C'
-  #  value_template: '{{value | round(1) }}'
+    ##1-Wire - Example, replace with correct sensor ID
+    #- name: 1-wire sensor temperature
+    #  state_topic: "panasonic_heat_pump/1wire/1234567890abcdef"
+    #  unit_of_measurement: '°C'
+    #  value_template: '{{value | round(1) }}'
 
-  # The following S0 topics are only available if S0 is enabled.
-  #
-  #S0 kWh Meter 1 - Assumed to measure the heat pump consumption
-  - platform: mqtt
-    name: Aquarea Metered Power Consumption
-    state_topic: "panasonic_heat_pump/s0/Watt/1"
-    unit_of_measurement: 'W'
+    # The following S0 topics are only available if S0 is enabled.
+    #
+    #S0 kWh Meter 1 - Assumed to measure the heat pump consumption
+    - name: Aquarea Metered Power Consumption
+      state_topic: "panasonic_heat_pump/s0/Watt/1"
+      unit_of_measurement: 'W'
 
-  - platform: mqtt
-    name: Aquarea Metered Power Consumption Total
-    state_topic: "panasonic_heat_pump/s0/WatthourTotal/1"
-    unit_of_measurement: 'kWh'
-    value_template: >-
-      {{ (value | int) / 1000}}
+    - name: Aquarea Metered Power Consumption Total
+      state_topic: "panasonic_heat_pump/s0/WatthourTotal/1"
+      unit_of_measurement: 'kWh'
+      value_template: >-
+        {{ (value | int) / 1000}}
 
-  #S0 kWh Meter 2 - Assumed to measure the backup heater consumption
-  - platform: mqtt
-    name: Aquarea Metered Backup Heater Power Consumption
-    state_topic: "panasonic_heat_pump/s0/Watt/2"
-    unit_of_measurement: 'W'
+    #S0 kWh Meter 2 - Assumed to measure the backup heater consumption
+    - name: Aquarea Metered Backup Heater Power Consumption
+      state_topic: "panasonic_heat_pump/s0/Watt/2"
+      unit_of_measurement: 'W'
 
-  - platform: mqtt
-    name: Aquarea Metered Backup Heater Power Consumption Total
-    state_topic: "panasonic_heat_pump/s0/WatthourTotal/2"
-    unit_of_measurement: 'kWh'
-    value_template: >-
-      {{ (value | int) / 1000}}
+    - name: Aquarea Metered Backup Heater Power Consumption Total
+      state_topic: "panasonic_heat_pump/s0/WatthourTotal/2"
+      unit_of_measurement: 'kWh'
+      value_template: >-
+        {{ (value | int) / 1000}}
 
+# switch #
+##########
+  switch:
+    #Turn on/off holiday mode
+    - name: Aquarea Holiday Mode
+      command_topic: "panasonic_heat_pump/commands/SetHolidayMode"
+      state_topic: "panasonic_heat_pump/main/Holiday_Mode_State"
+      qos: 0
+      payload_on: "1"
+      payload_off: "0"
+      retain: false
+  
+    #Turn on/off heatpump  
+    - name: Aquarea Main Power
+      command_topic: "panasonic_heat_pump/commands/SetHeatpump"
+      state_topic: "panasonic_heat_pump/main/Heatpump_State"
+      qos: 0
+      payload_on: "1"
+      payload_off: "0"
+      retain: false
+
+    - name: Aquarea Force DHW Mode
+      command_topic: "panasonic_heat_pump/commands/SetForceDHW"
+      state_topic: "panasonic_heat_pump/main/Force_DHW_State"
+      qos: 0
+      payload_on: "1"
+      payload_off: "0"
+      retain: false
+
+sensor:
   #### SENSORS BELOW ARE NOT IN FIRMWARE ####
   #Energy use/production
   - platform: template
@@ -624,7 +605,7 @@ sensor:
         friendly_name: "Aquarea COP"
         unit_of_measurement: "x"
         value_template: >-
-          {%- if states('sensor.heishamon_w_consumption') | float > 0 -%}
+          {%- if states('sensor.heishamon_w_consumption') | float(0) > 0 -%}
             {{ '%0.1f' % ((states('sensor.heishamon_w_production') | float ) / (states('sensor.heishamon_w_consumption') | float )) }}
           {%- else -%}
             0.0
@@ -636,7 +617,6 @@ sensor:
           {%- else %}
             false
           {%- endif %}
-
 
   #Calculation Energy consumed (kWh) - DHW
   - platform: integration
@@ -650,38 +630,3 @@ sensor:
     name: Aquarea Heat Energy Consumed
     unit_prefix: k
     method: left
-
-
-
-# switch #
-##########
-switch:
-#Turn on/off holiday mode
-  - platform: mqtt
-    name: Aquarea Holiday Mode
-    command_topic: "panasonic_heat_pump/commands/SetHolidayMode"
-    state_topic: "panasonic_heat_pump/main/Holiday_Mode_State"
-    qos: 0
-    payload_on: "1"
-    payload_off: "0"
-    retain: false
-  
-#Turn on/off heatpump  
-  - platform: mqtt
-    name: Aquarea Main Power
-    command_topic: "panasonic_heat_pump/commands/SetHeatpump"
-    state_topic: "panasonic_heat_pump/main/Heatpump_State"
-    qos: 0
-    payload_on: "1"
-    payload_off: "0"
-    retain: false
-
-  - platform: mqtt
-    name: Aquarea Force DHW Mode
-    command_topic: "panasonic_heat_pump/commands/SetForceDHW"
-    state_topic: "panasonic_heat_pump/main/Force_DHW_State"
-    qos: 0
-    payload_on: "1"
-    payload_off: "0"
-    retain: false
-
