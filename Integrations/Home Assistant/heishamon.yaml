@@ -17,6 +17,9 @@
 ## 1.2.0 (17-05-2020)
 ##   Fixed
 ##   - New/changed topics
+##
+## 1.3.0 (22-06-2022)
+##   Compatibility with Home Assistant 2022.6 MQTT configuration format
 
 
 # Automations #
