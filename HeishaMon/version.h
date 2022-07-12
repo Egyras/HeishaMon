@@ -1,1 +1,1 @@
-static const char* heishamon_version = "2.2-iy-3-PR78";
+static const char* heishamon_version = "3.0";

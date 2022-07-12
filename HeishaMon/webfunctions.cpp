@@ -1066,8 +1066,8 @@ int handleJsonOutput(struct webserver_t *client, char* actData) {
         webserver_send_content_P(client, PSTR(","), 1);
       }
     }
-    // The webserver also increases by 1
-    client->content += 3;
+    // The webserver also increases by 4
+    client->content += 4;
     if (client->content > NUMBER_OF_TOPICS) {
       client->content = NUMBER_OF_TOPICS;
     }
