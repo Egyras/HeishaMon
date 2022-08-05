@@ -36,7 +36,6 @@ A json output of all received data (heatpump and 1wire) is available at the url 
 
 Within the 'integrations' folder you can find examples how to connect your automation platform to the HeishaMon.
 
-
 # Rules functionality
 The rules functionality allows you to control the heatpump from within the HeishaMon itself. Which makes it much more reliable then having to deal with external domotica over WiFi. When posting a new ruleset, it is immidiatly validated and when valid used. When a new ruleset is invalid it will be ignored and the old ruleset will be loaded again. You can check the console for feedback on this. If somehow a new valid ruleset crashes the HeishaMon, it will be automatically disabled the next reboot allowing you to make changes. This prevents the HeishaMon getting into a boot loop.
 
