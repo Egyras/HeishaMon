@@ -68,7 +68,7 @@ automation:
           {%- if trigger.payload == "0" -%}
             Off
           {%- else -%}
-            {{ (trigger.payload | int) * 30 }} min
+            {{ (trigger.payload | int(0)) * 30 }} min
           {%- endif -%}
 
   #Sets powerful level to the selected value
@@ -85,7 +85,7 @@ automation:
           {%- if states('input_select.heishamon_powermode') == "Off" -%}
             0
           {%- else -%}
-            {{ "%.0f" % ((states('input_select.heishamon_powermode') | replace("min", "") | int) / 30) }}
+            {{ "%.0f" % ((states('input_select.heishamon_powermode') | replace("min", "") | int(0)) / 30) }}
           {%- endif -%}
 
   #Fetches heatmode from status and sets the selector accordingly
@@ -100,10 +100,20 @@ automation:
         option: >-
           {%- if trigger.payload == "0" -%}
             Heat
+          {%- elif trigger.payload == "1" -%}
+            Cool
+          {%- elif trigger.payload == "2" -%}
+            Auto
           {%- elif trigger.payload == "3" -%}
             DHW
           {%- elif trigger.payload == "4" -%}
             Heat+DHW
+          {%- elif trigger.payload == "5" -%}
+            Cool+DHW
+          {%- elif trigger.payload == "6" -%}
+            Auto+DHW
+          {%- elif trigger.payload == "7" -%}
+            Auto(cool)
           {%- endif -%}
 
   #Sets heatmode to the selected value
@@ -119,10 +129,20 @@ automation:
         payload_template: >-
           {%- if states('input_select.heishamon_heatmode') == "Heat" -%}
             0
+          {%- elif states('input_select.heishamon_heatmode') == "Cool" -%}
+            1
+          {%- elif states('input_select.heishamon_heatmode') == "Auto" -%}
+            2
           {%- elif states('input_select.heishamon_heatmode') == "DHW" -%}
             3
           {%- elif states('input_select.heishamon_heatmode') == "Heat+DHW" -%}
             4
+          {%- elif states('input_select.heishamon_heatmode') == "Cool+DHW" -%}
+            5
+          {%- elif states('input_select.heishamon_heatmode') == "Auto+DHW" -%}
+            6
+          {%- elif states('input_select.heishamon_heatmode') == "Auto(cool)" -%}
+            7
           {%- endif -%}
 
   #Fetches heatshift temperature from status and sets the selector accordingly
@@ -135,7 +155,7 @@ automation:
       data_template:
         entity_id: input_number.heishamon_heatshift
         value: >-
-          {{ "%.1f" % (trigger.payload | int) }}
+          {{ "%.1f" % (trigger.payload | int(0)) }}
 
   #Sets heatshift temperature to the selected value
   - alias: Set heatshift
@@ -148,7 +168,7 @@ automation:
         topic: panasonic_heat_pump/commands/SetZ1HeatRequestTemperature
         retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
         payload_template: >-
-          {{ "%.0f" % (states('input_number.heishamon_heatshift') | int) }}
+          {{ "%.0f" % (states('input_number.heishamon_heatshift') | int(0)) }}
 
   #Fetches tank target temperature from status and sets the selector accordingly
   - alias: Set tank target temperature selector
@@ -160,7 +180,7 @@ automation:
       data_template:
         entity_id: input_number.heishamon_tank_temp
         value: >-
-          {{ "%.1f" % (trigger.payload | int) }}
+          {{ "%.1f" % (trigger.payload | int(0)) }}
 
   #Sets tank target temperature to the selected value
   - alias: Set tank target temperature
@@ -173,7 +193,7 @@ automation:
         topic: panasonic_heat_pump/commands/SetDHWTemp
         retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
         payload_template: >-
-          {{ "%.0f" % (states('input_number.heishamon_tank_temp') | int) }}
+          {{ "%.0f" % (states('input_number.heishamon_tank_temp') | int(0)) }}
 
 
 # input_number #
@@ -214,9 +234,14 @@ input_select:
   heishamon_heatmode:
     name: Set Heat Mode
     options:
-      - Heat+DHW
       - Heat
+      - Cool
+      - Auto
       - DHW
+      - Heat+DHW
+      - Cool+DHW
+      - Auto+DHW
+      - Auto(cool)
 
 # sensor #
 ##########
@@ -268,6 +293,8 @@ sensor:
         Cool+DHW
       {%- elif value == "6" -%}
         Auto+DHW
+      {%- elif value == "7" -%}
+        Auto(cool)
       {%- endif -%}
       
   #TOP5 - Water inlet temp
@@ -353,7 +380,7 @@ sensor:
     state_topic: "panasonic_heat_pump/main/Powerful_Mode_Time"
     unit_of_measurement: 'Min'
     value_template: >-
-      {{ (value | int) * 30 }}
+      {{ (value | int(0)) * 30 }}
 
   #TOP18 - Heating quiet mode
   - platform: mqtt
@@ -412,6 +439,30 @@ sensor:
     name: Aquarea Heatshift Temperature
     state_topic: "panasonic_heat_pump/main/Z1_Heat_Request_Temp"
     unit_of_measurement: '°C'
+
+  #TOP33 - Room Thermostat Temp
+  - platform: mqtt
+    name: Aquarea Room Thermostat Temperature
+    state_topic: "panasonic_heat_pump/main/Room_Thermostat_Temp"
+    unit_of_measurement: '°C'
+
+  #TOP38 - Cool_Energy_Production
+  - platform: mqtt
+    name: Aquarea Cool Energy Production
+    state_topic: "panasonic_heat_pump/main/Cool_Energy_Production"
+    unit_of_measurement: 'W'
+    device_class: 'power'
+    state_class: 'measurement'
+    force_update: true
+
+  #TOP39 - Cool_Energy_Consumption
+  - platform: mqtt
+    name: Aquarea Cool Energy Consumption
+    state_topic: "panasonic_heat_pump/main/Cool_Energy_Consumption"
+    unit_of_measurement: 'W'
+    device_class: 'power'
+    state_class: 'measurement'
+    force_update: true
 
   #TOP40 - DHW power produced
   - platform: mqtt
@@ -579,7 +630,7 @@ sensor:
     state_topic: "panasonic_heat_pump/s0/WatthourTotal/1"
     unit_of_measurement: 'kWh'
     value_template: >-
-      {{ (value | int) / 1000}}
+      {{ (value | int(0)) / 1000}}
 
   #S0 kWh Meter 2 - Assumed to measure the backup heater consumption
   - platform: mqtt
@@ -592,7 +643,7 @@ sensor:
     state_topic: "panasonic_heat_pump/s0/WatthourTotal/2"
     unit_of_measurement: 'kWh'
     value_template: >-
-      {{ (value | int) / 1000}}
+      {{ (value | int(0)) / 1000}}
 
   #### SENSORS BELOW ARE NOT IN FIRMWARE ####
   #Energy use/production
@@ -624,8 +675,8 @@ sensor:
         friendly_name: "Aquarea COP"
         unit_of_measurement: "x"
         value_template: >-
-          {%- if states('sensor.heishamon_w_consumption') | float > 0 -%}
-            {{ '%0.1f' % ((states('sensor.heishamon_w_production') | float ) / (states('sensor.heishamon_w_consumption') | float )) }}
+          {%- if states('sensor.heishamon_w_consumption') | float(0.0) > 0 -%}
+            {{ '%0.1f' % ((states('sensor.heishamon_w_production') | float(0.0) ) / (states('sensor.heishamon_w_consumption') | float(0.0) )) }}
           {%- else -%}
             0.0
           {%- endif -%}
