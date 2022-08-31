@@ -1,12 +1,20 @@
+#define LWIP_INTERNAL
+
 #include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
 
+#define DATASIZE 203
+#define INITIALQUERYSIZE 7
+extern byte initialQuery[INITIALQUERYSIZE];
 #define PANASONICQUERYSIZE 110
 extern byte panasonicQuery[PANASONICQUERYSIZE];
 
+
+#define OPTIONALPCBQUERYTIME 1000 //send optional pcb query each second
 #define OPTIONALPCBQUERYSIZE 19
 #define OPTIONALPCBSAVETIME 300 //save each 5 minutes the current optional pcb state into flash to have valid values during reboot
 extern byte optionalPCBQuery[OPTIONALPCBQUERYSIZE];
+
 
 extern const char* mqtt_topic_values;
 extern const char* mqtt_topic_commands;
@@ -61,10 +69,12 @@ unsigned int set_z2_water_temp(char *msg, char *log_msg);
 unsigned int set_solar_temp(char *msg, char *log_msg);
 unsigned int set_byte_9(char *msg, char *log_msg);
 
-struct {
-  const char *name;
+struct cmdStruct {
+  char name[28];
   unsigned int (*func)(char *msg, unsigned char *cmd, char *log_msg);
-} commands[] PROGMEM = {
+};
+
+const cmdStruct commands[] PROGMEM = {
   // set heatpump state to on by sending 1
   { "SetHeatpump", set_heatpump_state },
   // set pump state to on by sending 1
@@ -109,10 +119,12 @@ struct {
   { "SetMainSchedule", set_main_schedule },
 };
 
-struct {
-  const char *name;
+struct optCmdStruct{
+  char name[28];
   unsigned int (*func)(char *msg, char *log_msg);
-} optionalCommands[] PROGMEM = {
+};
+
+const optCmdStruct optionalCommands[] PROGMEM = {
   // optional PCB
   { "SetHeatCoolMode", set_heat_cool_mode },
   { "SetCompressorState", set_compressor_state },

@@ -122,6 +122,7 @@ TOP102 | main/Solar_On_Delta | Solar heating delta on
 TOP103 | main/Solar_Off_Delta | solar heating delta off
 TOP104 | main/Solar_Frost_Protection | Solar frost protection temp
 TOP105 | main/Solar_High_Limit | Solar max temp limit
+TOP106 | main/Pump_Flowrate_mode | Settings for pump flow rate (0=DeltaT, 1=Maximum flow, J-series only)
 
 
 
@@ -170,7 +171,7 @@ SET16 | SetCurves | Set zones heat/cool curves | JSON document (see below)
 SET17 | SetZones | Set zones to active | 0 = zone 1 active, 1 = zone2 active, 2 = zone1 and zone2 active
 SET18 | SetFloorHeatDelta | Set floor heating delta in Kelvin | 1-15
 SET19 | SetFloorCoolDelta | Set floor cooling delta in Kelvin | 1-15
-SET20 | SetDHWHeatDelta | Set DHW heating delta in Kelvin | 1-15
+SET20 | SetDHWHeatDelta | Set DHW heating delta in Kelvin | -15 to -1 (negative value)
 SET21 | SetHeaterDelayTime | Set heater start delay time (only J-series) | in minutes
 SET22 | SetHeaterStartDelta | Set heater start delta T (only J-series) | in kelvin
 SET23 | SetHeaterStopDelta | Set heater stop delta T (only J-series) | in kelvin

@@ -31,7 +31,7 @@
 |  TOP | 26 | 55 | (hex) Biwalent Off=55, Biwalent alternative =56, Biwalent parallel=5A | Biwalent settings |
 |  TOP | 27 | 05 | SG Ready Control on/off (bit5and6) ,Demand Control on/off (bit7and8)  | SG Ready Control, Demand Control |
 |  TOP76+TOP81 | 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
-|  TOP | 29 | 00 |   | 0 byte |
+|  TOP106 | 29 | 00 |   | 3d and 4th bit setting for J-series deltaT or max flow switch |
 |  TOP | 30 | 00 |   | 0 byte |
 |  TOP | 31 | 00 |   | 0 byte |
 |  TOP | 32 | 00 |   | 0 byte |
