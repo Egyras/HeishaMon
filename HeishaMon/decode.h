@@ -32,7 +32,7 @@ String getModel(byte input);
 static const char _unknown[] PROGMEM = "unknown";
 
 static const char *Model[] PROGMEM = {
-  "23", //string representation of number of known models
+  "24", //string representation of number of known models
   "WH-MDC05H3E5",
   "WH-MDC07H3E5",
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5",
@@ -56,6 +56,7 @@ static const char *Model[] PROGMEM = {
   "WH-MDC07J3E5",
   "WH-MDC09J3E5",
   "IDU: WH-SDC0305J3E5 ODU: WH-UD05JE5",
+  "IDU: WH-ADC1216H6E5 ODU: WH-UD12HE5"
 };
 
 static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { //stores the bytes #129 to #138 of known models in the same order as the const above
@@ -82,6 +83,7 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { 
   0xC2, 0xD3, 0x0B, 0x34, 0x65, 0xB2, 0xD3, 0x0B, 0x95, 0x65,
   0xC2, 0xD3, 0x0B, 0x35, 0x65, 0xB2, 0xD3, 0x0B, 0x96, 0x65,
   0x62, 0xD2, 0x0B, 0x41, 0x54, 0x32, 0xD2, 0x0C, 0x45, 0x55,
+  0xE2, 0xCF, 0x0B, 0x75, 0x09, 0x12, 0xD0, 0x0C, 0x06, 0x11,
 };
 
 #define NUMBER_OF_TOPICS 107 //last topic number + 1
