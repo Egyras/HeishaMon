@@ -11,6 +11,8 @@
 #include "s0.h"
 #include "gpio.h"
 
+#define HEATPUMP_VALUE_LEN    16
+
 void log_message(char* string);
 
 static IPAddress apIP(192, 168, 4, 1);
@@ -33,8 +35,8 @@ struct settingsStruct {
   char mqtt_port[6] = "1883";
   char mqtt_username[64];
   char mqtt_password[64];
-  char mqtt_topic_base[40] = "panasonic_heat_pump";
-  char mqtt_topic_listen[40] = "master_panasonic_heat_pump";
+  char mqtt_topic_base[128] = "panasonic_heat_pump";
+  char mqtt_topic_listen[128] = "master_panasonic_heat_pump";
   char ntp_servers[254] = "pool.ntp.org";
 
   bool listenonly = false; //listen only so heishamon can be installed parallel to cz-taw1, set commands will not work though
@@ -48,6 +50,12 @@ struct settingsStruct {
 
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
   gpioSettingsStruct gpioSettings;
+};
+
+struct websettings_t {
+  String name;
+  String value;
+  struct websettings_t *next;
 };
 
 void setupConditionals();
@@ -78,6 +86,7 @@ int settingsNewPassword(struct webserver_t *client, settingsStruct *heishamonSet
 int cacheSettings(struct webserver_t *client, struct arguments_t * args);
 int handleWifiScan(struct webserver_t *client);
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
+int showRules(struct webserver_t *client);
 int showFirmware(struct webserver_t *client);
 int showFirmwareSuccess(struct webserver_t *client);
 int showFirmwareFail(struct webserver_t *client);

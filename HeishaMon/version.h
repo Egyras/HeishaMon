@@ -1,1 +1,1 @@
-static const char* heishamon_version = "2.1-iy-12-opentherm";
+static const char* heishamon_version = "3.0-OT";

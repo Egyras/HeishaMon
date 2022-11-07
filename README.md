@@ -36,6 +36,185 @@ A json output of all received data (heatpump and 1wire) is available at the url 
 
 Within the 'integrations' folder you can find examples how to connect your automation platform to the HeishaMon.
 
+# Rules functionality
+The rules functionality allows you to control the heatpump from within the HeishaMon itself. Which makes it much more reliable then having to deal with external domotica over WiFi. When posting a new ruleset, it is immidiatly validated and when valid used. When a new ruleset is invalid it will be ignored and the old ruleset will be loaded again. You can check the console for feedback on this. If somehow a new valid ruleset crashes the HeishaMon, it will be automatically disabled the next reboot allowing you to make changes. This prevents the HeishaMon getting into a boot loop.
+
+The techniques used in the rule library allows you to work with very large rulesets, but best practice is to keep it below 10.000 bytes.
+
+Notice that sending commands to the heatpump is done asynced. So, commands sent to the heatpump at the beginning of your syntax will not immediatly be reflected in the values from the heatpump later on. Therefor, heatpump values should therefor be read from the heatpump itself instead of those based on the values you keep yourself.
+
+## Syntax
+Two general rules are that spaces are mandatory and all lines are terminated by a semicolon.
+
+### Variables
+The ruleset uses the following variable structure:
+
+- `#`: Globals
+These variables can be accessed throughout the ruleset. Don't use globals for all your variables, because it will persistantly use memory.
+
+- `$`: Locals
+These variables live inside a rule block. When a ruleblock finishes, these variables will be cleaned up, freeing any memory used.
+
+- `@`: Heatpump parameters
+These are the same as listed in the Manage Topics documentation page and as found on the HeishaMon homepage. So the heatpump state value is named `@Heatpump_State`.
+
+- `?`: Thermostat parameters
+These variables reflect parameters read from the connected thermostat when using the OpenTherm functionality. When OpenTherm is supported this documentation will be extended with more precise information.
+
+- `ds18b20#2800000000000000`: Dallas 1-wire temperature values
+Use these variables to read the temperature of the connected sensors. These values cannot be used as an event and are as an exception readonly. Off course, the id of the sensor should be places after the hashtag.
+
+All variables are either read of write enabled. Writing to either the Heatpump of Thermostat parameters directly control these devices. So `@Heatpump_State = 1` will actually turn the heatpump off.
+
+When a variable is called but not yet set to a value, the value will be `NULL`.
+
+Variables can be of boolean (`1` or `0`), float (`3.14`), or integer (`10`) type.
+
+### Events or functions
+Rules are written in `event` or `function` blocks. These are blocks that are triggered when something happened; either a new heatpump or thermostat value has been received or a timer fired. Or can be used are plain functions
+
+```
+on [event] then
+  [...]
+end
+
+on [name] then
+  [...]
+end
+```
+
+Events can be Heatpump or thermostat parameters or timers:
+```
+on @Heatpump_State then
+  [...]
+end
+
+on ?setpoint then
+  [...]
+end
+
+on timer=1 then
+  [...]
+end
+```
+
+When defining function, you just name your block and then you can call it from anywhere else:
+```
+on foobar then
+  [...]
+end
+
+on @Heatpump_State then
+  foobar();
+end
+```
+
+There is currently one special function that calls when the system is booted on when a new ruleset is saved:
+```
+on System#Boot then
+  [...]
+end
+```
+
+This special function can be used to initially set your globals or certain timers.
+
+### Operators
+Regular operators are supported with their standard associativity and precedence. This allows you to also use regular math.
+- `&&`: And
+- `||`: Or
+- `==`: Equals`
+- `>=`: Greater or equal then
+- `>`: Greater then
+- `<`: Lesser then
+- `<=`: Lesser or equal then
+- `-`: Minus
+- `%`: Modulus
+- `*`: Multiply
+- `/`: Divide
+- `+`: Plus
+- `^`: Power
+
+Parenthesis can be used to prioritize operators as it would work in regular math.
+
+### Functions
+- `coalesce`
+Returns the first value not `NULL`. E.g., `$b = NULL; $a = coalesce($b, 1);` will return 1. This function accepts an unlimited number of arguments.
+
+- `max`
+Returns the maximum value of the input parameters.
+
+- `min`
+Returns the minimum value of the input parameters.
+
+- `isset`
+Return boolean true when the input variable is still `NULL` in any other cases it will return false.
+
+- `round`
+Rounds the input float to the nearest integer.
+
+- `setTimer`
+Sets a timer to trigger in X seconds. The first parameter is the timer number and the second parameters the number of seconds before it fires. A timer only fires once so it has to be re-set for recurring events. When a timer triggers it will can the timer event as described above.
+
+### Conditions
+The only supported conditions are `if` and `else`, `elseif` isn't supported:
+
+```
+if [condition] then
+  [...]
+else
+  if [condition] then
+    [...]
+  end
+end
+```
+
+### Examples
+Once the rules system is in used by more and more users, additional examples will be added to the documentation.
+
+*Calculating WAR*
+```
+on calcWar then
+	$Ta1 = 32;
+	$Tb1 = 14;
+	$Ta2 = 41;
+	$Tb2 = -4;
+
+	#maxTa = $Ta1;
+
+	if @Outside_Temp >= $Tb1 then
+		#maxTa = $Ta1;
+	else
+		if @Outside_Temp <= $Tb2 then
+			#maxTa = $Ta2;
+		else
+			#maxTa = $Ta1 + (($Tb1 - @Outside_Temp) * ($Ta2 - $Ta1) / ($Tb1 - $Tb2));
+		end
+	end
+end
+```
+
+*Thermostat setpoint*
+```
+on ?temperature then
+	calcWar();
+
+	$margin = 0.25;
+
+	if ?temperature > (?setpoint + $margin) then
+		if @Heatpump_State == 1 then
+			@Heatpump_State = 0;
+		end
+	else
+		if ?temperature < (?setpoint - $margin) then
+			if @Heatpump_State == 0 then
+				@Heatpump_State = 1;
+			end
+		else
+			@SetZ1HeatRequestTemperature = round(#maxTa);
+		end
+	end
+end
+```
 
 # Factory reset
 A factory reset can be performed on the web interface but if the web interface is unavailable you can perform a double reset. The double reset should be performed not too fast but also not too slow. Usually halve a second between both resets should do the trick. To indicate that the double reset performed a factory reset, the blue led will flash rapidly (You need to press reset again now to restart HeishaMon back to normal where a WiFi hotspot should be visible again).

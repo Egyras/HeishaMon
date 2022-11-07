@@ -29,10 +29,10 @@ static const char websocketJS[] PROGMEM =
   "  var bConnected = false;"
   "  function startWebsockets() {"
   "    if(typeof MozWebSocket != \"undefined\") {"
-  "      oWebsocket = new MozWebSocket(\"ws://\" + location.host + \":81\");"
+  "      oWebsocket = new MozWebSocket(\"ws://\" + location.host + \":80\");"
   "    } else if(typeof WebSocket != \"undefined\") {"
   "      /* The characters after the trailing slash are needed for a wierd IE 10 bug */"
-  "      oWebsocket = new WebSocket(\"ws://\" + location.host + \":81/ws\");"
+  "      oWebsocket = new WebSocket(\"ws://\" + location.host + \":80/ws\");"
   "    }"
   ""
   "    if(oWebsocket) {"
@@ -70,9 +70,9 @@ static const char refreshJS[] PROGMEM =
   " };"
   " function loadContent(id, url, func) {"
   "   var xhr = new XMLHttpRequest();"
-  "   xhr.open('GET', url, true);"
+  "   xhr.open('GET', url, false);" //sync request to not overload the webserver
   "   xhr.send();"
-  "   xhr.onload = function() {"
+  //"   xhr.onload = function() {"  //sync request to not overload the webserver
   "     if(xhr.status == 200) {"
   "       let obj = document.getElementById(id);"
   "       if(obj) {"
@@ -80,7 +80,7 @@ static const char refreshJS[] PROGMEM =
   "         func();"
   "       }"
   "     }"
-  "   }"
+  //"   }"  //sync request to not overload the webserver
   " }"
 
   " function refreshTable(tableName){"
@@ -185,6 +185,7 @@ static const char webBodyRoot1[] PROGMEM =
   "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
   "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
   "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
+  "<a href=\"/rules\" class=\"w3-bar-item w3-button\">Rules</a>"
   "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
   "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
   "<hr><div class=\"w3-text-grey\">Version: ";
@@ -227,6 +228,26 @@ static const char webBodyRootConsole[] PROGMEM =
   "<h2>Console output</h2>"
   "<textarea id=\"cli\" disabled></textarea><br /><input type=\"checkbox\" id=\"autoscroll\" checked=\"checked\">Enable autoscroll</div>";
 
+static const char showRulesPage1[] PROGMEM =
+  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
+  "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
+  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
+  "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
+  "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
+  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
+  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
+  "</div>"
+  "<div class=\"w3-container w3-center\">"
+  "  <h2>Rules</h2>"
+  "  <form accept-charset=\"UTF-8\" action=\"/saverules\" enctype=\"multipart/form-data\" method=\"POST\">"
+  "    <textarea name=\"rules\" cols=\"75\" rows=\"15\">";
+
+static const char showRulesPage2[] PROGMEM =
+  "</textarea><br />"
+  "    <input class=\"w3-green w3-button\" type=\"submit\" value=\"Save\">"
+  "  </form>"
+  "</div>";
+
 static const char webBodyFactoryResetWarning[] PROGMEM =
   "<div class=\"w3-container w3-center\">"
   "<p>Removing configuration. To reconfigure please connect to WiFi hotspot after reset.</p>"
@@ -262,83 +283,10 @@ static const char webBodySettings1[] PROGMEM =
   "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
   "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
   "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
+  "<a href=\"/rules\" class=\"w3-bar-item w3-button\">Rules</a>"
   "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
   "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
   "</div>";
-
-static const char webBodySmartcontrol1[] PROGMEM =
-  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
-  "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
-  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
-  "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
-  "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
-  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
-  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
-  "</div>";
-
-static const char webBodySmartcontrol2[] PROGMEM =
-  "<div class=\"w3-bar w3-red\">"
-  "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('heatingcurve')\">Heating Curve</button>"
-  //  "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('others')\">Others</button>"
-  "</div>";
-
-static const char webBodySmartcontrolHeatingcurve1[] PROGMEM =
-  "<div id=\"heatingcurve\" class=\"w3-container w3-center heishatable\">"
-  "<h2>Heating curve setting</h2>";
-
-static const char webBodySmartcontrolHeatingcurve2[] PROGMEM =
-  "<br><br>"
-  "<table class=\"w3-table-all\">"
-  "<thead>"
-  "<tr class=\"w3-red\">"
-  "<th>Outside Temperature</th>"
-  "<th>Target Setpoint</th>"
-  "</tr>"
-  "</thead>"
-  "<tbody id=\"heatcurvevalues\">"
-  "<tr>"
-  "<td>...Loading...</td>"
-  "<td></td>"
-  "</tr>"
-  "</tbody>"
-  "</table>";
-
-static const char webBodySmartcontrolHeatingcurveSVG[] PROGMEM =
-  "<svg version=\"1.2\" width=\"500\" height=\"450\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" class=\"graph\">"
-  "<g style=\"stroke:black;stroke-dasharray: 5;stroke-width: 0.5;\">"
-  "<line x1=\"100\" x2=\"500\" y1=\"0\" y2=\"0\"></line>"
-  "<line x1=\"100\" x2=\"500\" y1=\"133\" y2=\"133\"></line>"
-  "<line x1=\"100\" x2=\"500\" y1=\"267\" y2=\"267\"></line>"
-  "<line x1=\"100\" x2=\"500\" y1=\"400\" y2=\"400\"></line>"
-  "<line x1=\"100\" x2=\"100\" y1=\"0\" y2=\"400\"></line>"
-  "<line x1=\"233\" x2=\"233\" y1=\"0\" y2=\"400\"></line>"
-  "<line x1=\"367\" x2=\"367\" y1=\"0\" y2=\"400\"></line>"
-  "<line x1=\"500\" x2=\"500\" y1=\"0\" y2=\"400\"></line>"
-  "</g>"
-  "<g style=\"text-anchor: middle;\">"
-  "<text x=\"100\" y=\"420\">-20</text>"
-  "<text x=\"233\" y=\"420\" id=\"graph-hcol\">-20</text>"
-  "<text x=\"367\" y=\"420\" id=\"graph-hcoh\">15</text>"
-  "<text x=\"490\" y=\"420\">15</text>"
-  "</g>"
-  "<g style=\"text-anchor: end;text-anchor: middle;\">"
-  "<text x=\"80\" y=\"0 \" style=\"alignment-baseline:hanging\">60</text>"
-  "<text x=\"80\" y=\"133 \" id=\"graph-hcth\" style=\"alignment-baseline:hanging\">60</text>"
-  "<text x=\"80\" y=\"267 \" id=\"graph-hctl\" style=\"alignment-baseline:hanging\">20</text>"
-  "<text x=\"80\" y=\"400 \" style=\"alignment-baseline:hanging\">20</text>"
-  "</g>"
-  "<g style=\"text-anchor: middle;\">"
-  "<text x=\"50%\" y=\"450\">Outside temperature</text>"
-  "</g>"
-  "<g style=\"text-anchor: middle;\">"
-  "<text x=\"15\" y=\"200\" transform=\"rotate(-90,15,200)\">Target setpoint</text>"
-  "</g>"
-  "<polyline style=\"stroke:green;stroke-width: 3;fill: none;\" points=\"100,133 233,133 367,267 500,267 \"/>"
-  "</svg>";
-
-//static const char webBodySmartcontrolOtherexample[] PROGMEM =
-//  "<div id=\"others\" class=\"w3-container w3-center heishatable\" style=\"display:none\">"
-//  "<h2>Other example</h2>";
 
 static const char webCSS[] PROGMEM =
   "<style>"

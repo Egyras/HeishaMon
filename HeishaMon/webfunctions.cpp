@@ -17,16 +17,10 @@
 
 static String wifiJsonList = "";
 
-struct websettings_t {
-  String name;
-  String value;
-  struct websettings_t *next;
-};
-
-static struct websettings_t *websettings = NULL;
 static uint8_t ntpservers = 0;
 
 void log_message(char* string);
+void log_message(const __FlashStringHelper *msg);
 
 int dBmToQuality(int dBm) {
   if (dBm == 31)
@@ -171,16 +165,16 @@ void ntpReload(settingsStruct *heishamonSettings) {
 
 void loadSettings(settingsStruct *heishamonSettings) {
   //read configuration from FS json
-  log_message((char *)"mounting FS...");
+  log_message(F("mounting FS..."));
 
   if (LittleFS.begin()) {
-    log_message((char *)"mounted file system");
+    log_message(F("mounted file system"));
     if (LittleFS.exists("/config.json")) {
       //file exists, reading and loading
-      log_message((char *)"reading config file");
+      log_message(F("reading config file"));
       File configFile = LittleFS.open("/config.json", "r");
       if (configFile) {
-        log_message((char *)"opened config file");
+        log_message(F("opened config file"));
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
         std::unique_ptr<char[]> buf(new char[size]);
@@ -192,7 +186,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
         serializeJson(jsonDoc, log_msg);
         log_message(log_msg);
         if (!error) {
-          log_message((char *)"\nparsed json");
+          log_message(F("parsed json"));
           //read updated parameters, make sure no overflow
           if ( jsonDoc["wifi_ssid"] ) strncpy(heishamonSettings->wifi_ssid, jsonDoc["wifi_ssid"], sizeof(heishamonSettings->wifi_ssid));
           if ( jsonDoc["wifi_password"] ) strncpy(heishamonSettings->wifi_password, jsonDoc["wifi_password"], sizeof(heishamonSettings->wifi_password));
@@ -236,7 +230,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
           if (jsonDoc["s0_2_maxpulsewidth"]) heishamonSettings->s0Settings[1].maximalPulseWidth = jsonDoc["s0_2_maxpulsewidth"];
           ntpReload(heishamonSettings);
         } else {
-          log_message((char *)"Failed to load json config, forcing config reset.");
+          log_message(F("Failed to load json config, forcing config reset."));
           WiFi.persistent(true);
           WiFi.disconnect();
           WiFi.persistent(false);
@@ -245,20 +239,20 @@ void loadSettings(settingsStruct *heishamonSettings) {
       }
     }
     else {
-      log_message((char *)"No config.json exists! Forcing a config reset.");
+      log_message(F("No config.json exists! Forcing a config reset."));
       WiFi.persistent(true);
       WiFi.disconnect();
       WiFi.persistent(false);
     }
   } else {
-    log_message((char *)"failed to mount FS");
+    log_message(F("failed to mount FS"));
   }
   //end read
 
 }
 
 void setupWifi(settingsStruct *heishamonSettings) {
-  log_message((char *)"Wifi reconnecting with new configuration...");
+  log_message(F("Wifi reconnecting with new configuration..."));
   //no sleep wifi
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.mode(WIFI_AP_STA);
@@ -266,7 +260,7 @@ void setupWifi(settingsStruct *heishamonSettings) {
   WiFi.softAPdisconnect(true);
 
   if (heishamonSettings->wifi_ssid[0] != '\0') {
-    log_message((char *)"Wifi client mode...");
+    log_message(F("Wifi client mode..."));
     //WiFi.persistent(true); //breaks stuff
 
     if (heishamonSettings->wifi_password[0] == '\0') {
@@ -276,14 +270,14 @@ void setupWifi(settingsStruct *heishamonSettings) {
     }
   }
   else {
-    log_message((char *)"Wifi hotspot mode...");
+    log_message(F("Wifi hotspot mode..."));
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP((char*)"HeishaMon-Setup");
+    WiFi.softAP(F("HeishaMon-Setup"));
   }
 
   if (heishamonSettings->wifi_hostname[0] == '\0') {
     //Set hostname on wifi rather than ESP_xxxxx
-    WiFi.hostname((char *)"HeishaMon");
+    WiFi.hostname(F("HeishaMon"));
   } else {
     WiFi.hostname(heishamonSettings->wifi_hostname);
   }
@@ -424,7 +418,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
   jsonDoc["use_1wire"] = String("");
   jsonDoc["use_s0"] = String("");
 
-  struct websettings_t *tmp = websettings;
+  struct websettings_t *tmp = (struct websettings_t *)client->userdata;
   while (tmp) {
     if (strcmp(tmp->name.c_str(), "wifi_hostname") == 0) {
       jsonDoc["wifi_hostname"] = tmp->value;
@@ -485,7 +479,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
     tmp = tmp->next;
   }
 
-  tmp = websettings;
+  tmp = (struct websettings_t *)client->userdata;
   while (tmp) {
     if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_gpio") == 0) {
       jsonDoc["s0_1_gpio"] = tmp->value;
@@ -536,9 +530,9 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
   saveJsonToConfig(jsonDoc); //save to config file
   loadSettings(heishamonSettings); //load config file to current settings
 
-  while (websettings) {
-    tmp = websettings;
-    websettings = websettings->next;
+  while (client->userdata) {
+    tmp = (struct websettings_t *)client->userdata;
+    client->userdata = ((struct websettings_t *)(client->userdata))->next;
     delete tmp;
   }
 
@@ -557,7 +551,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 }
 
 int cacheSettings(struct webserver_t *client, struct arguments_t * args) {
-  struct websettings_t *tmp = websettings;
+  struct websettings_t *tmp = (struct websettings_t *)client->userdata;
   while (tmp) {
     /*
      *  this part is useless as websettings is always NULL at start of a new POST
@@ -598,8 +592,8 @@ int cacheSettings(struct webserver_t *client, struct arguments_t * args) {
       free(cpy);
     }
 
-    node->next = websettings;
-    websettings = node;
+    node->next = (struct websettings_t *)client->userdata;
+    client->userdata = node;
   }
 
   return 0;
@@ -1095,8 +1089,8 @@ int handleJsonOutput(struct webserver_t *client, char* actData) {
         webserver_send_content_P(client, PSTR(","), 1);
       }
     }
-    // The webserver also increases by 1
-    client->content += 3;
+    // The webserver also increases by 4
+    client->content += 4;
     if (client->content > NUMBER_OF_TOPICS) {
       client->content = NUMBER_OF_TOPICS;
     }
@@ -1111,6 +1105,86 @@ int handleJsonOutput(struct webserver_t *client, char* actData) {
 
     webserver_send_content_P(client, PSTR("}"), 1);
   }
+  return 0;
+}
+
+int showRules(struct webserver_t *client) {
+  uint16_t len = 0, len1 = 0;
+
+  if (client->content == 0) {
+    webserver_send(client, 200, (char *)"text/html", 0);
+    webserver_send_content_P(client, webHeader, strlen_P(webHeader));
+    webserver_send_content_P(client, webCSS, strlen_P(webCSS));
+    webserver_send_content_P(client, webBodyStart, strlen_P(webBodyStart));
+    webserver_send_content_P(client, showRulesPage1, strlen_P(showRulesPage1));
+    if (LittleFS.begin()) {
+      client->userdata = new fs::File(LittleFS.open("/rules.txt", "r"));
+    }
+  } else if (client->userdata != NULL) {
+#define BUFFER_SIZE 128
+    File *f = (File *)client->userdata;
+    char content[BUFFER_SIZE];
+    memset(content, 0, BUFFER_SIZE);
+    if (f && *f) {
+      len = f->size();
+    }
+
+    if (len > 0) {
+      f->seek((client->content - 1)*BUFFER_SIZE, SeekSet);
+      if (client->content * BUFFER_SIZE <= len) {
+        f->readBytes(content, BUFFER_SIZE);
+        len1 = BUFFER_SIZE;
+      } else if ((client->content * BUFFER_SIZE) >= len && (client->content * BUFFER_SIZE) <= len + BUFFER_SIZE) {
+        f->readBytes(content, len - ((client->content - 1)*BUFFER_SIZE));
+        len1 = len - ((client->content - 1) * BUFFER_SIZE);
+      } else {
+        len1 = 0;
+      }
+
+      if (len1 > 0) {
+        webserver_send_content(client, content, len1);
+        if (len1 < BUFFER_SIZE) {
+          if (f) {
+            if (*f) {
+              f->close();
+            }
+            delete f;
+          }
+          client->userdata = NULL;
+          webserver_send_content_P(client, showRulesPage2, strlen_P(showRulesPage2));
+          webserver_send_content_P(client, menuJS, strlen_P(menuJS));
+          webserver_send_content_P(client, webFooter, strlen_P(webFooter));
+        }
+      } else if (client->content == 1) {
+        if (f) {
+          if (*f) {
+            f->close();
+          }
+          delete f;
+        }
+        client->userdata = NULL;
+        webserver_send_content_P(client, showRulesPage2, strlen_P(showRulesPage2));
+        webserver_send_content_P(client, menuJS, strlen_P(menuJS));
+        webserver_send_content_P(client, webFooter, strlen_P(webFooter));
+      }
+    } else if (client->content == 1) {
+      if (f) {
+        if (*f) {
+          f->close();
+        }
+        delete f;
+      }
+      client->userdata = NULL;
+      webserver_send_content_P(client, showRulesPage2, strlen_P(showRulesPage2));
+      webserver_send_content_P(client, menuJS, strlen_P(menuJS));
+      webserver_send_content_P(client, webFooter, strlen_P(webFooter));
+    }
+  } else if (client->content == 1) {
+    webserver_send_content_P(client, showRulesPage2, strlen_P(showRulesPage2));
+    webserver_send_content_P(client, menuJS, strlen_P(menuJS));
+    webserver_send_content_P(client, webFooter, strlen_P(webFooter));
+  }
+
   return 0;
 }
 

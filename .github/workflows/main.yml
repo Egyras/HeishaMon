@@ -10,21 +10,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Update version
-        if: github.event_name != 'pull_request'
-        run: cd HeishaMon && echo "static const char *heishamon_version = \"Alpha-${GITHUB_SHA::6}\";" > version.h && cat version.h
-        shell: bash
-
-      - name: Set PR SHA in env
-        if: github.event_name == 'pull_request'
-        run: echo "GITHUB_PR_SHA=${{github.event.pull_request.head.sha}}" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Update version
-        if: github.event_name == 'pull_request'
-        run: cd HeishaMon && echo "static const char *heishamon_version = \"Alpha-${GITHUB_PR_SHA::6}\";" > version.h && cat version.h
-        shell: bash
-
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
 
