@@ -15,7 +15,7 @@ jobs:
 
       - name: Install platform
         run:  |
-          arduino/setup-arduino-cli
+          arduino-cli core update-index
           arduino-cli core install esp8266:esp8266
 
       - name: Install dependencies
