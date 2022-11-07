@@ -2,19 +2,24 @@ name: Build binary
 
 on: [push, pull_request]
 
+env:
+  ARDUINO_BOARD_MANAGER_ADDITIONAL_URLS: http://arduino.esp8266.com/stable/package_esp8266com_index.json
+
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Arduino CLI
-        uses: arduino/setup-arduino-cli@v1
+        uses: arduino/setup-arduino-cli@v1.1.1
 
       - name: Install platform
-        run: arduino-cli core install esp8266:esp8266 --additional-urls https://arduino.esp8266.com/stable/package_esp8266com_index.json -v
+        run:  |
+          arduino-cli core update-index
+          arduino-cli core install esp8266:esp8266
 
       - name: Install dependencies
         run:  arduino-cli lib install ringbuffer pubsubclient doubleresetdetect arduinojson dallastemperature onewire WebSockets
