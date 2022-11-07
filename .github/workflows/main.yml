@@ -14,7 +14,9 @@ jobs:
         uses: arduino/setup-arduino-cli@v1.1.1
 
       - name: Install platform
-        run: arduino-cli core install esp8266:esp8266 --additional-urls https://arduino.esp8266.com/stable/package_esp8266com_index.json -v
+        run:  |
+          arduino/setup-arduino-cli
+          arduino-cli core install esp8266:esp8266
 
       - name: Install dependencies
         run:  arduino-cli lib install ringbuffer pubsubclient doubleresetdetect arduinojson dallastemperature onewire WebSockets
