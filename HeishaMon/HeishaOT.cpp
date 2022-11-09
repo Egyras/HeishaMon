@@ -88,7 +88,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         unsigned int Cool = true;
         unsigned int DHWConf = false;
         unsigned int Pump = true;
-        unsigned int CH2 = false;
+        unsigned int CH2 = false; // no 2nd zone yet
 
         unsigned int data = DHW | (Modulation << 1) | (Cool << 2) | (DHWConf << 3) | (Pump << 4) | (CH2 << 5);
         data <<= 8;
@@ -137,7 +137,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         heishaOTData.chSetpoint = ot.getFloat(request);
         char str[200];
         sprintf((char *)&str, "%.*f", 4, heishaOTData.chSetpoint);
-        sprintf(log_msg, "OpenTherm: Ta-set: %s", str);
+        sprintf(log_msg, "OpenTherm: control setpoint TSet: %s", str);
         log_message(log_msg);
         otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::TSet, request & 0xffff);
 
@@ -229,7 +229,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         log_message(log_msg);
         otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::MConfigMMemberIDcode, data);
 
-        ot.setSmartPower((bool)SmartPower);
+        //ot.setSmartPower((bool)SmartPower); not working correctly yet
       } break;
 
     case OpenThermMessageID::TSP: {
