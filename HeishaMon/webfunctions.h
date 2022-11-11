@@ -31,7 +31,7 @@ struct settingsStruct {
   char wifi_password[65] = "";
   char wifi_hostname[40] = "HeishaMon";
   char ota_password[40] = "heisha";
-  char mqtt_server[40];
+  char mqtt_server[64];
   char mqtt_port[6] = "1883";
   char mqtt_username[64];
   char mqtt_password[64];
