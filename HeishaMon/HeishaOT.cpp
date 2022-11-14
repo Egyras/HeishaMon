@@ -4,14 +4,18 @@
 
 OpenTherm ot(inOTPin, outOTPin, true);
 
+const char* mqtt_topic_opentherm PROGMEM = "opentherm";
+
 unsigned long otResponse = 0;
 
 heishaOTDataStruct heishaOTData;
 
 void log_message(char* string);
+void mqttPublish(char* topic, char* subtopic, char* value);
 
 void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
   char log_msg[512];
+
   switch (ot.getDataID(request)) {
     case OpenThermMessageID::Status: {
         unsigned long data = ot.getUInt(request);
@@ -60,6 +64,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         sprintf((char *)&str, "%.*f", 4, heishaOTData.roomTemp);
         sprintf(log_msg, "OpenTherm: Room temp: %s", str);
         log_message(log_msg);
+        mqttPublish((char*)mqtt_topic_opentherm, (char*)"roomTemp", str);
         otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::Tr, heishaOTData.roomTemp);
 
       } break;
@@ -76,6 +81,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         sprintf((char *)&str, "%.*f", 4, heishaOTData.roomTempSet);
         sprintf(log_msg, "OpenTherm: Room setpoint: %s", str);
         log_message(log_msg);
+        mqttPublish((char*)mqtt_topic_opentherm, (char*)"roomTempSet", str);
         otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::TrSet, heishaOTData.roomTempSet);
 
       } break;
@@ -106,12 +112,13 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
 
       } break;
     case OpenThermMessageID::TdhwSet: {
-        float data = ot.getFloat(request);
+        heishaOTData.dhwSetpoint = ot.getFloat(request);
         char str[200];
-        sprintf((char *)&str, "%.*f", 4, data);
+        sprintf((char *)&str, "%.*f", 4, heishaOTData.dhwSetpoint);
         sprintf(log_msg, "OpenTherm: DHW setpoint: %s", str);
         log_message(log_msg);
-        otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::TdhwSet, data);
+        mqttPublish((char*)mqtt_topic_opentherm, (char*)"dhwSetpoint", str);
+        otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::TdhwSet, heishaOTData.dhwSetpoint);
 
       } break;
     case OpenThermMessageID::MaxTSet: {
@@ -139,6 +146,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         sprintf((char *)&str, "%.*f", 4, heishaOTData.chSetpoint);
         sprintf(log_msg, "OpenTherm: control setpoint TSet: %s", str);
         log_message(log_msg);
+        mqttPublish((char*)mqtt_topic_opentherm, (char*)"chSetpoint", str);
         otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::TSet, request & 0xffff);
 
       } break;
@@ -249,7 +257,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
 
       } break;
     default: {
-        sprintf(log_msg, "OpenTherm: Unknown data ID: %d (%#010X)", ot.getDataID(request), request);
+        sprintf(log_msg, "OpenTherm: Unknown data ID: %d (%#010x)", ot.getDataID(request), request);
         log_message(log_msg);
         otResponse = ot.buildResponse(OpenThermMessageType::UNKNOWN_DATA_ID, ot.getDataID(request), 0);
       } break;
@@ -265,7 +273,7 @@ void HeishaOTSetup() {
 }
 
 void HeishaOTLoop(char * actData, PubSubClient &mqtt_client, char* mqtt_topic_base) {
-  heishaOTData.outsideTemp = actData[0] == '\0' ? 0 : getDataValue(actData, 14).toFloat();
+  //heishaOTData.outsideTemp = actData[0] == '\0' ? 0 : getDataValue(actData, 14).toFloat();
   heishaOTData.inletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData, 5).toFloat();
   heishaOTData.outletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData, 6).toFloat();
   heishaOTData.flameState = actData[0] == '\0' ? 0 : ((getDataValue(actData, 8).toInt() > 0 ) ? true : false); //compressor freq as flame on state
@@ -278,4 +286,11 @@ void HeishaOTLoop(char * actData, PubSubClient &mqtt_client, char* mqtt_topic_ba
     otResponse = 0;
   }
   ot.process();
+}
+
+void mqttOTCallback(char* topic, char* value) {
+  log_message((char *)"MQTT callback for opentherm");
+  if (strcmp((char*)"outsideTemp", topic) == 0) {
+    heishaOTData.outsideTemp = String(value).toFloat();   
+  }
 }

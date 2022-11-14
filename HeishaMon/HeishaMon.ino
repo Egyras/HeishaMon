@@ -70,7 +70,7 @@ static int uploadpercentage = 0;
 char data[MAXDATASIZE] = { '\0' };
 byte data_length = 0;
 
-// store actual data 
+// store actual data
 String openTherm[2];
 char actData[DATASIZE] = { '\0' };
 #define OPTDATASIZE 20
@@ -206,7 +206,8 @@ void mqtt_reconnect()
     {
       mqttReconnects++;
 
-      mqtt_client.subscribe("panasonic_heat_pump/opentherm/#");
+      sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_opentherm);
+      mqtt_client.subscribe(topic);
       sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_commands);
       mqtt_client.subscribe(topic);
       sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
@@ -227,13 +228,13 @@ void mqtt_reconnect()
         resetlastalldatatime(); //resend all heatpump values to mqtt
       }
       //use this to receive valid heishamon raw data from other heishamon to debug this OT code
-      #define OTDEBUG
-      #ifdef OTDEBUG
-      if ( heishamonSettings.listenonly && heishamonSettings.listenmqtt ) { 
-        sprintf(topic, "%s/raw/data", heishamonSettings.mqtt_topic_listen); 
+#define OTDEBUG
+#ifdef OTDEBUG
+      if ( heishamonSettings.listenonly && heishamonSettings.listenmqtt ) {
+        sprintf(topic, "%s/raw/data", heishamonSettings.mqtt_topic_listen);
         mqtt_client.subscribe(topic); //subscribe to raw heatpump data over MQTT
       }
-      #endif
+#endif
     }
   }
 }
@@ -241,8 +242,8 @@ void mqtt_reconnect()
 void log_message(const __FlashStringHelper *msg) {
   PGM_P p = (PGM_P)msg;
   int len = strlen_P((const char *)p);
-  char *str = (char *)MALLOC(len+1);
-  if(str == NULL) {
+  char *str = (char *)MALLOC(len + 1);
+  if (str == NULL) {
     OUT_OF_MEMORY
   }
   strcpy_P(str, p);
@@ -296,6 +297,14 @@ void logHex(char *hex, byte hex_len) {
   }
 }
 
+void mqttPublish(char* topic, char* subtopic, char* value) {
+  char mqtt_topic[256];
+  sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), heishamonSettings.mqtt_topic_base, topic, subtopic);
+  mqtt_client.publish(mqtt_topic, value, MQTT_RETAIN_VALUES);
+}
+
+
+
 byte calcChecksum(byte* command, int length) {
   byte chk = 0;
   for ( int i = 0; i < length; i++)  {
@@ -317,7 +326,7 @@ bool readSerial()
 {
   int len = 0;
   while ((Serial.available()) && (len < MAXDATASIZE)) {
-    data[data_length+len] = Serial.read(); //read available data and place it after the last received data
+    data[data_length + len] = Serial.read(); //read available data and place it after the last received data
     len++;
     if (data[0] != 113) { //wrong header received!
       log_message(F("Received bad header. Ignoring this data!"));
@@ -330,7 +339,7 @@ bool readSerial()
 
   if ((len > 0) && (data_length == 0 )) totalreads++; //this is the start of a new read
   data_length += len;
-  
+
   if (data_length > 1) { //should have received length part of header now
 
     if ((data_length > (data[1] + 3)) || (data_length >= MAXDATASIZE) ) {
@@ -448,9 +457,9 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       log_message(log_msg);
       send_command(rawcommand, length);
       free(rawcommand);
-    } else if (strncmp(topic_command, mqtt_topic_s0, 2) == 0)  // this is a s0 topic, check for watthour topic and restore it
+    } else if (strncmp(topic_command, mqtt_topic_s0, strlen(mqtt_topic_s0)) == 0)  // this is a s0 topic, check for watthour topic and restore it
     {
-      char* topic_s0_watthour_port = topic_command + 17; //strip the first 17 "s0/WatthourTotal/" from the topic to get the s0 port
+      char* topic_s0_watthour_port = topic_command + strlen(mqtt_topic_s0) + 15; //strip the first 17 "s0/WatthourTotal/" from the topic to get the s0 port
       int s0Port = String(topic_s0_watthour_port).toInt();
       float watthour = String(msg).toFloat();
       restore_s0_Watthour(s0Port, watthour);
@@ -460,26 +469,29 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       if (mqtt_client.unsubscribe(mqtt_topic)) {
         log_message(F("Unsubscribed from S0 watthour restore topic"));
       }
-    } else if (strncmp(topic_command, mqtt_topic_commands, 8) == 0)  // check for optional pcb commands
+    } else if (strncmp(topic_command, mqtt_topic_commands, strlen(mqtt_topic_commands)) == 0)  // check for commands to heishamon
     {
-      char* topic_sendcommand = topic_command + 9; //strip the first 9 "commands/" from the topic to get what we need
+      char* topic_sendcommand = topic_command + strlen(mqtt_topic_commands) + 1; //strip the first 9 "commands/" from the topic to get what we need
       send_heatpump_command(topic_sendcommand, msg, send_command, log_message, heishamonSettings.optionalPCB);
     }
     //use this to receive valid heishamon raw data from other heishamon to debug this OT code
-    #ifdef OTDEBUG    
-    else if (strcmp((char*)"panasonic_heat_pump/raw/data", topic) == 0) {  // check for raw heatpump input
+#ifdef OTDEBUG
+    else if (strcmp((char*)"panasonic_heat_pump/data", topic) == 0) {  // check for raw heatpump input
       sprintf_P(log_msg, PSTR("Received raw heatpump data from MQTT"));
       log_message(log_msg);
       decode_heatpump_data(msg, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
       memcpy(actData, msg, DATASIZE);
-    #endif
-    } else if (stricmp((char const *)topic, "panasonic_heat_pump/opentherm/Temperature") == 0) {
+#endif
+    } else if (strncmp(topic_command, mqtt_topic_opentherm, strlen(mqtt_topic_opentherm)) == 0)  {
+      char* topic_otcommand = topic_command + strlen(mqtt_topic_opentherm) + 1; //strip the opentherm subtopic from the topic
+      mqttOTCallback(topic_otcommand, msg);
+    } else if (stricmp((char const *)topic_command, "opentherm/Temperature") == 0) {
       char cpy[length + 1];
       memset(&cpy, 0, length + 1);
       strncpy(cpy, (char *)payload, length);
       openTherm[0] = cpy;
       rules_event_cb("temperature");
-    } else if (stricmp((char const *)topic, "panasonic_heat_pump/opentherm/Setpoint") == 0) {
+    } else if (stricmp((char const *)topic_command, "opentherm/Setpoint") == 0) {
       char cpy[length + 1];
       memset(&cpy, 0, length + 1);
       strncpy(cpy, (char *)payload, length);
@@ -553,7 +565,7 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
         } else if (strcmp_P((char *)dat, PSTR("/factoryreset")) == 0) {
           client->route = 90;
         } else if (strcmp_P((char *)dat, PSTR("/command")) == 0) {
-          if((client->userdata = malloc(1)) == NULL) {
+          if ((client->userdata = malloc(1)) == NULL) {
             Serial1.printf(PSTR("Out of memory %s:#%d\n"), __FUNCTION__, __LINE__);
             ESP.restart();
             exit(-1);
@@ -720,7 +732,7 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
     case WEBSERVER_CLIENT_WRITE: {
         switch (client->route) {
           case 0: {
-              if(client->content == 0) {
+              if (client->content == 0) {
                 webserver_send(client, 404, (char *)"text/plain", 13);
                 webserver_send_content_P(client, PSTR("404 Not found"), 13);
               }
@@ -844,7 +856,7 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               return -1;
             } break;
           default: {
-              if(client->route != 0) {
+              if (client->route != 0) {
                 header->ptr += sprintf_P((char *)header->buffer, PSTR("Access-Control-Allow-Origin: *"));
               }
             } break;
@@ -854,33 +866,33 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
     case WEBSERVER_CLIENT_CLOSE: {
         switch (client->route) {
           case 100: {
-            if (client->userdata != NULL) {
-              free(client->userdata);
-            }
-          } break;
+              if (client->userdata != NULL) {
+                free(client->userdata);
+              }
+            } break;
           case 110: {
-            struct websettings_t *tmp = NULL;
-            while (client->userdata) {
-              tmp = (struct websettings_t *)client->userdata;
-              client->userdata = ((struct websettings_t *)(client->userdata))->next;
-              free(tmp);
-            }
-          } break;
+              struct websettings_t *tmp = NULL;
+              while (client->userdata) {
+                tmp = (struct websettings_t *)client->userdata;
+                client->userdata = ((struct websettings_t *)(client->userdata))->next;
+                free(tmp);
+              }
+            } break;
           case 160:
           case 170: {
-            if (client->userdata != NULL) {
-              File *f = (File *)client->userdata;
-              if (f) {
-                if (*f) {
-                  f->close();
+              if (client->userdata != NULL) {
+                File *f = (File *)client->userdata;
+                if (f) {
+                  if (*f) {
+                    f->close();
+                  }
+                  delete f;
                 }
-                delete f;
               }
-            }
-          } break;
+            } break;
         }
         client->userdata = NULL;
-    } break;
+      } break;
     default: {
         return 0;
       } break;
@@ -979,7 +991,7 @@ void setupConditionals() {
 }
 
 void timer_cb(int nr) {
-  if(nr > 0) {
+  if (nr > 0) {
     rules_timer_cb(nr);
   } else {
     switch (nr) {
@@ -996,12 +1008,12 @@ void timer_cb(int nr) {
           setupWifi(&heishamonSettings);
         } break;
       case -4: {
-          if(rules_parse("/rules.new") == -1) {
+          if (rules_parse("/rules.new") == -1) {
             logprintln_P(F("new ruleset failed to parse, using previous ruleset"));
             rules_parse("/rules.txt");
           } else {
             logprintln_P(F("new ruleset successfully parsed"));
-            if(LittleFS.begin()) {
+            if (LittleFS.begin()) {
               LittleFS.rename("/rules.new", "/rules.txt");
             }
           }
@@ -1061,12 +1073,12 @@ void setup() {
   rst_info *resetInfo = ESP.getResetInfoPtr();
   Serial1.printf(PSTR("Reset reason: %d, exception cause: %d\n"), resetInfo->reason, resetInfo->exccause);
 
-  if(resetInfo->reason > 0 && resetInfo->reason < 4) {
-    if(LittleFS.begin()) {
+  if (resetInfo->reason > 0 && resetInfo->reason < 4) {
+    if (LittleFS.begin()) {
       LittleFS.rename("/rules.txt", "/rules.old");
     }
     rules_setup();
-    if(LittleFS.begin()) {
+    if (LittleFS.begin()) {
       LittleFS.rename("/rules.old", "/rules.txt");
     }
   } else {
