@@ -152,6 +152,12 @@ Return boolean true when the input variable is still `NULL` in any other cases i
 - `round`
 Rounds the input float to the nearest integer.
 
+- `floor`
+The largest integer value less than or equal to the input float.
+
+- `ceil`
+The smallest integer value greater than or equal to the input float.
+
 - `setTimer`
 Sets a timer to trigger in X seconds. The first parameter is the timer number and the second parameters the number of seconds before it fires. A timer only fires once so it has to be re-set for recurring events. When a timer triggers it will can the timer event as described above.
 
