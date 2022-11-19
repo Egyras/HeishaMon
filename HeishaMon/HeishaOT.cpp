@@ -1,6 +1,7 @@
 #include "OpenTherm.h"
 #include "HeishaOT.h"
 #include "decode.h"
+#include "src/common/stricmp.h"
 
 OpenTherm ot(inOTPin, outOTPin, true);
 
@@ -15,7 +16,11 @@ void mqttPublish(char* topic, char* subtopic, char* value);
 
 void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
   char log_msg[512];
-
+  {
+    char str[200];
+    sprintf(str, "%#010x", request);
+    mqttPublish((char*)mqtt_topic_opentherm, (char*)"raw", str);
+  }
   switch (ot.getDataID(request)) {
     case OpenThermMessageID::Status: {
         unsigned long data = ot.getUInt(request);
@@ -274,11 +279,11 @@ void HeishaOTSetup() {
 
 void HeishaOTLoop(char * actData, PubSubClient &mqtt_client, char* mqtt_topic_base) {
   //heishaOTData.outsideTemp = actData[0] == '\0' ? 0 : getDataValue(actData, 14).toFloat();
-  heishaOTData.inletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData, 5).toFloat();
-  heishaOTData.outletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData, 6).toFloat();
-  heishaOTData.flameState = actData[0] == '\0' ? 0 : ((getDataValue(actData, 8).toInt() > 0 ) ? true : false); //compressor freq as flame on state
-  heishaOTData.chState = actData[0] == '\0' ? 0 : (((getDataValue(actData, 8).toInt() > 0 ) && (getDataValue(actData, 20).toInt() == 0 )) ? true : false); // 3-way valve on room
-  heishaOTData.dhwState = actData[0] == '\0' ? 0 : (((getDataValue(actData, 8).toInt() > 0 ) && (getDataValue(actData, 20).toInt() == 1 )) ? true : false); /// 3-way valve on dhw
+  //heishaOTData.inletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData, 5).toFloat();
+  //heishaOTData.outletTemp =  actData[0] == '\0' ? 0 : getDataValue(actData, 6).toFloat();
+  //heishaOTData.flameState = actData[0] == '\0' ? 0 : ((getDataValue(actData, 8).toInt() > 0 ) ? true : false); //compressor freq as flame on state
+  //heishaOTData.chState = actData[0] == '\0' ? 0 : (((getDataValue(actData, 8).toInt() > 0 ) && (getDataValue(actData, 20).toInt() == 0 )) ? true : false); // 3-way valve on room
+  //heishaOTData.dhwState = actData[0] == '\0' ? 0 : (((getDataValue(actData, 8).toInt() > 0 ) && (getDataValue(actData, 20).toInt() == 1 )) ? true : false); /// 3-way valve on dhw
 
   // opentherm loop
   if (otResponse && ot.isReady()) {
@@ -289,8 +294,30 @@ void HeishaOTLoop(char * actData, PubSubClient &mqtt_client, char* mqtt_topic_ba
 }
 
 void mqttOTCallback(char* topic, char* value) {
-  log_message((char *)"MQTT callback for opentherm");
+  //log_message((char *)"OpenTherm: MQTT message received");
   if (strcmp((char*)"outsideTemp", topic) == 0) {
-    heishaOTData.outsideTemp = String(value).toFloat();   
+    log_message((char *)"OpenTherm: MQTT message received 'outsideTemp'");
+    heishaOTData.outsideTemp = String(value).toFloat();
   }
+  else if (strcmp((char*)"inletTemp", topic) == 0) {
+    log_message((char *)"OpenTherm: MQTT message received 'inletTemp'");
+    heishaOTData.inletTemp = String(value).toFloat();
+  }
+  else if (strcmp((char*)"outletTemp", topic) == 0) {
+    log_message((char *)"OpenTherm: MQTT message received 'outletTemp'");
+    heishaOTData.outletTemp = String(value).toFloat();
+  }
+  else if (strcmp((char*)"flameState", topic) == 0) {
+    log_message((char *)"OpenTherm: MQTT message received 'flameState'");
+    heishaOTData.flameState = ((stricmp((char*)"true", value) == 0) || (String(value).toInt() == 1 ));
+  }
+  else if (strcmp((char*)"chState", topic) == 0) {
+    log_message((char *)"OpenTherm: MQTT message received 'chState'");
+    heishaOTData.chState = ((stricmp((char*)"true", value) == 0) || (String(value).toInt() == 1 ));
+  }
+  else if (strcmp((char*)"dhwState", topic) == 0) {
+    log_message((char *)"OpenTherm: MQTT message received 'dhwState'");
+    heishaOTData.dhwState = ((stricmp((char*)"true", value) == 0) || (String(value).toInt() == 1 ));
+  }
+
 }
