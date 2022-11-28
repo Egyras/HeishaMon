@@ -131,16 +131,16 @@
 |  TOP | 126 | 00 |   | 0 byte |
 |  TOP | 127 | 00 |   | 0 byte |
 |  TOP | 128 | 00 |   | 0 byte |
-|  TOP | 129 | e2 |   | ? |
-|  TOP | 130 | ce |   | ? |
-|  TOP | 131 | 0d |   | ? |
+|  TOP92 | 129 | e2 | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 130 | ce | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 131 | 0d | look in HeatPumpType.md  | Heat pump model |
 |  TOP92 | 132 | 71 |  look in HeatPumpType.md | Heat pump model |
-|  TOP | 133 | 81 |   | ? |
-|  TOP | 134 | 72 |   | ? |
-|  TOP | 135 | ce |   | ? |
-|  TOP | 136 | 0c |   | ? |
-|  TOP | 137 | 92 |   | ? |
-|  TOP | 138 | 81 |   | ? |
+|  TOP92 | 133 | 81 | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 134 | 72 | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 135 | ce | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 136 | 0c | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 137 | 92 | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 138 | 81 | look in HeatPumpType.md  | Heat pump model |
 |  TOP56 | 139 | b0 |  Convert to DEC-128 | Zone1: Actual (Zone 1) Temperature [°C] |
 |  TOP57 | 140 | 00 |  Convert to DEC-128 |  Zone2: Actual (Zone 2) Temperature [°C] |
 |  TOP10 | 141 | aa |  Convert to DEC-128 | Actual DHW Temperature [°C] |
