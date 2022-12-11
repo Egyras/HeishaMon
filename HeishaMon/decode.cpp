@@ -142,6 +142,52 @@ String getDataValue(char* data, unsigned int Topic_Number) {
     case 1:
       Topic_Value = getPumpFlow(data);
       break;
+    case 5: {
+        byte cpy;
+        memcpy_P(&cpy, &topicBytes[Topic_Number], sizeof(byte));
+        Input_Byte = data[cpy];
+        Topic_Value = topicFunctions[Topic_Number](Input_Byte);
+        int fractional = (int)(data[118] & 0b111);
+        switch (fractional) {
+          case 1: // fractional .00
+            break;
+          case 2: // fractional .25
+            Topic_Value = Topic_Value + ".25";
+            break;
+          case 3: // fractional .50
+            Topic_Value = Topic_Value + ".50";
+            break;
+          case 4: // fractional .75
+            Topic_Value = Topic_Value + ".75";
+            break;
+          default:
+            break;
+        }
+      }
+      break;
+    case 6: {
+        byte cpy;
+        memcpy_P(&cpy, &topicBytes[Topic_Number], sizeof(byte));
+        Input_Byte = data[cpy];
+        Topic_Value = topicFunctions[Topic_Number](Input_Byte);
+        int fractional = (int)((data[118] >> 3) & 0b111) ;
+        switch (fractional) {
+          case 1: // fractional .00
+            break;
+          case 2: // fractional .25
+            Topic_Value = Topic_Value + ".25";
+            break;
+          case 3: // fractional .50
+            Topic_Value = Topic_Value + ".50";
+            break;
+          case 4: // fractional .75
+            Topic_Value = Topic_Value + ".75";
+            break;
+          default:
+            break;
+        }
+      }
+      break;
     case 11:
       Topic_Value = String(word(data[183], data[182]) - 1);
       break;
