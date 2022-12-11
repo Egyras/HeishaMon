@@ -32,7 +32,7 @@ String getModel(byte input);
 static const char _unknown[] PROGMEM = "unknown";
 
 static const char *Model[] PROGMEM = {
-  "26", //string representation of number of known models
+  "27", //string representation of number of known models
   "WH-MDC05H3E5",
   "WH-MDC07H3E5",
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5",
