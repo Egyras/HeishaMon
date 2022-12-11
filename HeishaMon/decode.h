@@ -59,7 +59,8 @@ static const char *Model[] PROGMEM = {
   "WH-MXC09J3E8",
   "WH-MXC12J9E8",
   "IDU: WH-ADC1216H6E5 ODU: WH-UD12HE5",
-  "IDU: WH-ADC0309J3E5C ODU: WH-UD07JE5"
+  "IDU: WH-ADC0309J3E5C ODU: WH-UD07JE5",
+  "WH-MDC07J3E5",
 };
 
 static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { //stores the bytes #129 to #138 of known models in the same order as the const above
@@ -89,6 +90,7 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { 
   0x32, 0xD4, 0x0B, 0x87, 0x84, 0x73, 0x90, 0x0C, 0x84, 0x84,
   0x32, 0xD4, 0x0B, 0x88, 0x84, 0x73, 0x90, 0x0C, 0x85, 0x84,
   0x42, 0xD4, 0x0B, 0x83, 0x71, 0x42, 0xD2, 0x0C, 0x46, 0x55,
+  0xC2, 0xD3, 0x0C, 0x34, 0x65, 0xB2, 0xD3, 0x0B, 0x95, 0x65,
 };
 
 #define NUMBER_OF_TOPICS 107 //last topic number + 1
