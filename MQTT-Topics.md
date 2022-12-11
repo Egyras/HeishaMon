@@ -123,10 +123,19 @@ TOP103 | main/Solar_Off_Delta | solar heating delta off
 TOP104 | main/Solar_Frost_Protection | Solar frost protection temp
 TOP105 | main/Solar_High_Limit | Solar max temp limit
 TOP106 | main/Pump_Flowrate_mode | Settings for pump flow rate (0=DeltaT, 1=Maximum flow, J-series only)
+TOP107 | main/Liquid_Type | Type of liquid in settings (Water / Glycol)
+TOP108 | main/Alt_External_Sensor | If external outdoor sensor is selected
+TOP109 | main/Anti_Freeze_Mode | Is anti freeze mode enabled or disabled
+TOP110 | main/Optional_PCB | If the optional PCB is enabled (if installed)
+TOP111 | main/Z2_Sensor_Settings | Setting of the sensor for zone 2 (water, ext thermostat, int. thermostat or thermistor)
+TOP112 | main/Z1_Sensor_Settings | Setting of the sensor for zone 1 (water, ext thermostat, int. thermostat or thermistor)
+TOP113 | main/Buffer_Tank_Delta | Delta of buffer tank setting in Kelvin
+TOP114 | main/External_Pad_Heater | If the external pad heater is enabled (if installed)
 
 
 
-All Topics realated with state can have also value -1 - unknown - but only in ubnormal situations.
+
+All Topics realated with state can have also value -1 - unknown - but only in abnormal situations.
 
 ## Option PCB Topics:
 The following topics are actions from the heatpump to the optional pcb (for example, start pump on zone 2). This is only available if you have enable optional pcb emulation.
@@ -176,6 +185,8 @@ SET21 | SetHeaterDelayTime | Set heater start delay time (only J-series) | in mi
 SET22 | SetHeaterStartDelta | Set heater start delta T (only J-series) | in kelvin
 SET23 | SetHeaterStopDelta | Set heater stop delta T (only J-series) | in kelvin
 SET24 | SetMainSchedule | Set weekly schedule | 0=off, 1=on
+SET25 | SetAltExternalSensor | Set the alternative external outdoor sensor | 0=disabled, 1=enabled
+SET26 | SetExternalPadHeater | Set the external pad heater | 0=disabled, 1=enabled
 
 
 *If you operate your heatpump with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*

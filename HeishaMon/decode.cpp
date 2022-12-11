@@ -5,6 +5,10 @@
 unsigned long lastalldatatime = 0;
 unsigned long lastalloptdatatime = 0;
 
+String getBit1(byte input) {
+  return String(input  >> 7);
+}
+
 String getBit1and2(byte input) {
   return String((input  >> 6) - 1);
 }
@@ -244,6 +248,14 @@ String getOptDataValue(char* data, unsigned int Topic_Number) {
       break;
   }
   return Topic_Value;
+}
+
+String get1Byte(byte input) {  // TOP107 //
+  return String((input & 0b111) - 1);
+}
+
+String get2Byte(byte input) {  // TOP108 //
+    return get1Byte((input >> 4));
 }
 
 // Decode ////////////////////////////////////////////////////////////////////////////
