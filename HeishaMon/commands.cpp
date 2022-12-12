@@ -626,7 +626,9 @@ unsigned int set_external_pad_heater(char *msg, unsigned char *cmd, char *log_ms
   if ( set_pad_string.toInt() == 1 ) {
     set_pad = 32;
   }
-
+  if ( set_pad_string.toInt() == 2 ) {
+    set_pad = 48;
+  }
     {
     char tmp[256] = { 0 };
     snprintf_P(tmp, 255, PSTR("set external pad heater to %d"), ((set_pad / 16) - 1) );

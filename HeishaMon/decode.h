@@ -494,6 +494,7 @@ static const char *HeatCoolModeDesc[] PROGMEM = {"2", "Comp. Curve", "Direct"};
 static const char *SolarModeDesc[] PROGMEM = {"3", "Disabled", "Buffer", "DHW"};
 static const char *ZonesSensorType[] PROGMEM = {"4", "Water Temperature", "External Thermostat", "Internal Thermostat", "Thermistor"};
 static const char *LiquidType[] PROGMEM = {"2", "Water", "Glycol"};
+static const char *ExtPadHeaterType[] PROGMEM = {"3", "Disabled", "Type-A","Type-B"};
 
 static const char **topicDescription[] PROGMEM = {
   OffOn,           //TOP0
@@ -610,5 +611,5 @@ static const char **topicDescription[] PROGMEM = {
   ZonesSensorType, //TOP111
   ZonesSensorType, //TOP112
   Kelvin,          //TOP113
-  DisabledEnabled, //TOP114
+  ExtPadHeaterType,//TOP114
 };
