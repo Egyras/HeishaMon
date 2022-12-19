@@ -69,7 +69,7 @@ static int uploadpercentage = 0;
 char data[MAXDATASIZE] = { '\0' };
 byte data_length = 0;
 
-// store actual data 
+// store actual data
 String openTherm[2];
 char actData[DATASIZE] = { '\0' };
 #define OPTDATASIZE 20
@@ -117,7 +117,7 @@ void check_wifi()
   if ((WiFi.status() != WL_CONNECTED) && (WiFi.localIP()))  {
     // special case where it seems that we are not connect but we do have working IP (causing the -1% wifi signal), do a reset.
     log_message((char *)"Weird case, WiFi seems disconnected but is not. Resetting WiFi!");
-    setupWifi(&heishamonSettings); 
+    setupWifi(&heishamonSettings);
   } else if ((WiFi.status() != WL_CONNECTED) || (!WiFi.localIP()))  {
     /*
         if we are not connected to an AP
@@ -231,8 +231,8 @@ void mqtt_reconnect()
 void log_message(const __FlashStringHelper *msg) {
   PGM_P p = (PGM_P)msg;
   int len = strlen_P((const char *)p);
-  char *str = (char *)MALLOC(len+1);
-  if(str == NULL) {
+  char *str = (char *)MALLOC(len + 1);
+  if (str == NULL) {
     OUT_OF_MEMORY
   }
   strcpy_P(str, p);
@@ -307,7 +307,7 @@ bool readSerial()
 {
   int len = 0;
   while ((Serial.available()) && (len < MAXDATASIZE)) {
-    data[data_length+len] = Serial.read(); //read available data and place it after the last received data
+    data[data_length + len] = Serial.read(); //read available data and place it after the last received data
     len++;
     if (data[0] != 113) { //wrong header received!
       log_message(F("Received bad header. Ignoring this data!"));
@@ -320,7 +320,7 @@ bool readSerial()
 
   if ((len > 0) && (data_length == 0 )) totalreads++; //this is the start of a new read
   data_length += len;
-  
+
   if (data_length > 1) { //should have received length part of header now
 
     if ((data_length > (data[1] + 3)) || (data_length >= MAXDATASIZE) ) {
@@ -534,7 +534,7 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
         } else if (strcmp_P((char *)dat, PSTR("/factoryreset")) == 0) {
           client->route = 90;
         } else if (strcmp_P((char *)dat, PSTR("/command")) == 0) {
-          if((client->userdata = malloc(1)) == NULL) {
+          if ((client->userdata = malloc(1)) == NULL) {
             Serial1.printf(PSTR("Out of memory %s:#%d\n"), __FUNCTION__, __LINE__);
             ESP.restart();
             exit(-1);
@@ -701,7 +701,7 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
     case WEBSERVER_CLIENT_WRITE: {
         switch (client->route) {
           case 0: {
-              if(client->content == 0) {
+              if (client->content == 0) {
                 webserver_send(client, 404, (char *)"text/plain", 13);
                 webserver_send_content_P(client, PSTR("404 Not found"), 13);
               }
@@ -825,7 +825,7 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               return -1;
             } break;
           default: {
-              if(client->route != 0) {
+              if (client->route != 0) {
                 header->ptr += sprintf_P((char *)header->buffer, PSTR("Access-Control-Allow-Origin: *"));
               }
             } break;
@@ -835,33 +835,33 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
     case WEBSERVER_CLIENT_CLOSE: {
         switch (client->route) {
           case 100: {
-            if (client->userdata != NULL) {
-              free(client->userdata);
-            }
-          } break;
+              if (client->userdata != NULL) {
+                free(client->userdata);
+              }
+            } break;
           case 110: {
-            struct websettings_t *tmp = NULL;
-            while (client->userdata) {
-              tmp = (struct websettings_t *)client->userdata;
-              client->userdata = ((struct websettings_t *)(client->userdata))->next;
-              free(tmp);
-            }
-          } break;
+              struct websettings_t *tmp = NULL;
+              while (client->userdata) {
+                tmp = (struct websettings_t *)client->userdata;
+                client->userdata = ((struct websettings_t *)(client->userdata))->next;
+                free(tmp);
+              }
+            } break;
           case 160:
           case 170: {
-            if (client->userdata != NULL) {
-              File *f = (File *)client->userdata;
-              if (f) {
-                if (*f) {
-                  f->close();
+              if (client->userdata != NULL) {
+                File *f = (File *)client->userdata;
+                if (f) {
+                  if (*f) {
+                    f->close();
+                  }
+                  delete f;
                 }
-                delete f;
               }
-            }
-          } break;
+            } break;
         }
         client->userdata = NULL;
-    } break;
+      } break;
     default: {
         return 0;
       } break;
@@ -960,7 +960,7 @@ void setupConditionals() {
 }
 
 void timer_cb(int nr) {
-  if(nr > 0) {
+  if (nr > 0) {
     rules_timer_cb(nr);
   } else {
     switch (nr) {
@@ -977,12 +977,12 @@ void timer_cb(int nr) {
           setupWifi(&heishamonSettings);
         } break;
       case -4: {
-          if(rules_parse("/rules.new") == -1) {
+          if (rules_parse("/rules.new") == -1) {
             logprintln_P(F("new ruleset failed to parse, using previous ruleset"));
             rules_parse("/rules.txt");
           } else {
             logprintln_P(F("new ruleset successfully parsed"));
-            if(LittleFS.begin()) {
+            if (LittleFS.begin()) {
               LittleFS.rename("/rules.new", "/rules.txt");
             }
           }
@@ -1040,12 +1040,12 @@ void setup() {
   rst_info *resetInfo = ESP.getResetInfoPtr();
   Serial1.printf(PSTR("Reset reason: %d, exception cause: %d\n"), resetInfo->reason, resetInfo->exccause);
 
-  if(resetInfo->reason > 0 && resetInfo->reason < 4) {
-    if(LittleFS.begin()) {
+  if (resetInfo->reason > 0 && resetInfo->reason < 4) {
+    if (LittleFS.begin()) {
       LittleFS.rename("/rules.txt", "/rules.old");
     }
     rules_setup();
-    if(LittleFS.begin()) {
+    if (LittleFS.begin()) {
       LittleFS.rename("/rules.old", "/rules.txt");
     }
   } else {
