@@ -343,13 +343,13 @@ mqtt:
     - name: Aquarea Compressor Operating Hours
       state_topic: "panasonic_heat_pump/main/Operations_Hours"
       unit_of_measurement: "Hours"
-      state_class: total
+#      state_class: total
       state_class: "measurement"
 
     #TOP12 - Compressor On/Off cycle number
     - name: Aquarea Compressor Start/Stop Counter
       state_topic: "panasonic_heat_pump/main/Operations_Counter"
-      state_class: total
+#      state_class: total
       state_class: "measurement"
 
     #TOP14 - Outdoor unit ambient temperature
@@ -357,7 +357,7 @@ mqtt:
       state_topic: "panasonic_heat_pump/main/Outside_Temp"
       unit_of_measurement: "°C"
       state_class: "measurement"
-      state_class: "measurement"
+#      state_class: "measurement"
 
     #TOP15 - Heating power produced
     - name: Aquarea Power Produced
