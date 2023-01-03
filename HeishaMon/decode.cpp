@@ -250,13 +250,15 @@ String getOptDataValue(char* data, unsigned int Topic_Number) {
   return Topic_Value;
 }
 
-String get1Byte(byte input) {  // TOP107 //
-  return String((input & 0b111) - 1);
+String getFirstByte(byte input) {
+  return String((input >> 4) - 1);
 }
 
-String get2Byte(byte input) {  // TOP108 //
-    return get1Byte((input >> 4));
+String getSecondByte(byte input) {
+  return String((input & 0b1111) - 1);
 }
+
+
 
 // Decode ////////////////////////////////////////////////////////////////////////////
 void decode_heatpump_data(char* data, char* actData, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {

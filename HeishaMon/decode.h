@@ -29,8 +29,8 @@ String getOpMode(byte input);
 String getEnergy(byte input);
 String getHeatMode(byte input);
 String getModel(byte input);
-String get1Byte(byte input);
-String get2Byte(byte input);
+String getFirstByte(byte input);
+String getSecondByte(byte input);
 
 static const char _unknown[] PROGMEM = "unknown";
 
@@ -225,8 +225,8 @@ static const char topics[][MAX_TOPIC_LEN] PROGMEM = {
   "Alt_External_Sensor",     //TOP108
   "Anti_Freeze_Mode",        //TOP109
   "Optional_PCB",            //TOP110
-  "Z2_Sensor_Settings",      //TOP111
-  "Z1_Sensor_Settings",      //TOP112
+  "Z1_Sensor_Settings",      //TOP111
+  "Z2_Sensor_Settings",      //TOP112
   "Buffer_Tank_Delta",       //TOP113
   "External_Pad_Heater",     //TOP114
 };
@@ -463,8 +463,8 @@ static const topicFP topicFunctions[] PROGMEM = {
   getBit3and4,         //TOP108
   getBit5and6,         //TOP109
   getBit7and8,         //TOP110  
-  get1Byte,            //TOP111
-  get2Byte,            //TOP112
+  getSecondByte,       //TOP111
+  getFirstByte,        //TOP112 
   getIntMinus128,      //TOP113
   getBit3and4,         //TOP114
 };
