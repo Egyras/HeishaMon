@@ -123,7 +123,7 @@
 |  TOP69 | 117 | 05 | Sterilization on/off (bit5and6)  , Z2 active (bit7) ,Z1 active (bit8)| Sterilization status Zone active information (look byte #6) |
 |  TOP | 118 | 12 |   | Believed to provide fractional info for TOP5 and TOP6 values |
 |  TOP | 119 | 12 |   | ? |
-|  TOP | 120 | 19 |   | ? |
+|  TOP | 120 | 19 |   | Possible 3e/4e bit for backup heater custom menu disable/enable |
 |  TOP | 121 | 00 |   | 0 byte |
 |  TOP | 122 | 00 |   | 0 byte |
 |  TOP | 123 | 00 |   | 0 byte |
