@@ -106,10 +106,20 @@ automation:
         option: >-
           {%- if trigger.payload == "0" -%}
             Heat
+          {%- elif trigger.payload == "1" -%}
+            Cool
+          {%- elif trigger.payload == "2" -%}
+            Auto
           {%- elif trigger.payload == "3" -%}
             DHW
           {%- elif trigger.payload == "4" -%}
             Heat+DHW
+          {%- elif trigger.payload == "5" -%}
+            Cool+DHW
+          {%- elif trigger.payload == "6" -%}
+            Auto+DHW
+          {%- elif trigger.payload == "7" -%}
+            Auto(cool)
           {%- endif -%}
 
   #Sets heatmode to the selected value
@@ -125,10 +135,20 @@ automation:
         payload_template: >-
           {%- if states('input_select.heishamon_heatmode') == "Heat" -%}
             0
+          {%- elif states('input_select.heishamon_heatmode') == "Cool" -%}
+            1
+          {%- elif states('input_select.heishamon_heatmode') == "Auto" -%}
+            2
           {%- elif states('input_select.heishamon_heatmode') == "DHW" -%}
             3
           {%- elif states('input_select.heishamon_heatmode') == "Heat+DHW" -%}
             4
+          {%- elif states('input_select.heishamon_heatmode') == "Cool+DHW" -%}
+            5
+          {%- elif states('input_select.heishamon_heatmode') == "Auto+DHW" -%}
+            6
+          {%- elif states('input_select.heishamon_heatmode') == "Auto(cool)" -%}
+            7
           {%- endif -%}
 
   #Fetches Z1 temperature from status and sets the selector accordingly
@@ -249,9 +269,14 @@ input_select:
   heishamon_heatmode:
     name: Set Heat Mode
     options:
-      - Heat+DHW
       - Heat
+      - Cool
+      - Auto
       - DHW
+      - Heat+DHW
+      - Cool+DHW
+      - Auto+DHW
+      - Auto(cool)
 
 # sensor #
 ##########
@@ -301,6 +326,8 @@ mqtt:
           Cool+DHW
         {%- elif value == "6" -%}
           Auto+DHW
+        {%- elif value == "7" -%}
+          Auto(cool)
         {%- endif -%}
 
     #TOP5 - Water inlet temp
@@ -434,6 +461,27 @@ mqtt:
       state_topic: "panasonic_heat_pump/main/Z1_Heat_Request_Temp"
       unit_of_measurement: "°C"
       state_class: "measurement"
+    
+    #TOP33 - Room Thermostat Temp
+    - name: Aquarea Room Thermostat Temperature
+      state_topic: "panasonic_heat_pump/main/Room_Thermostat_Temp"
+      unit_of_measurement: '°C'
+    
+    #TOP38 - Cool_Energy_Production
+    - name: Aquarea Cool Energy Production
+      state_topic: "panasonic_heat_pump/main/Cool_Energy_Production"
+      unit_of_measurement: 'W'
+      device_class: 'power'
+      state_class: 'measurement'
+      force_update: true
+    
+    #TOP39 - Cool_Energy_Consumed
+    - name: Aquarea Cool Energy Consumed
+      state_topic: "panasonic_heat_pump/main/Cool_Energy_Consumption"
+      unit_of_measurement: 'W'
+      device_class: 'power'
+      state_class: 'measurement'
+      force_update: true
 
     #TOP40 - DHW power produced
     - name: Aquarea DHW Power Produced
@@ -664,12 +712,16 @@ sensor:
         value_template: >-
           {%- if states('sensor.heishamon_w_consumption') | float(0) > 0 -%}
             {{ '%0.1f' % ((states('sensor.heishamon_w_production') | float ) / (states('sensor.heishamon_w_consumption') | float )) }}
+          {%- elif states('sensor.aquarea_cool_energy_consumption') | float > 0 -%}
+            {{ '%0.1f' % ((states('sensor.aquarea_cool_energy_production') | float ) / (states('sensor.aquarea_cool_energy_consumption') | float )) }}
           {%- else -%}
             0.0
           {%- endif -%}
 
         availability_template: >-
           {%- if is_number(states('sensor.heishamon_w_consumption')) and is_number(states('sensor.heishamon_w_production')) %}
+            true
+          {%- elif is_number(states('sensor.aquarea_cool_energy_consumption')) and is_number(states('sensor.aquarea_cool_energy_production')) %}
             true
           {%- else %}
             false
@@ -685,5 +737,11 @@ sensor:
   - platform: integration
     source: sensor.aquarea_power_consumed
     name: Aquarea Heat Energy Consumed
+    unit_prefix: k
+    method: left
+  #Calculation Energy consumed (kWh) - Cool    
+  - platform: integration
+    source: sensor.aquarea_cool_energy_consumed
+    name: Aquarea Cool Energy Consumed
     unit_prefix: k
     method: left
