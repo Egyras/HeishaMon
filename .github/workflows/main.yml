@@ -3,7 +3,7 @@ name: Build binary
 on: [push, pull_request]
 
 env:
-  ARDUINO_BOARD_MANAGER_ADDITIONAL_URLS: https://github.com/esp8266/Arduino/releases/download/3.0.2/package_esp8266com_index.json
+  ARDUINO_BOARD_MANAGER_ADDITIONAL_URLS: http://arduino.esp8266.com/stable/package_esp8266com_index.json
 
 jobs:
   build:
