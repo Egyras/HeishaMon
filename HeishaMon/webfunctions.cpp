@@ -527,7 +527,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
     client->route = 111;
     return 0;
   }
-  
+
   if (reconnectWiFi) {
     client->route = 112;
     return 0;
@@ -541,11 +541,11 @@ int cacheSettings(struct webserver_t *client, struct arguments_t * args) {
   struct websettings_t *tmp = (struct websettings_t *)client->userdata;
   while (tmp) {
     /*
-     *  this part is useless as websettings is always NULL at start of a new POST
-     *  it will only interrate over already POSTed args which are pushed on the list below
-     *  we only need to find the tail of the list
-     *  /
-     *
+        this part is useless as websettings is always NULL at start of a new POST
+        it will only interrate over already POSTed args which are pushed on the list below
+        we only need to find the tail of the list
+        /
+
       if (strcmp(tmp->name.c_str(), (char *)args->name) == 0) {
         char *cpy = (char *)malloc(args->len + 1);
         memset(cpy, 0, args->len + 1);
@@ -936,6 +936,9 @@ int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconne
         char *up = getUptime();
         webserver_send_content(client, up, strlen(up));
         free(up);
+        if (heishamonSettings->listenonly) {
+          webserver_send_content_P(client, webBodyRootStatusListenOnly, strlen_P(webBodyRootStatusListenOnly));
+        }
       } break;
     case 5: {
         webserver_send_content_P(client, webBodyEndDiv, strlen_P(webBodyEndDiv));
