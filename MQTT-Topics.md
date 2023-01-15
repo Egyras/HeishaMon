@@ -187,7 +187,7 @@ SET23 | SetHeaterStopDelta | Set heater stop delta T (only J-series) | in kelvin
 SET24 | SetMainSchedule | Set weekly schedule | 0=off, 1=on
 SET25 | SetAltExternalSensor | Set the alternative external outdoor sensor | 0=disabled, 1=enabled
 SET26 | SetExternalPadHeater | Set the external pad heater | 0=disabled, 1=type-A, 2=type-B
-
+SET27 | SetBufferDelta | Set buffer tank delta | 0 - 10
 
 *If you operate your heatpump with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*
 
