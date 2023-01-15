@@ -1,3 +1,9 @@
+## Integration
+
+See https://github.com/kamaradclimber/heishamon-homeassistant/
+
+
+## or using manual declaration of entities
 
 1. Create or copy file heishamon.yaml in directory /config/packages ( if directory not exist , create it)
 2. Open file configuration.yaml in directory /config ,and check for lines:
