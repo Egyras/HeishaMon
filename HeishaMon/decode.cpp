@@ -5,6 +5,10 @@
 unsigned long lastalldatatime = 0;
 unsigned long lastalloptdatatime = 0;
 
+String getBit1(byte input) {
+  return String(input  >> 7);
+}
+
 String getBit1and2(byte input) {
   return String((input  >> 6) - 1);
 }
@@ -142,6 +146,52 @@ String getDataValue(char* data, unsigned int Topic_Number) {
     case 1:
       Topic_Value = getPumpFlow(data);
       break;
+    case 5: {
+        byte cpy;
+        memcpy_P(&cpy, &topicBytes[Topic_Number], sizeof(byte));
+        Input_Byte = data[cpy];
+        Topic_Value = topicFunctions[Topic_Number](Input_Byte);
+        int fractional = (int)(data[118] & 0b111);
+        switch (fractional) {
+          case 1: // fractional .00
+            break;
+          case 2: // fractional .25
+            Topic_Value = Topic_Value + ".25";
+            break;
+          case 3: // fractional .50
+            Topic_Value = Topic_Value + ".50";
+            break;
+          case 4: // fractional .75
+            Topic_Value = Topic_Value + ".75";
+            break;
+          default:
+            break;
+        }
+      }
+      break;
+    case 6: {
+        byte cpy;
+        memcpy_P(&cpy, &topicBytes[Topic_Number], sizeof(byte));
+        Input_Byte = data[cpy];
+        Topic_Value = topicFunctions[Topic_Number](Input_Byte);
+        int fractional = (int)((data[118] >> 3) & 0b111) ;
+        switch (fractional) {
+          case 1: // fractional .00
+            break;
+          case 2: // fractional .25
+            Topic_Value = Topic_Value + ".25";
+            break;
+          case 3: // fractional .50
+            Topic_Value = Topic_Value + ".50";
+            break;
+          case 4: // fractional .75
+            Topic_Value = Topic_Value + ".75";
+            break;
+          default:
+            break;
+        }
+      }
+      break;
     case 11:
       Topic_Value = String(word(data[183], data[182]) - 1);
       break;
@@ -199,6 +249,16 @@ String getOptDataValue(char* data, unsigned int Topic_Number) {
   }
   return Topic_Value;
 }
+
+String getFirstByte(byte input) {
+  return String((input >> 4) - 1);
+}
+
+String getSecondByte(byte input) {
+  return String((input & 0b1111) - 1);
+}
+
+
 
 // Decode ////////////////////////////////////////////////////////////////////////////
 void decode_heatpump_data(char* data, char* actData, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {

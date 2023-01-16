@@ -203,6 +203,7 @@ static const char webBodyRootStatusMemory[] PROGMEM =   "%<br>Memory free: ";
 static const char webBodyRootStatusReceived[] PROGMEM =  "%<br>Correct received data: ";
 static const char webBodyRootStatusReconnects[] PROGMEM =  "%<br>MQTT reconnects: ";
 static const char webBodyRootStatusUptime[] PROGMEM =   "<br>Uptime: ";
+static const char webBodyRootStatusListenOnly[] PROGMEM =   "<br><b>Listen only mode active</b>";
 
 static const char webBodyRootHeatpumpValues[] PROGMEM =
   "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">"
@@ -691,9 +692,16 @@ static const char settingsForm2[] PROGMEM =
   "      </tr>"
   "      <tr>"
   "        <td style=\"text-align:right; width: 50%\">"
-  "          Listen only mode:</td>"
+  "          Listen only (parallel CZ-TAW1) mode:</td>"
   "        <td style=\"text-align:left\">"
   "          <input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">"
+  "        </td>"
+  "      </tr>"
+  "      <tr>"
+  "        <td style=\"text-align:right; width: 50%\">"
+  "          Emulate optional PCB (does not work in listen only mode):</td>"
+  "        <td style=\"text-align:left\">"
+  "          <input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">"
   "        </td>"
   "      </tr>"
   "      <tr>"
@@ -715,13 +723,6 @@ static const char settingsForm2[] PROGMEM =
   "          Debug log to serial1 (GPIO2):</td>"
   "        <td style=\"text-align:left\">"
   "          <input type=\"checkbox\" name=\"logSerial1\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Emulate optional PCB:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">"
   "        </td>"
   "      </tr>"
   "    </table>"

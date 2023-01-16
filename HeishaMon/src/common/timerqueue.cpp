@@ -67,7 +67,7 @@ struct timerqueue_t *timerqueue_pop() {
   } else {
     if((timerqueue = (struct timerqueue_t **)realloc(timerqueue, sizeof(struct timerqueue_t *)*timerqueue_size)) == NULL) {
   #ifdef ESP8266
-      Serial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
+      Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
       ESP.restart();
       exit(-1);
   #else
@@ -144,7 +144,7 @@ void timerqueue_insert(int sec, int usec, int nr) {
 
   if((timerqueue = (struct timerqueue_t **)realloc(timerqueue, sizeof(struct timerqueue_t *)*(timerqueue_size+1))) == NULL) {
 #ifdef ESP8266
-    Serial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
+    Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
     ESP.restart();
     exit(-1);
 #else
@@ -156,7 +156,7 @@ void timerqueue_insert(int sec, int usec, int nr) {
   node = (struct timerqueue_t *)malloc(sizeof(struct timerqueue_t));
   if(node == NULL) {
 #ifdef ESP8266
-    Serial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
+    Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
     ESP.restart();
     exit(-1);
 #else
@@ -198,7 +198,7 @@ void timerqueue_update(void) {
       int nr = timerqueue[a]->nr;
       if((calls = (unsigned int *)realloc(calls, (nrcalls+1)*sizeof(int))) == NULL) {
 #ifdef ESP8266
-        Serial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
+        Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
         ESP.restart();
         exit(-1);
 #else

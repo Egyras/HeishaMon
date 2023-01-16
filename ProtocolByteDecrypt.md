@@ -22,12 +22,13 @@
 |  TOP | 17 | 00 |   | 0 byte |
 |  TOP | 18 | 00 |   | 0 byte |
 |  TOP | 19 | 00 |   | 0 byte |
-|  TOP | 20 | 19 | 1st Bit = b0 Water , b1 Glycol<br/>3rd & 4th bit = b01 Alternative Sensor Off ,b10 Alternative Sensor On<br/>5rd & 6th bit = b01 Antifreezing Off ,b10 Antifreezing on<br/>7rd & 8th bit = b01 Optional PCB Off ,b10 Optional PCB on<br/>| Circulation liquid<br/> ,Alternative outdoor temp sensor<br/> Anti freezing<br/> Optional PCB |
+|  TOP107/108/109/110 | 20 | 19 | 1st Bit = b0 Water , b1 Glycol<br/>3rd & 4th bit = b01 Alternative Sensor Off ,b10 Alternative Sensor On<br/>5rd & 6th bit = b01 Antifreezing Off ,b10 Antifreezing on<br/>7rd & 8th bit = b01 Optional PCB Off ,b10 Optional PCB on<br/>| Circulation liquid<br/> ,Alternative outdoor temp sensor<br/> Anti freezing<br/> Optional PCB |
+|  TOP107/108/109/110 | 20 | 19 | 1st Bit = b0 Water , b1 Glycol<br/>3rd & 4th bit = b01 Alternative Sensor Off ,b10 Alternative Sensor On<br/>5rd & 6th bit = b01 Antifreezing Off ,b10 Antifreezing on<br/>7rd & 8th bit = b01 Optional PCB Off ,b10 Optional PCB on<br/>| Circulation liquid<br/> ,Alternative outdoor temp sensor<br/> Anti freezing<br/> Optional PCB |
 |  TOP | 21 | 15 |  (hex) 15 - One  Zone and Z1 as room , 19 - One Zone and Z1 as pool, 16 - Two Zones and Z2 as room, 26 - Two Zones ,Z2 as pool| No. of Zones and Zone Destination |
-|  TOP | 22 | 11 |First digit -Z2 ,Second digit Z1 (hex) 1 - water temperature,2 - External Thermostat, 3 - Internal Thermostat, , 4 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
+|  TOP111+TOP112 | 22 | 11 |First digit -Z2 ,Second digit Z1 (hex) 1 - water temperature,2 - External Thermostat, 3 - Internal Thermostat, , 4 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) Off (same for compressor )=55, On=56, External compressor On=95  | External and External compressor Switch |
 |  TOP99+TOP100+TOP101 | 24 | 16 | 1st & 2nd bit Smart DHW -All-In-One only, 3rd & 4th bit = solar buffer (0b01=no solar, 0b10=solar buffer, 0b11=solar dhw), 5th & 6th bit = buffer installed, 7th & 8th bit = DHW installed|
-|  TOP | 25 | 5e | 1st & 2nd bit = 10 <br/> 3rd & 4th bit = b01 no Pad Heater, b10 - Type A, b11 Type B <br/> 5th & 6th bit = b01 - Internal Heater 3kW, b10 - 6kW, b11 - 9kW <br/> 7th & 8th bit = b01 DHW Internal Heater , b10 - DHW External Heater | External Pad Heater <br/> Power of internal heater <br/> DHW heater Internal/External |
+|  TOP114 | 25 | 5e | 1st & 2nd bit = 10 <br/> 3rd & 4th bit = b01 no Pad Heater, b10 - Type A, b11 Type B <br/> 5th & 6th bit = b01 - Internal Heater 3kW, b10 - 6kW, b11 - 9kW <br/> 7th & 8th bit = b01 DHW Internal Heater , b10 - DHW External Heater | External Pad Heater <br/> Power of internal heater <br/> DHW heater Internal/External |
 |  TOP | 26 | 55 | (hex) Biwalent Off=55, Biwalent alternative =56, Biwalent parallel=5A | Biwalent settings |
 |  TOP | 27 | 05 | SG Ready Control on/off (bit5and6) ,Demand Control on/off (bit7and8)  | SG Ready Control, Demand Control |
 |  TOP76+TOP81 | 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
@@ -61,7 +62,7 @@
 |  TOP | 56 | 00 |   | 0 byte |
 |  TOP | 57 | 00 |   | 0 byte |
 |  TOP | 58 | 80 | Convert to DEC-128   | Delta T for Pool [°K] |
-|  TOP | 59 | 85 | Convert to DEC-128  | Delta T for buffer tank [°K]|
+|  TOP113 | 59 | 85 | Convert to DEC-128  | Delta T for buffer tank [°K]|
 |  TOP | 60 | 15 | Convert to DEC X-1   | Time set for external heaters 20min-3h, step 5min. |
 |  TOP102 | 61 | 8a | Convert to DEC-128  | Solar Connection Set delta T for tank ON (DHW or Buffer) |
 |  TOP103 | 62 | 85 | Convert to DEC-128 | Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
@@ -120,9 +121,9 @@
 |  TOP | 115 | 15 |   | ? |
 |  TOP | 116 | 5a |   | ? |
 |  TOP69 | 117 | 05 | Sterilization on/off (bit5and6)  , Z2 active (bit7) ,Z1 active (bit8)| Sterilization status Zone active information (look byte #6) |
-|  TOP | 118 | 12 |   | ? |
+|  TOP | 118 | 12 |   | Believed to provide fractional info for TOP5 and TOP6 values |
 |  TOP | 119 | 12 |   | ? |
-|  TOP | 120 | 19 |   | ? |
+|  TOP | 120 | 19 |   | Possible 3e/4e bit for backup heater custom menu disable/enable |
 |  TOP | 121 | 00 |   | 0 byte |
 |  TOP | 122 | 00 |   | 0 byte |
 |  TOP | 123 | 00 |   | 0 byte |
@@ -131,16 +132,16 @@
 |  TOP | 126 | 00 |   | 0 byte |
 |  TOP | 127 | 00 |   | 0 byte |
 |  TOP | 128 | 00 |   | 0 byte |
-|  TOP | 129 | e2 |   | ? |
-|  TOP | 130 | ce |   | ? |
-|  TOP | 131 | 0d |   | ? |
+|  TOP92 | 129 | e2 | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 130 | ce | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 131 | 0d | look in HeatPumpType.md  | Heat pump model |
 |  TOP92 | 132 | 71 |  look in HeatPumpType.md | Heat pump model |
-|  TOP | 133 | 81 |   | ? |
-|  TOP | 134 | 72 |   | ? |
-|  TOP | 135 | ce |   | ? |
-|  TOP | 136 | 0c |   | ? |
-|  TOP | 137 | 92 |   | ? |
-|  TOP | 138 | 81 |   | ? |
+|  TOP92 | 133 | 81 | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 134 | 72 | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 135 | ce | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 136 | 0c | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 137 | 92 | look in HeatPumpType.md  | Heat pump model |
+|  TOP92 | 138 | 81 | look in HeatPumpType.md  | Heat pump model |
 |  TOP56 | 139 | b0 |  Convert to DEC-128 | Zone1: Actual (Zone 1) Temperature [°C] |
 |  TOP57 | 140 | 00 |  Convert to DEC-128 |  Zone2: Actual (Zone 2) Temperature [°C] |
 |  TOP10 | 141 | aa |  Convert to DEC-128 | Actual DHW Temperature [°C] |
