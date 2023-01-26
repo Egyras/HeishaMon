@@ -37,6 +37,8 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
                 data >> 8, CHEnable, DHWEnable, Cooling, OTCEnable, CH2Enable, SWMode, DHWBlock
                );
         log_message(log_msg);
+        //clean slave bits from 2-byte data 
+        data = ((data >> 8) << 8);
 
         unsigned int FaultInd = false;
         unsigned int CHMode = (unsigned int)heishaOTData.chState;
@@ -51,7 +53,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
                );
         log_message(log_msg);
         unsigned int responsedata = FaultInd | (CHMode << 1) | (DHWMode << 2) | (FlameStatus << 3) | (CoolingStatus << 4) | (CH2 << 5) | (DiagInd << 6);
-        otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::Status, responsedata);
+        otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::Status, (data |= responsedata));
       } break;
     case OpenThermMessageID::MaxTSetUBMaxTSetLB: {
         log_message((char *)"OpenTherm: Received read Ta-set bounds");
