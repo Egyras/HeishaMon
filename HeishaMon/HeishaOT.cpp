@@ -129,12 +129,18 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
 
       } break;
     case OpenThermMessageID::MaxTSet: {
-        float data = ot.getFloat(request);
-        char str[200];
-        sprintf((char *)&str, "%.*f", 4, data);
-        sprintf(log_msg, "OpenTherm: Max Ta-set setpoint: %s", str);
-        log_message(log_msg);
-        otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::MaxTSet, 0);
+        if (ot.getMessageType(request) == OpenThermMessageType::READ_DATA) {
+          float data = ot.getFloat(request);
+          char str[200];
+          sprintf((char *)&str, "%.*f", 4, data);
+          sprintf(log_msg, "OpenTherm: Read request Max Ta-set setpoint: %s", str);
+          log_message(log_msg);
+          otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::MaxTSet,data);          
+        } else { //WRITE_DATA
+          sprintf(log_msg, "OpenTherm: Write request Max Ta-set setpoint");
+          log_message(log_msg);
+          otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::MaxTSet, 65);
+        }
 
       } break;
     case OpenThermMessageID::RBPflags: {
