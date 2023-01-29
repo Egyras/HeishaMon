@@ -776,6 +776,12 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
             } break;
           case 110: {
               int ret = saveSettings(client, &heishamonSettings);
+              if (heishamonSettings.listenonly) {
+                //make sure we disable TX to heatpump-RX using the mosfet so this line is floating and will not disturb cz-taw1
+                digitalWrite(5, LOW);
+              } else {
+                digitalWrite(5, HIGH);
+              }
               switch (client->route) {
                 case 111: {
                     return settingsNewPassword(client, &heishamonSettings);
@@ -959,9 +965,21 @@ void switchSerial() {
 
   setupGPIO(heishamonSettings.gpioSettings); //switch extra GPIOs to configured mode
 
-  //enable gpio15 after boot using gpio5 (D1) which enables the level shifter for the tx to panasonic
+  //mosfet output enable
   pinMode(5, OUTPUT);
-  digitalWrite(5, HIGH);
+
+  //try to detect if cz-taw1 is connected in parallel
+  if (!heishamonSettings.listenonly) {
+    if (Serial.available() > 0) {
+      log_message(F("There is data on the line without asking for it. Switching to listen only mode."));
+      heishamonSettings.listenonly = true;
+    }
+    else {
+      //enable gpio15 after boot using gpio5 (D1) which enables the level shifter for the tx to panasonic
+      //do not enable if listen only to keep the line floating
+      digitalWrite(5, HIGH);
+    }
+  }
 }
 
 void setupMqtt() {
@@ -972,6 +990,8 @@ void setupMqtt() {
 }
 
 void setupConditionals() {
+  //send_initial_query(); //maybe necessary but for now disable. CZ-TAW1 sends this query on boot
+
   //load optional PCB data from flash
   if (heishamonSettings.optionalPCB) {
     if (loadOptionalPCB(optionalPCBQuery, OPTIONALPCBQUERYSIZE)) {
@@ -988,6 +1008,8 @@ void setupConditionals() {
   //these two after optional pcb because it needs to send a datagram fast after boot
   if (heishamonSettings.use_1wire) initDallasSensors(log_message, heishamonSettings.updataAllDallasTime, heishamonSettings.waitDallasTime, heishamonSettings.dallasResolution);
   if (heishamonSettings.use_s0) initS0Sensors(heishamonSettings.s0Settings);
+
+
 }
 
 void timer_cb(int nr) {
@@ -1065,11 +1087,9 @@ void setup() {
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer.start(DNS_PORT, "*", apIP);
 
-  //maybe necessary but for now disable. CZ-TAW1 sends this query on boot
-  //if (!heishamonSettings.listenonly) send_initial_query();
-
   //OT begin must be after serial setup
   HeishaOTSetup();
+
   rst_info *resetInfo = ESP.getResetInfoPtr();
   Serial1.printf(PSTR("Reset reason: %d, exception cause: %d\n"), resetInfo->reason, resetInfo->exccause);
 

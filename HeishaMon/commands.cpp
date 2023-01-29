@@ -595,6 +595,74 @@ unsigned int set_main_schedule(char *msg, unsigned char *cmd, char *log_msg) {
   return sizeof(panasonicSendQuery);
 }
 
+unsigned int set_alt_external_sensor(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_alt_string(msg);
+
+  byte set_alt = 16;
+  if ( set_alt_string.toInt() == 1 ) {
+    set_alt = 32;
+  }
+
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set alternative external sensor to %d"), ((set_alt / 16) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[20] = set_alt;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+
+unsigned int set_external_pad_heater(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_pad_string(msg);
+
+  byte set_pad = 16;
+  if ( set_pad_string.toInt() == 1 ) {
+    set_pad = 32;
+  }
+  if ( set_pad_string.toInt() == 2 ) {
+    set_pad = 48;
+  }
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set external pad heater to %d"), ((set_pad / 16) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[25] = set_pad;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+
+unsigned int set_buffer_delta(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_temperature_string(msg);
+
+  byte request_temp = set_temperature_string.toInt() + 128;
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set buffer tank delta to %d"), request_temp - 128 );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[59] = request_temp;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+
 //start of optional pcb commands
 unsigned int set_byte_6(int val, int base, int bit, char *log_msg, const char *func) {
   unsigned char hex = (optionalPCBQuery[6] & ~(base << bit)) | (val << bit);

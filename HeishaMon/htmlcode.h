@@ -207,6 +207,7 @@ static const char webBodyRootStatusMemory[] PROGMEM =   "%<br>Memory free: ";
 static const char webBodyRootStatusReceived[] PROGMEM =  "%<br>Correct received data: ";
 static const char webBodyRootStatusReconnects[] PROGMEM =  "%<br>MQTT reconnects: ";
 static const char webBodyRootStatusUptime[] PROGMEM =   "<br>Uptime: ";
+static const char webBodyRootStatusListenOnly[] PROGMEM =   "<br><b>Listen only mode active</b>";
 
 static const char webBodyRootHeatpumpValues[] PROGMEM =
   "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">"
@@ -693,6 +694,7 @@ static const char settingsForm2[] PROGMEM =
   "          <input type=\"number\" name=\"updateAllTime\" value=\"\"> seconds"
   "        </td>"
   "      </tr>"
+  "      </tr>"
   "      <tr>"
   "        <td style=\"text-align:right; width: 50%\">"
   "          Debug log to MQTT topic from start:</td>"
@@ -716,7 +718,7 @@ static const char settingsForm2[] PROGMEM =
   "      </tr>"
   "      <tr>"
   "        <td style=\"text-align:right; width: 50%\">"
-  "          Emulate optional PCB:</td>"
+  "          Emulate optional PCB (does not work in listen only mode):</td>"
   "        <td style=\"text-align:left\">"
   "          <input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">"
   "        </td>"
@@ -725,7 +727,7 @@ static const char settingsForm2[] PROGMEM =
   "    <table style=\"width:100%\">"
   "      <tr>"
   "        <td style=\"text-align:right; width: 50%\">"
-  "          Listen only mode:</td>"
+  "          Listen only (parallel CZ-TAW1):</td>"
   "        <td style=\"text-align:left\">"
   "          <input type=\"checkbox\" name=\"listenonly\" onclick=\"ShowHideListenOnlyTable(this)\" value=\"enabled\">"
   "        </td>"

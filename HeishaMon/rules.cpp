@@ -133,10 +133,10 @@ static int is_variable(char *text, unsigned int *pos, unsigned int size) {
     }
 
     if(text[*pos] == '%') {
-      if(strnicmp(&text[(*pos)+1], "hour", 4) == 0) {
+      if(size == 5 && strnicmp(&text[(*pos)+1], "hour", 4) == 0) {
         return 5;
       }
-      if(strnicmp(&text[(*pos)+1], "month", 4) == 0) {
+      if(size == 6 && strnicmp(&text[(*pos)+1], "month", 5) == 0) {
         return 6;
       }
     }
@@ -147,7 +147,7 @@ static int is_variable(char *text, unsigned int *pos, unsigned int size) {
         cmdStruct cmd;
         memcpy_P(&cmd, &commands[x], sizeof(cmd));
         size_t len = strlen(cmd.name);
-        if(strnicmp(&text[(*pos)+1], cmd.name, len) == 0) {
+        if(size-1 == len && strnicmp(&text[(*pos)+1], cmd.name, len) == 0) {
           i = len+1;
           match = 1;
           break;
@@ -159,7 +159,7 @@ static int is_variable(char *text, unsigned int *pos, unsigned int size) {
         optCmdStruct cmd;
         memcpy_P(&cmd, &optionalCommands[x], sizeof(cmd));
         size_t len = strlen(cmd.name);
-        if(strnicmp(&text[(*pos)+1], cmd.name, len) == 0) {
+        if(size-1 == len && strnicmp(&text[(*pos)+1], cmd.name, len) == 0) {
           i = len+1;
           match = 1;
           break;
@@ -172,7 +172,7 @@ static int is_variable(char *text, unsigned int *pos, unsigned int size) {
           char cpy[MAX_TOPIC_LEN];
           memcpy_P(&cpy, topics[x], MAX_TOPIC_LEN);
           size_t len = strlen(cpy);
-          if(strnicmp(&text[(*pos)+1], cpy, len) == 0) {
+          if(size-1 == len && strnicmp(&text[(*pos)+1], cpy, len) == 0) {
             i = len+1;
             match = 1;
             break;
@@ -211,7 +211,7 @@ static int is_event(char *text, unsigned int *pos, unsigned int size) {
       cmdStruct cmd;
       memcpy_P(&cmd, &commands[x], sizeof(cmd));
       size_t len = strlen(cmd.name);
-      if(strnicmp(&text[(*pos)+1], cmd.name, len) == 0) {
+      if(size-1 == len && strnicmp(&text[(*pos)+1], cmd.name, len) == 0) {
         i = len+1;
         match = 1;
         break;
@@ -223,7 +223,7 @@ static int is_event(char *text, unsigned int *pos, unsigned int size) {
       optCmdStruct cmd;
       memcpy_P(&cmd, &optionalCommands[x], sizeof(cmd));
       size_t len = strlen(cmd.name);
-      if(strnicmp(&text[(*pos)+1], cmd.name, len) == 0) {
+      if(size-1 == len && strnicmp(&text[(*pos)+1], cmd.name, len) == 0) {
         i = len+1;
         match = 1;
         break;
@@ -235,7 +235,7 @@ static int is_event(char *text, unsigned int *pos, unsigned int size) {
       size_t len = strlen_P(topics[x]);
       char cpy[len];
       memcpy_P(&cpy, &topics[x], len);
-      if(strnicmp(&text[(*pos)+1], cpy, len) == 0) {
+      if(size-1 == len && strnicmp(&text[(*pos)+1], cpy, len) == 0) {
         i = len+1;
         match = 1;
         break;

@@ -271,6 +271,7 @@ mqtt:
     - name: Aquarea Pump Flow
       state_topic: "panasonic_heat_pump/main/Pump_Flow"
       unit_of_measurement: "L/min"
+      state_class: "measurement"
 
     #TOP2 - Force DHW
     - name: Aquarea Force DHW Mode
@@ -306,26 +307,31 @@ mqtt:
     - name: Aquarea Inlet Temperature
       state_topic: "panasonic_heat_pump/main/Main_Inlet_Temp"
       unit_of_measurement: "°C"
+      state_class: "measurement"
 
     #TOP6 - Water outlet temp
     - name: Aquarea Outlet Temperature
       state_topic: "panasonic_heat_pump/main/Main_Outlet_Temp"
       unit_of_measurement: "°C"
+      state_class: "measurement"
 
     #TOP7 - Water outlet target temp
     - name: Aquarea Outlet Target Temperature
       state_topic: "panasonic_heat_pump/main/Main_Target_Temp"
       unit_of_measurement: "°C"
+      state_class: "measurement"
 
     #TOP8 - Compressor frequency
     - name: Aquarea Compressor Frequency
       state_topic: "panasonic_heat_pump/main/Compressor_Freq"
       unit_of_measurement: "Hz"
+      state_class: "measurement"
 
     #TOP9 - Tank set temperature
     - name: Aquarea Tank Set Temperature
       state_topic: "panasonic_heat_pump/main/DHW_Target_Temp"
       unit_of_measurement: "°C"
+      state_class: "measurement"
 
     #TOP10 - Tank current temperature
     - name: Aquarea Actual Tank Temperature
@@ -337,18 +343,21 @@ mqtt:
     - name: Aquarea Compressor Operating Hours
       state_topic: "panasonic_heat_pump/main/Operations_Hours"
       unit_of_measurement: "Hours"
-      state_class: total
+#      state_class: total
+      state_class: "measurement"
 
     #TOP12 - Compressor On/Off cycle number
     - name: Aquarea Compressor Start/Stop Counter
       state_topic: "panasonic_heat_pump/main/Operations_Counter"
-      state_class: total
+#      state_class: total
+      state_class: "measurement"
 
     #TOP14 - Outdoor unit ambient temperature
     - name: Aquarea Outdoor Ambient
       state_topic: "panasonic_heat_pump/main/Outside_Temp"
       unit_of_measurement: "°C"
       state_class: "measurement"
+#      state_class: "measurement"
 
     #TOP15 - Heating power produced
     - name: Aquarea Power Produced
@@ -424,6 +433,7 @@ mqtt:
     - name: Aquarea Heatshift Temperature
       state_topic: "panasonic_heat_pump/main/Z1_Heat_Request_Temp"
       unit_of_measurement: "°C"
+      state_class: "measurement"
 
     #TOP40 - DHW power produced
     - name: Aquarea DHW Power Produced
@@ -459,6 +469,7 @@ mqtt:
     - name: Aquarea Inside Pipe Temperature
       state_topic: "panasonic_heat_pump/main/Inside_Pipe_Temp"
       unit_of_measurement: "°C"
+      state_class: "measurement"
 
     #TOP52 - Defrost temp
     - name: Aquarea Defrost Temperature
@@ -474,6 +485,7 @@ mqtt:
     - name: Aquarea Bypass Outlet Temperature
       state_topic: "panasonic_heat_pump/main/Bypass_Outlet_Temp"
       unit_of_measurement: "°C"
+      state_class: "measurement"
 
     #TOP55 - lpm temp
     - name: Aquarea Ipm Temperature
@@ -524,31 +536,37 @@ mqtt:
     - name: Aquarea Fan 1 Speed
       state_topic: "panasonic_heat_pump/main/Fan1_Motor_Speed"
       unit_of_measurement: "R/min"
+      state_class: "measurement"
 
     #TOP63 - Fan2 speed
     - name: Aquarea Fan 2 Speed
       state_topic: "panasonic_heat_pump/main/Fan2_Motor_Speed"
       unit_of_measurement: "R/min"
+      state_class: "measurement"
 
     #TOP64 - High pressure
     - name: Aquarea High pressure
       state_topic: "panasonic_heat_pump/main/High_Pressure"
       unit_of_measurement: "Kgf/cm2"
+      state_class: "measurement"
 
     #TOP65 - Pump speed
     - name: Aquarea Pump Speed
       state_topic: "panasonic_heat_pump/main/Pump_Speed"
       unit_of_measurement: "R/min"
+      state_class: "measurement"
 
     #TOP66 - Low pressure
     - name: Aquarea Low pressure
       state_topic: "panasonic_heat_pump/main/Low_Pressure"
       unit_of_measurement: "Kgf/cm2"
+      state_class: "measurement"
 
     #TOP67 - Compressor Current
     - name: Aquarea Compressor Current
       state_topic: "panasonic_heat_pump/main/Compressor_Current"
       unit_of_measurement: "A"
+      state_class: "measurement"
 
     ##1-Wire - Example, replace with correct sensor ID
     #- name: 1-wire sensor temperature
@@ -562,23 +580,27 @@ mqtt:
     - name: Aquarea Metered Power Consumption
       state_topic: "panasonic_heat_pump/s0/Watt/1"
       unit_of_measurement: "W"
+      state_class: "measurement"
 
     - name: Aquarea Metered Power Consumption Total
       state_topic: "panasonic_heat_pump/s0/WatthourTotal/1"
       unit_of_measurement: "kWh"
       value_template: >-
         {{ (value | int) / 1000}}
+      state_class: "measurement"
 
     #S0 kWh Meter 2 - Assumed to measure the backup heater consumption
     - name: Aquarea Metered Backup Heater Power Consumption
       state_topic: "panasonic_heat_pump/s0/Watt/2"
       unit_of_measurement: "W"
+      state_class: "measurement"
 
     - name: Aquarea Metered Backup Heater Power Consumption Total
       state_topic: "panasonic_heat_pump/s0/WatthourTotal/2"
       unit_of_measurement: "kWh"
       value_template: >-
         {{ (value | int) / 1000}}
+      state_class: "measurement"
 
   # switch #
   ##########
