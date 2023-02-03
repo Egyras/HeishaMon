@@ -121,29 +121,34 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::TrSet, request & 0xffff);
       } break;
     case OpenThermMessageID::TdhwSet: {
-        heishaOTData.dhwSetpoint = ot.getFloat(request);
-        char str[200];
-        sprintf((char *)&str, "%.*f", 4, heishaOTData.dhwSetpoint);
-        sprintf(log_msg, "OpenTherm: DHW setpoint: %s", str);
-        log_message(log_msg);
-        mqttPublish((char*)mqtt_topic_opentherm, (char*)"dhwSetpoint", str);
-        otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::TdhwSet, request & 0xffff);
-
+        if (ot.getMessageType(request) == OpenThermMessageType::WRITE_DATA) {
+          heishaOTData.dhwSetpoint = ot.getFloat(request);
+          char str[200];
+          sprintf((char *)&str, "%.*f", 4, heishaOTData.dhwSetpoint);
+          sprintf(log_msg, "OpenTherm: Write request DHW setpoint: %s", str);
+          log_message(log_msg);
+          mqttPublish((char*)mqtt_topic_opentherm, (char*)"dhwSetpoint", str);
+          otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::MaxTSet, ot.temperatureToData(heishaOTData.dhwSetpoint));
+        } else { //READ_DATA
+          sprintf(log_msg, "OpenTherm: Read request DHW setpoint");
+          log_message(log_msg);
+          otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::MaxTSet, ot.temperatureToData(heishaOTData.dhwSetpoint));
+        }
       } break;
     case OpenThermMessageID::MaxTSet: {
         if (ot.getMessageType(request) == OpenThermMessageType::WRITE_DATA) {
-          float data = ot.getFloat(request);
+          heishaOTData.maxTSet = ot.getFloat(request);
           char str[200];
-          sprintf((char *)&str, "%.*f", 4, data);
+          sprintf((char *)&str, "%.*f", 4, heishaOTData.maxTSet);
           sprintf(log_msg, "OpenTherm: Write request Max Ta-set setpoint: %s", str);
           log_message(log_msg);
-          otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::MaxTSet, data);
+          mqttPublish((char*)mqtt_topic_opentherm, (char*)"maxTSet", str);
+          otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::MaxTSet, ot.temperatureToData(heishaOTData.maxTSet));
         } else { //READ_DATA
           sprintf(log_msg, "OpenTherm: Read request Max Ta-set setpoint");
           log_message(log_msg);
-          otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::MaxTSet, ot.temperatureToData(65));
+          otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::MaxTSet, ot.temperatureToData(heishaOTData.maxTSet));
         }
-
       } break;
     case OpenThermMessageID::Tret: {
         log_message((char *)"OpenTherm: Received read Tret");
@@ -310,6 +315,7 @@ void HeishaOTLoop(char * actData, PubSubClient &mqtt_client, char* mqtt_topic_ba
 }
 
 void mqttOTCallback(char* topic, char* value) {
+  //only READ values can be overwritten using received mqtt messages
   //log_message((char *)"OpenTherm: MQTT message received");
   if (strcmp((char*)"outsideTemp", topic) == 0) {
     log_message((char *)"OpenTherm: MQTT message received 'outsideTemp'");
@@ -323,6 +329,14 @@ void mqttOTCallback(char* topic, char* value) {
     log_message((char *)"OpenTherm: MQTT message received 'outletTemp'");
     heishaOTData.outletTemp = String(value).toFloat();
   }
+  else if (strcmp((char*)"dhwSetpoint", topic) == 0) {
+    log_message((char *)"OpenTherm: MQTT message received 'dhwSetpoint'");
+    heishaOTData.dhwSetpoint = String(value).toFloat();
+  }
+  else if (strcmp((char*)"maxTSet", topic) == 0) {
+    log_message((char *)"OpenTherm: MQTT message received 'maxTSet'");
+    heishaOTData.maxTSet = String(value).toFloat();
+  }    
   else if (strcmp((char*)"flameState", topic) == 0) {
     log_message((char *)"OpenTherm: MQTT message received 'flameState'");
     heishaOTData.flameState = ((stricmp((char*)"true", value) == 0) || (String(value).toInt() == 1 ));
