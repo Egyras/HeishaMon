@@ -128,11 +128,11 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
           sprintf(log_msg, "OpenTherm: Write request DHW setpoint: %s", str);
           log_message(log_msg);
           mqttPublish((char*)mqtt_topic_opentherm, (char*)"dhwSetpoint", str);
-          otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::MaxTSet, ot.temperatureToData(heishaOTData.dhwSetpoint));
+          otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::TdhwSet, ot.temperatureToData(heishaOTData.dhwSetpoint));
         } else { //READ_DATA
           sprintf(log_msg, "OpenTherm: Read request DHW setpoint");
           log_message(log_msg);
-          otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::MaxTSet, ot.temperatureToData(heishaOTData.dhwSetpoint));
+          otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::TdhwSet, ot.temperatureToData(heishaOTData.dhwSetpoint));
         }
       } break;
     case OpenThermMessageID::MaxTSet: {
