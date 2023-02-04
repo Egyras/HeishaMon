@@ -101,6 +101,32 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         }
       } break;
     // now adding some more useful, not mandatory, types
+    case OpenThermMessageID::RBPflags: { //Pre-Defined Remote Boiler Parameters
+        log_message((char *)"OpenTherm: Received Remote Boiler parameters request");
+        //fixed settings for now
+        const unsigned int DHWsetTransfer = true;
+        const unsigned int maxCHsetTransfer = true;
+        const unsigned int DHWsetReadWrite = true;
+        const unsigned int maxCHsetReadWrite = true;
+        const unsigned int responsedata = DHWsetReadWrite | (maxCHsetReadWrite << 1) | (DHWsetTransfer << 8) | (maxCHsetTransfer << 9);
+        otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::RBPflags, responsedata);
+      } break;
+    case OpenThermMessageID::TdhwSetUBTdhwSetLB : { //DHW boundaries
+        log_message((char *)"OpenTherm: Received DHW set boundaries request");
+        //fixed settings for now
+        const unsigned int DHWsetUppBound = 75;
+        const unsigned int DHWsetLowBound = 40;
+        const unsigned int responsedata = DHWsetLowBound | (DHWsetUppBound << 8);
+        otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::TdhwSetUBTdhwSetLB, responsedata);
+      } break;
+    case OpenThermMessageID::MaxTSetUBMaxTSetLB  : { //CHset boundaries
+        log_message((char *)"OpenTherm: Received CH set boundaries request");
+        //fixed settings for now, seems valid for most heatpump types
+        const unsigned int CHsetUppBound = 65;
+        const unsigned int CHsetLowBound = 20;
+        const unsigned int responsedata = CHsetLowBound | (CHsetUppBound << 8);
+        otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::MaxTSetUBMaxTSetLB, responsedata);
+      } break;
     case OpenThermMessageID::Tr: {
         heishaOTData.roomTemp = ot.getFloat(request);
         char str[200];
@@ -336,7 +362,7 @@ void mqttOTCallback(char* topic, char* value) {
   else if (strcmp((char*)"maxTSet", topic) == 0) {
     log_message((char *)"OpenTherm: MQTT message received 'maxTSet'");
     heishaOTData.maxTSet = String(value).toFloat();
-  }    
+  }
   else if (strcmp((char*)"flameState", topic) == 0) {
     log_message((char *)"OpenTherm: MQTT message received 'flameState'");
     heishaOTData.flameState = ((stricmp((char*)"true", value) == 0) || (String(value).toInt() == 1 ));
