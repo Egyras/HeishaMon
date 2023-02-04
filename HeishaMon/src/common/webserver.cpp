@@ -764,7 +764,7 @@ char *strnstr(const char *haystack, const char *needle, size_t len) {
 int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, uint16_t len) {
   uint16_t hasread = MIN(WEBSERVER_BUFFER_SIZE-client->ptr, len);
   uint16_t rpos = 0, loop = 1;
-  
+
   while(rpos < len) {
     hasread = MIN(WEBSERVER_BUFFER_SIZE-client->ptr, len-rpos);
     memcpy(&client->buffer[client->ptr], &buf[rpos], hasread);
@@ -2079,19 +2079,13 @@ uint8_t webserver_sync_receive(struct webserver_t *client, uint8_t *rbuffer, uin
         client->step = WEBSERVER_CLIENT_CLOSE;
       }
     }
-    if((client->readlen+size) > client->totallen) {
+    if((client->readlen+2000) > client->totallen) {
         char log_msg[256];
-        sprintf_P(log_msg, "Readlen: %d, Size: %d, Totallen: %d", client->readlen, size, client->totallen);
-        log_message(log_msg);
-    }	
+        sprintf_P(log_msg, "Readlen: %d, Totallen: %d", client->readlen, client->totallen);
+		log_message(log_msg);
+    }
     if(client->readlen == client->totallen) {
       client->step = WEBSERVER_CLIENT_WRITE;
-    }
-    if(client->readlen > client->totallen) {
-        char log_msg[256];
-        sprintf_P(log_msg, "Error reading webclient data. Readlen too large! Readlen: %d, Totallen: %d", client->readlen, client->totallen);
-		log_message(log_msg);
-		client->step = WEBSERVER_CLIENT_CLOSE;
     }
   }
   return 0;
