@@ -21,6 +21,7 @@
 #include "commands.h"
 #include "HeishaOT.h"
 #include "rules.h"
+#include "version.h"
 
 DNSServer dnsServer;
 
@@ -940,10 +941,11 @@ void setupSerial() {
 }
 
 void setupSerial1() {
-  if (heishamonSettings.logSerial1) {
+  if (heishamonSettings.logSerial1) { //settings are not loaded yet, this is the startup default
     //debug line on serial1 (D4, GPIO2)
     Serial1.begin(115200);
-    Serial1.println(F("Starting debugging"));
+    Serial1.print(F("Starting debugging, version: "));
+    Serial1.println(heishamon_version);
   }
   else {
     pinMode(2, FUNCTION_0); //set it as gpio
