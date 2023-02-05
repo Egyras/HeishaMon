@@ -182,7 +182,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
         configFile.readBytes(buf.get(), size);
         DynamicJsonDocument jsonDoc(1024);
         DeserializationError error = deserializeJson(jsonDoc, buf.get());
-        char log_msg[512];
+        char log_msg[1024];
         serializeJson(jsonDoc, log_msg);
         log_message(log_msg);
         if (!error) {

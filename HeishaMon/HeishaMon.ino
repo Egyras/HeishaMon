@@ -779,9 +779,10 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
               int ret = saveSettings(client, &heishamonSettings);
               if (heishamonSettings.listenonly) {
                 //make sure we disable TX to heatpump-RX using the mosfet so this line is floating and will not disturb cz-taw1
-                digitalWrite(5, LOW);
+                //does not work for opentherm version currently
+                //digitalWrite(5, LOW);
               } else {
-                digitalWrite(5, HIGH);
+                //digitalWrite(5, HIGH);
               }
               switch (client->route) {
                 case 111: {
@@ -969,6 +970,7 @@ void switchSerial() {
 
   //mosfet output enable
   pinMode(5, OUTPUT);
+  digitalWrite(5, HIGH); //force high for opentherm version compatability
 
   //try to detect if cz-taw1 is connected in parallel
   if (!heishamonSettings.listenonly) {

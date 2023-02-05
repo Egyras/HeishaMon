@@ -87,7 +87,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
 
       } break;
     case OpenThermMessageID::RelModLevel: { //mandatory
-        Serial1.println("OpenTherm: Received read relative modulation level");
+        log_message((char *)"OpenTherm: Received read relative modulation level");
         otResponse = ot.buildResponse(OpenThermMessageType::DATA_INVALID, OpenThermMessageID::RelModLevel, request & 0xffff); //invalid for now to fill mandatory fields
       } break;
     case OpenThermMessageID::Tboiler: { //mandatory
