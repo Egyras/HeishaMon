@@ -381,65 +381,65 @@ void mqttOTCallback(char* topic, char* value) {
 void openthermTableOutput(struct webserver_t *client) {
   char str[64];
   //roomtemp
-  webserver_send_content_P(client, PSTR("<tr><td>roomTemp</td><td>"), 25);
+  webserver_send_content_P(client, PSTR("<tr><td>roomTemp</td><td>R</td><td>"), 35);
   dtostrf( heishaOTData.roomTemp, 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //roomtempset
-  webserver_send_content_P(client, PSTR("<tr><td>roomTempSet</td><td>"), 28);
+  webserver_send_content_P(client, PSTR("<tr><td>roomTempSet</td><td>R</td><td>"), 38);
   dtostrf( heishaOTData.roomTempSet , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //chSetpoint
-  webserver_send_content_P(client, PSTR("<tr><td>chSetpoint</td><td>"), 27);
+  webserver_send_content_P(client, PSTR("<tr><td>chSetpoint</td><td>R</td><td>"), 37);
   dtostrf( heishaOTData.chSetpoint , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //dhwSetpoint
-  webserver_send_content_P(client, PSTR("<tr><td>dhwSetpoint</td><td>"), 28);
+  webserver_send_content_P(client, PSTR("<tr><td>dhwSetpoint</td><td>RW</td><td>"), 40);
   dtostrf( heishaOTData.dhwSetpoint , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //maxTSet
-  webserver_send_content_P(client, PSTR("<tr><td>maxTSet</td><td>"), 24);
+  webserver_send_content_P(client, PSTR("<tr><td>maxTSet</td><td>RW</td><td>"), 35);
   dtostrf( heishaOTData.maxTSet , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //outsideTemp
-  webserver_send_content_P(client, PSTR("<tr><td>outsideTemp</td><td>"), 28);
+  webserver_send_content_P(client, PSTR("<tr><td>outsideTemp</td><td>W</td><td>"), 38);
   dtostrf( heishaOTData.outsideTemp , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //inletTemp
-  webserver_send_content_P(client, PSTR("<tr><td>inletTemp</td><td>"), 26);
+  webserver_send_content_P(client, PSTR("<tr><td>inletTemp</td><td>W</td><td>"), 36);
   dtostrf( heishaOTData.inletTemp , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //outletTemp
-  webserver_send_content_P(client, PSTR("<tr><td>outletTemp</td><td>"), 27);
+  webserver_send_content_P(client, PSTR("<tr><td>outletTemp</td><td>W</td><td>"), 37);
   dtostrf( heishaOTData.outletTemp , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //boilerTemp
-  webserver_send_content_P(client, PSTR("<tr><td>boilerTemp</td><td>"), 27);
+  webserver_send_content_P(client, PSTR("<tr><td>boilerTemp</td><td>W</td><td>"), 37);
   dtostrf( heishaOTData.boilerTemp , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //DHWTemp
-  webserver_send_content_P(client, PSTR("<tr><td>DHWTemp</td><td>"), 24);
+  webserver_send_content_P(client, PSTR("<tr><td>DHWTemp</td><td>W</td><td>"), 34);
   dtostrf( heishaOTData.DHWTemp , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //flameState
-  webserver_send_content_P(client, PSTR("<tr><td>flameState</td><td>"), 27);
+  webserver_send_content_P(client, PSTR("<tr><td>flameState</td><td>W</td><td>"), 37);
   heishaOTData.flameState ? webserver_send_content_P(client, PSTR("on"), 2) : webserver_send_content_P(client, PSTR("off"), 3);
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //chState
-  webserver_send_content_P(client, PSTR("<tr><td>chState</td><td>"), 24);
+  webserver_send_content_P(client, PSTR("<tr><td>chState</td><td>W</td><td>"), 34);
   heishaOTData.chState ? webserver_send_content_P(client, PSTR("on"), 2) : webserver_send_content_P(client, PSTR("off"), 3);
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //dhwState
-  webserver_send_content_P(client, PSTR("<tr><td>dhwState</td><td>"), 25);
+  webserver_send_content_P(client, PSTR("<tr><td>dhwState</td><td>W</td><td>"), 35);
   heishaOTData.dhwState ? webserver_send_content_P(client, PSTR("on"), 2) : webserver_send_content_P(client, PSTR("off"), 3);
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
 }

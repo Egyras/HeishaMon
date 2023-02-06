@@ -14,6 +14,9 @@ struct heishaOTDataStruct {
   float roomTemp; //what is measured room temp by thermostat
   float roomTempSet; //what is request room temp setpoint by thermostat
   float chSetpoint; //what is calculated Ta setpoint by thermostat
+  //READ AND WRITE values
+  float dhwSetpoint = 65; //what is DHW setpoint by thermostat
+  float maxTSet = 65; //max ch setpoint
   //READ values
   float outsideTemp = 0; //provides measured outside temp to thermostat
   float inletTemp = 0; //provides measured Tr temp to thermostat
@@ -23,9 +26,6 @@ struct heishaOTDataStruct {
   bool flameState = false; //provides current flame state to thermostat
   bool chState = false; //provides if boiler is in centrale heating state
   bool dhwState = false; //provides if boiler is in dhw heating state
-  //READ AND WRITE values
-  float dhwSetpoint = 65; //what is DHW setpoint by thermostat
-  float maxTSet = 65; //max ch setpoint
 };
 
 void HeishaOTSetup();

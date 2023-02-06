@@ -230,7 +230,7 @@ static const char webBodyRootS0Values[] PROGMEM =
 static const char webBodyRootOpenthermValues[] PROGMEM =
   "<div id=\"Opentherm\" class=\"w3-container w3-center heishatable\" style=\"display:none\">"
   "<h2>Current opentherm values</h2>"
-  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Name</th><th>Value</th></tr></thead><tbody id=\"openthermvalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
+  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Name</th><th>Type</th><th>Value</th></tr></thead><tbody id=\"openthermvalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
 
 
 static const char webBodyRootConsole[] PROGMEM =
