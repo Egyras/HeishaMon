@@ -91,6 +91,9 @@ static const char refreshJS[] PROGMEM =
   "     case 'S0':"
   "       loadContent('s0values', '/tablerefresh?s0', function(){});"
   "       break;"
+  "     case 'Opentherm':"
+  "       loadContent('openthermvalues', '/tablerefresh?opentherm', function(){});"
+  "       break;"
   "     case 'Dallas':"
   "       loadContent('dallasvalues', '/tablerefresh?1wire', function()"
   "         {"
@@ -197,7 +200,7 @@ static const char webBodyRoot2[] PROGMEM =
 
 static const char webBodyRootDallasTab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Dallas')\">Dallas 1-wire</button>";
 static const char webBodyRootS0Tab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('S0')\">S0 kWh meters</button>";
-
+static const char webBodyRootOpenthermTab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Opentherm')\">Opentherm</button>";
 static const char webBodyRootConsoleTab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Console')\">Console</button>";
 
 static const char webBodyEndDiv[] PROGMEM = "</div>";
@@ -223,6 +226,12 @@ static const char webBodyRootS0Values[] PROGMEM =
   "<div id=\"S0\" class=\"w3-container w3-center heishatable\" style=\"display:none\">"
   "<h2>Current S0 kWh meters values</h2>"
   "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>S0 port</th><th>Watt</th><th>Watthour</th><th>WatthourTotal</th><th>Pulse quality</th><th>Average pulse width</th></tr></thead><tbody id=\"s0values\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
+
+static const char webBodyRootOpenthermValues[] PROGMEM =
+  "<div id=\"Opentherm\" class=\"w3-container w3-center heishatable\" style=\"display:none\">"
+  "<h2>Current opentherm values</h2>"
+  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Name</th><th>Value</th></tr></thead><tbody id=\"openthermvalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
+
 
 static const char webBodyRootConsole[] PROGMEM =
   "<div id=\"Console\" class=\"w3-container w3-center heishatable\">"
@@ -721,6 +730,13 @@ static const char settingsForm2[] PROGMEM =
   "          Emulate optional PCB (does not work in listen only mode):</td>"
   "        <td style=\"text-align:left\">"
   "          <input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">"
+  "        </td>"
+  "      </tr>"
+  "      <tr>"
+  "        <td style=\"text-align:right; width: 50%\">"
+  "          Enable opentherm processing (requires opentherm pcb):</td>"
+  "        <td style=\"text-align:left\">"
+  "          <input type=\"checkbox\" name=\"opentherm\" value=\"enabled\">"
   "        </td>"
   "      </tr>"
   "    </table>"

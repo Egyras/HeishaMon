@@ -208,6 +208,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
           heishamonSettings->logHexdump = ( jsonDoc["logHexdump"] == "enabled" ) ? true : false;
           heishamonSettings->logSerial1 = ( jsonDoc["logSerial1"] == "enabled" ) ? true : false;
           heishamonSettings->optionalPCB = ( jsonDoc["optionalPCB"] == "enabled" ) ? true : false;
+          heishamonSettings->opentherm = ( jsonDoc["opentherm"] == "enabled" ) ? true : false;
           if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
           if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
           if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
@@ -379,6 +380,11 @@ void settingsToJson(DynamicJsonDocument &jsonDoc, settingsStruct *heishamonSetti
   } else {
     jsonDoc["optionalPCB"] = "disabled";
   }
+  if (heishamonSettings->opentherm) {
+    jsonDoc["opentherm"] = "enabled";
+  } else {
+    jsonDoc["opentherm"] = "disabled";
+  }
   jsonDoc["waitTime"] = heishamonSettings->waitTime;
   jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
   jsonDoc["dallasResolution"] = heishamonSettings->dallasResolution;
@@ -415,6 +421,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
   jsonDoc["logHexdump"] = String("");
   jsonDoc["logSerial1"] = String("");
   jsonDoc["optionalPCB"] = String("");
+  jsonDoc["opentherm"] = String("");
   jsonDoc["use_1wire"] = String("");
   jsonDoc["use_s0"] = String("");
 
@@ -453,6 +460,8 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
       jsonDoc["logSerial1"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "optionalPCB") == 0) {
       jsonDoc["optionalPCB"] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "opentherm") == 0) {
+      jsonDoc["opentherm"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "ntp_servers") == 0) {
       jsonDoc["ntp_servers"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "timezone") == 0) {
@@ -726,24 +735,24 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
     case 8: {
         char str[20];
         webserver_send_content_P(client, PSTR(",\"logSerial1\":"), 14);
-
         itoa(heishamonSettings->logSerial1, str, 10);
         webserver_send_content(client, str, strlen(str));
 
         webserver_send_content_P(client, PSTR(",\"optionalPCB\":"), 15);
-
         itoa(heishamonSettings->optionalPCB, str, 10);
+        webserver_send_content(client, str, strlen(str));
+        
+        webserver_send_content_P(client, PSTR(",\"opentherm\":"), 13);
+        itoa(heishamonSettings->opentherm, str, 10);
         webserver_send_content(client, str, strlen(str));
       } break;
     case 9: {
         char str[20];
         webserver_send_content_P(client, PSTR(",\"use_1wire\":"), 13);
-
         itoa(heishamonSettings->use_1wire, str, 10);
         webserver_send_content(client, str, strlen(str));
 
         webserver_send_content_P(client, PSTR(",\"waitDallasTime\":"), 18);
-
         itoa(heishamonSettings->waitDallasTime, str, 10);
         webserver_send_content(client, str, strlen(str));
       } break;
@@ -931,6 +940,9 @@ int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconne
         if (heishamonSettings->use_s0) {
           webserver_send_content_P(client, webBodyRootS0Tab, strlen_P(webBodyRootS0Tab));
         }
+        if (heishamonSettings->opentherm) {
+          webserver_send_content_P(client, webBodyRootOpenthermTab, strlen_P(webBodyRootOpenthermTab));
+        }
         webserver_send_content_P(client, webBodyRootConsoleTab, strlen_P(webBodyRootConsoleTab));
       } break;
     case 2: {
@@ -972,6 +984,9 @@ int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconne
         if (heishamonSettings->use_s0) {
           webserver_send_content_P(client, webBodyRootS0Values, strlen_P(webBodyRootS0Values));
         }
+        if (heishamonSettings->opentherm) {
+          webserver_send_content_P(client, webBodyRootOpenthermValues, strlen_P(webBodyRootOpenthermValues));
+        }
         webserver_send_content_P(client, webBodyRootConsole, strlen_P(webBodyRootConsole));
         webserver_send_content_P(client, menuJS, strlen_P(menuJS));
       } break;
@@ -998,6 +1013,11 @@ int handleTableRefresh(struct webserver_t *client, char* actData) {
       webserver_send(client, 200, (char *)"text/html", 0);
       s0TableOutput(client);
     }
+  } else if (client->route == 13) {
+    if (client->content == 0) {
+      webserver_send(client, 200, (char *)"text/html", 0);
+      openthermTableOutput(client);
+    }  
   } else if (client->route == 10) {
     if (client->content == 0) {
       webserver_send(client, 200, (char *)"text/html", 0);

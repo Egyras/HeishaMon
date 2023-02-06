@@ -1,4 +1,5 @@
 #include <PubSubClient.h>
+#include "src/common/webserver.h"
 
 // opentherm
 const int inOTPin = 3; //RX pin from ESP8266
@@ -30,3 +31,4 @@ struct heishaOTDataStruct {
 void HeishaOTSetup();
 void HeishaOTLoop(char *actDat, PubSubClient &mqtt_client, char* mqtt_topic_base);
 void mqttOTCallback(char* topic, char* value);
+void openthermTableOutput(struct webserver_t *client);

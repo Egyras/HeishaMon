@@ -9,11 +9,13 @@
 #include "src/common/webserver.h"
 #include "dallas.h"
 #include "s0.h"
+#include "HeishaOT.h"
 #include "gpio.h"
 
 #define HEATPUMP_VALUE_LEN    16
 
 void log_message(char* string);
+
 
 static IPAddress apIP(192, 168, 4, 1);
 
@@ -47,6 +49,7 @@ struct settingsStruct {
   bool logMqtt = false; //log to mqtt from start
   bool logHexdump = false; //log hexdump from start
   bool logSerial1 = true; //log to serial1 (gpio2) from start
+  bool opentherm = true; //opentherm enable flag, current default true for opentherm build
 
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
   gpioSettingsStruct gpioSettings;

@@ -19,7 +19,6 @@
 #include "webfunctions.h"
 #include "decode.h"
 #include "commands.h"
-#include "HeishaOT.h"
 #include "rules.h"
 #include "version.h"
 
@@ -206,9 +205,10 @@ void mqtt_reconnect()
     if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
     {
       mqttReconnects++;
-
-      sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_opentherm);
-      mqtt_client.subscribe(topic);
+      if (heishamonSettings.opentherm) {
+        sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_opentherm);
+        mqtt_client.subscribe(topic);
+      }
       sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_commands);
       mqtt_client.subscribe(topic);
       sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
@@ -623,6 +623,8 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
                 client->route = 11;
               } else if (strcmp_P((char *)args->name, PSTR("s0")) == 0) {
                 client->route = 12;
+              } else if (strcmp_P((char *)args->name, PSTR("opentherm")) == 0) {
+                client->route = 13;
               }
             } break;
           case 100: {
@@ -744,7 +746,8 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
             } break;
           case 10:
           case 11:
-          case 12: {
+          case 12:
+          case 13: {
               return handleTableRefresh(client, actData);
             } break;
           case 20: {
@@ -777,12 +780,12 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
             } break;
           case 110: {
               int ret = saveSettings(client, &heishamonSettings);
-              if (heishamonSettings.listenonly) {
+              if ((!heishamonSettings.opentherm) && (heishamonSettings.listenonly)) {
                 //make sure we disable TX to heatpump-RX using the mosfet so this line is floating and will not disturb cz-taw1
                 //does not work for opentherm version currently
-                //digitalWrite(5, LOW);
+                digitalWrite(5, LOW);
               } else {
-                //digitalWrite(5, HIGH);
+                digitalWrite(5, HIGH);
               }
               switch (client->route) {
                 case 111: {
@@ -970,7 +973,6 @@ void switchSerial() {
 
   //mosfet output enable
   pinMode(5, OUTPUT);
-  digitalWrite(5, HIGH); //force high for opentherm version compatability
 
   //try to detect if cz-taw1 is connected in parallel
   if (!heishamonSettings.listenonly) {
@@ -1092,7 +1094,11 @@ void setup() {
   dnsServer.start(DNS_PORT, "*", apIP);
 
   //OT begin must be after serial setup
-  HeishaOTSetup();
+  if (heishamonSettings.opentherm) {
+    //always enable mosfets if opentherm is used
+    digitalWrite(5, HIGH);
+    HeishaOTSetup();
+  }
 
   rst_info *resetInfo = ESP.getResetInfoPtr();
   Serial1.printf(PSTR("Reset reason: %d, exception cause: %d\n"), resetInfo->reason, resetInfo->exccause);
@@ -1155,7 +1161,9 @@ void loop() {
 
   mqtt_client.loop();
 
-  HeishaOTLoop(actData, mqtt_client, heishamonSettings.mqtt_topic_base);
+  if (heishamonSettings.opentherm) {
+    HeishaOTLoop(actData, mqtt_client, heishamonSettings.mqtt_topic_base);
+  }
 
   read_panasonic_data();
 
