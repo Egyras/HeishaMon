@@ -355,6 +355,10 @@ void mqttOTCallback(char* topic, char* value) {
     log_message((char *)"OpenTherm: MQTT message received 'outletTemp'");
     heishaOTData.outletTemp = String(value).toFloat();
   }
+  else if (strcmp((char*)"dhwTemp", topic) == 0) {
+    log_message((char *)"OpenTherm: MQTT message received 'dhwTemp'");
+    heishaOTData.dhwTemp = String(value).toFloat();
+  }
   else if (strcmp((char*)"dhwSetpoint", topic) == 0) {
     log_message((char *)"OpenTherm: MQTT message received 'dhwSetpoint'");
     heishaOTData.dhwSetpoint = String(value).toFloat();
@@ -420,9 +424,9 @@ void openthermTableOutput(struct webserver_t *client) {
   dtostrf( heishaOTData.outletTemp , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
-  //DHWTemp
-  webserver_send_content_P(client, PSTR("<tr><td>DHWTemp</td><td>W</td><td>"), 34);
-  dtostrf( heishaOTData.DHWTemp , 0, 2, str);
+  //dhwTemp
+  webserver_send_content_P(client, PSTR("<tr><td>dhwTemp</td><td>W</td><td>"), 34);
+  dtostrf( heishaOTData.dhwTemp , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //flameState

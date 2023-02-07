@@ -21,7 +21,7 @@ struct heishaOTDataStruct {
   float outsideTemp = 0; //provides measured outside temp to thermostat
   float inletTemp = 0; //provides measured Treturn temp to thermostat
   float outletTemp = 0; //provides measured Tout (boiler) temp to thermostat
-  float DHWTemp = 0; //provides measured dhw water temp to to thermostat
+  float dhwTemp = 0; //provides measured dhw water temp to to thermostat
   bool flameState = false; //provides current flame state to thermostat
   bool chState = false; //provides if boiler is in centrale heating state
   bool dhwState = false; //provides if boiler is in dhw heating state
