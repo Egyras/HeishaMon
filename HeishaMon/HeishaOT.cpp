@@ -420,11 +420,6 @@ void openthermTableOutput(struct webserver_t *client) {
   dtostrf( heishaOTData.outletTemp , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
-  //boilerTemp
-  webserver_send_content_P(client, PSTR("<tr><td>boilerTemp</td><td>W</td><td>"), 37);
-  dtostrf( heishaOTData.boilerTemp , 0, 2, str);
-  webserver_send_content(client, str, strlen(str));
-  webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //DHWTemp
   webserver_send_content_P(client, PSTR("<tr><td>DHWTemp</td><td>W</td><td>"), 34);
   dtostrf( heishaOTData.DHWTemp , 0, 2, str);
