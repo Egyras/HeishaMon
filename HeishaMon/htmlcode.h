@@ -128,7 +128,7 @@ static const char settingsJS[] PROGMEM =
   "<script type=\"text/javascript\">"
   "    function ShowHideListenOnlyTable(listenonlyEnabled) {"
   "        var listenonlysettings = document.getElementById(\"listenonlysettings\");"
-  "        listenonlysettings.style.display = listenonlyEnabled.checked ? \"table\" : \"none\";"
+  "        listenonlysettings.style.display = listenonlyEnabled.checked ? \"none\" : \"none\";"
   "    }"
   "    function ShowHideDallasTable(dallasEnabled) {"
   "        var dallassettings = document.getElementById(\"dallassettings\");"
