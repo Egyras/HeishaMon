@@ -703,7 +703,6 @@ static const char settingsForm2[] PROGMEM =
   "          <input type=\"number\" name=\"updateAllTime\" value=\"\"> seconds"
   "        </td>"
   "      </tr>"
-  "      </tr>"
   "      <tr>"
   "        <td style=\"text-align:right; width: 50%\">"
   "          Debug log to MQTT topic from start:</td>"
