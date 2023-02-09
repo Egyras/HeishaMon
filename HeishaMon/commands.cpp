@@ -663,6 +663,30 @@ unsigned int set_buffer_delta(char *msg, unsigned char *cmd, char *log_msg) {
   return sizeof(panasonicSendQuery);
 }
 
+unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_buffer_string(msg);
+
+  byte set_buffer = 4;
+  if ( set_buffer_string.toInt() == 1 ) {
+    set_buffer = 8;
+  }
+
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set external pad heater to %d"), ((set_buffer / 4) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[24] = set_buffer;
+  }
+
+  return sizeof(panasonicSendQuery);
+ 
+}
+
 //start of optional pcb commands
 unsigned int set_byte_6(int val, int base, int bit, char *log_msg, const char *func) {
   unsigned char hex = (optionalPCBQuery[6] & ~(base << bit)) | (val << bit);
