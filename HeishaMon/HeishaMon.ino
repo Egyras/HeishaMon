@@ -20,6 +20,7 @@
 #include "decode.h"
 #include "commands.h"
 #include "rules.h"
+#include "version.h"
 
 DNSServer dnsServer;
 
@@ -108,6 +109,7 @@ bool firstConnectSinceBoot = true; //if this is true there is no first connectio
 
 struct timerqueue_t **timerqueue = NULL;
 int timerqueue_size = 0;
+
 
 /*
     check_wifi will process wifi reconnecting managing
@@ -203,8 +205,10 @@ void mqtt_reconnect()
     if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
     {
       mqttReconnects++;
-
-      mqtt_client.subscribe("panasonic_heat_pump/opentherm/#");
+      if (heishamonSettings.opentherm) {
+        sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_opentherm);
+        mqtt_client.subscribe(topic);
+      }
       sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_commands);
       mqtt_client.subscribe(topic);
       sprintf(topic, "%s/%s", heishamonSettings.mqtt_topic_base, mqtt_send_raw_value_topic);
@@ -224,6 +228,14 @@ void mqtt_reconnect()
         if (heishamonSettings.use_1wire) resetlastalldatatime_dallas(); //resend all 1wire values to mqtt
         resetlastalldatatime(); //resend all heatpump values to mqtt
       }
+      //use this to receive valid heishamon raw data from other heishamon to debug this OT code
+#define OTDEBUG
+#ifdef OTDEBUG
+      if ( heishamonSettings.listenonly && heishamonSettings.listenmqtt ) {
+        sprintf(topic, "%s/raw/data", heishamonSettings.mqtt_topic_listen);
+        mqtt_client.subscribe(topic); //subscribe to raw heatpump data over MQTT
+      }
+#endif
     }
   }
 }
@@ -285,6 +297,14 @@ void logHex(char *hex, byte hex_len) {
     sprintf_P(log_msg, PSTR("data: %s"), buffer ); log_message(log_msg);
   }
 }
+
+void mqttPublish(char* topic, char* subtopic, char* value) {
+  char mqtt_topic[256];
+  sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), heishamonSettings.mqtt_topic_base, topic, subtopic);
+  mqtt_client.publish(mqtt_topic, value, MQTT_RETAIN_VALUES);
+}
+
+
 
 byte calcChecksum(byte* command, int length) {
   byte chk = 0;
@@ -438,9 +458,9 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       log_message(log_msg);
       send_command(rawcommand, length);
       free(rawcommand);
-    } else if (strncmp(topic_command, mqtt_topic_s0, 2) == 0)  // this is a s0 topic, check for watthour topic and restore it
+    } else if (strncmp(topic_command, mqtt_topic_s0, strlen(mqtt_topic_s0)) == 0)  // this is a s0 topic, check for watthour topic and restore it
     {
-      char* topic_s0_watthour_port = topic_command + 17; //strip the first 17 "s0/WatthourTotal/" from the topic to get the s0 port
+      char* topic_s0_watthour_port = topic_command + strlen(mqtt_topic_s0) + 15; //strip the first 17 "s0/WatthourTotal/" from the topic to get the s0 port
       int s0Port = String(topic_s0_watthour_port).toInt();
       float watthour = String(msg).toFloat();
       restore_s0_Watthour(s0Port, watthour);
@@ -450,17 +470,29 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       if (mqtt_client.unsubscribe(mqtt_topic)) {
         log_message(F("Unsubscribed from S0 watthour restore topic"));
       }
-    } else if (strncmp(topic_command, mqtt_topic_commands, 8) == 0)  // check for optional pcb commands
+    } else if (strncmp(topic_command, mqtt_topic_commands, strlen(mqtt_topic_commands)) == 0)  // check for commands to heishamon
     {
-      char* topic_sendcommand = topic_command + 9; //strip the first 9 "commands/" from the topic to get what we need
+      char* topic_sendcommand = topic_command + strlen(mqtt_topic_commands) + 1; //strip the first 9 "commands/" from the topic to get what we need
       send_heatpump_command(topic_sendcommand, msg, send_command, log_message, heishamonSettings.optionalPCB);
-    } else if (stricmp((char const *)topic, "panasonic_heat_pump/opentherm/Temperature") == 0) {
+    }
+    //use this to receive valid heishamon raw data from other heishamon to debug this OT code
+#ifdef OTDEBUG
+    else if (strcmp((char*)"panasonic_heat_pump/data", topic) == 0) {  // check for raw heatpump input
+      sprintf_P(log_msg, PSTR("Received raw heatpump data from MQTT"));
+      log_message(log_msg);
+      decode_heatpump_data(msg, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
+      memcpy(actData, msg, DATASIZE);
+#endif
+    } else if (strncmp(topic_command, mqtt_topic_opentherm, strlen(mqtt_topic_opentherm)) == 0)  {
+      char* topic_otcommand = topic_command + strlen(mqtt_topic_opentherm) + 1; //strip the opentherm subtopic from the topic
+      mqttOTCallback(topic_otcommand, msg);
+    } else if (stricmp((char const *)topic_command, "opentherm/Temperature") == 0) {
       char cpy[length + 1];
       memset(&cpy, 0, length + 1);
       strncpy(cpy, (char *)payload, length);
       openTherm[0] = cpy;
       rules_event_cb("temperature");
-    } else if (stricmp((char const *)topic, "panasonic_heat_pump/opentherm/Setpoint") == 0) {
+    } else if (stricmp((char const *)topic_command, "opentherm/Setpoint") == 0) {
       char cpy[length + 1];
       memset(&cpy, 0, length + 1);
       strncpy(cpy, (char *)payload, length);
@@ -591,6 +623,8 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
                 client->route = 11;
               } else if (strcmp_P((char *)args->name, PSTR("s0")) == 0) {
                 client->route = 12;
+              } else if (strcmp_P((char *)args->name, PSTR("opentherm")) == 0) {
+                client->route = 13;
               }
             } break;
           case 100: {
@@ -712,11 +746,12 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
             } break;
           case 10:
           case 11:
-          case 12: {
+          case 12:
+          case 13: {
               return handleTableRefresh(client, actData);
             } break;
           case 20: {
-              return handleJsonOutput(client, actData);
+              return handleJsonOutput(client, actData, &heishamonSettings);
             } break;
           case 30: {
               return handleReboot(client);
@@ -745,8 +780,9 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
             } break;
           case 110: {
               int ret = saveSettings(client, &heishamonSettings);
-              if (heishamonSettings.listenonly) {
+              if ((!heishamonSettings.opentherm) && (heishamonSettings.listenonly)) {
                 //make sure we disable TX to heatpump-RX using the mosfet so this line is floating and will not disturb cz-taw1
+                //does not work for opentherm version currently
                 digitalWrite(5, LOW);
               } else {
                 digitalWrite(5, HIGH);
@@ -909,10 +945,11 @@ void setupSerial() {
 }
 
 void setupSerial1() {
-  if (heishamonSettings.logSerial1) {
+  if (heishamonSettings.logSerial1) { //settings are not loaded yet, this is the startup default
     //debug line on serial1 (D4, GPIO2)
     Serial1.begin(115200);
-    Serial1.println(F("Starting debugging"));
+    Serial1.print(F("Starting debugging, version: "));
+    Serial1.println(heishamon_version);
   }
   else {
     pinMode(2, FUNCTION_0); //set it as gpio
@@ -928,7 +965,7 @@ void switchSerial() {
   Serial.flush();
   //swap to gpio13 (D7) and gpio15 (D8)
   Serial.swap();
-  //turn on GPIO's on tx/rx for later use
+  //turn on GPIO's on tx/rx for opentherm part
   pinMode(1, FUNCTION_3);
   pinMode(3, FUNCTION_3);
 
@@ -1056,6 +1093,13 @@ void setup() {
   dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
   dnsServer.start(DNS_PORT, "*", apIP);
 
+  //OT begin must be after serial setup
+  if (heishamonSettings.opentherm) {
+    //always enable mosfets if opentherm is used
+    digitalWrite(5, HIGH);
+    HeishaOTSetup();
+  }
+
   rst_info *resetInfo = ESP.getResetInfoPtr();
   Serial1.printf(PSTR("Reset reason: %d, exception cause: %d\n"), resetInfo->reason, resetInfo->exccause);
 
@@ -1075,6 +1119,7 @@ void setup() {
 void send_initial_query() {
   log_message(F("Requesting initial start query"));
   send_command(initialQuery, INITIALQUERYSIZE);
+
 }
 
 void send_panasonic_query() {
@@ -1115,6 +1160,10 @@ void loop() {
   ArduinoOTA.handle();
 
   mqtt_client.loop();
+
+  if (heishamonSettings.opentherm) {
+    HeishaOTLoop(actData, mqtt_client, heishamonSettings.mqtt_topic_base);
+  }
 
   read_panasonic_data();
 

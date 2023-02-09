@@ -597,7 +597,14 @@ int8_t http_parse_request(struct webserver_t *client, uint8_t **buf, uint16_t *l
       }
     }
     if(client->substep == 4) {
-      unsigned char *ptr = (unsigned char *)memchr(client->buffer, ':', client->ptr);
+	  //look if end exists in buffer
+	  unsigned char *ptrEnd = strnstr(client->buffer, "\r\n\r\n", client->ptr);
+	  uint16_t posEnd = client->ptr;
+	  if (ptrEnd != NULL) {
+		  posEnd = (ptrEnd-client->buffer);
+	  }
+	  //don't search for more args past this end
+	  unsigned char *ptr = (unsigned char *)memchr(client->buffer, ':', posEnd);
 
       while(ptr != NULL) {
         struct arguments_t args;
@@ -692,7 +699,7 @@ int8_t http_parse_request(struct webserver_t *client, uint8_t **buf, uint16_t *l
           client->buffer[x] = ':';
           break;
         }
-        ptr = (unsigned char *)memchr(client->buffer, ':', client->ptr);
+        ptr = (unsigned char *)memchr(client->buffer, ':', posEnd);
       }
 
       if(client->ptr >= 2 && memcmp_P(client->buffer, PSTR("\r\n"), 2) == 0) {
@@ -761,6 +768,7 @@ char *strnstr(const char *haystack, const char *needle, size_t len) {
   return NULL;
 }
 
+
 int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, uint16_t len) {
   uint16_t hasread = MIN(WEBSERVER_BUFFER_SIZE-client->ptr, len);
   uint16_t rpos = 0, loop = 1;
@@ -816,6 +824,10 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
                   return 0;
                 } else {
                   // Error, content length does not match end boundary
+				  char log_msg[256];
+				  sprintf_P(log_msg, "Too large read! Readlen: %d, Totallen: %d", client->readlen, client->totallen);
+				  log_message(log_msg);
+				  return -1;
                 }
               } else {
                 loop = 0;
@@ -988,25 +1000,26 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
               return -1; /*LCOV_EXCL_LINE*/
             }
 
-            struct arguments_t args;
-            client->buffer[vlen] = 0;
+			if (pos != (vlen+1)) { //check if separator was already at begin buffer, so nothing to do here
+				struct arguments_t args;
+				client->buffer[vlen] = 0;
 
-            args.name = &client->buffer[0];
-            args.value = &client->buffer[vlen+1];
-            args.len = pos-(vlen+1);
+				args.name = &client->buffer[0];
+				args.value = &client->buffer[vlen+1];
+				args.len = pos-(vlen+1);
 
-            if(client->callback != NULL) {
-              uint8_t ret = client->callback(client, &args);
-              if(ret == -1) {
-                return -1;
-              }
-            }
+				if(client->callback != NULL) {
+					uint8_t ret = client->callback(client, &args);
+					if(ret == -1) {
+						return -1;
+					}
+				}
 
-            client->buffer[vlen] = '=';
-
-            memmove(&client->buffer[vlen+1], &client->buffer[pos], client->ptr-(pos-(vlen+1)));
-            client->readlen += (pos-(vlen+1));
-            client->ptr -= (pos-(vlen+1));
+				client->buffer[vlen] = '=';
+				memmove(&client->buffer[vlen+1], &client->buffer[pos], client->ptr-pos);
+				client->readlen += (pos-(vlen+1));
+				client->ptr -= (pos-(vlen+1));
+			}
             client->substep = 0;
           } else if(client->ptr == WEBSERVER_BUFFER_SIZE) {
             uint8_t ending = 0;
@@ -2045,12 +2058,12 @@ uint8_t webserver_sync_receive(struct webserver_t *client, uint8_t *rbuffer, uin
           if(http_parse_body(client, (char *)rbuffer, size) == -1) {
             client->step = WEBSERVER_CLIENT_CLOSE;
           }
-        } else if(client->reqtype == 1) {
+         } else if(client->reqtype == 1) {
           client->substep = 0;
           if(http_parse_multipart_body(client, (unsigned char *)rbuffer, size) == -1) {
             client->step = WEBSERVER_CLIENT_CLOSE;
           }
-        }
+         }
 
         if(client->readlen == client->totallen) {
           client->step = WEBSERVER_CLIENT_WRITE;
@@ -2079,13 +2092,13 @@ uint8_t webserver_sync_receive(struct webserver_t *client, uint8_t *rbuffer, uin
         client->step = WEBSERVER_CLIENT_CLOSE;
       }
     }
-    if((client->readlen+2000) > client->totallen) {
-        char log_msg[256];
-        sprintf_P(log_msg, "Readlen: %d, Totallen: %d", client->readlen, client->totallen);
-		log_message(log_msg);
-    }
     if(client->readlen == client->totallen) {
       client->step = WEBSERVER_CLIENT_WRITE;
+    }
+    if((client->readlen + 2000) > client->totallen) {
+        char log_msg[256];
+        sprintf_P(log_msg, "Reaching end of read. Readlen: %d, Totallen: %d", client->readlen, client->totallen);
+		log_message(log_msg);
     }
   }
   return 0;

@@ -9,11 +9,13 @@
 #include "src/common/webserver.h"
 #include "dallas.h"
 #include "s0.h"
+#include "HeishaOT.h"
 #include "gpio.h"
 
 #define HEATPUMP_VALUE_LEN    16
 
 void log_message(char* string);
+
 
 static IPAddress apIP(192, 168, 4, 1);
 
@@ -36,15 +38,18 @@ struct settingsStruct {
   char mqtt_username[64];
   char mqtt_password[64];
   char mqtt_topic_base[128] = "panasonic_heat_pump";
+  char mqtt_topic_listen[128] = "master_panasonic_heat_pump";
   char ntp_servers[254] = "pool.ntp.org";
 
   bool listenonly = false; //listen only so heishamon can be installed parallel to cz-taw1, set commands will not work though
+  bool listenmqtt = false; //do we get heatpump data from another heishamon over mqtt?
   bool optionalPCB = false; //do we emulate an optional PCB?
   bool use_1wire = false; //1wire enabled?
   bool use_s0 = false; //s0 enabled?
   bool logMqtt = false; //log to mqtt from start
   bool logHexdump = false; //log hexdump from start
   bool logSerial1 = true; //log to serial1 (gpio2) from start
+  bool opentherm = true; //opentherm enable flag, current default true for opentherm build
 
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
   gpioSettingsStruct gpioSettings;
@@ -69,7 +74,7 @@ int8_t webserver_cb(struct webserver_t *client, void *data);
 void getWifiScanResults(int numSsid);
 int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings);
 int handleTableRefresh(struct webserver_t *client, char* actData);
-int handleJsonOutput(struct webserver_t *client, char* actData);
+int handleJsonOutput(struct webserver_t *client, char* actData, settingsStruct *heishamonSettings);
 int handleFactoryReset(struct webserver_t *client);
 int handleReboot(struct webserver_t *client);
 int handleDebug(struct webserver_t *client, char *hex, byte hex_len);
