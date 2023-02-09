@@ -31,3 +31,4 @@ void HeishaOTSetup();
 void HeishaOTLoop(char *actDat, PubSubClient &mqtt_client, char* mqtt_topic_base);
 void mqttOTCallback(char* topic, char* value);
 void openthermTableOutput(struct webserver_t *client);
+void openthermJsonOutput(struct webserver_t *client);

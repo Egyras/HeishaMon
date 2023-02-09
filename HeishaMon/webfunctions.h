@@ -74,7 +74,7 @@ int8_t webserver_cb(struct webserver_t *client, void *data);
 void getWifiScanResults(int numSsid);
 int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings);
 int handleTableRefresh(struct webserver_t *client, char* actData);
-int handleJsonOutput(struct webserver_t *client, char* actData);
+int handleJsonOutput(struct webserver_t *client, char* actData, settingsStruct *heishamonSettings);
 int handleFactoryReset(struct webserver_t *client);
 int handleReboot(struct webserver_t *client);
 int handleDebug(struct webserver_t *client, char *hex, byte hex_len);

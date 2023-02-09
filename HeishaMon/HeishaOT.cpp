@@ -400,7 +400,7 @@ void openthermTableOutput(struct webserver_t *client) {
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
   //dhwSetpoint
-  webserver_send_content_P(client, PSTR("<tr><td>dhwSetpoint</td><td>RW</td><td>"), 40);
+  webserver_send_content_P(client, PSTR("<tr><td>dhwSetpoint</td><td>RW</td><td>"), 39);
   dtostrf( heishaOTData.dhwSetpoint , 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
@@ -441,4 +441,70 @@ void openthermTableOutput(struct webserver_t *client) {
   webserver_send_content_P(client, PSTR("<tr><td>dhwState</td><td>W</td><td>"), 35);
   heishaOTData.dhwState ? webserver_send_content_P(client, PSTR("on"), 2) : webserver_send_content_P(client, PSTR("off"), 3);
   webserver_send_content_P(client, PSTR("</td></tr>"), 10);
+}
+
+void openthermJsonOutput(struct webserver_t *client) {
+  webserver_send_content_P(client, PSTR("{"), 1);
+
+  char str[64];
+
+  //roomtemp
+  webserver_send_content_P(client, PSTR("\"roomTemp\":{\"type\": \"R\",\"value\":"), 32);
+  dtostrf( heishaOTData.roomTemp, 0, 2, str);
+  webserver_send_content(client, str, strlen(str));
+  webserver_send_content_P(client, PSTR("},"), 2);
+ //roomtempset
+  webserver_send_content_P(client, PSTR("\"roomTempSet\":{\"type\": \"R\",\"value\":"), 35);
+  dtostrf( heishaOTData.roomTempSet , 0, 2, str);
+  webserver_send_content(client, str, strlen(str));
+  webserver_send_content_P(client, PSTR("},"), 2);
+  //chSetpoint
+  webserver_send_content_P(client, PSTR("\"chSetpoint\":{\"type\": \"R\",\"value\":"), 34);
+  dtostrf( heishaOTData.chSetpoint , 0, 2, str);
+  webserver_send_content(client, str, strlen(str));
+  webserver_send_content_P(client, PSTR("},"), 2);
+  //dhwSetpoint
+  webserver_send_content_P(client, PSTR("\"dhwSetpoint\":{\"type\": \"RW\",\"value\":"), 36);
+  dtostrf( heishaOTData.dhwSetpoint , 0, 2, str);
+  webserver_send_content(client, str, strlen(str));
+  webserver_send_content_P(client, PSTR("},"), 2);
+  //maxTSet
+  webserver_send_content_P(client, PSTR("\"maxTSet\":{\"type\": \"RW\",\"value\":"), 32);
+  dtostrf( heishaOTData.maxTSet , 0, 2, str);
+  webserver_send_content(client, str, strlen(str));
+  webserver_send_content_P(client, PSTR("},"), 2);
+  //outsideTemp
+  webserver_send_content_P(client, PSTR("\"outsideTemp\":{\"type\": \"W\",\"value\":"), 35);
+  dtostrf( heishaOTData.outsideTemp , 0, 2, str);
+  webserver_send_content(client, str, strlen(str));
+  webserver_send_content_P(client, PSTR("},"), 2);
+  //inletTemp
+  webserver_send_content_P(client, PSTR("\"inletTemp\":{\"type\": \"W\",\"value\":"), 33);
+  dtostrf( heishaOTData.inletTemp , 0, 2, str);
+  webserver_send_content(client, str, strlen(str));
+  webserver_send_content_P(client, PSTR("},"), 2);
+  //outletTemp
+  webserver_send_content_P(client, PSTR("\"outletTemp\":{\"type\": \"W\",\"value\":"), 34);
+  dtostrf( heishaOTData.outletTemp , 0, 2, str);
+  webserver_send_content(client, str, strlen(str));
+  webserver_send_content_P(client, PSTR("},"), 2);
+  //dhwTemp
+  webserver_send_content_P(client, PSTR("\"dhwTemp\":{\"type\": \"W\",\"value\":"), 31);
+  dtostrf( heishaOTData.dhwTemp , 0, 2, str);
+  webserver_send_content(client, str, strlen(str));
+  webserver_send_content_P(client, PSTR("},"), 2);
+  //flameState
+  webserver_send_content_P(client, PSTR("\"flameState\":{\"type\": \"W\",\"value\":"), 34);
+  heishaOTData.flameState ? webserver_send_content_P(client, PSTR("true"), 4) : webserver_send_content_P(client, PSTR("false"), 5);
+  webserver_send_content_P(client, PSTR("},"), 2);
+  //chState
+  webserver_send_content_P(client, PSTR("\"chState\":{\"type\": \"W\",\"value\":"), 31);
+  heishaOTData.chState ? webserver_send_content_P(client, PSTR("true"), 4) : webserver_send_content_P(client, PSTR("false"), 5);
+  webserver_send_content_P(client, PSTR("},"), 2);
+  //dhwState
+  webserver_send_content_P(client, PSTR("\"dhwState\":{\"type\": \"W\",\"value\":"), 32);
+  heishaOTData.dhwState ? webserver_send_content_P(client, PSTR("true"), 4) : webserver_send_content_P(client, PSTR("false"), 5);
+  webserver_send_content_P(client, PSTR("}"), 1);
+  
+  webserver_send_content_P(client, PSTR("}"), 1);
 }

@@ -741,7 +741,7 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         webserver_send_content_P(client, PSTR(",\"optionalPCB\":"), 15);
         itoa(heishamonSettings->optionalPCB, str, 10);
         webserver_send_content(client, str, strlen(str));
-        
+
         webserver_send_content_P(client, PSTR(",\"opentherm\":"), 13);
         itoa(heishamonSettings->opentherm, str, 10);
         webserver_send_content(client, str, strlen(str));
@@ -1017,7 +1017,7 @@ int handleTableRefresh(struct webserver_t *client, char* actData) {
     if (client->content == 0) {
       webserver_send(client, 200, (char *)"text/html", 0);
       openthermTableOutput(client);
-    }  
+    }
   } else if (client->route == 10) {
     if (client->content == 0) {
       webserver_send(client, 200, (char *)"text/html", 0);
@@ -1065,7 +1065,7 @@ int handleTableRefresh(struct webserver_t *client, char* actData) {
   return 0;
 }
 
-int handleJsonOutput(struct webserver_t *client, char* actData) {
+int handleJsonOutput(struct webserver_t *client, char* actData, settingsStruct *heishamonSettings) {
   if (client->content == 0) {
     webserver_send(client, 200, (char *)"application/json", 0);
     webserver_send_content_P(client, PSTR("{\"heatpump\":["), 13);
@@ -1118,14 +1118,19 @@ int handleJsonOutput(struct webserver_t *client, char* actData) {
       client->content = NUMBER_OF_TOPICS;
     }
   } else if (client->content == NUMBER_OF_TOPICS + 1) {
-    webserver_send_content_P(client, PSTR("],\"1wire\":"), 10);
-
-    dallasJsonOutput(client);
-  } else if (client->content == NUMBER_OF_TOPICS + 2) {
-    webserver_send_content_P(client, PSTR(",\"s0\":"), 6);
-
-    s0JsonOutput(client);
-
+    webserver_send_content_P(client, PSTR("]"), 1);
+    if (heishamonSettings->use_1wire) {
+      webserver_send_content_P(client, PSTR(",\"1wire\":"), 9);
+      dallasJsonOutput(client);
+    }
+    if (heishamonSettings->use_s0 ) {
+      webserver_send_content_P(client, PSTR(",\"s0\":"), 6);
+      s0JsonOutput(client);
+    }
+    if (heishamonSettings->opentherm) {
+      webserver_send_content_P(client, PSTR(",\"opentherm\":"), 13);
+      openthermJsonOutput(client);
+    }
     webserver_send_content_P(client, PSTR("}"), 1);
   }
   return 0;
