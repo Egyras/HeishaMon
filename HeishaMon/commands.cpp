@@ -674,7 +674,7 @@ unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg) {
 
     {
     char tmp[256] = { 0 };
-    snprintf_P(tmp, 255, PSTR("set external pad heater to %d"), ((set_buffer / 4) - 1) );
+    snprintf_P(tmp, 255, PSTR("set buffer enabled to %d"), ((set_buffer / 4) - 1) );
     memcpy(log_msg, tmp, sizeof(tmp));
   }
 
