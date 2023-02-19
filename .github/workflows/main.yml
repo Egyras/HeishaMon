@@ -12,6 +12,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      
+      - name: Update version.h
+        if: github.ref != 'refs/heads/main' #do not change version in main branch run
+        run: cd HeishaMon && echo "static const char *heishamon_version = \"Alpha-$(git rev-parse --short HEAD)\";" > version.h && cat version.h
+        shell: bash
 
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1.1.1
