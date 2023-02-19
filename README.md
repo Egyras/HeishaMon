@@ -162,7 +162,7 @@ The smallest integer value greater than or equal to the input float.
 Sets a timer to trigger in X seconds. The first parameter is the timer number and the second parameters the number of seconds before it fires. A timer only fires once so it has to be re-set for recurring events. When a timer triggers it will can the timer event as described above.
 
 ### Conditions
-The only supported conditions are `if` and `else`, `elseif` isn't supported:
+The only supported conditions are `if`, `else`, and `elseif`:
 
 ```
 if [condition] then
@@ -171,6 +171,22 @@ else
   if [condition] then
     [...]
   end
+end
+```
+
+```
+if [condition] then
+  [...]
+elseif [condition] then
+  if [condition] then
+    [...]
+  else
+    [...]
+  end
+elseif [condition] then
+  [...]
+else
+  [...]
 end
 ```
 
