@@ -16,7 +16,7 @@ Assuming that bytes from #129 to #138 are unique for each model of Aquarea heat 
 | 9 | C2 D3 0B 33 65 B2 D3 0B 94 65 | Monoblock | WH-MDC05J3E5 | Monoblock | 5 | 1ph | HP |
 |10 | E2 CF 0B 15 33 42 D1 0B 18 33 | Monoblock | WH-MDC09H3E5 | Monoblock | 9 | 1ph | HP |
 |11 | E2 CF 0B 41 34 82 D1 0B 31 35 | Monoblock | WH-MXC09H3E5 | Monoblock | 9 | 1ph | T-CAP |
-|12 | 62 D2 0B 45 54 42 D2 0B 47 55 | WH-ADC0309J3E5 | WH-UD09JE5 | KIT-ADC09JE5 | 9 | 1ph | HP - All-In-One | 
+|12 | 62 D2 0B 45 54 42 D2 0B 47 55 | WH-ADC0309J3E5 | WH-UD09JE5 | KIT-ADC09JE5 | 9 | 1ph | HP - All-In-One |
 |13 | E2 CF 0C 74 09 12 D0 0D 95 05 | WH-ADC0916H9E8 | WH-UX12HE8 | KIT-AXC12HE8 | 12 | 3ph | T-CAP - All-In-One |
 |14 | E2 CF 0B 82 05 12 D0 0C 91 05 | WH-SQC09H3E8 | WH-UQ09HE8 | KIT-WQC09H3E8 | 9 | 3ph | T-CAP - Super Quiet |
 |15 | E2 CF 0C 55 14 12 D0 0B 15 08 | WH-SDC09H3E5 | WH-UD09HE5 | KIT-WC09H3E5 | 9 | 1 ph | HP |
@@ -28,11 +28,11 @@ Assuming that bytes from #129 to #138 are unique for each model of Aquarea heat 
 |21 | C2 D3 0B 35 65 B2 D3 0B 96 65 | Monoblock | WH-MDC09J3E5 | Monoblock | 9 | 1ph | HP |
 |22 | 62 D2 0B 41 54 32 D2 0C 45 55 | WH-SDC0305J3E5 | WH-UD05JE5 | KIT-WC05J3E5 | 5 | 1ph | HP |
 |23 | 32 D4 0B 87 84 73 90 0C 84 84 | Monoblock | WH-MXC09J3E8 | Monoblock | 9 | 3ph | T-CAP |
-|24 | 32 D4 0B 88 84 73 90 0C 85 84 | MonoBlock | WH-MXC12J9E8 | Monoblock | 12 | 3ph | T-CAP |
+|24 | 32 D4 0B 88 84 73 90 0C 85 84 | Monoblock | WH-MXC12J9E8 | Monoblock | 12 | 3ph | T-CAP |
 |25 | E2 CF 0B 75 09 12 D0 0C 06 11 | WH-ADC1216H6E5 | WH-UD12HE5 | KIT-ADC12HE5 | 12 | 1ph | T-CAP |
 |26 | 42 D4 0B 83 71 42 D2 0C 46 55 | WH-ADC0309J3E5C | WH-UD07JE5 | KIT-ADC07JE5C | 7 | 1ph | HP - All-In-One Compact |
 |27 | C2 D3 0C 34 65 B2 D3 0B 95 65 | Monoblock | WH-MDC07J3E5 | Monoblock | 7 | 1ph | HP (new version?) |
-|28 | C2 D3 0C 33 65 B2 D3 0B 94 65 | Monoblcok | WH-MDC05J3E5 | Monoblock | 5 | 1ph | HP (new version? |
+|28 | C2 D3 0C 33 65 B2 D3 0B 94 65 | Monoblock | WH-MDC05J3E5 | Monoblock | 5 | 1ph | HP (new version? |
 
 All bytes are used for Heat Pump model identification in the code.
 
