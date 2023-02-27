@@ -53,6 +53,7 @@ unsigned long lastWifiRetryTimer = 0;
 
 unsigned long lastRunTime = 0;
 unsigned long lastOptionalPCBRunTime = 0;
+unsigned long lastOptionalPCBSave = 0;
 
 unsigned long sendCommandReadTime = 0; //set to millis value during send, allow to wait millis for answer
 unsigned long goodreads = 0;
@@ -1179,6 +1180,14 @@ void loop() {
   if ((!sending) && (!heishamonSettings.listenonly) && (heishamonSettings.optionalPCB) && ((unsigned long)(millis() - lastOptionalPCBRunTime) > OPTIONALPCBQUERYTIME) ) {
     lastOptionalPCBRunTime = millis();
     send_optionalpcb_query();
+    if ((unsigned long)(millis() - lastOptionalPCBSave) > (1000 * OPTIONALPCBSAVETIME)) {  // only save each 5 minutes
+      lastOptionalPCBSave = millis();
+      if (saveOptionalPCB(optionalPCBQuery, OPTIONALPCBQUERYSIZE)) {
+        log_message((char*)"Succesfully saved optional PCB data to flash!");
+      } else {
+        log_message((char*)"Failed to save optional PCB data to flash!");
+      }
+    }
   }
 
   // run the data query only each WAITTIME
