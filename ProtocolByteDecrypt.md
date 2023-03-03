@@ -119,9 +119,9 @@
 |  TOP44 | 113 | 21 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
 |  TOP44 | 114 | 53 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 |  TOP | 115 | 15 |   | ? |
-|  TOP | 116 | 5a |   | ? |
+|  TOP | 116 | 5a | 1st & 2nd bit Zone 2 Pump ( b01 - OFF, b10 - ON ) ,  3rd & 4th bit = Zone 1 Pump ( b01 - OFF, b10 - ON ), 5th & 6th bit = 2way Valve ( b01 - Cooling, b10 - Heating) , 7th & 8th bit = 3way Valve ( b01 - Room, b10 - Tank)  | ? |
 |  TOP69 | 117 | 05 | Sterilization on/off (bit5and6)  , Z2 active (bit7) ,Z1 active (bit8)| Sterilization status Zone active information (look byte #6) |
-|  TOP | 118 | 12 |   | Believed to provide fractional info for TOP5 and TOP6 values |
+|  TOP | 118 | 12 |   | fractional info for TOP5 and TOP6 values |
 |  TOP | 119 | 12 |   | ? |
 |  TOP | 120 | 19 |   | Possible 3e/4e bit for backup heater custom menu disable/enable |
 |  TOP | 121 | 00 |   | 0 byte |
