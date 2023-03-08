@@ -35,6 +35,7 @@ Assuming that bytes from #129 to #138 are unique for each model of Aquarea heat 
 |28 | C2 D3 0C 33 65 B2 D3 0B 94 65 | Monoblcok | WH-MDC05J3E5 | Monoblock | 5 | 1ph | HP (new version? |
 |29 | E2 CF 0B 83 05 12 D0 0D 92 05 | WH-UQ12HE8 | WH-SQC12H9E8 | KIT-WQC12H9E8 | 12 | 3ph | T-CAP - Super Quiet |
 |30 | E2 CF 0C 78 09 12 D0 0B 06 11 | WH-SXC12H6E5 | WH-UX12HE5 | KIT-WXC12H6E5 | 12 | 3ph | T-CAP | 
+|31 | C2 D3 0C 35 65 B2 D3 0B 96 65 | Monoblock | WH-MDC09J3E5 | Monoblock | 9 | 1ph | HP (new version?) |
 All bytes are used for Heat Pump model identification in the code.
 
 Note: These are the heat pump types that users have verified and reported back the model. HeishaMon should work with all H and J generation Aquarea heat pumps.
