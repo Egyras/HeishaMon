@@ -541,15 +541,20 @@ static unsigned char *vm_value_get(struct rules_t *obj, uint16_t token) {
   }
   if(node->token[0] == '%') {
     if(stricmp((char *)&node->token[1], "hour") == 0) {
+      time_t now = time(NULL);
+      struct tm *tm_struct = localtime(&now);
+
       memset(&vinteger, 0, sizeof(struct vm_vinteger_t));
       vinteger.type = VINTEGER;
-      vinteger.value = 0;
+      vinteger.value = (int)tm_struct->tm_hour;
       return (unsigned char *)&vinteger;
-    }
-    if(stricmp((char *)&node->token[1], "month") == 0) {
+    } else if(stricmp((char *)&node->token[1], "month") == 0) {
+      time_t now = time(NULL);
+      struct tm *tm_struct = localtime(&now);
+
       memset(&vinteger, 0, sizeof(struct vm_vinteger_t));
       vinteger.type = VINTEGER;
-      vinteger.value = 0;
+      vinteger.value = (int)tm_struct->tm_mon + 1;
       return (unsigned char *)&vinteger;
     }
   }
