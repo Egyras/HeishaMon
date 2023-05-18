@@ -411,5 +411,5 @@ channels:
     label: DHW Current Power Consumption
     description: null
     configuration:
-      stateTopic: panasonic_heat_pump/main/DHW_Energy_Production
+      stateTopic: panasonic_heat_pump/main/DHW_Energy_Consumption
       unit: Watt
