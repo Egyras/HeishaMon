@@ -684,6 +684,27 @@ unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg) {
  
 }
 
+unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_heatingoffoutdoortemp_string(msg);
+
+  byte request_temp = set_heatingoffoutdoortemp_string.toInt() + 128;
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set heating off outdoor temp %d"), request_temp - 128 );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[83] = request_temp;
+  }
+
+  return sizeof(panasonicSendQuery);
+  
+}
+
 //start of optional pcb commands
 unsigned int set_byte_6(int val, int base, int bit, char *log_msg, const char *func) {
   unsigned char hex = (optionalPCBQuery[6] & ~(base << bit)) | (val << bit);

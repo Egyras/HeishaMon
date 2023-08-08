@@ -56,6 +56,7 @@ unsigned int set_alt_external_sensor(char *msg, unsigned char *cmd, char *log_ms
 unsigned int set_external_pad_heater(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_buffer_delta(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_msg);
 
 //optional pcb commands
 unsigned int set_heat_cool_mode(char *msg, char *log_msg);
@@ -125,6 +126,8 @@ const cmdStruct commands[] PROGMEM = {
   { "SetExternalPadHeater", set_external_pad_heater },
   { "SetBufferDelta", set_buffer_delta },
   { "SetBuffer", set_buffer },
+  // set Outdoor Temperature to stop heating 5-35
+  { "SetHeatingOffOutdoorTemp", set_heatingoffoutdoortemp },
 };
 
 struct optCmdStruct{
