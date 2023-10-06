@@ -2,7 +2,6 @@
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 
-#define MQTT_RETAIN_VALUES 1
 const uint16_t MAX_TOPIC_LEN = 64;
 const uint16_t DECODE_MAX_BUFFER_SIZE = 255;
 
@@ -145,7 +144,7 @@ typedef struct
     };
 } decode_result_t;
 
-void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result);
+void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result, bool get_unfiltered_value = true);
 
 const char *get_topic_name(heatpump_topic_t topic);
 
@@ -157,3 +156,9 @@ static void resetlastalldatatime()
 }
 
 void decode_heatpump_data(uint8_t data[DECODE_MAX_BUFFER_SIZE]);
+
+void clear_filters();
+
+void result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_size);
+
+uint16_t get_max_filter_depth();
