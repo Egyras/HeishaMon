@@ -340,6 +340,11 @@ void publish_available_data()
     updatenow = true;
   }
 
+  if (updatenow == false)
+  {
+    return;
+  }
+
   for (uint8_t topic = 0; topic < HEATPUMP_TOPIC_Last; topic++)
   {
     decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)actData, &result, false);
@@ -398,8 +403,14 @@ bool isValidReceiveChecksum()
 
 bool readSerial()
 {
+  static unsigned long last_bad_header = 0;
+  if (millis() - last_bad_header < 1000)
+  {
+    return false;
+  }
+
   int len = 0;
-  while ((Serial.available()) && (len < DECODE_MAX_BUFFER_SIZE))
+  while ((Serial.available()) && ((serial_read_buffer_length + len) < DECODE_MAX_BUFFER_SIZE))
   {
     serial_read_buffer[serial_read_buffer_length + len] = Serial.read(); // read available data and place it after the last received data
     len++;
@@ -410,6 +421,7 @@ bool readSerial()
         logHex(serial_read_buffer, len);
       badheaderread++;
       serial_read_buffer_length = 0;
+      last_bad_header = millis();
       return false; // return so this while loop does not loop forever if there happens to be a continous invalid data stream
     }
   }
@@ -1478,6 +1490,9 @@ void loop()
   mqtt_client.loop();
 
   read_panasonic_data();
+
+  if (WiFi.isConnected() && mqtt_client.connected())
+    publish_available_data();
 
   if ((!sending) && (cmdnrel > 0))
   { // check if there is a send command in the buffer

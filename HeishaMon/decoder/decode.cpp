@@ -126,14 +126,14 @@ static topic_t topic_configurations[] = {
     .name = "Operations_Hours",                // TOP11
     .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_HOURS],            // TOP11
     .byte_offset =   182,      //TOP11
-    .decoder_function = unknown,             //TOP11
+    .decoder_function = getUint16Minus1,             //TOP11
     .filter_context = { 0 }
   },
   {
     .name = "Operations_Counter",              // TOP12
     .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_COUNTER],          // TOP12
     .byte_offset =   179,      //TOP12
-    .decoder_function = unknown,             //TOP12
+    .decoder_function = getUint16Minus1,             //TOP12
     .filter_context = { 0 }
   },
   {
@@ -679,14 +679,14 @@ static topic_t topic_configurations[] = {
     .name = "Room_Heater_Operations_Hours",    // TOP90
     .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_HOURS],            // TOP90
     .byte_offset =   185,      //TOP90
-    .decoder_function = unknown,             //TOP90
+    .decoder_function = getUint16Minus1,             //TOP90
     .filter_context = { 0 }
   },
   {
     .name = "DHW_Heater_Operations_Hours",     // TOP91
     .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_HOURS],            // TOP91
     .byte_offset =   188,      //TOP91
-    .decoder_function = unknown,             //TOP91
+    .decoder_function = getUint16Minus1,             //TOP91
     .filter_context = { 0 }
   },
   {
@@ -939,9 +939,11 @@ static void unknown(uint8_t *input, uint8_t offset, decode_result_t *result)
 
 static void getOpMode(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
-  uint8_t val = 0;
+  int val = 0;
+  const uint8_t mode = input[offset] & 0b1111;
   result->result_type = DECODE_RESULT_INT;
-  switch ((int)(input[offset] & 0b111111))
+
+  switch (mode)
   {
   case 18:
     val = 0;
@@ -971,7 +973,7 @@ static void getOpMode(uint8_t *input, uint8_t offset, decode_result_t *result)
 static void getEnergy(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
-  result->int_value = ((int)*input - 1) * 200;
+  result->int_value = ((int)input[offset] - 1) * 200;
 }
 
 static void getPumpFlow(uint8_t *input, uint8_t offset, decode_result_t *result)
@@ -987,13 +989,13 @@ static void getPumpFlow(uint8_t *input, uint8_t offset, decode_result_t *result)
 static void getFirstByte(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
-  result->int_value = (*input >> 4) - 1;
+  result->int_value = (input[offset] >> 4) - 1;
 }
 
 static void getSecondByte(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
-  result->int_value = (*input & 0b1111) - 1;
+  result->int_value = (input[offset] & 0b1111) - 1;
 }
 
 static void getModel(uint8_t *input, uint8_t offset, decode_result_t *result)
@@ -1130,10 +1132,10 @@ void result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_siz
   switch (result->result_type)
   {
   case DECODE_RESULT_INT:
-    snprintf(buffer, buffer_size, "%d", result->int_value);
+    snprintf(buffer, buffer_size, "%i", result->int_value);
     break;
   case DECODE_RESULT_FLOAT:
-    snprintf(buffer, buffer_size, "%f", result->float_value);
+    snprintf(buffer, buffer_size, "%.5f", result->float_value);
     break;
   case DECODE_RESULT_STRING:
     snprintf(buffer, buffer_size, "%s", result->string_value);
