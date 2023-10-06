@@ -2,6 +2,7 @@
 #include "./private/decoder_private.h"
 #include "commands.h"
 #include "rules.h"
+#include "math.h"
 
 unsigned long lastalldatatime = 0;
 unsigned long lastalloptdatatime = 0;
@@ -1060,12 +1061,12 @@ static void getUint16Minus1(uint8_t *input, uint8_t offset, decode_result_t *res
   result->int_value = word(input[offset + 1], input[offset]) - 1;
 }
 
-void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result)
+void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result, bool get_unfiltered_value)
 {
   topic_t *topic_config = &topic_configurations[topic];
   topic_config->decoder_function(data, topic_config->byte_offset, result);
 
-  if (topic_config->description->filter_type != FILTER_TYPE_NONE)
+  if (get_unfiltered_value == false && topic_config->description->filter_type != FILTER_TYPE_NONE)
   {
     const float filtered_value = filter_get_value(&(topic_config->filter_context), topic_config->description->filter_type);
     switch (result->result_type)
@@ -1114,4 +1115,41 @@ const char *get_description_text(heatpump_topic_t topic, uint8_t description_idx
 uint8_t get_description_cnt(heatpump_topic_t topic)
 {
   return topic_configurations[topic].description->number_of_descriptions;
+}
+
+void clear_filters()
+{
+  for (size_t idx = 0; idx < HEATPUMP_TOPIC_Last; idx++)
+  {
+    filter_clear(&(topic_configurations[idx].filter_context));
+  }
+}
+
+void result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_size)
+{
+  switch (result->result_type)
+  {
+  case DECODE_RESULT_INT:
+    snprintf(buffer, buffer_size, "%d", result->int_value);
+    break;
+  case DECODE_RESULT_FLOAT:
+    snprintf(buffer, buffer_size, "%f", result->float_value);
+    break;
+  case DECODE_RESULT_STRING:
+    snprintf(buffer, buffer_size, "%s", result->string_value);
+    break;
+  }
+}
+
+uint16_t get_max_filter_depth()
+{
+  uint16_t max_depth = 0;
+  for (size_t idx = 0; idx < HEATPUMP_TOPIC_Last; idx++)
+  {
+    if (topic_configurations[idx].description->filter_type != FILTER_TYPE_NONE)
+    {
+      max_depth = _max(max_depth, topic_configurations[idx].filter_context.filter_count);
+    }
+  }
+  return max_depth;
 }
