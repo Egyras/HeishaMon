@@ -8,7 +8,6 @@ pio
 .vscode
 .pioenvs
 .cache
-platformio.ini
 build_output
 firmware.map
 firmware.asm
