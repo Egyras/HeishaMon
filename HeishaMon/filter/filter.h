@@ -13,8 +13,8 @@ typedef enum
 
 typedef struct
 {
-    uint8_t filter_count;
-    uint8_t filter_sum;
+    uint32_t filter_count;
+    double filter_sum;
 } filter_context_t;
 
 void filter_clear(filter_context_t *context);

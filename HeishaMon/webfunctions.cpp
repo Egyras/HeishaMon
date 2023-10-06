@@ -1316,8 +1316,6 @@ int handleTableRefresh(struct webserver_t *client, char *actData)
 
         webserver_send_content_P(client, PSTR("</td><td>"), 9);
 
-        const int description_cnt = get_description_cnt((heatpump_topic_t)topic);
-
         decode_result_t decode_result;
         const bool is_buffer_valid = actData[0] != '\0';
         if (is_buffer_valid)
@@ -1325,11 +1323,18 @@ int handleTableRefresh(struct webserver_t *client, char *actData)
           decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)actData, &decode_result);
         }
 
-        int descriptor_idx = decode_result.result_type == DECODE_RESULT_INT ? decode_result.int_value : 0;
+        int description_cnt = get_description_cnt((heatpump_topic_t)topic);
+        int descriptor_idx = 0;
 
-        if ((descriptor_idx < 0) || (descriptor_idx > description_cnt))
+        // Is multi description type?
+        if (description_cnt > 1)
         {
-          webserver_send_content_P(client, "Unknown", strlen("Unknown"));
+          descriptor_idx = decode_result.result_type == DECODE_RESULT_INT ? decode_result.int_value : 0;
+        }
+
+        if (descriptor_idx < 0 || descriptor_idx >= description_cnt)
+        {
+          webserver_send_content(client, "Unknown", strlen("Unknown"));
         }
         else
         {
@@ -1398,8 +1403,6 @@ int handleJsonOutput(struct webserver_t *client, char *actData)
 
       webserver_send_content_P(client, PSTR("\",\"Description\":\""), 17);
 
-      int description_cnt = get_description_cnt((heatpump_topic_t)topic);
-
       decode_result_t decode_result;
       const bool is_buffer_valid = actData[0] != '\0';
       if (is_buffer_valid)
@@ -1407,9 +1410,16 @@ int handleJsonOutput(struct webserver_t *client, char *actData)
         decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)actData, &decode_result);
       }
 
-      int descriptor_idx = decode_result.result_type == DECODE_RESULT_INT ? decode_result.int_value : 0;
+      int description_cnt = get_description_cnt((heatpump_topic_t)topic);
+      int descriptor_idx = 0;
 
-      if ((descriptor_idx < 0) || (descriptor_idx > description_cnt))
+      // Is multi description type?
+      if (description_cnt > 1)
+      {
+        descriptor_idx = decode_result.result_type == DECODE_RESULT_INT ? decode_result.int_value : 0;
+      }
+
+      if (descriptor_idx < 0 || descriptor_idx >= description_cnt)
       {
         webserver_send_content(client, "Unknown", strlen("Unknown"));
       }
