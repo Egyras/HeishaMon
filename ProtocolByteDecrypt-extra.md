@@ -18,16 +18,16 @@
 | TOP | 13 | 00 | | |
 | TOP | 14 | 30 | Little-endian uint_16 with next byte | Power usage for heat in Watt |
 | TOP | 15 | 03 | Little-endian uint_16 with previous byte | Power usage for heat in Watt |
-| TOP | 16 | 01 | | |
-| TOP | 17 | 00 | | |
-| TOP | 18 | 01 | | |
-| TOP | 19 | 00 | | |
+| TOP | 16 | 01 | Little-endian uint_16 with next byte | Power usage for cool in Watt |
+| TOP | 17 | 00 | Little-endian uint_16 with previous byte | Power usage for cool in Watt |
+| TOP | 18 | 01 | Little-endian uint_16 with next byte | Power usage for DHW in Watt |
+| TOP | 19 | 00 | Little-endian uint_16 with previous byte | Power usage for DHW in Watt |
 | TOP | 20 | 48 | Little-endian uint_16 with next byte | Power generated for heat in Watt  |
 | TOP | 21 | 07 | Little-endian uint_16 with previous byte | Power generated for heat in Watt |
-| TOP | 22 | 01 | | |
-| TOP | 23 | 00 | | |
-| TOP | 24 | 01 | | |
-| TOP | 25 | 00 | | |
+| TOP | 22 | 01 | Little-endian uint_16 with next byte | Power generated for cool in Watt  |
+| TOP | 23 | 00 | Little-endian uint_16 with previous byte | Power generated for cool in Watt |
+| TOP | 24 | 01 | Little-endian uint_16 with next byte | Power generated for DHW in Watt  |
+| TOP | 25 | 00 | Little-endian uint_16 with previous byte | Power generated for DHW in Watt |
 | TOP | 26 | 01 | | |
 | TOP | 27 | 00 | | |
 | TOP | 28 | 00 | | |
