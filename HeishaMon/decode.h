@@ -35,7 +35,7 @@ String getSecondByte(byte input);
 static const char _unknown[] PROGMEM = "unknown";
 
 static const char *Model[] PROGMEM = {
-  "34", //string representation of number of known models (last model number + 1)
+  "38", //string representation of number of known models (last model number + 1)
   "WH-MDC05H3E5", //0
   "WH-MDC07H3E5", //1
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", //2
@@ -70,6 +70,10 @@ static const char *Model[] PROGMEM = {
   "WH-MDC09J3E5", //31
   "WH-MXC09J3E5", //32
   "IDU: WH-ADC1216H6E5C ODU: WH-UD12HE5", //33
+  "IDU:	WH-ADC0509L3E5 ODU: WH-WDG07LE5", //34
+  "IDU:	WH-SXC09H3E8 ODU: WH-UX09HE8", //35
+  "IDU:	WH-ADC0309K3E5AN ODU: WH-UDZ03KE5", //36
+  "IDU:	WH-SDC0309K3E5 ODU: WH-UDZ05KE5", //37
 };
 
 static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { //stores the bytes #129 to #138 of known models in the same order as the const above
@@ -107,6 +111,10 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { 
   0xC2, 0xD3, 0x0C, 0x35, 0x65, 0xB2, 0xD3, 0x0B, 0x96, 0x65, //31
   0x32, 0xD4, 0x0B, 0x99, 0x77, 0x62, 0x90, 0x0B, 0x01, 0x78, //32
   0x42, 0xD4, 0x0B, 0x15, 0x76, 0x12, 0xD0, 0x0B, 0x10, 0x11, //33
+  0xE2, 0xD5, 0x0C, 0x29, 0x99, 0x83, 0x92, 0x0C, 0x28, 0x98, //34
+  0xE2, 0xCF, 0x0D, 0x85, 0x05, 0x12, 0xD0, 0x0E, 0x94, 0x05, //35
+  0xE2, 0xD5, 0x0D, 0x36, 0x99, 0x02, 0xD6, 0x0F, 0x67, 0x95, //36
+  0xE2, 0xD5, 0x0B, 0x08, 0x95, 0x02, 0xD6, 0x0E, 0x66, 0x95, //37
 };
 
 #define NUMBER_OF_TOPICS 115 //last topic number + 1

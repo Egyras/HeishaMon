@@ -365,7 +365,7 @@ bool readSerial()
       log_message(F("Checksum and header received ok!"));
       goodreads++;
 
-      if (data_length == DATASIZE) { //decode the normal data
+      if ((data_length == DATASIZE) && (data[3] == 0x10) ) { //decode the normal data
         decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
         memcpy(actData, data, DATASIZE);
         {
