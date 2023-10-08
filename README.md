@@ -59,7 +59,7 @@ These variables live inside a rule block. When a ruleblock finishes, these varia
 These are the same as listed in the Manage Topics documentation page and as found on the HeishaMon homepage. So the heatpump state value is named `@Heatpump_State`.
 
 - `%`: Datetime variables
-These can be used for date and time based rules. Currently `%hour` (0 - 23) and `%month` (1 - 12) are supported. Both are plain integers. A proper NTP configuration is needed to set the correct system date and time on the HeishaMon.
+These can be used for date and time based rules. Currently `%hour` (0 - 23), `%minute` (0 - 59), `%month` (1 - 12), and `day` (1 - 7)  are supported. All are plain integers. A proper NTP configuration is needed to set the correct system date and time on the HeishaMon.
 
 - `?`: Thermostat parameters
 These variables reflect parameters read from the connected thermostat when using the OpenTherm functionality. When OpenTherm is supported this documentation will be extended with more precise information.

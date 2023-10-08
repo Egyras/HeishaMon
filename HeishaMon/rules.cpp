@@ -136,8 +136,14 @@ static int is_variable(char *text, unsigned int *pos, unsigned int size) {
       if(size == 5 && strnicmp(&text[(*pos)+1], "hour", 4) == 0) {
         return 5;
       }
+      if(size == 5 && strnicmp(&text[(*pos)+1], "minute", 6) == 0) {
+        return 7;
+      }
       if(size == 6 && strnicmp(&text[(*pos)+1], "month", 5) == 0) {
         return 6;
+      }
+      if(size == 6 && strnicmp(&text[(*pos)+1], "day", 3) == 0) {
+        return 4;
       }
     }
 
@@ -548,6 +554,14 @@ static unsigned char *vm_value_get(struct rules_t *obj, uint16_t token) {
       vinteger.type = VINTEGER;
       vinteger.value = (int)tm_struct->tm_hour;
       return (unsigned char *)&vinteger;
+    } else if(stricmp((char *)&node->token[1], "minute") == 0) {
+      time_t now = time(NULL);
+      struct tm *tm_struct = localtime(&now);
+
+      memset(&vinteger, 0, sizeof(struct vm_vinteger_t));
+      vinteger.type = VINTEGER;
+      vinteger.value = (int)tm_struct->tm_min;
+      return (unsigned char *)&vinteger;
     } else if(stricmp((char *)&node->token[1], "month") == 0) {
       time_t now = time(NULL);
       struct tm *tm_struct = localtime(&now);
@@ -555,6 +569,14 @@ static unsigned char *vm_value_get(struct rules_t *obj, uint16_t token) {
       memset(&vinteger, 0, sizeof(struct vm_vinteger_t));
       vinteger.type = VINTEGER;
       vinteger.value = (int)tm_struct->tm_mon + 1;
+      return (unsigned char *)&vinteger;
+    } else if(stricmp((char *)&node->token[1], "day") == 0) {
+      time_t now = time(NULL);
+      struct tm *tm_struct = localtime(&now);
+
+      memset(&vinteger, 0, sizeof(struct vm_vinteger_t));
+      vinteger.type = VINTEGER;
+      vinteger.value = (int)tm_struct->tm_wday+1;
       return (unsigned char *)&vinteger;
     }
   }
