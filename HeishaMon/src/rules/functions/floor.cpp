@@ -33,9 +33,7 @@ int rule_function_floor_callback(struct rules_t *obj, uint16_t argc, uint16_t *a
   *ret = obj->varstack.nrbytes;
 
   unsigned int size = alignedbytes(obj->varstack.nrbytes+sizeof(struct vm_vinteger_t));
-  if((obj->varstack.buffer = (unsigned char *)REALLOC(obj->varstack.buffer, alignedbuffer(size))) == NULL) {
-    OUT_OF_MEMORY /*LCOV_EXCL_LINE*/
-  }
+
   struct vm_vinteger_t *out = (struct vm_vinteger_t *)&obj->varstack.buffer[obj->varstack.nrbytes];
   out->ret = 0;
   out->type = VINTEGER;
@@ -52,7 +50,8 @@ int rule_function_floor_callback(struct rules_t *obj, uint16_t argc, uint16_t *a
   }
 
   obj->varstack.nrbytes = size;
-  obj->varstack.bufsize = alignedbuffer(size);
+  obj->varstack.bufsize = MAX(obj->varstack.bufsize, alignedvarstack(obj->varstack.nrbytes));
+
 
   return 0;
 }
