@@ -1338,7 +1338,7 @@ int handleTableRefresh(struct webserver_t *client, char *actData)
         }
         else
         {
-          webserver_send_content_P(client, get_topic_name((heatpump_topic_t)topic), strlen_P(get_topic_name((heatpump_topic_t)topic)));
+          webserver_send_content_P(client, get_description_text((heatpump_topic_t)topic, descriptor_idx), strlen_P(get_description_text((heatpump_topic_t)topic, descriptor_idx)));
         }
 
         webserver_send_content_P(client, PSTR("</td></tr>"), 10);
