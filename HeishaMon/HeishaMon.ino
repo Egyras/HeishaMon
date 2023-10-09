@@ -18,13 +18,11 @@
 
 #include "webfunctions.h"
 #include "decoder/decode.h"
+#include "crash_helper/crash_helper.h"
 #include "commands.h"
 #include "rules.h"
 
 DNSServer dnsServer;
-
-// to read bus voltage in stats
-ADC_MODE(ADC_VCC);
 
 // maximum number of seconds between resets that
 // counts as a double reset
@@ -317,18 +315,30 @@ void logHex(char *hex, byte hex_len)
   }
 }
 
-#define MQTT_RETAIN_VALUES 1
+#define MQTT_RETAIN_VALUES 0
 
 void publish_available_data()
 {
   static unsigned long lastalldatatime = 0;
 
   decode_result_t result;
-  char log_msg[256];
-  char mqtt_topic[256];
+  char topic_buffer[128];
   char result_str[32];
   bool all_updates_ok = true;
   bool updatenow = false;
+
+  if (crash_helper_has_crashed())
+  {
+    static char crash_log_buffer[1024];
+    crash_helper_print_crash(crash_log_buffer, sizeof(crash_log_buffer));
+    snprintf(topic_buffer, sizeof(topic_buffer), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, "crash_dump");
+    const bool publised_crash = mqtt_client.publish(topic_buffer, crash_log_buffer, true);
+
+    if (publised_crash)
+    {
+      crash_helper_clear_crash();
+    }
+  }
 
   if (has_unsent_topics == false)
   {
@@ -352,11 +362,11 @@ void publish_available_data()
 
     if ((updatenow))
     {
-      snprintf(log_msg, sizeof(log_msg), "received TOP%d %s: %s", topic, get_topic_name((heatpump_topic_t)topic), result_str);
-      log_message(log_msg);
+      snprintf(topic_buffer, sizeof(topic_buffer), "received TOP%d %s: %s", topic, get_topic_name((heatpump_topic_t)topic), result_str);
+      log_message(topic_buffer);
 
-      snprintf(mqtt_topic, sizeof(mqtt_topic), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, get_topic_name((heatpump_topic_t)topic));
-      const bool publish_result = mqtt_client.publish(mqtt_topic, result_str, MQTT_RETAIN_VALUES);
+      snprintf(topic_buffer, sizeof(topic_buffer), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, get_topic_name((heatpump_topic_t)topic));
+      const bool publish_result = mqtt_client.publish(topic_buffer, result_str, MQTT_RETAIN_VALUES);
       if (all_updates_ok && !publish_result)
       {
         all_updates_ok = false;
@@ -368,11 +378,10 @@ void publish_available_data()
 
   if (all_updates_ok)
   {
-    char max_depth_str[8];
-    snprintf(mqtt_topic, sizeof(mqtt_topic), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, "max_filter_depth");
-    snprintf(max_depth_str, sizeof(max_depth_str), "%i", get_max_filter_depth());
+    snprintf(topic_buffer, sizeof(topic_buffer), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, "max_filter_depth");
+    snprintf(result_str, sizeof(result_str), "%i", get_max_filter_depth());
 
-    mqtt_client.publish(mqtt_topic, max_depth_str, MQTT_RETAIN_VALUES);
+    mqtt_client.publish(mqtt_topic, result_str, MQTT_RETAIN_VALUES);
 
     lastalldatatime = millis();
     has_unsent_topics = false;
