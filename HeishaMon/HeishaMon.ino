@@ -68,9 +68,8 @@ byte serial_read_buffer_length = 0;
 
 // store actual data
 String openTherm[2];
-char serial_decoder_buffer[DATASIZE] = {'\0'};
-#define OPTDATASIZE 20
-char serial_decoder_opt_buffer[OPTDATASIZE] = {'\0'};
+char serial_decoder_buffer[DECODE_REGULAR_DATAGRAM_SIZE] = {'\0'};
+char serial_decoder_opt_buffer[DECODE_OPT_DATAGRAM_SIZE] = {'\0'};
 String RESTmsg = "";
 
 // log message to sprintf to
@@ -398,38 +397,18 @@ byte calcChecksum(byte *command, int length)
   return chk;
 }
 
-bool isValidReceiveChecksum()
-{
-  byte chk = 0;
-  for (int i = 0; i < serial_read_buffer_length; i++)
-  {
-    chk += serial_read_buffer[i];
-  }
-  return (chk == 0); // all received bytes + checksum should result in 0
-}
-
 void readSerial()
 {
-  static unsigned long last_bad_header = 0;
-  if (millis() - last_bad_header < 1000)
-  {
-    return;
-  }
-
   int len = 0;
   while ((Serial.available()) && ((serial_read_buffer_length + len) < DECODE_MAX_BUFFER_SIZE))
   {
     serial_read_buffer[serial_read_buffer_length + len] = Serial.read(); // read available data and place it after the last received data
     len++;
-    if (serial_read_buffer[0] != 113)
-    { // wrong header received!
-      log_message(F("Received bad header. Ignoring this data!"));
-      if (heishamonSettings.logHexdump)
-        logHex(serial_read_buffer, len);
-      badheaderread++;
-      serial_read_buffer_length = 0;
-      last_bad_header = millis();
-      return; // return so this while loop does not loop forever if there happens to be a continous invalid data stream
+
+    const decoder_buffer_validation_result_t buffer_status = decode_validate_buffer((uint8_t *)serial_read_buffer, serial_read_buffer_length + len);
+    if (buffer_status != DECODER_BUFFER_VALIDATION_INCOMPLETE)
+    {
+      break;
     }
   }
 
@@ -440,81 +419,80 @@ void readSerial()
 
 void decode_panasonic_data()
 {
-  if (serial_read_buffer_length == 0)
-  {
-    return;
-  }
+  char mqtt_topic[256];
+  const decoder_buffer_validation_result_t buffer_status = decode_validate_buffer((uint8_t *)serial_read_buffer, serial_read_buffer_length);
 
-  const uint16_t expected_buffer_length = serial_read_buffer[1] + 3;
-  if (serial_read_buffer_length != expected_buffer_length || (serial_read_buffer_length >= DECODE_MAX_BUFFER_SIZE))
+  if (buffer_status == DECODER_BUFFER_VALIDATION_INCOMPLETE)
   {
-    log_message(F("Received more or less data than header suggests! Ignoring this as this is bad data."));
-    if (heishamonSettings.logHexdump)
-      logHex(serial_read_buffer, serial_read_buffer_length);
-    serial_read_buffer_length = 0;
-    toolongread++;
     return;
   }
 
   sprintf_P(log_msg, PSTR("Received %d bytes data"), serial_read_buffer_length);
   log_message(log_msg);
 
-  sending = false; // we received an answer after our last command so from now on we can start a new send request again
-
-  if (heishamonSettings.logHexdump)
-    logHex(serial_read_buffer, serial_read_buffer_length);
-
-  if (!isValidReceiveChecksum())
+  switch (buffer_status)
   {
+  case DECODER_BUFFER_VALIDATION_INVALID_HEADER:
+    log_message(F("Received bad header. Ignoring this data!"));
+    badheaderread++;
+    break;
+
+  case DECODER_BUFFER_VALIDATION_INVALID_LENGTH:
+    log_message(F("Received more data than header suggests! Ignoring this as this is bad data."));
+    toolongread++;
+    break;
+
+  case DECODER_BUFFER_VALIDATION_INVALID_CRC:
     log_message(F("Checksum received false!"));
-    serial_read_buffer_length = 0; // for next attempt
     badcrcread++;
-    return;
-  }
+    break;
 
-  log_message(F("Checksum and header received ok!"));
-  goodreads++;
-
-  if (serial_read_buffer_length == DATASIZE)
-  {
+  case DECODER_BUFFER_VALIDATION_REGULAR_DATAGRAM_OK:
+    goodreads++;
     has_unsent_topics = true;
 
     // decode the normal data
     decode_heatpump_data((uint8_t *)serial_read_buffer);
-    memcpy(serial_decoder_buffer, serial_read_buffer, DATASIZE);
+    memcpy(serial_decoder_buffer, serial_read_buffer, DECODE_REGULAR_DATAGRAM_SIZE);
 
-    char mqtt_topic[256];
+    log_message(F("Checksum and header received ok!"));
+
     sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
-    mqtt_client.publish(mqtt_topic, (const uint8_t *)serial_decoder_buffer, DATASIZE, false); // do not retain this raw data
+    mqtt_client.publish(mqtt_topic, (const uint8_t *)serial_decoder_buffer, DECODE_REGULAR_DATAGRAM_SIZE, false); // do not retain this raw data
 
     for (size_t topic_idx = 0; topic_idx < HEATPUMP_TOPIC_Last; topic_idx++)
     {
       rules_new_event(decode_get_topic_name((heatpump_topic_t)topic_idx));
     }
-  }
-  else if (serial_read_buffer_length == OPTDATASIZE)
-  { // optional pcb acknowledge answer
-    log_message(F("Received optional PCB ack answer. Decoding this in OPT topics."));
-    memcpy(serial_decoder_opt_buffer, serial_read_buffer, OPTDATASIZE);
-    decode_heatpump_opt_data((uint8_t *)serial_decoder_opt_buffer);
+    break;
+
+  case DECODER_BUFFER_VALIDATION_OPT_DATAGRAM_OK:
+    goodreads++;
 
     // response to heatpump should contain the data from heatpump on byte 4 and 5
-    byte valueByte4 = serial_decoder_opt_buffer[4];
-    optionalPCBQuery[4] = valueByte4;
-    byte valueByte5 = serial_decoder_opt_buffer[5];
-    optionalPCBQuery[5] = valueByte5;
+    optionalPCBQuery[4] = serial_decoder_opt_buffer[4];
+    optionalPCBQuery[5] = serial_decoder_opt_buffer[5];
+
+    log_message(F("Received optional PCB ack answer. Decoding this in OPT topics."));
+    memcpy(serial_decoder_opt_buffer, serial_read_buffer, DECODE_OPT_DATAGRAM_SIZE);
+    decode_heatpump_opt_data((uint8_t *)serial_decoder_opt_buffer);
 
     for (size_t opt_topic_idx = 0; opt_topic_idx < HEATPUMP_TOPIC_OPT_Last; opt_topic_idx++)
     {
       rules_new_event(decode_get_opt_topic_name((heatpump_opt_topic_t)opt_topic_idx));
     }
-  }
-  else
-  {
+    break;
+
+  default:
     log_message(F("Received a shorter datagram. Can't decode this yet."));
+    break;
   }
 
+  if (heishamonSettings.logHexdump)
+    logHex(serial_read_buffer, serial_read_buffer_length);
+
   serial_read_buffer_length = 0;
+  sending = false;
 }
 
 void popCommandBuffer()

@@ -1151,6 +1151,53 @@ static void getUint16Minus1(uint8_t *input, uint8_t offset, decode_result_t *res
   result->int_value = word(input[offset + 1], input[offset]) - 1;
 }
 
+static bool isValidReceiveChecksum(uint8_t data[DECODE_MAX_BUFFER_SIZE], uint16_t data_len)
+{
+  byte chk = 0;
+  for (int i = 0; i < data_len; i++)
+  {
+    chk += data[i];
+  }
+
+  return (chk == 0); // all received bytes + checksum should result in 0
+}
+
+decoder_buffer_validation_result_t decode_validate_buffer(uint8_t data[DECODE_MAX_BUFFER_SIZE], uint16_t data_len)
+{
+  const uint16_t expected_buffer_length = data[1] + 3;
+
+  if (data_len < 1 || data_len < expected_buffer_length)
+  {
+    return DECODER_BUFFER_VALIDATION_INCOMPLETE;
+  }
+
+  if (data[0] != 113)
+  {
+    return DECODER_BUFFER_VALIDATION_INVALID_HEADER;
+  }
+
+  if (data_len > expected_buffer_length || (data_len >= DECODE_MAX_BUFFER_SIZE))
+  {
+    return DECODER_BUFFER_VALIDATION_INVALID_LENGTH;
+  }
+
+  if (!isValidReceiveChecksum(data, data_len))
+  {
+    return DECODER_BUFFER_VALIDATION_INVALID_CRC;
+  }
+
+  if (data_len == DECODE_REGULAR_DATAGRAM_SIZE)
+  {
+    return DECODER_BUFFER_VALIDATION_REGULAR_DATAGRAM_OK;
+  }
+  else if (data_len == DECODE_OPT_DATAGRAM_SIZE)
+  {
+    return DECODER_BUFFER_VALIDATION_OPT_DATAGRAM_OK;
+  }
+
+  return DECODER_BUFFER_VALIDATION_INVALID;
+}
+
 void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result, bool get_latest_unfiltered_value)
 {
   topic_t *topic_config = &topic_configurations[topic];
@@ -1166,6 +1213,8 @@ void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result
       break;
     case DECODE_RESULT_FLOAT:
       result->float_value = filtered_value;
+      break;
+    default:
       break;
     }
   }

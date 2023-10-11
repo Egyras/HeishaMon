@@ -32,7 +32,7 @@ bool send_command(byte *command, int length);
 extern int dallasDevicecount;
 extern dallasDataStruct *actDallasData;
 extern settingsStruct heishamonSettings;
-extern char serial_decoder_buffer[DATASIZE];
+extern char serial_decoder_buffer[DECODE_REGULAR_DATAGRAM_SIZE];
 extern String openTherm[2];
 static uint8_t parsing = 0;
 
@@ -193,8 +193,8 @@ static int is_variable(char *text, unsigned int *pos, unsigned int size)
         int nrtopics = HEATPUMP_TOPIC_Last;
         for (x = 0; x < nrtopics; x++)
         {
-          char cpy[MAX_TOPIC_LEN];
-          memcpy_P(&cpy, decode_get_topic_name((heatpump_topic_t)x), MAX_TOPIC_LEN);
+          char cpy[DECODE_MAX_TOPIC_LEN];
+          memcpy_P(&cpy, decode_get_topic_name((heatpump_topic_t)x), DECODE_MAX_TOPIC_LEN);
           size_t len = strlen(cpy);
           if (size - 1 == len && strnicmp(&text[(*pos) + 1], cpy, len) == 0)
           {
@@ -619,8 +619,8 @@ static unsigned char *vm_value_get(struct rules_t *obj, uint16_t token)
   {
     for (i = 0; i < HEATPUMP_TOPIC_Last; i++)
     {
-      char cpy[MAX_TOPIC_LEN];
-      memcpy_P(&cpy, decode_get_topic_name((heatpump_topic_t)i), MAX_TOPIC_LEN);
+      char cpy[DECODE_MAX_TOPIC_LEN];
+      memcpy_P(&cpy, decode_get_topic_name((heatpump_topic_t)i), DECODE_MAX_TOPIC_LEN);
       if (stricmp(cpy, (char *)&node->token[1]) == 0)
       {
         String dataValue;
