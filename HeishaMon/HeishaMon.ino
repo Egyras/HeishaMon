@@ -68,9 +68,9 @@ byte serial_read_buffer_length = 0;
 
 // store actual data
 String openTherm[2];
-char actData[DATASIZE] = {'\0'};
+char serial_decoder_buffer[DATASIZE] = {'\0'};
 #define OPTDATASIZE 20
-char actOptData[OPTDATASIZE] = {'\0'};
+char serial_decoder_opt_buffer[OPTDATASIZE] = {'\0'};
 String RESTmsg = "";
 
 // log message to sprintf to
@@ -101,6 +101,7 @@ DoubleResetDetect drd(DRD_TIMEOUT, DRD_ADDRESS);
 // mqtt
 WiFiClient mqtt_wifi_client;
 PubSubClient mqtt_client(mqtt_wifi_client);
+
 bool has_unsent_topics = false;
 
 bool firstConnectSinceBoot = true; // if this is true there is no first connection made yet
@@ -242,7 +243,6 @@ void mqtt_reconnect()
       { // only resend all data on first connect to mqtt so a data bomb like and bad mqtt server will not cause a reconnect bomb everytime
         if (heishamonSettings.use_1wire)
           resetlastalldatatime_dallas(); // resend all 1wire values to mqtt
-        resetlastalldatatime();          // resend all heatpump values to mqtt
       }
     }
   }
@@ -357,35 +357,33 @@ void publish_available_data()
 
   for (uint8_t topic = 0; topic < HEATPUMP_TOPIC_Last; topic++)
   {
-    decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)actData, &result, false);
-    result_to_string(&result, result_str, sizeof(result_str));
+    decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)serial_decoder_buffer, &result, false);
+    decode_result_to_string(&result, result_str, sizeof(result_str));
 
     if ((updatenow))
     {
-      snprintf(topic_buffer, sizeof(topic_buffer), "received TOP%d %s: %s", topic, get_topic_name((heatpump_topic_t)topic), result_str);
+      snprintf(topic_buffer, sizeof(topic_buffer), "received TOP%d %s: %s", topic, decode_get_topic_name((heatpump_topic_t)topic), result_str);
       log_message(topic_buffer);
 
-      snprintf(topic_buffer, sizeof(topic_buffer), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, get_topic_name((heatpump_topic_t)topic));
+      snprintf(topic_buffer, sizeof(topic_buffer), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, decode_get_topic_name((heatpump_topic_t)topic));
       const bool publish_result = mqtt_client.publish(topic_buffer, result_str, MQTT_RETAIN_VALUES);
       if (all_updates_ok && !publish_result)
       {
         all_updates_ok = false;
       }
-
-      rules_new_event(get_topic_name((heatpump_topic_t)topic));
     }
   }
 
   if (all_updates_ok)
   {
     snprintf(topic_buffer, sizeof(topic_buffer), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, "max_filter_depth");
-    snprintf(result_str, sizeof(result_str), "%i", get_max_filter_depth());
+    snprintf(result_str, sizeof(result_str), "%i", decode_get_max_filter_depth());
 
     mqtt_client.publish(mqtt_topic, result_str, MQTT_RETAIN_VALUES);
 
     lastalldatatime = millis();
     has_unsent_topics = false;
-    clear_filters();
+    decode_topic_clear_filters();
   }
 }
 
@@ -410,12 +408,12 @@ bool isValidReceiveChecksum()
   return (chk == 0); // all received bytes + checksum should result in 0
 }
 
-bool readSerial()
+void readSerial()
 {
   static unsigned long last_bad_header = 0;
   if (millis() - last_bad_header < 1000)
   {
-    return false;
+    return;
   }
 
   int len = 0;
@@ -431,74 +429,92 @@ bool readSerial()
       badheaderread++;
       serial_read_buffer_length = 0;
       last_bad_header = millis();
-      return false; // return so this while loop does not loop forever if there happens to be a continous invalid data stream
+      return; // return so this while loop does not loop forever if there happens to be a continous invalid data stream
     }
   }
 
   if ((len > 0) && (serial_read_buffer_length == 0))
     totalreads++; // this is the start of a new read
   serial_read_buffer_length += len;
+}
 
-  if (serial_read_buffer_length > 1)
-  { // should have received length part of header now
+void decode_panasonic_data()
+{
+  if (serial_read_buffer_length == 0)
+  {
+    return;
+  }
 
-    if ((serial_read_buffer_length > (serial_read_buffer[1] + 3)) || (serial_read_buffer_length >= DECODE_MAX_BUFFER_SIZE))
+  const uint16_t expected_buffer_length = serial_read_buffer[1] + 3;
+  if (serial_read_buffer_length != expected_buffer_length || (serial_read_buffer_length >= DECODE_MAX_BUFFER_SIZE))
+  {
+    log_message(F("Received more or less data than header suggests! Ignoring this as this is bad data."));
+    if (heishamonSettings.logHexdump)
+      logHex(serial_read_buffer, serial_read_buffer_length);
+    serial_read_buffer_length = 0;
+    toolongread++;
+    return;
+  }
+
+  sprintf_P(log_msg, PSTR("Received %d bytes data"), serial_read_buffer_length);
+  log_message(log_msg);
+
+  sending = false; // we received an answer after our last command so from now on we can start a new send request again
+
+  if (heishamonSettings.logHexdump)
+    logHex(serial_read_buffer, serial_read_buffer_length);
+
+  if (!isValidReceiveChecksum())
+  {
+    log_message(F("Checksum received false!"));
+    serial_read_buffer_length = 0; // for next attempt
+    badcrcread++;
+    return;
+  }
+
+  log_message(F("Checksum and header received ok!"));
+  goodreads++;
+
+  if (serial_read_buffer_length == DATASIZE)
+  {
+    has_unsent_topics = true;
+
+    // decode the normal data
+    decode_heatpump_data((uint8_t *)serial_read_buffer);
+    memcpy(serial_decoder_buffer, serial_read_buffer, DATASIZE);
+
+    char mqtt_topic[256];
+    sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
+    mqtt_client.publish(mqtt_topic, (const uint8_t *)serial_decoder_buffer, DATASIZE, false); // do not retain this raw data
+
+    for (size_t topic_idx = 0; topic_idx < HEATPUMP_TOPIC_Last; topic_idx++)
     {
-      log_message(F("Received more data than header suggests! Ignoring this as this is bad data."));
-      if (heishamonSettings.logHexdump)
-        logHex(serial_read_buffer, serial_read_buffer_length);
-      serial_read_buffer_length = 0;
-      toolongread++;
-      return false;
-    }
-
-    if (serial_read_buffer_length == (serial_read_buffer[1] + 3))
-    { // we received all data (data[1] is header length field)
-      sprintf_P(log_msg, PSTR("Received %d bytes data"), serial_read_buffer_length);
-      log_message(log_msg);
-      sending = false; // we received an answer after our last command so from now on we can start a new send request again
-      if (heishamonSettings.logHexdump)
-        logHex(serial_read_buffer, serial_read_buffer_length);
-      if (!isValidReceiveChecksum())
-      {
-        log_message(F("Checksum received false!"));
-        serial_read_buffer_length = 0; // for next attempt
-        badcrcread++;
-        return false;
-      }
-      log_message(F("Checksum and header received ok!"));
-      goodreads++;
-
-      if (serial_read_buffer_length == DATASIZE)
-      { // decode the normal data
-        decode_heatpump_data((uint8_t *)serial_read_buffer);
-        has_unsent_topics = true;
-        memcpy(actData, serial_read_buffer, DATASIZE);
-        {
-          char mqtt_topic[256];
-          sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
-          mqtt_client.publish(mqtt_topic, (const uint8_t *)actData, DATASIZE, false); // do not retain this raw data
-        }
-        serial_read_buffer_length = 0;
-        return true;
-      }
-      else if (serial_read_buffer_length == OPTDATASIZE)
-      { // optional pcb acknowledge answer
-        log_message(F("Received optional PCB ack answer. Decoding this in OPT topics."));
-        // decode_optional_heatpump_data(data, actOptData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-        memcpy(actOptData, serial_read_buffer, OPTDATASIZE);
-        serial_read_buffer_length = 0;
-        return true;
-      }
-      else
-      {
-        log_message(F("Received a shorter datagram. Can't decode this yet."));
-        serial_read_buffer_length = 0;
-        return false;
-      }
+      rules_new_event(decode_get_topic_name((heatpump_topic_t)topic_idx));
     }
   }
-  return false;
+  else if (serial_read_buffer_length == OPTDATASIZE)
+  { // optional pcb acknowledge answer
+    log_message(F("Received optional PCB ack answer. Decoding this in OPT topics."));
+    memcpy(serial_decoder_opt_buffer, serial_read_buffer, OPTDATASIZE);
+    decode_heatpump_opt_data((uint8_t *)serial_decoder_opt_buffer);
+
+    // response to heatpump should contain the data from heatpump on byte 4 and 5
+    byte valueByte4 = serial_decoder_opt_buffer[4];
+    optionalPCBQuery[4] = valueByte4;
+    byte valueByte5 = serial_decoder_opt_buffer[5];
+    optionalPCBQuery[5] = valueByte5;
+
+    for (size_t opt_topic_idx = 0; opt_topic_idx < HEATPUMP_TOPIC_OPT_Last; opt_topic_idx++)
+    {
+      rules_new_event(decode_get_opt_topic_name((heatpump_opt_topic_t)opt_topic_idx));
+    }
+  }
+  else
+  {
+    log_message(F("Received a shorter datagram. Can't decode this yet."));
+  }
+
+  serial_read_buffer_length = 0;
 }
 
 void popCommandBuffer()
@@ -965,12 +981,12 @@ int8_t webserver_cb(struct webserver_t *client, void *dat)
     case 11:
     case 12:
     {
-      return handleTableRefresh(client, actData);
+      return handleTableRefresh(client, serial_decoder_buffer);
     }
     break;
     case 20:
     {
-      return handleJsonOutput(client, actData);
+      return handleJsonOutput(client, serial_decoder_buffer);
     }
     break;
     case 30:
@@ -1483,6 +1499,7 @@ void read_panasonic_data()
     serial_read_buffer_length = 0; // clear any data in array
     sending = false;               // receiving the answer from the send command timed out, so we are allowed to send a new command
   }
+
   if ((heishamonSettings.listenonly || sending) && (Serial.available() > 0))
     readSerial();
 }
@@ -1499,6 +1516,7 @@ void loop()
   mqtt_client.loop();
 
   read_panasonic_data();
+  decode_panasonic_data();
 
   if (WiFi.isConnected() && mqtt_client.connected())
     publish_available_data();

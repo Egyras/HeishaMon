@@ -32,7 +32,7 @@ bool send_command(byte *command, int length);
 extern int dallasDevicecount;
 extern dallasDataStruct *actDallasData;
 extern settingsStruct heishamonSettings;
-extern char actData[DATASIZE];
+extern char serial_decoder_buffer[DATASIZE];
 extern String openTherm[2];
 static uint8_t parsing = 0;
 
@@ -194,7 +194,7 @@ static int is_variable(char *text, unsigned int *pos, unsigned int size)
         for (x = 0; x < nrtopics; x++)
         {
           char cpy[MAX_TOPIC_LEN];
-          memcpy_P(&cpy, get_topic_name((heatpump_topic_t)x), MAX_TOPIC_LEN);
+          memcpy_P(&cpy, decode_get_topic_name((heatpump_topic_t)x), MAX_TOPIC_LEN);
           size_t len = strlen(cpy);
           if (size - 1 == len && strnicmp(&text[(*pos) + 1], cpy, len) == 0)
           {
@@ -269,9 +269,9 @@ static int is_event(char *text, unsigned int *pos, unsigned int size)
     int nrtopics = HEATPUMP_TOPIC_Last;
     for (x = 0; x < nrtopics; x++)
     {
-      size_t len = strlen_P(get_topic_name((heatpump_topic_t)x));
+      size_t len = strlen_P(decode_get_topic_name((heatpump_topic_t)x));
       char cpy[len];
-      memcpy_P(&cpy, get_topic_name((heatpump_topic_t)x), len);
+      memcpy_P(&cpy, decode_get_topic_name((heatpump_topic_t)x), len);
       if (size - 1 == len && strnicmp(&text[(*pos) + 1], cpy, len) == 0)
       {
         i = len + 1;
@@ -620,15 +620,15 @@ static unsigned char *vm_value_get(struct rules_t *obj, uint16_t token)
     for (i = 0; i < HEATPUMP_TOPIC_Last; i++)
     {
       char cpy[MAX_TOPIC_LEN];
-      memcpy_P(&cpy, get_topic_name((heatpump_topic_t)i), MAX_TOPIC_LEN);
+      memcpy_P(&cpy, decode_get_topic_name((heatpump_topic_t)i), MAX_TOPIC_LEN);
       if (stricmp(cpy, (char *)&node->token[1]) == 0)
       {
         String dataValue;
         decode_result_t result;
-        const bool is_buffer_valid = actData[0] != '\0';
+        const bool is_buffer_valid = serial_decoder_buffer[0] != '\0';
         if (is_buffer_valid)
         {
-          decode_get_topic_value((heatpump_topic_t)i, (uint8_t *)actData, &result);
+          decode_get_topic_value((heatpump_topic_t)i, (uint8_t *)serial_decoder_buffer, &result);
         }
         switch (result.result_type)
         {

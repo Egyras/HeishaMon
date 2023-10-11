@@ -31,7 +31,11 @@ static void getModel(uint8_t *input, uint8_t offset, decode_result_t *result);
 static void getErrorInfo(uint8_t *input, uint8_t offset, decode_result_t *result);
 static void getFractionalValue(uint8_t *input, uint8_t offset, decode_result_t *result);
 static void getUint16Minus1(uint8_t *input, uint8_t offset, decode_result_t *result);
-
+static void opt1(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void opt2(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void opt3(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void opt4(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void opt5and6(uint8_t *input, uint8_t offset, decode_result_t *result);
 typedef void (*decoder_func_ptr_t)(uint8_t *data, uint8_t offset, decode_result_t *result);
 
 typedef struct
@@ -851,6 +855,60 @@ static topic_t topic_configurations[] = {
     .filter_context = { 0 }
   },
 };
+
+static topic_t opt_topic_configurations[] = {
+  // TODO What should the descriptions for the opt data be???
+  {
+    .name = "Z1_Water_Pump",             // OPT0
+    .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_UNKNOWN], // OPT0
+    .byte_offset =   4,     // OPT0
+    .decoder_function = getBit1,         // OPT0
+    .filter_context = { 0 }
+  },
+  {
+    .name = "Z1_Mixing_Valve",             // OPT1
+    .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_UNKNOWN], // OPT1
+    .byte_offset =   4,     // OPT1
+    .decoder_function = opt1,         // OPT1
+    .filter_context = { 0 }
+  },
+  {
+    .name = "Z2_Water_Pump",             // OPT2
+    .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_UNKNOWN], // OPT2
+    .byte_offset =   4,     // OPT2
+    .decoder_function = opt2,         // OPT2
+    .filter_context = { 0 }
+  },
+  {
+    .name = "Z2_Mixing_Valve",             // OPT3
+    .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_UNKNOWN], // OPT3
+    .byte_offset =   4,     // OPT3
+    .decoder_function = opt3,         // OPT3
+    .filter_context = { 0 }
+  },
+  {
+    .name = "Pool_Water_Pump",             // OPT4
+    .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_UNKNOWN], // OPT4
+    .byte_offset =   4,     /// OPT4
+    .decoder_function = opt4,         // OPT4
+    .filter_context = { 0 }
+  },
+  {
+    .name = "Solar_Water_Pump",             // OPT5
+    .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_UNKNOWN], // OPT5
+    .byte_offset =   4,     /// OPT5
+    .decoder_function = opt5and6,         // OPT5
+    .filter_context = { 0 }
+  },
+  {
+    .name = "Alarm_State",             // OPT6
+    .description = &topic_descriptors[TOPIC_DESCRIPTION_ENUM_UNKNOWN], // OPT6
+    .byte_offset =   5,     // OPT6
+    .decoder_function = opt5and6,         // OPT6
+    .filter_context = { 0 }
+  },
+};
+
 // clang-format on
 
 static void getBit1(uint8_t *input, uint8_t offset, decode_result_t *result)
@@ -869,6 +927,36 @@ static void getBit3and4(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = ((input[offset] >> 4) & 0b11) - 1;
+}
+
+static void opt1(uint8_t *input, uint8_t offset, decode_result_t *result)
+{
+  result->result_type = DECODE_RESULT_INT;
+  result->int_value = (input[offset] >> 5) & 0b11;
+}
+
+static void opt2(uint8_t *input, uint8_t offset, decode_result_t *result)
+{
+  result->result_type = DECODE_RESULT_INT;
+  result->int_value = (input[offset] >> 4) & 0b1;
+}
+
+static void opt3(uint8_t *input, uint8_t offset, decode_result_t *result)
+{
+  result->result_type = DECODE_RESULT_INT;
+  result->int_value = (input[offset] >> 2) & 0b11;
+}
+
+static void opt4(uint8_t *input, uint8_t offset, decode_result_t *result)
+{
+  result->result_type = DECODE_RESULT_INT;
+  result->int_value = (input[offset] >> 1) & 0b1;
+}
+
+static void opt5and6(uint8_t *input, uint8_t offset, decode_result_t *result)
+{
+  result->result_type = DECODE_RESULT_INT;
+  result->int_value = (input[offset] >> 0) & 0b1;
 }
 
 static void getBit5and6(uint8_t *input, uint8_t offset, decode_result_t *result)
@@ -1063,12 +1151,12 @@ static void getUint16Minus1(uint8_t *input, uint8_t offset, decode_result_t *res
   result->int_value = word(input[offset + 1], input[offset]) - 1;
 }
 
-void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result, bool get_unfiltered_value)
+void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result, bool get_latest_unfiltered_value)
 {
   topic_t *topic_config = &topic_configurations[topic];
   topic_config->decoder_function(data, topic_config->byte_offset, result);
 
-  if (get_unfiltered_value == false && topic_config->description->filter_type != FILTER_TYPE_NONE)
+  if (get_latest_unfiltered_value == false && topic_config->description->filter_type != FILTER_TYPE_NONE)
   {
     const float filtered_value = filter_get_value(&(topic_config->filter_context), topic_config->description->filter_type);
     switch (result->result_type)
@@ -1086,7 +1174,7 @@ void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result
 void decode_heatpump_data(uint8_t data[255])
 {
   decode_result_t result;
-  float result_value;
+  float result_value = 0.0f;
   for (size_t idx = 0; idx < HEATPUMP_TOPIC_Last; idx++)
   {
     topic_configurations[idx].decoder_function(data, topic_configurations[idx].byte_offset, &result);
@@ -1098,28 +1186,58 @@ void decode_heatpump_data(uint8_t data[255])
     case DECODE_RESULT_FLOAT:
       result_value = result.float_value;
       break;
+    default:
+      break;
     }
 
     filter_update(&(topic_configurations[idx].filter_context), topic_configurations[idx].description->filter_type, result_value);
   }
 }
 
-const char *get_topic_name(heatpump_topic_t topic)
+void decode_heatpump_opt_data(uint8_t data[255])
+{
+  decode_result_t result;
+  float result_value = 0.0f;
+  for (size_t idx = 0; idx < HEATPUMP_TOPIC_OPT_Last; idx++)
+  {
+    opt_topic_configurations[idx].decoder_function(data, opt_topic_configurations[idx].byte_offset, &result);
+    switch (result.result_type)
+    {
+    case DECODE_RESULT_INT:
+      result_value = (float)result.int_value;
+      break;
+    case DECODE_RESULT_FLOAT:
+      result_value = result.float_value;
+      break;
+    default:
+      break;
+    }
+
+    filter_update(&(opt_topic_configurations[idx].filter_context), opt_topic_configurations[idx].description->filter_type, result_value);
+  }
+}
+
+const char *decode_get_topic_name(heatpump_topic_t topic)
 {
   return topic_configurations[topic].name;
 }
 
-const char *get_description_text(heatpump_topic_t topic, uint8_t description_idx)
+const char *decode_get_opt_topic_name(heatpump_opt_topic_t topic)
+{
+  return topic_configurations[topic].name;
+}
+
+const char *decode_get_description_text(heatpump_topic_t topic, uint8_t description_idx)
 {
   return topic_configurations[topic].description->descriptions_strs[description_idx];
 }
 
-uint8_t get_description_cnt(heatpump_topic_t topic)
+uint8_t decode_get_description_cnt(heatpump_topic_t topic)
 {
   return topic_configurations[topic].description->number_of_descriptions;
 }
 
-void clear_filters()
+void decode_topic_clear_filters()
 {
   for (size_t idx = 0; idx < HEATPUMP_TOPIC_Last; idx++)
   {
@@ -1127,7 +1245,7 @@ void clear_filters()
   }
 }
 
-void result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_size)
+void decode_result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_size)
 {
   switch (result->result_type)
   {
@@ -1143,7 +1261,7 @@ void result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_siz
   }
 }
 
-uint16_t get_max_filter_depth()
+uint16_t decode_get_max_filter_depth()
 {
   uint16_t max_depth = 0;
   for (size_t idx = 0; idx < HEATPUMP_TOPIC_Last; idx++)

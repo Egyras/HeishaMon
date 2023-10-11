@@ -37,6 +37,7 @@ typedef enum
   TOPIC_DESCRIPTION_ENUM_LIQUID_TYPE,
   TOPIC_DESCRIPTION_ENUM_EXT_PAD_HEATER_TYPE,
   TOPIC_DESCRIPTION_ENUM_MODEL,
+  TOPIC_DESCRIPTION_ENUM_UNKNOWN,
   TOPIC_DESCRIPTION_ENUM_Last
 } topic_description_emum_t;
 
@@ -108,6 +109,7 @@ static const char *TOPIC_DESCRIPTION_TEXTS_MODEL[] PROGMEM = {
     "WH-MDC07J3E5",                          // 27
     "WH-MDC05J3E5",                          // 28
 };
+static const char *TOPIC_DESCRIPTION_TEXTS_UNKNOWN[] PROGMEM = {"Unknown"};
 
 static const uint8_t knownModels[SIZE_OF_ARRAY(TOPIC_DESCRIPTION_TEXTS_MODEL)][10] PROGMEM = {
     // stores the bytes #129 to #138 of known models in the same order as the const above
@@ -292,6 +294,11 @@ static topic_description_t topic_descriptors[] = {
     {
       .descriptions_strs = TOPIC_DESCRIPTION_TEXTS_MODEL,
       .number_of_descriptions = SIZE_OF_ARRAY(TOPIC_DESCRIPTION_TEXTS_MODEL),
+      .filter_type = FILTER_TYPE_NONE
+    },
+    {
+      .descriptions_strs = TOPIC_DESCRIPTION_TEXTS_UNKNOWN,
+      .number_of_descriptions = SIZE_OF_ARRAY(TOPIC_DESCRIPTION_TEXTS_UNKNOWN),
       .filter_type = FILTER_TYPE_NONE
     },
 };

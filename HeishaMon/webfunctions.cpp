@@ -1248,10 +1248,8 @@ int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconne
   return 0;
 }
 
-int handleTableRefresh(struct webserver_t *client, char *actData)
+int handleTableRefresh(struct webserver_t *client, char *serial_decoder_buffer)
 {
-  int ret = 0;
-
   if (client->route == 11)
   {
     if (client->content == 0)
@@ -1286,16 +1284,16 @@ int handleTableRefresh(struct webserver_t *client, char *actData)
         webserver_send_content(client, str, strlen(str));
 
         webserver_send_content_P(client, PSTR("</td><td>"), 9);
-        webserver_send_content_P(client, get_topic_name((heatpump_topic_t)topic), strlen_P(get_topic_name((heatpump_topic_t)topic)));
+        webserver_send_content_P(client, decode_get_topic_name((heatpump_topic_t)topic), strlen_P(decode_get_topic_name((heatpump_topic_t)topic)));
         webserver_send_content_P(client, PSTR("</td><td>"), 9);
 
         {
           String dataValue;
           decode_result_t result;
-          const bool is_buffer_valid = actData[0] != '\0';
+          const bool is_buffer_valid = serial_decoder_buffer[0] != '\0';
           if (is_buffer_valid)
           {
-            decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)actData, &result);
+            decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)serial_decoder_buffer, &result);
           }
           switch (result.result_type)
           {
@@ -1317,13 +1315,13 @@ int handleTableRefresh(struct webserver_t *client, char *actData)
         webserver_send_content_P(client, PSTR("</td><td>"), 9);
 
         decode_result_t decode_result;
-        const bool is_buffer_valid = actData[0] != '\0';
+        const bool is_buffer_valid = serial_decoder_buffer[0] != '\0';
         if (is_buffer_valid)
         {
-          decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)actData, &decode_result);
+          decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)serial_decoder_buffer, &decode_result);
         }
 
-        int description_cnt = get_description_cnt((heatpump_topic_t)topic);
+        int description_cnt = decode_get_description_cnt((heatpump_topic_t)topic);
         int descriptor_idx = 0;
 
         // Is multi description type?
@@ -1338,7 +1336,7 @@ int handleTableRefresh(struct webserver_t *client, char *actData)
         }
         else
         {
-          webserver_send_content_P(client, get_description_text((heatpump_topic_t)topic, descriptor_idx), strlen_P(get_description_text((heatpump_topic_t)topic, descriptor_idx)));
+          webserver_send_content_P(client, decode_get_description_text((heatpump_topic_t)topic, descriptor_idx), strlen_P(decode_get_description_text((heatpump_topic_t)topic, descriptor_idx)));
         }
 
         webserver_send_content_P(client, PSTR("</td></tr>"), 10);
@@ -1350,7 +1348,7 @@ int handleTableRefresh(struct webserver_t *client, char *actData)
   return 0;
 }
 
-int handleJsonOutput(struct webserver_t *client, char *actData)
+int handleJsonOutput(struct webserver_t *client, char *serial_decoder_buffer)
 {
   if (client->content == 0)
   {
@@ -1372,17 +1370,17 @@ int handleJsonOutput(struct webserver_t *client, char *actData)
 
       webserver_send_content_P(client, PSTR("\",\"Name\":\""), 10);
 
-      webserver_send_content_P(client, get_topic_name((heatpump_topic_t)topic), strlen_P(get_topic_name((heatpump_topic_t)topic)));
+      webserver_send_content_P(client, decode_get_topic_name((heatpump_topic_t)topic), strlen_P(decode_get_topic_name((heatpump_topic_t)topic)));
 
       webserver_send_content_P(client, PSTR("\",\"Value\":\""), 11);
 
       {
         String dataValue;
         decode_result_t result;
-        const bool is_buffer_valid = actData[0] != '\0';
+        const bool is_buffer_valid = serial_decoder_buffer[0] != '\0';
         if (is_buffer_valid)
         {
-          decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)actData, &result);
+          decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)serial_decoder_buffer, &result);
         }
         switch (result.result_type)
         {
@@ -1404,13 +1402,13 @@ int handleJsonOutput(struct webserver_t *client, char *actData)
       webserver_send_content_P(client, PSTR("\",\"Description\":\""), 17);
 
       decode_result_t decode_result;
-      const bool is_buffer_valid = actData[0] != '\0';
+      const bool is_buffer_valid = serial_decoder_buffer[0] != '\0';
       if (is_buffer_valid)
       {
-        decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)actData, &decode_result);
+        decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)serial_decoder_buffer, &decode_result);
       }
 
-      int description_cnt = get_description_cnt((heatpump_topic_t)topic);
+      int description_cnt = decode_get_description_cnt((heatpump_topic_t)topic);
       int descriptor_idx = 0;
 
       // Is multi description type?
@@ -1425,7 +1423,7 @@ int handleJsonOutput(struct webserver_t *client, char *actData)
       }
       else
       {
-        webserver_send_content_P(client, get_description_text((heatpump_topic_t)topic, descriptor_idx), strlen_P(get_description_text((heatpump_topic_t)topic, descriptor_idx)));
+        webserver_send_content_P(client, decode_get_description_text((heatpump_topic_t)topic, descriptor_idx), strlen_P(decode_get_description_text((heatpump_topic_t)topic, descriptor_idx)));
       }
 
       webserver_send_content_P(client, PSTR("\"}"), 2);

@@ -6,24 +6,24 @@
 
 #define MINREPORTEDS0TIME 5000 // how often s0 Watts are reported (not faster than this)
 
-//global array for s0 data
+// global array for s0 data
 volatile s0DataStruct actS0Data[NUM_S0_COUNTERS];
 
-//global array for s0 Settings
+// global array for s0 Settings
 volatile s0SettingsStruct actS0Settings[NUM_S0_COUNTERS];
 
-
-//These are the interrupt routines. Make them as short as possible so we don't block main code
+// These are the interrupt routines. Make them as short as possible so we don't block main code
 volatile unsigned long lastEdgeS0[NUM_S0_COUNTERS] = {0, 0};
-volatile bool badEdge[NUM_S0_COUNTERS] = {0, 0}; //two edges is a pulse, so store as bool
+volatile bool badEdge[NUM_S0_COUNTERS] = {0, 0}; // two edges is a pulse, so store as bool
 
-//for debug
+// for debug
 /*
   volatile unsigned long allLastEdgeS0[2][20];
   volatile int allLastEdgeS0Index[2] = {0, 0};
 */
 
-IRAM_ATTR void countPulse(int i) {
+IRAM_ATTR void countPulse(int i)
+{
   volatile unsigned long newEdgeS0 = millis();
   volatile unsigned long curPulseWidth = newEdgeS0 - lastEdgeS0[i];
   // debug
@@ -34,11 +34,14 @@ IRAM_ATTR void countPulse(int i) {
     }
   */
   // end debug
-  if ((curPulseWidth >=  actS0Settings[i].minimalPulseWidth) && (curPulseWidth <= actS0Settings[i].maximalPulseWidth) ) {
-    if (actS0Data[i].lastPulse > 0) { //Do not calculate watt for the first pulse since reboot because we will always report a too high watt. Better to show 0 watt at first pulse.
-      volatile unsigned long pulseInterval = newEdgeS0 - actS0Data[i].lastPulse; //calculate the interval between last valid pulse edge and this edge
+  if ((curPulseWidth >= actS0Settings[i].minimalPulseWidth) && (curPulseWidth <= actS0Settings[i].maximalPulseWidth))
+  {
+    if (actS0Data[i].lastPulse > 0)
+    {                                                                            // Do not calculate watt for the first pulse since reboot because we will always report a too high watt. Better to show 0 watt at first pulse.
+      volatile unsigned long pulseInterval = newEdgeS0 - actS0Data[i].lastPulse; // calculate the interval between last valid pulse edge and this edge
       actS0Data[i].watt = (3600000000.0 / pulseInterval) / actS0Settings[i].ppkwh;
-      if ((unsigned long)(actS0Data[i].nextReport - newEdgeS0) > MINREPORTEDS0TIME) { //pulse seen in standby interval so report directly
+      if ((unsigned long)(actS0Data[i].nextReport - newEdgeS0) > MINREPORTEDS0TIME)
+      {                              // pulse seen in standby interval so report directly
         actS0Data[i].nextReport = 0; // report now
       }
     }
@@ -46,28 +49,33 @@ IRAM_ATTR void countPulse(int i) {
     actS0Data[i].pulses++;
     actS0Data[i].pulsesTotal++;
     actS0Data[i].goodPulses++;
-    actS0Data[i].avgPulseWidth = ((actS0Data[i].avgPulseWidth * (actS0Data[i].goodPulses - 1)) + curPulseWidth ) / actS0Data[i].goodPulses;
-    badEdge[i] = false; //set it to false again to allow to count two bad edges as a new bad pulse because we know we had a good pulse now
-  } else {
-    if (badEdge[i]) actS0Data[i].badPulses++; //there was already an edge before so count this one as a bad pulse
-    badEdge[i] = !badEdge[i]; //for now count it as a bad edge (if it is a edge for a good pulse, this will reset to false a few lines above). The bool is for not counting each edge as a bad pulse, but only two bad edges.
+    actS0Data[i].avgPulseWidth = ((actS0Data[i].avgPulseWidth * (actS0Data[i].goodPulses - 1)) + curPulseWidth) / actS0Data[i].goodPulses;
+    badEdge[i] = false; // set it to false again to allow to count two bad edges as a new bad pulse because we know we had a good pulse now
   }
-  lastEdgeS0[i] = newEdgeS0; //store this edge time for next use
+  else
+  {
+    if (badEdge[i])
+      actS0Data[i].badPulses++; // there was already an edge before so count this one as a bad pulse
+    badEdge[i] = !badEdge[i];   // for now count it as a bad edge (if it is a edge for a good pulse, this will reset to false a few lines above). The bool is for not counting each edge as a bad pulse, but only two bad edges.
+  }
+  lastEdgeS0[i] = newEdgeS0; // store this edge time for next use
 }
 
-IRAM_ATTR void onS0Pulse1Change() {
-  countPulse(0); //port 1, index 0 of array
+IRAM_ATTR void onS0Pulse1Change()
+{
+  countPulse(0); // port 1, index 0 of array
 }
 
-IRAM_ATTR void onS0Pulse2Change() {
-  countPulse(1); //port 2, index 1 of array
+IRAM_ATTR void onS0Pulse2Change()
+{
+  countPulse(1); // port 2, index 1 of array
 }
 
+void initS0Sensors(s0SettingsStruct s0Settings[])
+{
+  // setup s0 port 1
 
-void initS0Sensors(s0SettingsStruct s0Settings[]) {
-  //setup s0 port 1
-
-  //TODO: check if this is still necessary
+  // TODO: check if this is still necessary
   actS0Settings[0].gpiopin = s0Settings[0].gpiopin;
   actS0Settings[0].ppkwh = s0Settings[0].ppkwh;
   actS0Settings[0].lowerPowerInterval = s0Settings[0].lowerPowerInterval;
@@ -76,11 +84,11 @@ void initS0Sensors(s0SettingsStruct s0Settings[]) {
 
   pinMode(actS0Settings[0].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Settings[0].gpiopin), onS0Pulse1Change, CHANGE);
-  actS0Data[0].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
+  actS0Data[0].nextReport = millis() + MINREPORTEDS0TIME; // initial report after interval, not directly at boot
 
-  //setup s0 port 2
+  // setup s0 port 2
 
-  //TODO: check if this is still necessary
+  // TODO: check if this is still necessary
   actS0Settings[1].gpiopin = s0Settings[1].gpiopin;
   actS0Settings[1].ppkwh = s0Settings[1].ppkwh;
   actS0Settings[1].lowerPowerInterval = s0Settings[1].lowerPowerInterval;
@@ -89,13 +97,16 @@ void initS0Sensors(s0SettingsStruct s0Settings[]) {
 
   pinMode(actS0Settings[1].gpiopin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(actS0Settings[1].gpiopin), onS0Pulse2Change, CHANGE);
-  actS0Data[1].nextReport = millis() + MINREPORTEDS0TIME; //initial report after interval, not directly at boot
+  actS0Data[1].nextReport = millis() + MINREPORTEDS0TIME; // initial report after interval, not directly at boot
 }
 
-void restore_s0_Watthour(int s0Port, float watthour) {
-  if ((s0Port == 1) || (s0Port == 2)) {
+void restore_s0_Watthour(int s0Port, float watthour)
+{
+  if ((s0Port == 1) || (s0Port == 2))
+  {
     unsigned int newTotal = int(watthour * (actS0Settings[s0Port - 1].ppkwh / 1000.0));
-    if (newTotal > actS0Data[s0Port - 1].pulsesTotal) {
+    if (newTotal > actS0Data[s0Port - 1].pulsesTotal)
+    {
       noInterrupts();
       actS0Data[s0Port - 1].pulsesTotal = newTotal;
       interrupts();
@@ -103,47 +114,52 @@ void restore_s0_Watthour(int s0Port, float watthour) {
   }
 }
 
-
-
-void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, s0SettingsStruct s0Settings[]) {
+void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char *), char *mqtt_topic_base, s0SettingsStruct s0Settings[])
+{
 
   unsigned long millisThisLoop = millis();
 
-  for (int i = 0 ; i < NUM_S0_COUNTERS ; i++) {
+  for (int i = 0; i < NUM_S0_COUNTERS; i++)
+  {
     char tmp_log_msg[256];
 
-    //report after nextReport
-    if (millisThisLoop > actS0Data[i].nextReport) {
+    // report after nextReport
+    if (millisThisLoop > actS0Data[i].nextReport)
+    {
 
       unsigned long lastPulseInterval = millisThisLoop - actS0Data[i].lastPulse;
-      unsigned long calcMaxWatt = (3600000000.0 / lastPulseInterval) / actS0Settings[i].ppkwh; //calculate the maximum watt was is possible without receiving pulses during the report interval
+      unsigned long calcMaxWatt = (3600000000.0 / lastPulseInterval) / actS0Settings[i].ppkwh; // calculate the maximum watt was is possible without receiving pulses during the report interval
 
-      if (actS0Data[i].watt < ((3600000.0 / actS0Settings[i].ppkwh) / actS0Settings[i].lowerPowerInterval) ) { //watt is lower than possible in lower power interval time, so we are in low power counting mode
+      if (actS0Data[i].watt < ((3600000.0 / actS0Settings[i].ppkwh) / actS0Settings[i].lowerPowerInterval))
+      { // watt is lower than possible in lower power interval time, so we are in low power counting mode
         actS0Data[i].nextReport = millisThisLoop + 1000 * actS0Settings[i].lowerPowerInterval;
-        if ((actS0Data[i].watt) / 2 > calcMaxWatt) { //last known watt is higher than possible for the interval, so we need to bring it down fast
+        if ((actS0Data[i].watt) / 2 > calcMaxWatt)
+        { // last known watt is higher than possible for the interval, so we need to bring it down fast
           actS0Data[i].watt = calcMaxWatt / 2;
         }
       }
-      else { // we are in normal counting mode, report each MINREPORTEDS0TIME
+      else
+      { // we are in normal counting mode, report each MINREPORTEDS0TIME
         actS0Data[i].nextReport = millisThisLoop + MINREPORTEDS0TIME;
-        if (actS0Data[i].watt > calcMaxWatt) { //last known watt is higher than possible since last report, so bring it down to wat is possible
+        if (actS0Data[i].watt > calcMaxWatt)
+        { // last known watt is higher than possible since last report, so bring it down to wat is possible
           actS0Data[i].watt = calcMaxWatt;
         }
       }
 
-      float Watthour = (actS0Data[i].pulses * ( 1000.0 / actS0Settings[i].ppkwh));
-      float WatthourTotal = (actS0Data[i].pulsesTotal * ( 1000.0 / actS0Settings[i].ppkwh));
+      float Watthour = (actS0Data[i].pulses * (1000.0 / actS0Settings[i].ppkwh));
+      float WatthourTotal = (actS0Data[i].pulsesTotal * (1000.0 / actS0Settings[i].ppkwh));
 
       noInterrupts();
-      actS0Data[i].pulses = 0; //per message we report new wattHour, so pulses should be zero at start new message
+      actS0Data[i].pulses = 0; // per message we report new wattHour, so pulses should be zero at start new message
       interrupts();
 
-      //report using mqtt
+      // report using mqtt
       char log_msg[256];
       char mqtt_topic[256];
       char valueStr[20];
 
-      //debug
+      // debug
       /*
         noInterrupts();
         int j = 0;
@@ -156,25 +172,25 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
         }
         interrupts();
       */
-      //end debug
+      // end debug
 
-      sprintf_P(log_msg, PSTR("Pulses seen on S0 port %d: Good: %lu Bad: %lu Average good pulse width: %i"), (i + 1),  actS0Data[i].goodPulses, actS0Data[i].badPulses, actS0Data[i].avgPulseWidth);
+      sprintf_P(log_msg, PSTR("Pulses seen on S0 port %d: Good: %lu Bad: %lu Average good pulse width: %i"), (i + 1), actS0Data[i].goodPulses, actS0Data[i].badPulses, actS0Data[i].avgPulseWidth);
       log_message(log_msg);
 
-      sprintf_P(log_msg, PSTR("Measured Watthour on S0 port %d: %.2f"), (i + 1),  Watthour );
+      sprintf_P(log_msg, PSTR("Measured Watthour on S0 port %d: %.2f"), (i + 1), Watthour);
       log_message(log_msg);
       sprintf(valueStr, "%.2f", Watthour);
       sprintf_P(mqtt_topic, PSTR("%s/%s/Watthour/%d"), mqtt_topic_base, mqtt_topic_s0, (i + 1));
       mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
 
-      sprintf(log_msg, PSTR("Measured total Watthour on S0 port %d: %.2f"), (i + 1),  WatthourTotal );
+      sprintf(log_msg, PSTR("Measured total Watthour on S0 port %d: %.2f"), (i + 1), WatthourTotal);
       log_message(log_msg);
       sprintf(valueStr, "%.2f", WatthourTotal);
       sprintf(mqtt_topic, PSTR("%s/%s/WatthourTotal/%d"), mqtt_topic_base, mqtt_topic_s0, (i + 1));
       mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
       sprintf(log_msg, PSTR("Calculated Watt on S0 port %d: %u"), (i + 1), actS0Data[i].watt);
       log_message(log_msg);
-      sprintf(valueStr, "%u",  actS0Data[i].watt);
+      sprintf(valueStr, "%u", actS0Data[i].watt);
       sprintf(mqtt_topic, PSTR("%s/%s/Watt/%d"), mqtt_topic_base, mqtt_topic_s0, (i + 1));
       mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
     }
@@ -183,8 +199,10 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
 
 unsigned long tablePulses[NUM_S0_COUNTERS];
 
-void s0TableOutput(struct webserver_t *client) {
-  for (int i = 0; i < NUM_S0_COUNTERS; i++) {
+void s0TableOutput(struct webserver_t *client)
+{
+  for (int i = 0; i < NUM_S0_COUNTERS; i++)
+  {
     webserver_send_content_P(client, PSTR("<tr><td>"), 8);
 
     char str[12];
@@ -198,7 +216,7 @@ void s0TableOutput(struct webserver_t *client) {
 
     webserver_send_content_P(client, PSTR("</td><td>"), 9);
 
-    itoa(((actS0Data[i].pulsesTotal - tablePulses[i]) * ( 1000.0 / actS0Settings[i].ppkwh)), str, 10);
+    itoa(((actS0Data[i].pulsesTotal - tablePulses[i]) * (1000.0 / actS0Settings[i].ppkwh)), str, 10);
     webserver_send_content(client, str, strlen(str));
 
     tablePulses[i] = actS0Data[i].pulsesTotal;
@@ -224,9 +242,11 @@ void s0TableOutput(struct webserver_t *client) {
 
 unsigned long jsonPulses[NUM_S0_COUNTERS];
 
-void s0JsonOutput(struct webserver_t *client) {
+void s0JsonOutput(struct webserver_t *client)
+{
   webserver_send_content_P(client, PSTR("["), 1);
-  for (int i = 0; i < NUM_S0_COUNTERS; i++) {
+  for (int i = 0; i < NUM_S0_COUNTERS; i++)
+  {
     webserver_send_content_P(client, PSTR("{\"S0 port\":\""), 12);
 
     char str[12];
@@ -260,9 +280,12 @@ void s0JsonOutput(struct webserver_t *client) {
     itoa(actS0Data[i].avgPulseWidth, str, 10);
     webserver_send_content(client, str, strlen(str));
 
-    if (i < NUM_S0_COUNTERS - 1) {
+    if (i < NUM_S0_COUNTERS - 1)
+    {
       webserver_send_content_P(client, PSTR("\"},"), 3);
-    } else {
+    }
+    else
+    {
       webserver_send_content_P(client, PSTR("\"}"), 2);
     }
   }

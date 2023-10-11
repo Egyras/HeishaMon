@@ -122,8 +122,21 @@ typedef enum
     HEATPUMP_TOPIC_Z2_SENSOR_SETTINGS,
     HEATPUMP_TOPIC_BUFFER_TANK_DELTA,
     HEATPUMP_TOPIC_EXTERNAL_PAD_HEATER,
-    HEATPUMP_TOPIC_Last
+    HEATPUMP_TOPIC_Last,
 } heatpump_topic_t;
+
+typedef enum
+{
+
+    HEATPUMP_TOPIC_OPT_Z1_Water_Pump,
+    HEATPUMP_TOPIC_OPT_Z1_Mixing_Valve,
+    HEATPUMP_TOPIC_OPT_Z2_Water_Pump,
+    HEATPUMP_TOPIC_OPT_Z2_Mixing_Valve,
+    HEATPUMP_TOPIC_OPT_Pool_Water_Pump,
+    HEATPUMP_TOPIC_OPT_Solar_Water_Pump,
+    HEATPUMP_TOPIC_OPT_Alarm_State,
+    HEATPUMP_TOPIC_OPT_Last,
+} heatpump_opt_topic_t;
 
 typedef enum
 {
@@ -144,21 +157,13 @@ typedef struct
     };
 } decode_result_t;
 
-void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result, bool get_unfiltered_value = true);
-
-const char *get_topic_name(heatpump_topic_t topic);
-
-const char *get_description_text(heatpump_topic_t topic, uint8_t description_idx);
-uint8_t get_description_cnt(heatpump_topic_t topic);
-
-static void resetlastalldatatime()
-{
-}
-
+void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result, bool get_latest_unfiltered_value = true);
+const char *decode_get_topic_name(heatpump_topic_t topic);
+const char *decode_get_opt_topic_name(heatpump_opt_topic_t topic);
+const char *decode_get_description_text(heatpump_topic_t topic, uint8_t description_idx);
+uint8_t decode_get_description_cnt(heatpump_topic_t topic);
 void decode_heatpump_data(uint8_t data[DECODE_MAX_BUFFER_SIZE]);
-
-void clear_filters();
-
-void result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_size);
-
-uint16_t get_max_filter_depth();
+void decode_heatpump_opt_data(uint8_t data[DECODE_MAX_BUFFER_SIZE]);
+void decode_topic_clear_filters();
+void decode_result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_size);
+uint16_t decode_get_max_filter_depth();

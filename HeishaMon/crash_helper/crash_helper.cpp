@@ -50,6 +50,8 @@
 #define EXCCAUSE_CP6_DISABLED 38           /* Access to Coprocessor 6 when disabled */
 #define EXCCAUSE_CP7_DISABLED 39           /* Access to Coprocessor 7 when disabled */
 
+static const uint8_t RTC_MEMORY_OFFSET = 4; // The DoubleResetDetect library is using the first 4 bytes of the RTC memory.
+
 typedef struct
 {
     uint32_t magic;
@@ -70,7 +72,7 @@ const uint32_t CRASH_HELPER_MAGIC = 0xdeadbeef;
 
 static void load_crash_context(crash_helper_context_t *context)
 {
-    ESP.rtcUserMemoryRead(4, (uint32_t *)context, sizeof(crash_helper_context_t));
+    ESP.rtcUserMemoryRead(RTC_MEMORY_OFFSET, (uint32_t *)context, sizeof(crash_helper_context_t));
     if (context->magic != CRASH_HELPER_MAGIC)
     {
         context->magic = CRASH_HELPER_MAGIC;
@@ -90,7 +92,7 @@ static void load_crash_context(crash_helper_context_t *context)
 
 static void save_crash_context(crash_helper_context_t *context)
 {
-    ESP.rtcUserMemoryWrite(4, (uint32_t *)context, sizeof(crash_helper_context_t));
+    ESP.rtcUserMemoryWrite(RTC_MEMORY_OFFSET, (uint32_t *)context, sizeof(crash_helper_context_t));
 }
 
 extern "C" void custom_crash_callback(struct rst_info *rst_info, uint32_t stack, uint32_t stack_end)
@@ -268,18 +270,18 @@ void crash_helper_print_crash(char *buffer, uint16_t buffer_size)
     snprintf(buffer, buffer_size, "Restart reason: %s\nException cause: %s\nEPC1: 0x%08x\nEPC2: 0x%08x\nEPC3: 0x%08x\nEXCVADDR: 0x%08x\nDEPC: 0x%08x\nStack start: 0x%08x\nStack end: 0x%08x\n",
              restart_reason, exception_cause, context.epc1, context.epc2, context.epc3, context.excvaddr, context.depc, context.stack_start, context.stack_end);
 
-    uint16_t stack_trace_length = context.stack_end - context.stack_start;
-    stack_trace_length = stack_trace_length > sizeof(context.stack_trace) ? sizeof(context.stack_trace) : stack_trace_length;
+    uint16_t stack_trace_word_length = context.stack_end - context.stack_start;
+    stack_trace_word_length = stack_trace_word_length > sizeof(context.stack_trace) ? sizeof(context.stack_trace) : stack_trace_word_length;
 
-    stack_trace_length = stack_trace_length / 4; // Stack trace size in 32bit words.
+    stack_trace_word_length = stack_trace_word_length / 4; // Stack trace size in 32bit words.
 
     // Contatinate the stack addresses to the buffer
     uint32_t *stack_value_ptr = (uint32_t *)context.stack_trace;
-    for (int16_t i = 0; i < stack_trace_length; i += 4)
+    for (int16_t i = 0; i < stack_trace_word_length; i += 4)
     {
         snprintf(buffer + strlen(buffer), buffer_size - strlen(buffer), "%08x: ", context.stack_start + i);
 
-        uint16_t column_cnt = stack_trace_length - i;
+        uint16_t column_cnt = stack_trace_word_length - i;
         column_cnt = column_cnt > 4 ? 4 : column_cnt;
 
         for (byte j = 0; j < column_cnt; j++)

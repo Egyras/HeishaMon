@@ -18,7 +18,5 @@ typedef struct
 } filter_context_t;
 
 void filter_clear(filter_context_t *context);
-
 void filter_update(filter_context_t *context, filter_type_t type, float value);
-
 float filter_get_value(filter_context_t *context, filter_type_t type);
