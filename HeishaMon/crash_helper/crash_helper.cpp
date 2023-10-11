@@ -97,9 +97,6 @@ static void save_crash_context(crash_helper_context_t *context)
 
 extern "C" void custom_crash_callback(struct rst_info *rst_info, uint32_t stack, uint32_t stack_end)
 {
-    // Note that 'EEPROM.begin' method is reserving a RAM buffer
-    // The buffer size is SAVE_CRASH_EEPROM_OFFSET + SAVE_CRASH_SPACE_SIZE
-
     crash_helper_context_t context;
     load_crash_context(&context);
 

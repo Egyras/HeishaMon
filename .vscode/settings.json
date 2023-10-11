@@ -1,5 +1,7 @@
 {
     "files.associations": {},
-    "C_Cpp.formatting": "clangFormat",
-    "editor.formatOnSave": true
+    "C_Cpp.formatting": "vcFormat",
+    "editor.formatOnSave": true,
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.block": "sameLine",
+    "C_Cpp.vcFormat.space.beforeEmptySquareBrackets": true
 }
