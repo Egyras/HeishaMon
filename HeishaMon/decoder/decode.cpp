@@ -5,41 +5,41 @@
 unsigned long lastalldatatime = 0;
 unsigned long lastalloptdatatime = 0;
 
-static void getBit1(uint8_t* input, uint8_t offset, decode_result_t* result);
+static void getBit1(uint8_t *input, uint8_t offset, decode_result_t *result);
 
-static void getBit1and2(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getBit3and4(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getBit5and6(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getBit7and8(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getBit3and4and5(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getLeft5bits(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getRight3bits(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getIntMinus1(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getIntMinus128(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getIntMinus1Div5(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getIntMinus1Times10(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getIntMinus1Times50(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void unknown(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getOpMode(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getEnergy(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getPumpFlow(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getFirstByte(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getSecondByte(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getModel(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getErrorInfo(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getFractionalValue(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void getUint16Minus1(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void opt1(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void opt2(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void opt3(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void opt4(uint8_t* input, uint8_t offset, decode_result_t* result);
-static void opt5and6(uint8_t* input, uint8_t offset, decode_result_t* result);
-typedef void (*decoder_func_ptr_t)(uint8_t* data, uint8_t offset, decode_result_t* result);
+static void getBit1and2(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getBit3and4(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getBit5and6(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getBit7and8(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getBit3and4and5(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getLeft5bits(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getRight3bits(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getIntMinus1(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getIntMinus128(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getIntMinus1Div5(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getIntMinus1Times10(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getIntMinus1Times50(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void unknown(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getOpMode(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getEnergy(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getPumpFlow(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getFirstByte(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getSecondByte(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getModel(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getErrorInfo(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getFractionalValue(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void getUint16Minus1(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void opt1(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void opt2(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void opt3(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void opt4(uint8_t *input, uint8_t offset, decode_result_t *result);
+static void opt5and6(uint8_t *input, uint8_t offset, decode_result_t *result);
+typedef void (*decoder_func_ptr_t)(uint8_t *data, uint8_t offset, decode_result_t *result);
 
 typedef struct
 {
-  const char* const name;
-  topic_description_t* description;
+  const char *const name;
+  topic_description_t *description;
   uint8_t byte_offset;
   decoder_func_ptr_t decoder_function;
   filter_context_t filter_context;
@@ -906,121 +906,121 @@ static topic_t opt_topic_configurations [] = {
   },
 };
 
-static void getBit1(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getBit1(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = input[offset] >> 7;
 }
 
-static void getBit1and2(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getBit1and2(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] >> 6) - 1;
 }
 
-static void getBit3and4(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getBit3and4(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = ((input[offset] >> 4) & 0b11) - 1;
 }
 
-static void opt1(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void opt1(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] >> 5) & 0b11;
 }
 
-static void opt2(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void opt2(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] >> 4) & 0b1;
 }
 
-static void opt3(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void opt3(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] >> 2) & 0b11;
 }
 
-static void opt4(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void opt4(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] >> 1) & 0b1;
 }
 
-static void opt5and6(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void opt5and6(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] >> 0) & 0b1;
 }
 
-static void getBit5and6(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getBit5and6(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = ((input[offset] >> 2) & 0b11) - 1;
 }
 
-static void getBit7and8(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getBit7and8(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] & 0b11) - 1;
 }
 
-static void getBit3and4and5(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getBit3and4and5(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = ((input[offset] >> 3) & 0b111) - 1;
 }
 
-static void getLeft5bits(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getLeft5bits(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] >> 3) - 1;
 }
 
-static void getRight3bits(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getRight3bits(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] & 0b111) - 1;
 }
 
-static void getIntMinus1(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getIntMinus1(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (int)input[offset] - 1;
 }
 
-static void getIntMinus128(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getIntMinus128(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (int)input[offset] - 128;
 }
 
-static void getIntMinus1Div5(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getIntMinus1Div5(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_FLOAT;
   result->int_value = (((float)input[offset] - 1.0f) / 5.0f);
 }
 
-static void getIntMinus1Times10(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getIntMinus1Times10(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (int)input[offset] - 1;
 }
 
-static void getIntMinus1Times50(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getIntMinus1Times50(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = ((int)input[offset] - 1) * 50;
 }
 
-static void unknown(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void unknown(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = -1;
 }
 
-static void getOpMode(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getOpMode(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   int val = 0;
   const uint8_t mode = input[offset] & 0b1111;
@@ -1052,13 +1052,13 @@ static void getOpMode(uint8_t* input, uint8_t offset, decode_result_t* result)
   result->int_value = val;
 }
 
-static void getEnergy(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getEnergy(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = ((int)input[offset] - 1) * 200;
 }
 
-static void getPumpFlow(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getPumpFlow(uint8_t *input, uint8_t offset, decode_result_t *result)
 { // TOP1 //
   float PumpFlow1 = (int)input[offset + 1];
   float PumpFlow2 = (((float)input[offset] - 1.0f) / 256.0f);
@@ -1068,19 +1068,19 @@ static void getPumpFlow(uint8_t* input, uint8_t offset, decode_result_t* result)
   result->float_value = PumpFlow;
 }
 
-static void getFirstByte(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getFirstByte(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] >> 4) - 1;
 }
 
-static void getSecondByte(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getSecondByte(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = (input[offset] & 0b1111) - 1;
 }
 
-static void getModel(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getModel(uint8_t *input, uint8_t offset, decode_result_t *result)
 { // TOP92 //
   result->result_type = DECODE_RESULT_INT;
   result->int_value = -1;
@@ -1092,7 +1092,7 @@ static void getModel(uint8_t* input, uint8_t offset, decode_result_t* result)
   }
 }
 
-static void getErrorInfo(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getErrorInfo(uint8_t *input, uint8_t offset, decode_result_t *result)
 { // TOP44 //
   int Error_type = (int)(input[offset]);
   int Error_number = ((int)(input[offset + 1])) - 17;
@@ -1111,7 +1111,7 @@ static void getErrorInfo(uint8_t* input, uint8_t offset, decode_result_t* result
   }
 }
 
-static void getFractionalValue(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getFractionalValue(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   getIntMinus128(input, offset, result);
   result->result_type = DECODE_RESULT_FLOAT;
@@ -1135,7 +1135,7 @@ static void getFractionalValue(uint8_t* input, uint8_t offset, decode_result_t* 
   }
 }
 
-static void getUint16Minus1(uint8_t* input, uint8_t offset, decode_result_t* result)
+static void getUint16Minus1(uint8_t *input, uint8_t offset, decode_result_t *result)
 {
   result->result_type = DECODE_RESULT_INT;
   result->int_value = word(input[offset + 1], input[offset]) - 1;
@@ -1181,9 +1181,9 @@ decoder_buffer_validation_result_t decode_validate_buffer(uint8_t data[DECODE_MA
   return DECODER_BUFFER_VALIDATION_INVALID;
 }
 
-void decode_get_topic_value(heatpump_topic_t topic, uint8_t* data, decode_result_t* result, bool get_latest_unfiltered_value)
+void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result, bool get_latest_unfiltered_value)
 {
-  topic_t* topic_config = &topic_configurations[topic];
+  topic_t *topic_config = &topic_configurations[topic];
   topic_config->decoder_function(data, topic_config->byte_offset, result);
 
   if (get_latest_unfiltered_value == false && topic_config->description->filter_type != FILTER_TYPE_NONE) {
@@ -1243,17 +1243,17 @@ void decode_heatpump_opt_data(uint8_t data[255])
   }
 }
 
-const char* decode_get_topic_name(heatpump_topic_t topic)
+const char *decode_get_topic_name(heatpump_topic_t topic)
 {
   return topic_configurations[topic].name;
 }
 
-const char* decode_get_opt_topic_name(heatpump_opt_topic_t topic)
+const char *decode_get_opt_topic_name(heatpump_opt_topic_t topic)
 {
   return topic_configurations[topic].name;
 }
 
-const char* decode_get_description_text(heatpump_topic_t topic, uint8_t description_idx)
+const char *decode_get_description_text(heatpump_topic_t topic, uint8_t description_idx)
 {
   return topic_configurations[topic].description->descriptions_strs[description_idx];
 }
@@ -1270,7 +1270,7 @@ void decode_topic_clear_filters()
   }
 }
 
-void decode_result_to_string(decode_result_t* result, char* buffer, uint16_t buffer_size)
+void decode_result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_size)
 {
   switch (result->result_type) {
   case DECODE_RESULT_INT:

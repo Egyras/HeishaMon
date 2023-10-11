@@ -13,7 +13,7 @@
 
 #define HEATPUMP_VALUE_LEN 16
 
-void log_message(char* string);
+void log_message(char *string);
 
 static IPAddress apIP(192, 168, 4, 1);
 
@@ -26,8 +26,8 @@ struct settingsStruct
   uint16_t updataAllDallasTime = 300; // how often all 1wire data is resent to mqtt
   uint16_t timezone = 0;
 
-  const char* update_path = "/firmware";
-  const char* update_username = "admin";
+  const char *update_path = "/firmware";
+  const char *update_username = "admin";
   char wifi_ssid[33] = "";
   char wifi_password[65] = "";
   char wifi_hostname[40] = "HeishaMon";
@@ -55,38 +55,38 @@ struct websettings_t
 {
   String name;
   String value;
-  struct websettings_t* next;
+  struct websettings_t *next;
 };
 
 void setupConditionals();
 int getFreeMemory(void);
-char* getUptime(void);
-void setupWifi(settingsStruct* heishamonSettings);
+char *getUptime(void);
+void setupWifi(settingsStruct *heishamonSettings);
 int getWifiQuality(void);
 int getFreeMemory(void);
-void ntpReload(settingsStruct* heishamonSettings);
+void ntpReload(settingsStruct *heishamonSettings);
 
-void log_message(char* string);
-int8_t webserver_cb(struct webserver_t* client, void* data);
+void log_message(char *string);
+int8_t webserver_cb(struct webserver_t *client, void *data);
 void getWifiScanResults(int numSsid);
-int handleRoot(struct webserver_t* client, float readpercentage, int mqttReconnects, settingsStruct* heishamonSettings);
-int handleTableRefresh(struct webserver_t* client, char* serial_decoder_buffer);
-int handleJsonOutput(struct webserver_t* client, char* serial_decoder_buffer);
-int handleFactoryReset(struct webserver_t* client);
-int handleReboot(struct webserver_t* client);
-int handleDebug(struct webserver_t* client, char* hex, byte hex_len);
-void settingsToJson(DynamicJsonDocument& jsonDoc, settingsStruct* heishamonSettings);
-void saveJsonToConfig(DynamicJsonDocument& jsonDoc);
-void loadSettings(settingsStruct* heishamonSettings);
-int getSettings(struct webserver_t* client, settingsStruct* heishamonSettings);
-int handleSettings(struct webserver_t* client);
-int saveSettings(struct webserver_t* client, settingsStruct* heishamonSettings);
-int settingsReconnectWifi(struct webserver_t* client, settingsStruct* heishamonSettings);
-int settingsNewPassword(struct webserver_t* client, settingsStruct* heishamonSettings);
-int cacheSettings(struct webserver_t* client, struct arguments_t* args);
-int handleWifiScan(struct webserver_t* client);
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length);
-int showRules(struct webserver_t* client);
-int showFirmware(struct webserver_t* client);
-int showFirmwareSuccess(struct webserver_t* client);
-int showFirmwareFail(struct webserver_t* client);
+int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings);
+int handleTableRefresh(struct webserver_t *client, char *serial_decoder_buffer);
+int handleJsonOutput(struct webserver_t *client, char *serial_decoder_buffer);
+int handleFactoryReset(struct webserver_t *client);
+int handleReboot(struct webserver_t *client);
+int handleDebug(struct webserver_t *client, char *hex, byte hex_len);
+void settingsToJson(DynamicJsonDocument &jsonDoc, settingsStruct *heishamonSettings);
+void saveJsonToConfig(DynamicJsonDocument &jsonDoc);
+void loadSettings(settingsStruct *heishamonSettings);
+int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings);
+int handleSettings(struct webserver_t *client);
+int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings);
+int settingsReconnectWifi(struct webserver_t *client, settingsStruct *heishamonSettings);
+int settingsNewPassword(struct webserver_t *client, settingsStruct *heishamonSettings);
+int cacheSettings(struct webserver_t *client, struct arguments_t *args);
+int handleWifiScan(struct webserver_t *client);
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
+int showRules(struct webserver_t *client);
+int showFirmware(struct webserver_t *client);
+int showFirmwareSuccess(struct webserver_t *client);
+int showFirmwareFail(struct webserver_t *client);

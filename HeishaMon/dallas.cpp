@@ -15,7 +15,7 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
 
 // global array for 1wire data
-dallasDataStruct* actDallasData = 0;
+dallasDataStruct *actDallasData = 0;
 int dallasDevicecount = 0;
 
 unsigned long lastalldatatime_dallas = 0;
@@ -24,7 +24,7 @@ unsigned long dallasTimer = 0;
 unsigned int updateAllDallasTime = 30000; // will be set using heishmonSettings
 unsigned int dallasTimerWait = 30000;     // will be set using heishmonSettings
 
-void initDallasSensors(void (*log_message)(char*), unsigned int updateAllDallasTimeSettings, unsigned int dallasTimerWaitSettings, unsigned int dallasResolution)
+void initDallasSensors(void (*log_message)(char *), unsigned int updateAllDallasTimeSettings, unsigned int dallasTimerWaitSettings, unsigned int dallasResolution)
 {
   char log_msg[256];
   updateAllDallasTime = updateAllDallasTimeSettings;
@@ -65,7 +65,7 @@ void resetlastalldatatime_dallas()
   lastalldatatime_dallas = 0;
 }
 
-void readNewDallasTemp(PubSubClient& mqtt_client, void (*log_message)(char*), char* mqtt_topic_base)
+void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char *), char *mqtt_topic_base)
 {
   char log_msg[256];
   char mqtt_topic[256];
@@ -106,19 +106,19 @@ void readNewDallasTemp(PubSubClient& mqtt_client, void (*log_message)(char*), ch
   }
 }
 
-void dallasLoop(PubSubClient& mqtt_client, void (*log_message)(char*), char* mqtt_topic_base)
+void dallasLoop(PubSubClient &mqtt_client, void (*log_message)(char *), char *mqtt_topic_base)
 {
   if ((DALLASASYNC) && ((unsigned long)(millis() - dallasTimer) > ((1000 * dallasTimerWait) - 1000))) {
     DS18B20.requestTemperatures(); // get temperatures for next run 1 second before getting the temperatures (async)
   }
   if ((unsigned long)(millis() - dallasTimer) > (1000 * dallasTimerWait)) {
-    log_message((char*)"Requesting new 1wire temperatures");
+    log_message((char *)"Requesting new 1wire temperatures");
     dallasTimer = millis();
     readNewDallasTemp(mqtt_client, log_message, mqtt_topic_base);
   }
 }
 
-void dallasJsonOutput(struct webserver_t* client)
+void dallasJsonOutput(struct webserver_t *client)
 {
   webserver_send_content_P(client, PSTR("["), 1);
 
@@ -139,7 +139,7 @@ void dallasJsonOutput(struct webserver_t* client)
   webserver_send_content_P(client, PSTR("]"), 1);
 }
 
-void dallasTableOutput(struct webserver_t* client)
+void dallasTableOutput(struct webserver_t *client)
 {
   for (int i = 0; i < dallasDevicecount; i++) {
     webserver_send_content_P(client, PSTR("<tr><td>"), 8);

@@ -13,66 +13,66 @@ extern byte panasonicQuery[PANASONICQUERYSIZE];
 #define OPTIONALPCBSAVETIME 300 // save each 5 minutes the current optional pcb state into flash to have valid values during reboot
 extern byte optionalPCBQuery[OPTIONALPCBQUERYSIZE];
 
-extern const char* mqtt_topic_values;
-extern const char* mqtt_topic_commands;
-extern const char* mqtt_topic_pcbvalues;
-extern const char* mqtt_topic_1wire;
-extern const char* mqtt_topic_s0;
-extern const char* mqtt_topic_pcb;
-extern const char* mqtt_logtopic;
-extern const char* mqtt_willtopic;
-extern const char* mqtt_iptopic;
-extern const char* mqtt_send_raw_value_topic;
+extern const char *mqtt_topic_values;
+extern const char *mqtt_topic_commands;
+extern const char *mqtt_topic_pcbvalues;
+extern const char *mqtt_topic_1wire;
+extern const char *mqtt_topic_s0;
+extern const char *mqtt_topic_pcb;
+extern const char *mqtt_logtopic;
+extern const char *mqtt_willtopic;
+extern const char *mqtt_iptopic;
+extern const char *mqtt_send_raw_value_topic;
 
-unsigned int set_heatpump_state(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_pump(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_max_pump_duty(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_quiet_mode(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_z1_heat_request_temperature(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_z1_cool_request_temperature(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_z2_heat_request_temperature(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_z2_cool_request_temperature(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_force_DHW(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_force_defrost(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_force_sterilization(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_holiday_mode(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_powerful_mode(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_operation_mode(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_DHW_temp(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_curves(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_zones(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_floor_heat_delta(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_floor_cool_delta(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_dhw_heat_delta(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_reset(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_heater_delay_time(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_heater_start_delta(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_heater_stop_delta(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_main_schedule(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_alt_external_sensor(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_external_pad_heater(char* msg, unsigned char* cmd, char* log_msg);
-unsigned int set_buffer_delta(char* msg, unsigned char* cmd, char* log_msg);
+unsigned int set_heatpump_state(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_pump(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_max_pump_duty(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_quiet_mode(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_z1_heat_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_z1_cool_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_z2_heat_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_z2_cool_request_temperature(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_force_DHW(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_force_defrost(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_force_sterilization(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_holiday_mode(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_powerful_mode(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_operation_mode(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_DHW_temp(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_curves(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_zones(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_floor_heat_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_floor_cool_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_dhw_heat_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_reset(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heater_delay_time(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heater_start_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heater_stop_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_main_schedule(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_alt_external_sensor(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_external_pad_heater(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_buffer_delta(char *msg, unsigned char *cmd, char *log_msg);
 
 // optional pcb commands
-unsigned int set_heat_cool_mode(char* msg, char* log_msg);
-unsigned int set_compressor_state(char* msg, char* log_msg);
-unsigned int set_smart_grid_mode(char* msg, char* log_msg);
-unsigned int set_external_thermostat_1_state(char* msg, char* log_msg);
-unsigned int set_external_thermostat_2_state(char* msg, char* log_msg);
-unsigned int set_demand_control(char* msg, char* log_msg);
-unsigned int set_pool_temp(char* msg, char* log_msg);
-unsigned int set_buffer_temp(char* msg, char* log_msg);
-unsigned int set_z1_room_temp(char* msg, char* log_msg);
-unsigned int set_z1_water_temp(char* msg, char* log_msg);
-unsigned int set_z2_room_temp(char* msg, char* log_msg);
-unsigned int set_z2_water_temp(char* msg, char* log_msg);
-unsigned int set_solar_temp(char* msg, char* log_msg);
-unsigned int set_byte_9(char* msg, char* log_msg);
+unsigned int set_heat_cool_mode(char *msg, char *log_msg);
+unsigned int set_compressor_state(char *msg, char *log_msg);
+unsigned int set_smart_grid_mode(char *msg, char *log_msg);
+unsigned int set_external_thermostat_1_state(char *msg, char *log_msg);
+unsigned int set_external_thermostat_2_state(char *msg, char *log_msg);
+unsigned int set_demand_control(char *msg, char *log_msg);
+unsigned int set_pool_temp(char *msg, char *log_msg);
+unsigned int set_buffer_temp(char *msg, char *log_msg);
+unsigned int set_z1_room_temp(char *msg, char *log_msg);
+unsigned int set_z1_water_temp(char *msg, char *log_msg);
+unsigned int set_z2_room_temp(char *msg, char *log_msg);
+unsigned int set_z2_water_temp(char *msg, char *log_msg);
+unsigned int set_solar_temp(char *msg, char *log_msg);
+unsigned int set_byte_9(char *msg, char *log_msg);
 
 struct cmdStruct
 {
   char name[28];
-  unsigned int (*func)(char* msg, unsigned char* cmd, char* log_msg);
+  unsigned int (*func)(char *msg, unsigned char *cmd, char *log_msg);
 };
 
 const cmdStruct commands [] PROGMEM = {
@@ -126,7 +126,7 @@ const cmdStruct commands [] PROGMEM = {
 struct optCmdStruct
 {
   char name[28];
-  unsigned int (*func)(char* msg, char* log_msg);
+  unsigned int (*func)(char *msg, char *log_msg);
 };
 
 const optCmdStruct optionalCommands [] PROGMEM = {
@@ -146,6 +146,6 @@ const optCmdStruct optionalCommands [] PROGMEM = {
   {"SetSolarTemp", set_solar_temp},
   {"SetOptPCBByte9", set_byte_9} };
 
-void send_heatpump_command(char* topic, char* msg, bool (*send_command)(byte*, int), void (*log_message)(char*), bool optionalPCB);
-bool saveOptionalPCB(byte* command, int length);
-bool loadOptionalPCB(byte* command, int length);
+void send_heatpump_command(char *topic, char *msg, bool (*send_command)(byte *, int), void (*log_message)(char *), bool optionalPCB);
+bool saveOptionalPCB(byte *command, int length);
+bool loadOptionalPCB(byte *command, int length);

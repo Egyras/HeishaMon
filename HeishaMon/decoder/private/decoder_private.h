@@ -43,42 +43,42 @@ typedef enum
 
 typedef struct
 {
-  const char** descriptions_strs;
+  const char **descriptions_strs;
   uint8_t number_of_descriptions;
   filter_type_t filter_type;
 } topic_description_t;
 
 // Array of strings for topic description
-static const char* TOPIC_DESCRIPTION_TEXTS_DISABLE_ENABLE [] PROGMEM = { "Disabled", "Enabled" };
-static const char* TOPIC_DESCRIPTION_TEXTS_BLOCKED_FREE [] PROGMEM = { "Blocked", "Free" };
-static const char* TOPIC_DESCRIPTION_TEXTS_OFF_ON [] PROGMEM = { "Off", "On" };
-static const char* TOPIC_DESCRIPTION_TEXTS_INACTIVE_ACTIVE [] PROGMEM = { "Inactive", "Active" };
-static const char* TOPIC_DESCRIPTION_TEXTS_PUMP_FLOW_RATE_MODE [] PROGMEM = { "DeltaT", "Max flow" };
-static const char* TOPIC_DESCRIPTION_TEXTS_HOLIDAY_STATE [] PROGMEM = { "Off", "Scheduled", "Active" };
-static const char* TOPIC_DESCRIPTION_TEXTS_OP_MODE_DESC [] PROGMEM = { "Heat", "Cool", "Auto(heat)", "DHW", "Heat+DHW", "Cool+DHW", "Auto(heat)+DHW", "Auto(cool)", "Auto(cool)+DHW" };
-static const char* TOPIC_DESCRIPTION_TEXTS_POWERFUL_MODE [] PROGMEM = { "Off", "30min", "60min", "90min" };
-static const char* TOPIC_DESCRIPTION_TEXTS_QUIET_MODE [] PROGMEM = { "Off", "Level 1", "Level 2", "Level 3" };
-static const char* TOPIC_DESCRIPTION_TEXTS_VALVE [] PROGMEM = { "Room", "DHW" };
-static const char* TOPIC_DESCRIPTION_TEXTS_LITERS_PER_MIN [] PROGMEM = { "l/min" };
-static const char* TOPIC_DESCRIPTION_TEXTS_ROTATIONS_PER_MIN [] PROGMEM = { "r/min" };
-static const char* TOPIC_DESCRIPTION_TEXTS_PRESSURE [] PROGMEM = { "Kgf/cm2" };
-static const char* TOPIC_DESCRIPTION_TEXTS_CELSIUS [] PROGMEM = { "&deg;C" };
-static const char* TOPIC_DESCRIPTION_TEXTS_KELVIN [] PROGMEM = { "K" };
-static const char* TOPIC_DESCRIPTION_TEXTS_HERTZ [] PROGMEM = { "Hz" };
-static const char* TOPIC_DESCRIPTION_TEXTS_COUNTER [] PROGMEM = { "count" };
-static const char* TOPIC_DESCRIPTION_TEXTS_HOURS [] PROGMEM = { "hours" };
-static const char* TOPIC_DESCRIPTION_TEXTS_WATT [] PROGMEM = { "Watt" };
-static const char* TOPIC_DESCRIPTION_TEXTS_ERROR_STATE [] PROGMEM = { "Error" };
-static const char* TOPIC_DESCRIPTION_TEXTS_AMPERE [] PROGMEM = { "Ampere" };
-static const char* TOPIC_DESCRIPTION_TEXTS_MINUTES [] PROGMEM = { "Minutes" };
-static const char* TOPIC_DESCRIPTION_TEXTS_DUTY [] PROGMEM = { "Duty" };
-static const char* TOPIC_DESCRIPTION_TEXTS_ZONE_STATUS [] PROGMEM = { "Zone1 active", "Zone2 active", "Zone1 and zone2 active" };
-static const char* TOPIC_DESCRIPTION_TEXTS_HEAT_COOL_MODE_DESC [] PROGMEM = { "Comp. Curve", "Direct" };
-static const char* TOPIC_DESCRIPTION_TEXTS_SOLAR_MODE_DESC [] PROGMEM = { "Disabled", "Buffer", "DHW" };
-static const char* TOPIC_DESCRIPTION_TEXTS_ZONES_SENSOR_TYPE [] = { "Water Temperature", "External Thermostat", "Internal Thermostat", "Thermistor" };
-static const char* TOPIC_DESCRIPTION_TEXTS_LIQUID_TYPE [] PROGMEM = { "Water", "Glycol" };
-static const char* TOPIC_DESCRIPTION_TEXTS_EXT_PAD_HEATER_TYPE [] PROGMEM = { "Disabled", "Type-A", "Type-B" };
-static const char* TOPIC_DESCRIPTION_TEXTS_MODEL [] PROGMEM = {
+static const char *TOPIC_DESCRIPTION_TEXTS_DISABLE_ENABLE [] PROGMEM = { "Disabled", "Enabled" };
+static const char *TOPIC_DESCRIPTION_TEXTS_BLOCKED_FREE [] PROGMEM = { "Blocked", "Free" };
+static const char *TOPIC_DESCRIPTION_TEXTS_OFF_ON [] PROGMEM = { "Off", "On" };
+static const char *TOPIC_DESCRIPTION_TEXTS_INACTIVE_ACTIVE [] PROGMEM = { "Inactive", "Active" };
+static const char *TOPIC_DESCRIPTION_TEXTS_PUMP_FLOW_RATE_MODE [] PROGMEM = { "DeltaT", "Max flow" };
+static const char *TOPIC_DESCRIPTION_TEXTS_HOLIDAY_STATE [] PROGMEM = { "Off", "Scheduled", "Active" };
+static const char *TOPIC_DESCRIPTION_TEXTS_OP_MODE_DESC [] PROGMEM = { "Heat", "Cool", "Auto(heat)", "DHW", "Heat+DHW", "Cool+DHW", "Auto(heat)+DHW", "Auto(cool)", "Auto(cool)+DHW" };
+static const char *TOPIC_DESCRIPTION_TEXTS_POWERFUL_MODE [] PROGMEM = { "Off", "30min", "60min", "90min" };
+static const char *TOPIC_DESCRIPTION_TEXTS_QUIET_MODE [] PROGMEM = { "Off", "Level 1", "Level 2", "Level 3" };
+static const char *TOPIC_DESCRIPTION_TEXTS_VALVE [] PROGMEM = { "Room", "DHW" };
+static const char *TOPIC_DESCRIPTION_TEXTS_LITERS_PER_MIN [] PROGMEM = { "l/min" };
+static const char *TOPIC_DESCRIPTION_TEXTS_ROTATIONS_PER_MIN [] PROGMEM = { "r/min" };
+static const char *TOPIC_DESCRIPTION_TEXTS_PRESSURE [] PROGMEM = { "Kgf/cm2" };
+static const char *TOPIC_DESCRIPTION_TEXTS_CELSIUS [] PROGMEM = { "&deg;C" };
+static const char *TOPIC_DESCRIPTION_TEXTS_KELVIN [] PROGMEM = { "K" };
+static const char *TOPIC_DESCRIPTION_TEXTS_HERTZ [] PROGMEM = { "Hz" };
+static const char *TOPIC_DESCRIPTION_TEXTS_COUNTER [] PROGMEM = { "count" };
+static const char *TOPIC_DESCRIPTION_TEXTS_HOURS [] PROGMEM = { "hours" };
+static const char *TOPIC_DESCRIPTION_TEXTS_WATT [] PROGMEM = { "Watt" };
+static const char *TOPIC_DESCRIPTION_TEXTS_ERROR_STATE [] PROGMEM = { "Error" };
+static const char *TOPIC_DESCRIPTION_TEXTS_AMPERE [] PROGMEM = { "Ampere" };
+static const char *TOPIC_DESCRIPTION_TEXTS_MINUTES [] PROGMEM = { "Minutes" };
+static const char *TOPIC_DESCRIPTION_TEXTS_DUTY [] PROGMEM = { "Duty" };
+static const char *TOPIC_DESCRIPTION_TEXTS_ZONE_STATUS [] PROGMEM = { "Zone1 active", "Zone2 active", "Zone1 and zone2 active" };
+static const char *TOPIC_DESCRIPTION_TEXTS_HEAT_COOL_MODE_DESC [] PROGMEM = { "Comp. Curve", "Direct" };
+static const char *TOPIC_DESCRIPTION_TEXTS_SOLAR_MODE_DESC [] PROGMEM = { "Disabled", "Buffer", "DHW" };
+static const char *TOPIC_DESCRIPTION_TEXTS_ZONES_SENSOR_TYPE [] = { "Water Temperature", "External Thermostat", "Internal Thermostat", "Thermistor" };
+static const char *TOPIC_DESCRIPTION_TEXTS_LIQUID_TYPE [] PROGMEM = { "Water", "Glycol" };
+static const char *TOPIC_DESCRIPTION_TEXTS_EXT_PAD_HEATER_TYPE [] PROGMEM = { "Disabled", "Type-A", "Type-B" };
+static const char *TOPIC_DESCRIPTION_TEXTS_MODEL [] PROGMEM = {
     "WH-MDC05H3E5",                          // 0
     "WH-MDC07H3E5",                          // 1
     "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5",      // 2
@@ -109,7 +109,7 @@ static const char* TOPIC_DESCRIPTION_TEXTS_MODEL [] PROGMEM = {
     "WH-MDC07J3E5",                          // 27
     "WH-MDC05J3E5",                          // 28
 };
-static const char* TOPIC_DESCRIPTION_TEXTS_UNKNOWN [] PROGMEM = { "Unknown" };
+static const char *TOPIC_DESCRIPTION_TEXTS_UNKNOWN [] PROGMEM = { "Unknown" };
 
 static const uint8_t knownModels[SIZE_OF_ARRAY(TOPIC_DESCRIPTION_TEXTS_MODEL)][10] PROGMEM = {
   // stores the bytes #129 to #138 of known models in the same order as the const above

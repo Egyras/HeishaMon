@@ -108,7 +108,7 @@ void restore_s0_Watthour(int s0Port, float watthour)
   }
 }
 
-void s0Loop(PubSubClient& mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, s0SettingsStruct s0Settings [])
+void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char *), char *mqtt_topic_base, s0SettingsStruct s0Settings [])
 {
 
   unsigned long millisThisLoop = millis();
@@ -187,7 +187,7 @@ void s0Loop(PubSubClient& mqtt_client, void (*log_message)(char*), char* mqtt_to
 
 unsigned long tablePulses[NUM_S0_COUNTERS];
 
-void s0TableOutput(struct webserver_t* client)
+void s0TableOutput(struct webserver_t *client)
 {
   for (int i = 0; i < NUM_S0_COUNTERS; i++) {
     webserver_send_content_P(client, PSTR("<tr><td>"), 8);
@@ -229,7 +229,7 @@ void s0TableOutput(struct webserver_t* client)
 
 unsigned long jsonPulses[NUM_S0_COUNTERS];
 
-void s0JsonOutput(struct webserver_t* client)
+void s0JsonOutput(struct webserver_t *client)
 {
   webserver_send_content_P(client, PSTR("["), 1);
   for (int i = 0; i < NUM_S0_COUNTERS; i++) {
