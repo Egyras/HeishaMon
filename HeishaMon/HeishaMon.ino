@@ -327,7 +327,7 @@ bool isValidReceiveChecksum() {
 bool readSerial()
 {
   int len = 0;
-  while ((Serial.available()) && (len < MAXDATASIZE)) {
+  while ((Serial.available()) && ((data_length + len) < MAXDATASIZE)) {
     data[data_length + len] = Serial.read(); //read available data and place it after the last received data
     len++;
     if (data[0] != 113) { //wrong header received!
