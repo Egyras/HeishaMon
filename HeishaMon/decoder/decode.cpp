@@ -1186,7 +1186,7 @@ void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result
   topic_t *topic_config = &topic_configurations[topic];
   topic_config->decoder_function(data, topic_config->byte_offset, result);
 
-  if (get_latest_unfiltered_value == false && topic_config->description->filter_type != FILTER_TYPE_NONE) {
+  if (get_latest_unfiltered_value == false && topic_config->filter_context.filter_count > 0 && topic_config->description->filter_type != FILTER_TYPE_NONE) {
     const float filtered_value = filter_get_value(&(topic_config->filter_context), topic_config->description->filter_type);
     switch (result->result_type) {
     case DECODE_RESULT_INT:

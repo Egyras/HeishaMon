@@ -296,6 +296,12 @@ void logHex(char *hex, byte hex_len)
 
 void publish_crash_report() {
   char topic_buffer[128];
+  const bool mqtt_connected = WiFi.isConnected() && mqtt_client.state() == MQTT_CONNECTED;
+
+  if (mqtt_connected == false) {
+    return;
+  }
+
 
   if (crash_helper_has_crashed()) {
     static char crash_log_buffer[1024];
@@ -393,7 +399,17 @@ void readSerial()
     len++;
 
     const decoder_buffer_validation_result_t buffer_status = decode_validate_buffer((uint8_t *)serial_read_buffer, serial_read_buffer_length + len);
-    if (buffer_status != DECODER_BUFFER_VALIDATION_INCOMPLETE) {
+
+    // The handling of the bad header needs to happen here otherwise we can't get data with a good header.
+    // It's not clear to me why but I think it's because we need to empty the serial buffer fast.
+    // TODO: read all available data from the serial buffer and create a function in the decoder
+    // module to seek valid data/header in a buffer with a bad header.
+    if (buffer_status == DECODER_BUFFER_VALIDATION_INVALID_HEADER) {
+      badheaderread++;
+      serial_read_buffer_length = 0;
+      len = 0;
+    }
+    else if (buffer_status != DECODER_BUFFER_VALIDATION_INCOMPLETE) {
       break;
     }
   }
