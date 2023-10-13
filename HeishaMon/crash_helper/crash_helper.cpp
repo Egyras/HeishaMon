@@ -22,7 +22,7 @@
 #define EXCCAUSE_SPECULATION 7      /* Use of Failed Speculative Access (not implemented) */
 #define EXCCAUSE_PRIVILEGED 8       /* Privileged Instruction */
 #define EXCCAUSE_UNALIGNED 9        /* Unaligned Load or Store */
-/* Reserved				10..11 */
+ /* Reserved				10..11 */
 #define EXCCAUSE_INSTR_DATA_ERROR 12      /* PIF Data Error on Instruction Fetch (RB-200x and later) */
 #define EXCCAUSE_LOAD_STORE_DATA_ERROR 13 /* PIF Data Error on Load or Store (RB-200x and later) */
 #define EXCCAUSE_INSTR_ADDR_ERROR 14      /* PIF Address Error on Instruction Fetch (RB-200x and later) */
@@ -70,82 +70,84 @@ typedef struct
 
 const uint32_t CRASH_HELPER_MAGIC = 0xdeadbeef;
 
-static void load_crash_context(crash_helper_context_t *context)
+static crash_helper_context_t loaded_context_cache;
+static bool has_loaded_context_cache = false;
+
+static void load_crash_context()
 {
-    ESP.rtcUserMemoryRead(RTC_MEMORY_OFFSET, (uint32_t *)context, sizeof(crash_helper_context_t));
-    if (context->magic != CRASH_HELPER_MAGIC)
-    {
-        context->magic = CRASH_HELPER_MAGIC;
-        context->crash_times = 0;
-        context->restart_reason = 0;
-        context->exception_cause = 0;
-        context->epc1 = 0;
-        context->epc2 = 0;
-        context->epc3 = 0;
-        context->excvaddr = 0;
-        context->depc = 0;
-        context->stack_start = 0;
-        context->stack_end = 0;
-        memset(context->stack_trace, 0, sizeof(context->stack_trace));
+    if (has_loaded_context_cache) {
+        return;
     }
+
+    ESP.rtcUserMemoryRead(RTC_MEMORY_OFFSET, (uint32_t *)&loaded_context_cache, sizeof(crash_helper_context_t));
+    if (loaded_context_cache.magic != CRASH_HELPER_MAGIC) {
+        loaded_context_cache.magic = CRASH_HELPER_MAGIC;
+        loaded_context_cache.crash_times = 0;
+        loaded_context_cache.restart_reason = 0;
+        loaded_context_cache.exception_cause = 0;
+        loaded_context_cache.epc1 = 0;
+        loaded_context_cache.epc2 = 0;
+        loaded_context_cache.epc3 = 0;
+        loaded_context_cache.excvaddr = 0;
+        loaded_context_cache.depc = 0;
+        loaded_context_cache.stack_start = 0;
+        loaded_context_cache.stack_end = 0;
+        memset(loaded_context_cache.stack_trace, 0, sizeof(loaded_context_cache.stack_trace));
+    }
+
+    has_loaded_context_cache = true;
 }
 
-static void save_crash_context(crash_helper_context_t *context)
+static void save_crash_context()
 {
-    ESP.rtcUserMemoryWrite(RTC_MEMORY_OFFSET, (uint32_t *)context, sizeof(crash_helper_context_t));
+    ESP.rtcUserMemoryWrite(RTC_MEMORY_OFFSET, (uint32_t *)&loaded_context_cache, sizeof(crash_helper_context_t));
 }
 
 extern "C" void custom_crash_callback(struct rst_info *rst_info, uint32_t stack, uint32_t stack_end)
 {
-    crash_helper_context_t context;
-    load_crash_context(&context);
+    load_crash_context();
 
-    context.crash_times++;
-    context.restart_reason = rst_info->reason;
-    context.exception_cause = rst_info->exccause;
-    context.epc1 = rst_info->epc1;
-    context.epc2 = rst_info->epc2;
-    context.epc3 = rst_info->epc3;
-    context.excvaddr = rst_info->excvaddr;
-    context.depc = rst_info->depc;
-    context.stack_start = stack;
-    context.stack_end = stack_end;
+    loaded_context_cache.crash_times++;
+    loaded_context_cache.restart_reason = rst_info->reason;
+    loaded_context_cache.exception_cause = rst_info->exccause;
+    loaded_context_cache.epc1 = rst_info->epc1;
+    loaded_context_cache.epc2 = rst_info->epc2;
+    loaded_context_cache.epc3 = rst_info->epc3;
+    loaded_context_cache.excvaddr = rst_info->excvaddr;
+    loaded_context_cache.depc = rst_info->depc;
+    loaded_context_cache.stack_start = stack;
+    loaded_context_cache.stack_end = stack_end;
     const uint16_t stack_size = stack_end - stack;
 
-    memcpy(context.stack_trace, (void *)stack, stack_size);
+    memcpy(loaded_context_cache.stack_trace, (void *)stack, stack_size);
 
-    save_crash_context(&context);
+    save_crash_context();
 }
 
 bool crash_helper_has_crashed()
 {
-    crash_helper_context_t context;
-    load_crash_context(&context);
-    return context.crash_times != 0;
+    load_crash_context();
+    return loaded_context_cache.crash_times != 0;
 }
 
 void crash_helper_clear_crash()
 {
-    crash_helper_context_t context;
-    load_crash_context(&context);
-    context.crash_times = 0;
-    save_crash_context(&context);
+    load_crash_context();
+    loaded_context_cache.crash_times = 0;
+    save_crash_context();
 }
 
 void crash_helper_print_crash(char *buffer, uint16_t buffer_size)
 {
-    crash_helper_context_t context;
-    load_crash_context(&context);
+    load_crash_context();
 
-    if (context.crash_times == 0)
-    {
+    if (loaded_context_cache.crash_times == 0) {
         snprintf(buffer, buffer_size, "No crash");
         return;
     }
 
     const char *restart_reason = "Unknown";
-    switch (context.restart_reason)
-    {
+    switch (loaded_context_cache.restart_reason) {
     case REASON_DEFAULT_RST:
         restart_reason = "Default";
         break;
@@ -170,8 +172,7 @@ void crash_helper_print_crash(char *buffer, uint16_t buffer_size)
     }
 
     const char *exception_cause = "Unknown";
-    switch (context.exception_cause)
-    {
+    switch (loaded_context_cache.exception_cause) {
     case EXCCAUSE_ILLEGAL: // IllegalInstructionCause
         exception_cause = "Illegal";
         break;
@@ -265,24 +266,22 @@ void crash_helper_print_crash(char *buffer, uint16_t buffer_size)
     }
 
     snprintf(buffer, buffer_size, "Restart reason: %s\nException cause: %s\nEPC1: 0x%08x\nEPC2: 0x%08x\nEPC3: 0x%08x\nEXCVADDR: 0x%08x\nDEPC: 0x%08x\nStack start: 0x%08x\nStack end: 0x%08x\n",
-             restart_reason, exception_cause, context.epc1, context.epc2, context.epc3, context.excvaddr, context.depc, context.stack_start, context.stack_end);
+        restart_reason, exception_cause, loaded_context_cache.epc1, loaded_context_cache.epc2, loaded_context_cache.epc3, loaded_context_cache.excvaddr, loaded_context_cache.depc, loaded_context_cache.stack_start, loaded_context_cache.stack_end);
 
-    uint16_t stack_trace_word_length = context.stack_end - context.stack_start;
-    stack_trace_word_length = stack_trace_word_length > sizeof(context.stack_trace) ? sizeof(context.stack_trace) : stack_trace_word_length;
+    uint16_t stack_trace_word_length = loaded_context_cache.stack_end - loaded_context_cache.stack_start;
+    stack_trace_word_length = stack_trace_word_length > sizeof(loaded_context_cache.stack_trace) ? sizeof(loaded_context_cache.stack_trace) : stack_trace_word_length;
 
     stack_trace_word_length = stack_trace_word_length / 4; // Stack trace size in 32bit words.
 
     // Contatinate the stack addresses to the buffer
-    uint32_t *stack_value_ptr = (uint32_t *)context.stack_trace;
-    for (int16_t i = 0; i < stack_trace_word_length; i += 4)
-    {
-        snprintf(buffer + strlen(buffer), buffer_size - strlen(buffer), "%08x: ", context.stack_start + i);
+    uint32_t *stack_value_ptr = (uint32_t *)loaded_context_cache.stack_trace;
+    for (int16_t i = 0; i < stack_trace_word_length; i += 4) {
+        snprintf(buffer + strlen(buffer), buffer_size - strlen(buffer), "%08x: ", loaded_context_cache.stack_start + i);
 
         uint16_t column_cnt = stack_trace_word_length - i;
         column_cnt = column_cnt > 4 ? 4 : column_cnt;
 
-        for (byte j = 0; j < column_cnt; j++)
-        {
+        for (byte j = 0; j < column_cnt; j++) {
             snprintf(buffer + strlen(buffer), buffer_size - strlen(buffer), "%08x ", *stack_value_ptr);
             stack_value_ptr++;
         }
