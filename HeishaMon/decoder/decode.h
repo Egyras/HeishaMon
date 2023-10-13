@@ -174,6 +174,7 @@ void decode_heatpump_data(uint8_t data[DECODE_MAX_BUFFER_SIZE]);
 void decode_heatpump_opt_data(uint8_t data[DECODE_MAX_BUFFER_SIZE]);
 
 void decode_get_topic_value(heatpump_topic_t topic, uint8_t *data, decode_result_t *result, bool get_latest_unfiltered_value = true);
+bool decode_result_compare_equal(decode_result_t *result_first, decode_result_t *result_second);
 void decode_result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_size);
 
 const char *decode_get_topic_name(heatpump_topic_t topic);
@@ -183,4 +184,6 @@ const char *decode_get_description_text(heatpump_topic_t topic, uint8_t descript
 uint8_t decode_get_description_cnt(heatpump_topic_t topic);
 
 void decode_topic_clear_filters();
+void decode_topic_update_value_filter(heatpump_topic_t topic, float value);
+void decode_topic_clear_filter(heatpump_topic_t topic);
 uint16_t decode_get_max_filter_depth();

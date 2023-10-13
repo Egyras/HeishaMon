@@ -69,6 +69,7 @@ byte serial_read_buffer_length = 0;
 // store actual data
 String openTherm[2];
 char serial_decoder_buffer[DECODE_REGULAR_DATAGRAM_SIZE] = { '\0' };
+char last_transmitted_buffer[DECODE_REGULAR_DATAGRAM_SIZE] = { '\0' };
 char serial_decoder_opt_buffer[DECODE_OPT_DATAGRAM_SIZE] = { '\0' };
 String RESTmsg = "";
 
@@ -292,15 +293,9 @@ void logHex(char *hex, byte hex_len)
 
 #define MQTT_RETAIN_VALUES 0
 
-void publish_available_data()
-{
-  static unsigned long lastalldatatime = 0;
 
-  decode_result_t result;
+void publish_crash_report() {
   char topic_buffer[128];
-  char result_str[32];
-  bool all_updates_ok = true;
-  bool updatenow = false;
 
   if (crash_helper_has_crashed()) {
     static char crash_log_buffer[1024];
@@ -312,45 +307,72 @@ void publish_available_data()
       crash_helper_clear_crash();
     }
   }
+}
+
+void publish_available_data()
+{
+  static unsigned long lastalldatatime = 0;
+
+  decode_result_t latest_result;
+  decode_result_t last_transmitted_result;
+
+  char topic_buffer[128];
+  char result_str[32];
+  bool force_update_all = false;
+  const bool mqtt_connected = WiFi.isConnected() && mqtt_client.state() == MQTT_CONNECTED;
 
   if (has_unsent_topics == false) {
+    // No new data to transmit.
     return;
   }
 
   if ((lastalldatatime == 0) || ((unsigned long)(millis() - lastalldatatime) > (1000 * heishamonSettings.updateAllTime))) {
-    updatenow = true;
-  }
-
-  if (updatenow == false) {
-    return;
+    force_update_all = true;
   }
 
   for (uint8_t topic = 0; topic < HEATPUMP_TOPIC_Last; topic++) {
-    decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)serial_decoder_buffer, &result, false);
-    decode_result_to_string(&result, result_str, sizeof(result_str));
+    decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)serial_decoder_buffer, &latest_result, false);
+    decode_get_topic_value((heatpump_topic_t)topic, (uint8_t *)last_transmitted_buffer, &last_transmitted_result, false);
 
-    if ((updatenow)) {
-      snprintf(topic_buffer, sizeof(topic_buffer), "received TOP%d %s: %s", topic, decode_get_topic_name((heatpump_topic_t)topic), result_str);
-      log_message(topic_buffer);
+    if (mqtt_connected == false) {
+      decode_topic_update_value_filter((heatpump_topic_t)topic, latest_result.float_value);
+      continue;
+    }
 
-      snprintf(topic_buffer, sizeof(topic_buffer), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, decode_get_topic_name((heatpump_topic_t)topic));
-      const bool publish_result = mqtt_client.publish(topic_buffer, result_str, MQTT_RETAIN_VALUES);
-      if (all_updates_ok && !publish_result) {
-        all_updates_ok = false;
-      }
+    if (decode_result_compare_equal(&latest_result, &last_transmitted_result) && !force_update_all) {
+      continue;
+    }
+
+    decode_result_to_string(&latest_result, result_str, sizeof(result_str));
+
+    snprintf(topic_buffer, sizeof(topic_buffer), "received TOP%d %s: %s", topic, decode_get_topic_name((heatpump_topic_t)topic), result_str);
+    log_message(topic_buffer);
+
+    snprintf(topic_buffer, sizeof(topic_buffer), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, decode_get_topic_name((heatpump_topic_t)topic));
+    const bool publish_result = mqtt_client.publish(topic_buffer, result_str, MQTT_RETAIN_VALUES);
+    if (publish_result) {
+      decode_topic_clear_filter((heatpump_topic_t)topic);
     }
   }
 
-  if (all_updates_ok) {
-    snprintf(topic_buffer, sizeof(topic_buffer), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, "max_filter_depth");
-    snprintf(result_str, sizeof(result_str), "%i", decode_get_max_filter_depth());
+  static int max_filter_depth = 0;
+  max_filter_depth = _max(max_filter_depth, decode_get_max_filter_depth());
 
-    mqtt_client.publish(mqtt_topic, result_str, MQTT_RETAIN_VALUES);
+  snprintf(topic_buffer, sizeof(topic_buffer), "%s/%s/%s", heishamonSettings.mqtt_topic_base, mqtt_topic_values, "max_filter_depth");
+  snprintf(result_str, sizeof(result_str), "%i", max_filter_depth);
 
+  mqtt_client.publish(topic_buffer, result_str, MQTT_RETAIN_VALUES);
+
+  if (force_update_all) {
     lastalldatatime = millis();
-    has_unsent_topics = false;
+  }
+
+  if (mqtt_connected == false) {
     decode_topic_clear_filters();
   }
+
+  memcpy(last_transmitted_buffer, serial_decoder_buffer, sizeof(last_transmitted_buffer));
+  has_unsent_topics = false;
 }
 
 byte calcChecksum(byte *command, int length)
@@ -1352,8 +1374,8 @@ void loop()
   read_panasonic_data();
   decode_panasonic_data();
 
-  if (WiFi.isConnected() && mqtt_client.connected())
-    publish_available_data();
+  publish_available_data();
+  publish_crash_report();
 
   if ((!sending) && (cmdnrel > 0)) { // check if there is a send command in the buffer
     log_message(F("Sending command from buffer"));

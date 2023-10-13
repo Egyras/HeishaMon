@@ -1217,8 +1217,6 @@ void decode_heatpump_data(uint8_t data[255])
     default:
       break;
     }
-
-    filter_update(&(topic_configurations[idx].filter_context), topic_configurations[idx].description->filter_type, result_value);
   }
 }
 
@@ -1238,9 +1236,16 @@ void decode_heatpump_opt_data(uint8_t data[255])
     default:
       break;
     }
-
-    filter_update(&(opt_topic_configurations[idx].filter_context), opt_topic_configurations[idx].description->filter_type, result_value);
   }
+}
+
+void decode_topic_update_value_filter(heatpump_topic_t topic, float value)
+{
+  if (topic_configurations[topic].description->filter_type == FILTER_TYPE_NONE) {
+    return;
+  }
+
+  filter_update(&(topic_configurations[topic].filter_context), topic_configurations[topic].description->filter_type, value);
 }
 
 const char *decode_get_topic_name(heatpump_topic_t topic)
@@ -1263,13 +1268,6 @@ uint8_t decode_get_description_cnt(heatpump_topic_t topic)
   return topic_configurations[topic].description->number_of_descriptions;
 }
 
-void decode_topic_clear_filters()
-{
-  for (size_t idx = 0; idx < HEATPUMP_TOPIC_Last; idx++) {
-    filter_clear(&(topic_configurations[idx].filter_context));
-  }
-}
-
 void decode_result_to_string(decode_result_t *result, char *buffer, uint16_t buffer_size)
 {
   switch (result->result_type) {
@@ -1283,6 +1281,45 @@ void decode_result_to_string(decode_result_t *result, char *buffer, uint16_t buf
     snprintf(buffer, buffer_size, "%s", result->string_value);
     break;
   }
+}
+
+bool decode_result_compare_equal(decode_result_t *result_first, decode_result_t *result_second)
+{
+  if (result_first->result_type != result_second->result_type) {
+    return false;
+  }
+
+  switch (result_first->result_type) {
+  case DECODE_RESULT_INT:
+    return result_first->int_value == result_second->int_value;
+
+  case DECODE_RESULT_FLOAT:
+    return result_first->float_value == result_second->float_value;
+
+  case DECODE_RESULT_STRING:
+    return strcmp(result_first->string_value, result_second->string_value) == 0;
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+void decode_topic_clear_filters()
+{
+  for (size_t idx = 0; idx < HEATPUMP_TOPIC_Last; idx++) {
+    filter_clear(&(topic_configurations[idx].filter_context));
+  }
+}
+
+void decode_topic_clear_filter(heatpump_topic_t topic)
+{
+  if (topic >= HEATPUMP_TOPIC_Last) {
+    return;
+  }
+
+  filter_clear(&(topic_configurations[topic].filter_context));
 }
 
 uint16_t decode_get_max_filter_depth()
