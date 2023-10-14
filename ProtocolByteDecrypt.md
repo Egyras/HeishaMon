@@ -11,7 +11,7 @@
 |  TOP94+TOP4 | 06 | 62 | 1st Bit = Zone2<br/> 2nd Bit = Zone1<br/>3rd & 4th bit = b01 DHW off ,b10 DHW on<br/> 5th ,6th,7th & 8th bit = b0001 - only DHW , b0010 - Heat , b0011 - Cool , b1001 - Auto(Heat) , b1010 - Auto(Cool) | Zone on/off <br/>Mode status   |
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerful mode status |
 |  TOP | 08 | 00 |   | 0 byte |
-|  TOP58+TOP59 | 09 | 05 | 3rd & 4th bit = b01 Standard, b10 - DHW Smart (J-series only)<br/>5rd & 6th bit = b01 DHW heater off, b10 - DHW heater on<br/>7rd & 8th bit = b01 Water heater off, b10 - Water heater on | DHW Smart (J-series only)<br/>Heaters enable allowed status|
+|  TOP58+TOP59 | 09 | 05 | 3rd & 4th bit = b01 Standard, b10 - DHW Standard/Variable (J-series only)<br/>5rd & 6th bit = b01 DHW heater off, b10 - DHW heater on<br/>7rd & 8th bit = b01 Water heater off, b10 - Water heater on | DHW capacity (J-series only)<br/>Heaters enable allowed status|
 |  TOP | 10 | 00 |   | 0 byte |
 |  TOP | 11 | 00 | 01- DHW Top sensor , 02 - DHW Center Sensor   | Only All-In-One |
 |  TOP | 12 | 00 |   | 0 byte |
@@ -119,9 +119,9 @@
 |  TOP44 | 113 | 21 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
 |  TOP44 | 114 | 53 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 |  TOP | 115 | 15 |   | ? |
-|  TOP | 116 | 5a |   | ? |
+|  TOP | 116 | 5a | 1st & 2nd bit Zone 2 Pump ( b01 - OFF, b10 - ON ) ,  3rd & 4th bit = Zone 1 Pump ( b01 - OFF, b10 - ON ), 5th & 6th bit = 2way Valve ( b01 - Cooling, b10 - Heating) , 7th & 8th bit = 3way Valve ( b01 - Room, b10 - Tank)  | Z1 & Z2 Pump 2way & 3wa Valve staus |
 |  TOP69 | 117 | 05 | Sterilization on/off (bit5and6)  , Z2 active (bit7) ,Z1 active (bit8)| Sterilization status Zone active information (look byte #6) |
-|  TOP | 118 | 12 |   | Believed to provide fractional info for TOP5 and TOP6 values |
+|  TOP | 118 | 12 |   | fractional info for TOP5 and TOP6 values |
 |  TOP | 119 | 12 |   | ? |
 |  TOP | 120 | 19 |   | Possible 3e/4e bit for backup heater custom menu disable/enable |
 |  TOP | 121 | 00 |   | 0 byte |
