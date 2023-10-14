@@ -8,7 +8,9 @@
 void resetlastalldatatime();
 
 String getDataValue(char* data, unsigned int Topic_Number);
+String getDataValueExtra(char* data, unsigned int Topic_Number);
 void decode_heatpump_data(char* data, char* actData, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime);
+void decode_heatpump_data_extra(char* data, char* actDataExtra, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime);
 void decode_optional_heatpump_data(char* data, char* actOptDat, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime);
 
 String unknown(byte input);
@@ -26,11 +28,12 @@ String getIntMinus1Div5(byte input);
 String getIntMinus1Times10(byte input);
 String getIntMinus1Times50(byte input);
 String getOpMode(byte input);
-String getEnergy(byte input);
+String getPower(byte input);
 String getHeatMode(byte input);
 String getModel(byte input);
 String getFirstByte(byte input);
 String getSecondByte(byte input);
+String getUintt16(char * data, byte input);
 
 static const char _unknown[] PROGMEM = "unknown";
 
@@ -72,7 +75,7 @@ static const char *Model[] PROGMEM = {
   "IDU: WH-ADC1216H6E5C ODU: WH-UD12HE5", //33
   "IDU:	WH-ADC0509L3E5 ODU: WH-WDG07LE5", //34
   "IDU:	WH-SXC09H3E8 ODU: WH-UX09HE8", //35
-  "IDU:	WH-ADC0309K3E5AN ODU: WH-UDZ03KE5", //36
+  "IDU:	WH-ADC0309K3E5AN ODU: WH-UDZ07KE5", //36
   "IDU:	WH-SDC0309K3E5 ODU: WH-UDZ05KE5", //37
 };
 
@@ -118,6 +121,7 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { 
 };
 
 #define NUMBER_OF_TOPICS 115 //last topic number + 1
+#define NUMBER_OF_TOPICS_EXTRA 6 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
 #define MAX_TOPIC_LEN 41 // max length + 1
 
@@ -129,6 +133,24 @@ static const char optTopics[][20] PROGMEM = {
   "Pool_Water_Pump", // OPT4
   "Solar_Water_Pump", // OPT5
   "Alarm_State", // OPT6
+};
+
+static const char xtopics[][MAX_TOPIC_LEN] PROGMEM = {
+  "Heat_Power_Consumption", //XTOP0
+  "Cool_Power_Consumption", //XTOP1
+  "DHW_Power_Consumption", //XTOP2
+  "Heat_Power_Production",  //XTOP3
+  "Cool_Power_Production",  //XTOP4
+  "DHW_Power_Production",  //XTOP5
+};
+
+static const byte xtopicBytes[] PROGMEM = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
+  14,      //XTOP0
+  16,      //XTOP1
+  18,      //XTOP2
+  20,      //XTOP3
+  22,      //XTOP4
+  24,      //XTOP5
 };
 
 static const char topics[][MAX_TOPIC_LEN] PROGMEM = {
@@ -147,8 +169,8 @@ static const char topics[][MAX_TOPIC_LEN] PROGMEM = {
   "Operations_Counter",      //TOP12
   "Main_Schedule_State",     //TOP13
   "Outside_Temp",            //TOP14
-  "Heat_Energy_Production",  //TOP15
-  "Heat_Energy_Consumption", //TOP16
+  "Heat_Power_Production",  //TOP15
+  "Heat_Power_Consumption", //TOP16
   "Powerful_Mode_Time",      //TOP17
   "Quiet_Mode_Level",        //TOP18
   "Holiday_Mode_State",      //TOP19
@@ -170,10 +192,10 @@ static const char topics[][MAX_TOPIC_LEN] PROGMEM = {
   "Z2_Cool_Request_Temp",    //TOP35
   "Z1_Water_Temp",           //TOP36
   "Z2_Water_Temp",           //TOP37
-  "Cool_Energy_Production",  //TOP38
-  "Cool_Energy_Consumption", //TOP39
-  "DHW_Energy_Production",   //TOP40
-  "DHW_Energy_Consumption",  //TOP41
+  "Cool_Power_Production",  //TOP38
+  "Cool_Power_Consumption", //TOP39
+  "DHW_Power_Production",   //TOP40
+  "DHW_Power_Consumption",  //TOP41
   "Z1_Water_Target_Temp",    //TOP42
   "Z2_Water_Target_Temp",    //TOP43
   "Error",                   //TOP44
@@ -367,8 +389,18 @@ static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit 
   25,     //TOP114
 };
 
-typedef String (*topicFP)(byte);
 
+typedef String (*xtopicFP)(char*, byte);
+static const xtopicFP xtopicFunctions[] PROGMEM = {
+  getUintt16,         //XTOP0
+  getUintt16,         //XTOP1
+  getUintt16,         //XTOP2
+  getUintt16,         //XTOP3
+  getUintt16,         //XTOP4
+  getUintt16,         //XTOP5
+};
+
+typedef String (*topicFP)(byte);
 static const topicFP topicFunctions[] PROGMEM = {
   getBit7and8,         //TOP0
   unknown,             //TOP1
@@ -385,8 +417,8 @@ static const topicFP topicFunctions[] PROGMEM = {
   unknown,             //TOP12
   getBit1and2,         //TOP13
   getIntMinus128,      //TOP14
-  getEnergy,           //TOP15
-  getEnergy,           //TOP16
+  getPower,            //TOP15
+  getPower,            //TOP16
   getRight3bits,       //TOP17
   getBit3and4and5,     //TOP18
   getBit3and4,         //TOP19
@@ -408,10 +440,10 @@ static const topicFP topicFunctions[] PROGMEM = {
   getIntMinus128,      //TOP35
   getIntMinus128,      //TOP36
   getIntMinus128,      //TOP37
-  getEnergy,           //TOP38
-  getEnergy,           //TOP39
-  getEnergy,           //TOP40
-  getEnergy,           //TOP41
+  getPower,            //TOP38
+  getPower,            //TOP39
+  getPower,            //TOP40
+  getPower,            //TOP41
   getIntMinus128,      //TOP42
   getIntMinus128,      //TOP43
   unknown,             //TOP44
@@ -516,6 +548,16 @@ static const char *SolarModeDesc[] PROGMEM = {"3", "Disabled", "Buffer", "DHW"};
 static const char *ZonesSensorType[] PROGMEM = {"4", "Water Temperature", "External Thermostat", "Internal Thermostat", "Thermistor"};
 static const char *LiquidType[] PROGMEM = {"2", "Water", "Glycol"};
 static const char *ExtPadHeaterType[] PROGMEM = {"3", "Disabled", "Type-A","Type-B"};
+
+
+static const char **xtopicDescription[] PROGMEM = {
+  Watt,           //XTOP0
+  Watt,           //XTOP1
+  Watt,           //XTOP2
+  Watt,           //XTOP3
+  Watt,           //XTOP4
+  Watt,           //XTOP5
+};
 
 static const char **topicDescription[] PROGMEM = {
   OffOn,           //TOP0

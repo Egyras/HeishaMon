@@ -45,6 +45,9 @@ settingsStruct heishamonSettings;
 bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
 
+bool extraDataBlockAvailable = false; // this will be set to true if, during boot, heishamon detects this heatpump has extra data block (like K and L series do)
+bool extraDataBlockChecked = false; // this will be true if we already checked for the extra data block
+
 #define MQTTRECONNECTTIMER 30000 //it takes 30 secs for each mqtt server reconnect attempt
 unsigned long lastMqttReconnectAttempt = 0;
 
@@ -74,6 +77,7 @@ byte data_length = 0;
 // store actual data
 String openTherm[2];
 char actData[DATASIZE] = { '\0' };
+char actDataExtra[DATASIZE] = { '\0' };
 #define OPTDATASIZE 20
 char actOptData[OPTDATASIZE]  = { '\0' };
 String RESTmsg = "";
@@ -365,16 +369,33 @@ bool readSerial()
       log_message(F("Checksum and header received ok!"));
       goodreads++;
 
-      if ((data_length == DATASIZE) && (data[3] == 0x10) ) { //decode the normal data
-        decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-        memcpy(actData, data, DATASIZE);
-        {
-          char mqtt_topic[256];
-          sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
-          mqtt_client.publish(mqtt_topic, (const uint8_t *)actData, DATASIZE, false); //do not retain this raw data
+      if (data_length == DATASIZE)  {  //receive a full data block
+        if  (data[3] == 0x10) { //decode the normal data block
+          decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
+          memcpy(actData, data, DATASIZE);
+          {
+            char mqtt_topic[256];
+            sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
+            mqtt_client.publish(mqtt_topic, (const uint8_t *)actData, DATASIZE, false); //do not retain this raw data
+          }
+          data_length = 0;
+          return true;
+        } else if (data[3] == 0x21) { //decode the new model extra data block
+          extraDataBlockAvailable = true; //set the flag to true so we know we can request this data always
+          decode_heatpump_data_extra(data, actDataExtra, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
+          memcpy(actDataExtra, data, DATASIZE);
+          {
+            char mqtt_topic[256];
+            sprintf(mqtt_topic, "%s/raw/dataextra", heishamonSettings.mqtt_topic_base);
+            mqtt_client.publish(mqtt_topic, (const uint8_t *)actDataExtra, DATASIZE, false); //do not retain this raw data
+          }
+          data_length = 0;
+          return true;        
+        } else {
+          log_message(F("Received an unknown full size datagram. Can't decode this yet."));
+          data_length = 0;
+          return false;       
         }
-        data_length = 0;
-        return true;
       }
       else if (data_length == OPTDATASIZE ) { //optional pcb acknowledge answer
         log_message(F("Received optional PCB ack answer. Decoding this in OPT topics."));
@@ -749,10 +770,10 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
           case 11:
           case 12:
           case 13: {
-              return handleTableRefresh(client, actData);
+              return handleTableRefresh(client, actData, actDataExtra, extraDataBlockAvailable);
             } break;
           case 20: {
-              return handleJsonOutput(client, actData, &heishamonSettings);
+              return handleJsonOutput(client, actData, actDataExtra, &heishamonSettings, extraDataBlockAvailable);
             } break;
           case 30: {
               return handleReboot(client);
@@ -1126,6 +1147,19 @@ void send_initial_query() {
 void send_panasonic_query() {
   log_message(F("Requesting new panasonic data"));
   send_command(panasonicQuery, PANASONICQUERYSIZE);
+  // rest is for the new data block on new models
+  if (extraDataBlockAvailable) {
+    log_message(F("Requesting new panasonic extra data"));
+    panasonicQuery[3] = 0x21; //setting 4th byte to 0x21 is a request for extra block
+    send_command(panasonicQuery, PANASONICQUERYSIZE);
+    panasonicQuery[3] = 0x10; //setting 4th back to 0x10 for normal data request next time
+  } else if (!extraDataBlockChecked) {
+    extraDataBlockChecked = true;
+    log_message(F("Checking if connected heatpump has extra data"));
+    panasonicQuery[3] = 0x21;
+    send_command(panasonicQuery, PANASONICQUERYSIZE);
+    panasonicQuery[3] = 0x10;   
+  }
 }
 
 void send_optionalpcb_query() {

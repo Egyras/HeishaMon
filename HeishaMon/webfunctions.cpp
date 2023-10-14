@@ -1000,9 +1000,9 @@ int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconne
   return 0;
 }
 
-int handleTableRefresh(struct webserver_t *client, char* actData) {
+int handleTableRefresh(struct webserver_t *client, char* actData, char* actDataExtra, bool extraDataBlockAvailable) {
   int ret = 0;
-
+  int extraTopics = extraDataBlockAvailable ? NUMBER_OF_TOPICS_EXTRA : 0; //set to 0 if there is no datablock so we don't run table data for it
   if (client->route == 11) {
     if (client->content == 0) {
       webserver_send(client, 200, (char *)"text/html", 0);
@@ -1058,19 +1058,59 @@ int handleTableRefresh(struct webserver_t *client, char* actData) {
 
         webserver_send_content_P(client, PSTR("</td></tr>"), 10);
       }
-      // The webserver also increases by 1
-      client->content += 3;
+      client->content += 3; // The webserver also increases by 1
+    } else if (client->content - NUMBER_OF_TOPICS < extraTopics ) {
+      for (uint8_t topic = client->content  - NUMBER_OF_TOPICS ; topic < extraTopics && topic < (client->content - NUMBER_OF_TOPICS + 4 ); topic++) {
+
+        webserver_send_content_P(client, PSTR("<tr><td>XTOP"), 12);
+
+        char str[12];
+        itoa(topic, str, 10);
+        webserver_send_content(client, str, strlen(str));
+
+        webserver_send_content_P(client, PSTR("</td><td>"), 9);
+        webserver_send_content_P(client, xtopics[topic], strlen_P(xtopics[topic]));
+        webserver_send_content_P(client, PSTR("</td><td>"), 9);
+
+        {
+          String dataValue = actData[0] == '\0' ? "" : getDataValueExtra(actDataExtra, topic);
+          char* str = (char *)dataValue.c_str();
+          webserver_send_content(client, str, strlen(str));
+        }
+
+        webserver_send_content_P(client, PSTR("</td><td>"), 9);
+
+        int maxvalue = atoi(xtopicDescription[topic][0]);
+        int value = actData[0] == '\0' ? 0 : getDataValueExtra(actDataExtra, topic).toInt();
+        if (maxvalue == 0) { //this takes the special case where the description is a real value description instead of a mode, so value should take first index (= 0 + 1)
+          value = 0;
+        }
+        if ((value < 0) || (value > maxvalue)) {
+          webserver_send_content_P(client, _unknown, strlen_P(_unknown));
+        }
+        else {
+          webserver_send_content_P(client, xtopicDescription[topic][value + 1], strlen_P(xtopicDescription[topic][value + 1]));
+
+        }
+
+        webserver_send_content_P(client, PSTR("</td></tr>"), 10);
+      }
+      client->content += 3; // The webserver also increases by 1
     }
+
   }
   return 0;
 }
 
-int handleJsonOutput(struct webserver_t *client, char* actData, settingsStruct *heishamonSettings) {
+
+
+int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExtra, settingsStruct *heishamonSettings, bool extraDataBlockAvailable) {
+  int extraTopics = extraDataBlockAvailable ? NUMBER_OF_TOPICS_EXTRA : 0; //set to 0 if there is no datablock so we don't run json data for it
   if (client->content == 0) {
     webserver_send(client, 200, (char *)"application/json", 0);
     webserver_send_content_P(client, PSTR("{\"heatpump\":["), 13);
-  } else if (client->content < NUMBER_OF_TOPICS) {
-    for (uint8_t topic = client->content - 1; topic < NUMBER_OF_TOPICS && topic < client->content + 4 ; topic++) {
+  } else if ((client->content - 1) < NUMBER_OF_TOPICS) {
+    for (uint8_t topic = client->content - 1; topic < NUMBER_OF_TOPICS && topic < client->content + 4 ; topic++) {  //5 TOPS per webserver run (because content was 1 at start, so makes 5)
 
       webserver_send_content_P(client, PSTR("{\"Topic\":\"TOP"), 13);
 
@@ -1112,12 +1152,61 @@ int handleJsonOutput(struct webserver_t *client, char* actData, settingsStruct *
         webserver_send_content_P(client, PSTR(","), 1);
       }
     }
-    // The webserver also increases by 4
-    client->content += 4;
+    client->content += 4; // The webserver also increases by 1, we do steps of 5 tops per webserver run
     if (client->content > NUMBER_OF_TOPICS) {
       client->content = NUMBER_OF_TOPICS;
     }
-  } else if (client->content == NUMBER_OF_TOPICS + 1) {
+  } else if ((client->content - NUMBER_OF_TOPICS - 1) < extraTopics) {
+    if (client->content == NUMBER_OF_TOPICS + 1) {
+     webserver_send_content_P(client, PSTR("],\"heatpump extra\":["), 20);
+    }
+    for (uint8_t topic = (client->content - NUMBER_OF_TOPICS - 1); topic < extraTopics && topic < (client->content - NUMBER_OF_TOPICS + 4) ; topic++) {
+
+      webserver_send_content_P(client, PSTR("{\"Topic\":\"XTOP"), 14);
+
+      {
+        char str[12];
+        itoa(topic, str, 10);
+        webserver_send_content(client, str, strlen(str));
+      }
+
+      webserver_send_content_P(client, PSTR("\",\"Name\":\""), 10);
+
+      webserver_send_content_P(client, xtopics[topic], strlen_P(xtopics[topic]));
+
+      webserver_send_content_P(client, PSTR("\",\"Value\":\""), 11);
+
+      {
+        String dataValue = getDataValueExtra(actDataExtra, topic);
+        char* str = (char *)dataValue.c_str();
+        webserver_send_content(client, str, strlen(str));
+      }
+
+      webserver_send_content_P(client, PSTR("\",\"Description\":\""), 17);
+
+      int maxvalue = atoi(xtopicDescription[topic][0]);
+      int value = actDataExtra[0] == '\0' ? 0 : getDataValueExtra(actDataExtra, topic).toInt();
+      if (maxvalue == 0) { //this takes the special case where the description is a real value description instead of a mode, so value should take first index (= 0 + 1)
+        value = 0;
+      }
+      if ((value < 0) || (value > maxvalue)) {
+        webserver_send_content_P(client, _unknown, strlen_P(_unknown));
+      }
+      else {
+        webserver_send_content_P(client, xtopicDescription[topic][value + 1], strlen_P(xtopicDescription[topic][value + 1]));
+      }
+
+      webserver_send_content_P(client, PSTR("\"}"), 2);
+
+      if (topic < (extraTopics - 1)) {
+        webserver_send_content_P(client, PSTR(","), 1);
+      }
+    }
+    client->content += 4; // The webserver also increases by 1, we do steps of 5 tops per webserver run
+    if (client->content > (NUMBER_OF_TOPICS + extraTopics)) {
+      client->content = NUMBER_OF_TOPICS + extraTopics;
+    }
+  } else if (client->content == (NUMBER_OF_TOPICS + extraTopics + 1)) {
     webserver_send_content_P(client, PSTR("]"), 1);
     if (heishamonSettings->use_1wire) {
       webserver_send_content_P(client, PSTR(",\"1wire\":"), 9);
@@ -1135,6 +1224,7 @@ int handleJsonOutput(struct webserver_t *client, char* actData, settingsStruct *
   }
   return 0;
 }
+
 
 int showRules(struct webserver_t *client) {
   uint16_t len = 0, len1 = 0;

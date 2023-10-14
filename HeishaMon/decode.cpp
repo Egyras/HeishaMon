@@ -3,6 +3,7 @@
 #include "rules.h"
 
 unsigned long lastalldatatime = 0;
+unsigned long lastallextradatatime = 0;
 unsigned long lastalloptdatatime = 0;
 
 String getBit1(byte input) {
@@ -63,6 +64,7 @@ String getIntMinus1Times50(byte input) {
   return (String)(value * 50);
 }
 
+
 String unknown(byte input) {
   return "-1";
 }
@@ -103,9 +105,14 @@ String getModel(char* data) { // TOP92 //
   return String(modelResult);
 }
 
-String getEnergy(byte input) {
+String getPower(byte input) {
   int value = ((int)input - 1) * 200;
   return (String)value;
+}
+
+String getUintt16(char* data, byte addr) {
+  uint16_t value = static_cast<uint16_t>((data[addr + 1] << 8) | data[addr]);
+  return (String)(value - 1);
 }
 
 String getPumpFlow(char* data) {  // TOP1 //
@@ -136,6 +143,7 @@ String getErrorInfo(char* data) { // TOP44 //
 
 void resetlastalldatatime() {
   lastalldatatime = 0;
+  lastallextradatatime = 0;
   lastalloptdatatime = 0;
 }
 
@@ -220,6 +228,18 @@ String getDataValue(char* data, unsigned int Topic_Number) {
   return Topic_Value;
 }
 
+String getDataValueExtra(char* data, unsigned int Topic_Number) {
+  String Topic_Value;
+  switch (Topic_Number) { //switch on topic numbers, some have special needs
+    default:
+      byte addr;
+      memcpy_P(&addr, &xtopicBytes[Topic_Number], sizeof(byte));
+      Topic_Value = xtopicFunctions[Topic_Number](data, addr);
+      break;
+  }
+  return Topic_Value;
+}
+
 String getOptDataValue(char* data, unsigned int Topic_Number) {
   String Topic_Value;
   switch (Topic_Number) { //switch on topic numbers, some have special needs
@@ -279,6 +299,33 @@ void decode_heatpump_data(char* data, char* actData, PubSubClient &mqtt_client, 
       sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_values, topics[Topic_Number]);
       mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
       rules_new_event(topics[Topic_Number]);
+    }
+  }
+}
+
+void decode_heatpump_data_extra(char* data, char* actDataExtra, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {
+  bool updatenow = false;
+  if ((lastallextradatatime == 0) || ((unsigned long)(millis() - lastallextradatatime) > (1000 * updateAllTime))) {
+    updatenow = true;
+    lastallextradatatime = millis();
+  }
+  for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS_EXTRA ; Topic_Number++) {
+    String Topic_Value;
+    Topic_Value = getDataValueExtra(data, Topic_Number);
+    {
+      char log_msg[256];
+      sprintf_P(log_msg, PSTR("testing XTOP%d %s: %s"), Topic_Number, xtopics[Topic_Number], Topic_Value.c_str());
+      log_message(log_msg);
+    }
+
+    if ((updatenow) || ( getDataValueExtra(actDataExtra, Topic_Number) != Topic_Value )) {
+      char log_msg[256];
+      char mqtt_topic[256];
+      sprintf_P(log_msg, PSTR("received XTOP%d %s: %s"), Topic_Number, xtopics[Topic_Number], Topic_Value.c_str());
+      log_message(log_msg);
+      sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_xvalues, xtopics[Topic_Number]);
+      mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
+      rules_new_event(xtopics[Topic_Number]);
     }
   }
 }
