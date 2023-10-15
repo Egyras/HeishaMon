@@ -1057,8 +1057,9 @@ int handleTableRefresh(struct webserver_t *client, char* actData, char* actDataE
         }
 
         webserver_send_content_P(client, PSTR("</td></tr>"), 10);
+        client->content++;
       }
-      client->content += 3; // The webserver also increases by 1
+      client->content--; // The webserver also increases by 1
     } else if (client->content - NUMBER_OF_TOPICS < extraTopics ) {
       for (uint8_t topic = client->content  - NUMBER_OF_TOPICS ; topic < extraTopics && topic < (client->content - NUMBER_OF_TOPICS + 4 ); topic++) {
 
@@ -1094,8 +1095,9 @@ int handleTableRefresh(struct webserver_t *client, char* actData, char* actDataE
         }
 
         webserver_send_content_P(client, PSTR("</td></tr>"), 10);
+        client->content++;
       }
-      client->content += 3; // The webserver also increases by 1
+      client->content--; // The webserver also increases by 1
     }
 
   }
@@ -1151,11 +1153,9 @@ int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExt
       if (topic < NUMBER_OF_TOPICS - 1) {
         webserver_send_content_P(client, PSTR(","), 1);
       }
+      client->content++;
     }
-    client->content += 4; // The webserver also increases by 1, we do steps of 5 tops per webserver run
-    if (client->content > NUMBER_OF_TOPICS) {
-      client->content = NUMBER_OF_TOPICS;
-    }
+    client->content--; // The webserver also increases by 1
   } else if ((client->content - NUMBER_OF_TOPICS - 1) < extraTopics) {
     if (client->content == NUMBER_OF_TOPICS + 1) {
      webserver_send_content_P(client, PSTR("],\"heatpump extra\":["), 20);
@@ -1201,11 +1201,9 @@ int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExt
       if (topic < (extraTopics - 1)) {
         webserver_send_content_P(client, PSTR(","), 1);
       }
+      client->content++;
     }
-    client->content += 4; // The webserver also increases by 1, we do steps of 5 tops per webserver run
-    if (client->content > (NUMBER_OF_TOPICS + extraTopics)) {
-      client->content = NUMBER_OF_TOPICS + extraTopics;
-    }
+    client->content--; // The webserver also increases by 1
   } else if (client->content == (NUMBER_OF_TOPICS + extraTopics + 1)) {
     webserver_send_content_P(client, PSTR("]"), 1);
     if (heishamonSettings->use_1wire) {
