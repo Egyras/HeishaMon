@@ -905,6 +905,9 @@ void doubleResetDetect() {
     Serial.println("Double reset detected, clearing config."); //save to print on std serial because serial switch didn't happen yet
     LittleFS.begin();
     LittleFS.format();
+    //create first boot file
+    File startupFile = LittleFS.open("/heishamon", "w");
+    startupFile.close();    
     WiFi.persistent(true);
     WiFi.disconnect();
     WiFi.persistent(false);
@@ -1050,6 +1053,29 @@ void setup() {
   Serial.println();
   Serial.println(F("--- HEISHAMON ---"));
   Serial.println(F("starting..."));
+
+  //first boot check, to visually confirm good flash
+  if (LittleFS.begin()) {
+    if (LittleFS.exists("/heishamon")) {
+      //normal boot
+    } else if (LittleFS.exists("/config.json")) {
+      //from old firmware, create file and then normal boot
+      File startupFile = LittleFS.open("/heishamon", "w");
+      startupFile.close();    
+    } else {
+      //first boot
+      File startupFile = LittleFS.open("/heishamon", "w");
+      startupFile.close();    
+      pinMode(2, FUNCTION_0); //set it as gpio
+      pinMode(2, OUTPUT);
+      while (true) {
+        digitalWrite(2, HIGH);
+        delay(50);
+        digitalWrite(2, LOW);
+        delay(50);
+      }
+    }
+  }
 
   //double reset detect from start
   doubleResetDetect();
