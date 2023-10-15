@@ -4,6 +4,7 @@
 #include "commands.h"
 #include "dallas.h"
 #include "rules.h"
+#include "src/common/progmem.h"
 
 #define MQTT_RETAIN_VALUES 1 // do we retain 1wire values?
 
@@ -89,7 +90,7 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
           log_message(log_msg);
           sprintf_P(valueStr, PSTR("%.2f"), actDallasData[i].temperature);
           sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
-          rules_event_cb(actDallasData[i].address);
+          rules_event_cb(_F("ds18b20#"), actDallasData[i].address);
         }
       }
     }

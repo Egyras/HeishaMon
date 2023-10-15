@@ -23,6 +23,7 @@
 #include "dallas.h"
 #include "webfunctions.h"
 #include "decode.h"
+#include "HeishaOT.h"
 #include "commands.h"
 
 #define MAXCOMMANDSINBUFFER 10
@@ -190,17 +191,18 @@ static int is_variable(char *text, unsigned int *pos, unsigned int size) {
       }
     }
     if(text[*pos] == '?') {
-      if(strnicmp(&text[(*pos)+1], "temperature", strlen_P(PSTR("temperature"))) == 0) {
-        i = strlen_P(PSTR("temperature"))+1;
-        match = 1;
-      }
-      if(strnicmp(&text[(*pos)+1], "setpoint", strlen_P(PSTR("setpoint"))) == 0) {
-        i = strlen_P(PSTR("setpoint"))+1;
-        match = 1;
+      int x = 0;
+      while(heishaOTDataStruct[x].name != NULL) {
+        size_t len = strlen(heishaOTDataStruct[x].name);
+        if(size-1 == len && strnicmp(&text[(*pos)+1], heishaOTDataStruct[x].name, len) == 0) {
+          i = len+1;
+          match = 1;
+          break;
+        }
+        x++;
       }
       if(match == 0) {
-        logprintf_P(F("err: %s %d"), __FUNCTION__, __LINE__);
-        exit(-1);
+        return -1;
       }
     }
 
@@ -255,17 +257,18 @@ static int is_event(char *text, unsigned int *pos, unsigned int size) {
   }
 
   if(text[*pos] == '?') {
-    if(strnicmp(&text[(*pos)+1], "temperature", strlen_P(PSTR("temperature"))) == 0) {
-      i = strlen_P(PSTR("temperature"))+1;
-      match = 1;
-    }
-    if(strnicmp(&text[(*pos)+1], "setpoint", strlen_P(PSTR("setpoint"))) == 0) {
-      i = strlen_P(PSTR("setpoint"))+1;
-      match = 1;
+    int x = 0;
+    while(heishaOTDataStruct[x].name != NULL) {
+      size_t len = strlen(heishaOTDataStruct[x].name);
+      if(size-1 == len && strnicmp(&text[(*pos)+1], heishaOTDataStruct[x].name, len) == 0) {
+        i = len+1;
+        match = 1;
+        break;
+      }
+      x++;
     }
     if(match == 0) {
-      logprintf_P(F("err: %s %d"), __FUNCTION__, __LINE__);
-      exit(-1);
+      return -1;
     }
     return i;
   }
@@ -331,7 +334,7 @@ static void vm_value_cpy(struct rules_t *obj, uint16_t token) {
         case VINTEGER: {
           struct vm_vinteger_t *val = (struct vm_vinteger_t *)&varstack->stack[x];
           struct vm_tvar_t *foo = (struct vm_tvar_t *)&obj->ast.buffer[val->ret];
-          if(strcmp((char *)foo->token, (char *)&var->token) == 0 && val->ret != token) {
+          if(stricmp((char *)foo->token, (char *)&var->token) == 0 && val->ret != token) {
             var->value = foo->value;
             val->ret = token;
             foo->value = 0;
@@ -343,7 +346,7 @@ static void vm_value_cpy(struct rules_t *obj, uint16_t token) {
           struct vm_vfloat_t *val = (struct vm_vfloat_t *)&varstack->stack[x];
           struct vm_tvar_t *foo = (struct vm_tvar_t *)&obj->ast.buffer[val->ret];
 
-          if(strcmp((char *)foo->token, (char *)var->token) == 0 && val->ret != token) {
+          if(stricmp((char *)foo->token, (char *)var->token) == 0 && val->ret != token) {
             var->value = foo->value;
             val->ret = token;
             foo->value = 0;
@@ -354,7 +357,7 @@ static void vm_value_cpy(struct rules_t *obj, uint16_t token) {
         case VNULL: {
           struct vm_vnull_t *val = (struct vm_vnull_t *)&varstack->stack[x];
           struct vm_tvar_t *foo = (struct vm_tvar_t *)&obj->ast.buffer[val->ret];
-          if(strcmp((char *)foo->token, (char *)&var->token) == 0 && val->ret != token) {
+          if(stricmp((char *)foo->token, (char *)&var->token) == 0 && val->ret != token) {
             var->value = foo->value;
             val->ret = token;
             foo->value = 0;
@@ -377,7 +380,7 @@ static void vm_value_cpy(struct rules_t *obj, uint16_t token) {
           struct vm_gvinteger_t *val = (struct vm_gvinteger_t *)&varstack->stack[x];
           struct vm_tvar_t *foo = (struct vm_tvar_t *)&rules[val->rule-1]->ast.buffer[val->ret];
 
-          if(strcmp((char *)foo->token, (char *)var->token) == 0 && val->ret != token) {
+          if(stricmp((char *)foo->token, (char *)var->token) == 0 && val->ret != token) {
             var->value = x;
             val->ret = token;
             val->rule = obj->nr;
@@ -389,7 +392,7 @@ static void vm_value_cpy(struct rules_t *obj, uint16_t token) {
           struct vm_gvfloat_t *val = (struct vm_gvfloat_t *)&varstack->stack[x];
           struct vm_tvar_t *foo = (struct vm_tvar_t *)&rules[val->rule-1]->ast.buffer[val->ret];
 
-          if(strcmp((char *)foo->token, (char *)var->token) == 0 && val->ret != token) {
+          if(stricmp((char *)foo->token, (char *)var->token) == 0 && val->ret != token) {
             var->value = x;
             val->ret = token;
             val->rule = obj->nr;
@@ -401,7 +404,7 @@ static void vm_value_cpy(struct rules_t *obj, uint16_t token) {
           struct vm_gvnull_t *val = (struct vm_gvnull_t *)&varstack->stack[x];
           struct vm_tvar_t *foo = (struct vm_tvar_t *)&rules[val->rule-1]->ast.buffer[val->ret];
 
-          if(strcmp((char *)foo->token, (char *)var->token) == 0 && val->ret != token) {
+          if(stricmp((char *)foo->token, (char *)var->token) == 0 && val->ret != token) {
             var->value = x;
             val->ret = token;
             val->rule = obj->nr;
@@ -581,38 +584,28 @@ static unsigned char *vm_value_get(struct rules_t *obj, uint16_t token) {
     }
   }
   if(node->token[0] == '?') {
-    if(stricmp((char *)&node->token[1], "temperature") == 0) {
-      if(strlen(openTherm[0].c_str()) == 0) {
-        memset(&vnull, 0, sizeof(struct vm_vnull_t));
-        vnull.type = VNULL;
-        vnull.ret = token;
-        // printf("%s %s = NULL\n", __FUNCTION__, (char *)node->token);
-        return (unsigned char *)&vnull;
-      } else {
-        float var = atof(openTherm[0].c_str());
-        memset(&vfloat, 0, sizeof(struct vm_vfloat_t));
-        vfloat.type = VFLOAT;
-        vfloat.value = var;
-        // printf("%s %s = %g\n", __FUNCTION__, (char *)node->token, var);
-        return (unsigned char *)&vfloat;
+    int x = 0;
+    while(heishaOTDataStruct[x].name != NULL) {
+      if(heishaOTDataStruct[x].rw >= 2 && stricmp((char *)&node->token[1], heishaOTDataStruct[x].name) == 0) {
+        if(heishaOTDataStruct[x].type == TBOOL) {
+          memset(&vinteger, 0, sizeof(struct vm_vinteger_t));
+          vinteger.type = VINTEGER;
+          vinteger.value = (int)heishaOTDataStruct[x].value.b;
+          // printf("%s %s = %g\n", __FUNCTION__, (char *)node->token, var);
+          return (unsigned char *)&vinteger;
+        }
+        if(heishaOTDataStruct[x].type == TFLOAT) {
+          memset(&vfloat, 0, sizeof(struct vm_vfloat_t));
+          vfloat.type = VFLOAT;
+          vfloat.value = heishaOTDataStruct[x].value.f;
+          // printf("%s %s = %g\n", __FUNCTION__, (char *)node->token, var);
+          return (unsigned char *)&vfloat;
+        }
+        break;
       }
+      x++;
     }
-    if(stricmp((char *)&node->token[1], "setpoint") == 0) {
-      if(strlen(openTherm[1].c_str()) == 0) {
-        memset(&vnull, 0, sizeof(struct vm_vnull_t));
-        vnull.type = VNULL;
-        vnull.ret = token;
-        // printf("%s %s = NULL\n", __FUNCTION__, (char *)node->token);
-        return (unsigned char *)&vnull;
-      } else {
-        float var = atof(openTherm[1].c_str());
-        memset(&vfloat, 0, sizeof(struct vm_vfloat_t));
-        vfloat.type = VFLOAT;
-        vfloat.value = var;
-        // printf("%s %s = %g\n", __FUNCTION__, (char *)node->token, var);
-        return (unsigned char *)&vfloat;
-      }
-    }
+    logprintf_P(F("err: %s %d"), __FUNCTION__, __LINE__);
   }
   if(strncmp_P((const char *)node->token, PSTR("ds18b20#"), 8) == 0) {
     for(i=0;i<dallasDevicecount;i++) {
@@ -740,7 +733,7 @@ static void vm_value_set(struct rules_t *obj, uint16_t token, uint16_t val) {
         case VINTEGER: {
           struct vm_vinteger_t *node = (struct vm_vinteger_t *)&varstack->stack[x];
           struct vm_tvar_t *tmp = (struct vm_tvar_t *)&obj->ast.buffer[node->ret];
-          if(strcmp((char *)var->token, (char *)tmp->token) == 0) {
+          if(stricmp((char *)var->token, (char *)tmp->token) == 0) {
             var->value = 0;
             vm_value_del(obj, x);
             loop = 0;
@@ -751,7 +744,7 @@ static void vm_value_set(struct rules_t *obj, uint16_t token, uint16_t val) {
         case VFLOAT: {
           struct vm_vfloat_t *node = (struct vm_vfloat_t *)&varstack->stack[x];
           struct vm_tvar_t *tmp = (struct vm_tvar_t *)&obj->ast.buffer[node->ret];
-          if(strcmp((char *)var->token, (char *)tmp->token) == 0) {
+          if(stricmp((char *)var->token, (char *)tmp->token) == 0) {
             var->value = 0;
             vm_value_del(obj, x);
             loop = 0;
@@ -762,7 +755,7 @@ static void vm_value_set(struct rules_t *obj, uint16_t token, uint16_t val) {
         case VNULL: {
           struct vm_vnull_t *node = (struct vm_vnull_t *)&varstack->stack[x];
           struct vm_tvar_t *tmp = (struct vm_tvar_t *)&obj->ast.buffer[node->ret];
-          if(strcmp((char *)var->token, (char *)tmp->token) == 0) {
+          if(stricmp((char *)var->token, (char *)tmp->token) == 0) {
             var->value = 0;
             vm_value_del(obj, x);
             loop = 0;
@@ -858,7 +851,7 @@ static void vm_value_set(struct rules_t *obj, uint16_t token, uint16_t val) {
           struct vm_gvinteger_t *val = (struct vm_gvinteger_t *)&varstack->stack[x];
           struct vm_tvar_t *foo = (struct vm_tvar_t *)&rules[val->rule-1]->ast.buffer[val->ret];
 
-          if(strcmp((char *)foo->token, (char *)var->token) == 0) {
+          if(stricmp((char *)foo->token, (char *)var->token) == 0) {
             move = 1;
 
             ret = alignedbytes(sizeof(struct vm_gvinteger_t));
@@ -874,7 +867,7 @@ static void vm_value_set(struct rules_t *obj, uint16_t token, uint16_t val) {
           struct vm_gvfloat_t *val = (struct vm_gvfloat_t *)&varstack->stack[x];
           struct vm_tvar_t *foo = (struct vm_tvar_t *)&rules[val->rule-1]->ast.buffer[val->ret];
 
-          if(strcmp((char *)foo->token, (char *)var->token) == 0) {
+          if(stricmp((char *)foo->token, (char *)var->token) == 0) {
             move = 1;
 
             ret = alignedbytes(sizeof(struct vm_gvfloat_t));
@@ -890,7 +883,7 @@ static void vm_value_set(struct rules_t *obj, uint16_t token, uint16_t val) {
           struct vm_gvnull_t *val = (struct vm_gvnull_t *)&varstack->stack[x];
           struct vm_tvar_t *foo = (struct vm_tvar_t *)&rules[val->rule-1]->ast.buffer[val->ret];
 
-          if(strcmp((char *)foo->token, (char *)var->token) == 0) {
+          if(stricmp((char *)foo->token, (char *)var->token) == 0) {
             move = 1;
 
             ret = alignedbytes(sizeof(struct vm_gvnull_t));
@@ -998,8 +991,7 @@ static void vm_value_set(struct rules_t *obj, uint16_t token, uint16_t val) {
       } break;
     }
   } else if(var->token[0] == '@') {
-    char *topic = NULL, *payload = NULL;
-    const char *key = (char *)var->token;
+    char *payload = NULL;
     unsigned int len = 0;
 
     switch(obj->varstack.buffer[val]) {
@@ -1040,7 +1032,7 @@ static void vm_value_set(struct rules_t *obj, uint16_t token, uint16_t val) {
       for(uint8_t x = 0; x < sizeof(commands) / sizeof(commands[0]); x++) {
         cmdStruct tmp;
         memcpy_P(&tmp, &commands[x], sizeof(tmp));
-        if(strcmp((char *)&var->token[1], tmp.name) == 0) {
+        if(stricmp((char *)&var->token[1], tmp.name) == 0) {
           uint16_t len = tmp.func(payload, cmd, log_msg);
           log_message(log_msg);
           send_command(cmd, len);
@@ -1056,7 +1048,7 @@ static void vm_value_set(struct rules_t *obj, uint16_t token, uint16_t val) {
         for(uint8_t x = 0; x < sizeof(optionalCommands) / sizeof(optionalCommands[0]); x++) {
           optCmdStruct tmp;
           memcpy_P(&tmp, &optionalCommands[x], sizeof(tmp));
-          if(strcmp((char *)&var->token[1], tmp.name) == 0) {
+          if(stricmp((char *)&var->token[1], tmp.name) == 0) {
             uint16_t len = tmp.func(payload, log_msg);
             log_message(log_msg);
             break;
@@ -1065,6 +1057,41 @@ static void vm_value_set(struct rules_t *obj, uint16_t token, uint16_t val) {
       }
     }
     FREE(payload);
+  } else if(var->token[0] == '?') {
+    int x = 0;
+    while(heishaOTDataStruct[x].name != NULL) {
+      if(heishaOTDataStruct[x].rw <= 2 && stricmp((char *)&var->token[1], heishaOTDataStruct[x].name) == 0) {
+        if(heishaOTDataStruct[x].type == TBOOL) {
+          switch(obj->varstack.buffer[val]) {
+            case VINTEGER: {
+              struct vm_vinteger_t *na = (struct vm_vinteger_t *)&obj->varstack.buffer[val];
+
+              heishaOTDataStruct[x].value.b = (bool)na->value;
+            } break;
+            case VFLOAT: {
+              struct vm_vfloat_t *na = (struct vm_vfloat_t *)&obj->varstack.buffer[val];
+
+              heishaOTDataStruct[x].value.b = (bool)na->value;
+            } break;
+          }
+        } else if(heishaOTDataStruct[x].type == TFLOAT) {
+          switch(obj->varstack.buffer[val]) {
+            case VINTEGER: {
+              struct vm_vinteger_t *na = (struct vm_vinteger_t *)&obj->varstack.buffer[val];
+
+              heishaOTDataStruct[x].value.f = (float)na->value;
+            } break;
+            case VFLOAT: {
+              struct vm_vfloat_t *na = (struct vm_vfloat_t *)&obj->varstack.buffer[val];
+
+              heishaOTDataStruct[x].value.f = na->value;
+            } break;
+          }
+        }
+        break;
+      }
+      x++;
+    }
   }
 }
 
@@ -1244,27 +1271,6 @@ static void vm_clear_values(struct rules_t *obj) {
   }
 }
 
-void rules_new_event(const char *event) {
-  static char out[1024];
-  uint8_t i = 0;
-  for(i=0;i<nrrules;i++) {
-    if(get_event(rules[i]) > -1 && (rules[i]->ast.buffer[get_event(rules[i])+5] == '@' && strnicmp((char *)&rules[i]->ast.buffer[get_event(rules[i])+6], (char *)event, strlen((char *)event)) == 0)) {
-      logprintf_P(F("==== %s ===="), (char *)&rules[i]->ast.buffer[get_event(rules[i])+6]);
-      logprintf_P(F(">>> rule %d nrbytes: %d"), i, rules[i]->ast.nrbytes);
-      logprintf_P(F(">>> global stack nrbytes: %d"),global_varstack.nrbytes);
-      rule_run(rules[i], 0);
-      memset(&out, 0, 1024);
-      logprintf_P(F(">>> local variables"));
-      vm_value_prt(rules[i], (char *)&out, 1024);
-      logprintf_P(F("%s"),out);
-      logprintf_P(F(">>> global variables"));
-      memset(&out, 0, 1024);
-      vm_global_value_prt((char *)&out, 1024);
-      logprintf_P(F("%s"),out);
-    }
-  }
-}
-
 void rules_timer_cb(int nr) {
   char *name = NULL;
   int x = 0, i = 0;
@@ -1279,7 +1285,7 @@ void rules_timer_cb(int nr) {
   // logprintf_P(F("_______ %s %s"), __FUNCTION__, name);
 
   for(x=0;x<nrrules;x++) {
-    if(get_event(rules[x]) > -1 && strcmp((char *)&rules[x]->ast.buffer[get_event(rules[x])+5], name) == 0) {
+    if(get_event(rules[x]) > -1 && stricmp((char *)&rules[x]->ast.buffer[get_event(rules[x])+5], name) == 0) {
       rule_run(rules[x], 0);
 
       char out[512];
@@ -1419,8 +1425,8 @@ int rules_parse(char *file) {
   }
 }
 
-void rules_event_cb(char *name) {
-  uint8_t i = 0, len = strlen(name), tlen = 0;
+void rules_event_cb(const char *prefix, const char *name) {
+  uint8_t i = 0, len = strlen(name), len1 = strlen(prefix), tlen = 0;
   for(i=0;i<nrrules;i++) {
     struct vm_tstart_t *start = (struct vm_tstart_t *)&rules[i]->ast.buffer[0];
     if(rules[i]->ast.buffer[start->go] == TEVENT) {
@@ -1428,14 +1434,9 @@ void rules_event_cb(char *name) {
       tlen = strlen((char *)event->token);
       if(
           (
-            len+8 == tlen &&
-            strncmp_P((char *)event->token, PSTR("ds18b20#"), 8) == 0 &&
-            strnicmp((char *)&event->token[8], name, len) == 0
-          ) ||
-          (
-            len+1 == tlen &&
-            (event->token[0] == '@' || event->token[0] == '?') &&
-            strnicmp((char *)&event->token[1], name, len) == 0
+            len+len1 == tlen &&
+            strncmp((char *)event->token, prefix, len1) == 0 &&
+            strnicmp((char *)&event->token[len1], name, len) == 0
           )
         ) {
         char out[512];
