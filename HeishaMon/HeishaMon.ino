@@ -379,7 +379,7 @@ bool readSerial()
           data_length = 0;
           return true;        
         } else {
-          log_message(F("Received an unknown full size datagram. Can't decode this yet."));
+          log_message(_F("Received an unknown full size datagram. Can't decode this yet."));
           data_length = 0;
           return false;       
         }
@@ -1111,13 +1111,13 @@ void send_panasonic_query() {
   send_command(panasonicQuery, PANASONICQUERYSIZE);
   // rest is for the new data block on new models
   if (extraDataBlockAvailable) {
-    log_message(F("Requesting new panasonic extra data"));
+    log_message(_F("Requesting new panasonic extra data"));
     panasonicQuery[3] = 0x21; //setting 4th byte to 0x21 is a request for extra block
     send_command(panasonicQuery, PANASONICQUERYSIZE);
     panasonicQuery[3] = 0x10; //setting 4th back to 0x10 for normal data request next time
   } else if (!extraDataBlockChecked) {
     extraDataBlockChecked = true;
-    log_message(F("Checking if connected heatpump has extra data"));
+    log_message(_F("Checking if connected heatpump has extra data"));
     panasonicQuery[3] = 0x21;
     send_command(panasonicQuery, PANASONICQUERYSIZE);
     panasonicQuery[3] = 0x10;   

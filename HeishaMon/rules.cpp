@@ -34,6 +34,7 @@ extern int dallasDevicecount;
 extern dallasDataStruct *actDallasData;
 extern settingsStruct heishamonSettings;
 extern char actData[DATASIZE];
+extern char actDataExtra[DATASIZE];
 extern String openTherm[2];
 static uint8_t parsing = 0;
 
@@ -548,6 +549,41 @@ static unsigned char *vm_value_get(struct rules_t *obj, uint16_t token) {
       }
     }
   }
+  if(node->token[0] == '&') {
+    for(i=0;i<NUMBER_OF_TOPICS_EXTRA;i++) {
+      char cpy[MAX_TOPIC_LEN];
+      memcpy_P(&cpy, topics[i], MAX_TOPIC_LEN);
+      if(stricmp(cpy, (char *)&node->token[1]) == 0) {
+        String dataValue = actDataExtra[0] == '\0' ? "" : getDataValueExtra(actDataExtra, i);
+        char *str = (char *)dataValue.c_str();
+        if(strlen(str) == 0) {
+          memset(&vnull, 0, sizeof(struct vm_vnull_t));
+          vnull.type = VNULL;
+          vnull.ret = token;
+
+          return (unsigned char *)&vnull;
+        } else {
+          float var = atof(str);
+          float nr = 0;
+
+          // mosquitto_publish
+          if(modff(var, &nr) == 0) {
+            memset(&vinteger, 0, sizeof(struct vm_vinteger_t));
+            vinteger.type = VINTEGER;
+            vinteger.value = (int)var;
+
+            return (unsigned char *)&vinteger;
+          } else {
+            memset(&vfloat, 0, sizeof(struct vm_vfloat_t));
+            vfloat.type = VFLOAT;
+            vfloat.value = var;
+
+            return (unsigned char *)&vfloat;
+          }
+        }
+      }
+    }
+  }  
   if(node->token[0] == '%') {
     if(stricmp((char *)&node->token[1], "hour") == 0) {
       time_t now = time(NULL);

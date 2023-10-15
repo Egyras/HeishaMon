@@ -24,7 +24,7 @@ jobs:
       - name: Install platform
         run:  |
           arduino-cli core update-index
-          arduino-cli core install esp8266:esp8266@3.0.2
+          arduino-cli core install esp8266:esp8266
 
       - name: Install dependencies
         run:  arduino-cli lib install ringbuffer pubsubclient doubleresetdetect arduinojson dallastemperature onewire WebSockets
