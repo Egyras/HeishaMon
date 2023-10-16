@@ -32,8 +32,16 @@ Assuming that bytes from #129 to #138 are unique for each model of Aquarea heat 
 |25 | E2 CF 0B 75 09 12 D0 0C 06 11 | WH-ADC1216H6E5 | WH-UD12HE5 | KIT-ADC12HE5 | 12 | 1ph | T-CAP |
 |26 | 42 D4 0B 83 71 42 D2 0C 46 55 | WH-ADC0309J3E5C | WH-UD07JE5 | KIT-ADC07JE5C | 7 | 1ph | HP - All-In-One Compact |
 |27 | C2 D3 0C 34 65 B2 D3 0B 95 65 | Monoblock | WH-MDC07J3E5 | Monoblock | 7 | 1ph | HP (new version?) |
-|28 | C2 D3 0C 33 65 B2 D3 0B 94 65 | Monoblock | WH-MDC05J3E5 | Monoblock | 5 | 1ph | HP (new version? |
-|29 | E2 CF 0D 85 05 12 D0 0E 94 05 | WH-SXC09H3E8 | WH-UX09HE8 | KIT-WXC09H3E8 | 9 | 3ph | T-CAP |
+|28 | C2 D3 0C 33 65 B2 D3 0B 94 65 | Monoblcok | WH-MDC05J3E5 | Monoblock | 5 | 1ph | HP (new version? |
+|29 | E2 CF 0B 83 05 12 D0 0D 92 05 | WH-UQ12HE8 | WH-SQC12H9E8 | KIT-WQC12H9E8 | 12 | 3ph | T-CAP - Super Quiet |
+|30 | E2 CF 0C 78 09 12 D0 0B 06 11 | WH-SXC12H6E5 | WH-UX12HE5 | KIT-WXC12H6E5 | 12 | 1ph | T-CAP | 
+|31 | C2 D3 0C 35 65 B2 D3 0B 96 65 | Monoblock | WH-MDC09J3E5 | Monoblock | 9 | 1ph | HP (new version?) |
+|32 | 32 D4 0B 99 77 62 90 0B 01 78 | Monoblock | WH-MXC09J3E5 | Monoblock | 9 | 1ph | T-CAP
+|33 | 42 D4 0B 15 76 12 D0 0B 10 11 | WH-ADC1216H6E5C | WH-UD12HE5 | KIT-ADC12HE5C-CL | 12 | 1ph| HP - All-In-One Compact |
+|34 | E2 D5 0C 29 99 83 92 0C 28 98 | WH-ADC0509L3E5 | WH-WDG07LE5 | KIT-ADC07L3E5 | 7 | 1ph | HP - All-In-One L-series |
+|35 | E2 CF 0D 85 05 12 D0 0E 94 05 | WH-SXC09H3E8 | WH-UX09HE8 | KIT-WXC09H3E8 | 9 | 3ph | T-CAP - new version |
+|36 | E2 D5 0D 36 99 02 D6 0F 67 95 | WH-ADC0309K3E5AN | WH-UDZ07KE5 | KIT-ADC07K3E5AN | 7 | 1ph | HP - All-In-One K-series - AN |
+|37 | E2 D5 0B 08 95 02 D6 0E 66 95 | WH-SDC0309K3E5 | WH-UDZ05KE5 | KIT-WC05K3E5 | 5 | 1ph | HP - split K-series |
 
 All bytes are used for Heat Pump model identification in the code.
 

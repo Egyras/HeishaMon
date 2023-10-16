@@ -37,41 +37,45 @@ A json output of all received data (heatpump and 1wire) is available at the url 
 Within the 'integrations' folder you can find examples how to connect your automation platform to the HeishaMon.
 
 # Rules functionality
-The rules functionality allows you to control the heatpump from within the HeishaMon itself. Which makes it much more reliable then having to deal with external domotica over WiFi. When posting a new ruleset, it is immidiatly validated and when valid used. When a new ruleset is invalid it will be ignored and the old ruleset will be loaded again. You can check the console for feedback on this. If somehow a new valid ruleset crashes the HeishaMon, it will be automatically disabled the next reboot allowing you to make changes. This prevents the HeishaMon getting into a boot loop.
+The rules functionality allows you to control the heatpump from within the HeishaMon itself. Which makes it much more reliable then having to deal with external domotica over WiFi. When posting a new ruleset, it is immidiatly validated and when valid used. When a new ruleset is invalid it will be ignored and the old ruleset will be loaded again. You can check the console for feedback on this. If somehow a new valid ruleset crashes the HeishaMon, it will be automatically disabled the next reboot, allowing you to make changes. This prevents the HeishaMon getting into a boot loop.
 
 The techniques used in the rule library allows you to work with very large rulesets, but best practice is to keep it below 10.000 bytes.
 
-Notice that sending commands to the heatpump is done asynced. So, commands sent to the heatpump at the beginning of your syntax will not immediatly be reflected in the values from the heatpump later on. Therefor, heatpump values should therefor be read from the heatpump itself instead of those based on the values you keep yourself.
+Notice that sending commands to the heatpump is done asynced. So, commands sent to the heatpump at the beginning of your syntax will not immediatly be reflected in the values from the heatpump later on. Therefor, heatpump values should be read from the heatpump itself instead of those based on the values you keep yourself.
 
 ## Syntax
-Two general rules are that spaces are mandatory and all lines are terminated by a semicolon.
+Two general rules are that spaces are mandatory and semicolons are used as end-of-line character.
 
 ### Variables
 The ruleset uses the following variable structure:
 
 - `#`: Globals
-These variables can be accessed throughout the ruleset. Don't use globals for all your variables, because it will persistantly use memory.
+These variables can be accessed throughout the ruleset but have to defined inside a rule block. Don't use globals for all your variables, because it will persistently use memory.
 
 - `$`: Locals
-These variables live inside a rule block. When a ruleblock finishes, these variables will be cleaned up, freeing any memory used.
+These variables live inside a rule block. When a rule block finishes, these variables will be cleaned up, freeing any memory used.
 
 - `@`: Heatpump parameters
-These are the same as listed in the Manage Topics documentation page and as found on the HeishaMon homepage. So the heatpump state value is named `@Heatpump_State`.
+These are the same as listed in the Manage Topics documentation page and as found on the HeishaMon homepage. The ruleset also follows the R/W logic as used through the MQTT and REST API. That means that the read topics differ from the write topics. So reading the heatpump state is done through `@Heatpump_State`, changing the heatpump state through `@SetHeatpump`.
+
+- `^`: Heatpump extra parameters
+These are the extra XTOP parameters for the newer heatpump models K and L which has some new values in a seperate information data block. Some are also visible on the normal TOP but only the XTOP versions of these values are the correct value, for example the Heat_Power_Consumption. So to use the Heat_Power_Consumption value in a rule, use @Heat_Power_Consumption for a H and J series heatpump and ^Heat_Power_Consumption for the K and L series heatpump.
+
+- `%`: Datetime variables
+These can be used for date and time based rules. Currently `%hour` (0 - 23), `%minute` (0 - 59), `%month` (1 - 12), and `day` (1 - 7)  are supported. All are plain integers. A proper NTP configuration is needed to set the correct system date and time on the HeishaMon.
 
 - `?`: Thermostat parameters
-These variables reflect parameters read from the connected thermostat when using the OpenTherm functionality. When OpenTherm is supported this documentation will be extended with more precise information.
+These variables reflect parameters read from the connected thermostat when using the OpenTherm functionality. When OpenTherm is supported this documentation will be extended with more precise information. The can check the opentherm tab for the variables that can be used. The names are the same for reading and writing, but not all values support reading and/or writing. The opentherm tab also lists this.
 
 - `ds18b20#2800000000000000`: Dallas 1-wire temperature values
-Use these variables to read the temperature of the connected sensors. These values cannot be used as an event and are as an exception readonly. Off course, the id of the sensor should be places after the hashtag.
-
-All variables are either read of write enabled. Writing to either the Heatpump of Thermostat parameters directly control these devices. So `@Heatpump_State = 1` will actually turn the heatpump off.
+Use these variables to read the temperature of the connected sensors. These values are of course readonly. The id of the sensor should be placed after the hashtag.
 
 When a variable is called but not yet set to a value, the value will be `NULL`.
 
 Variables can be of boolean (`1` or `0`), float (`3.14`), or integer (`10`) type.
 
 ### Events or functions
-Rules are written in `event` or `function` blocks. These are blocks that are triggered when something happened; either a new heatpump or thermostat value has been received or a timer fired. Or can be used are plain functions
+Rules are written in `event` or `function` blocks. These are blocks that are triggered when something happened; either a new heatpump or thermostat value has been received or a timer fired. Or can be used as plain functions
 
 ```
 on [event] then
@@ -159,10 +163,21 @@ The largest integer value less than or equal to the input float.
 The smallest integer value greater than or equal to the input float.
 
 - `setTimer`
-Sets a timer to trigger in X seconds. The first parameter is the timer number and the second parameters the number of seconds before it fires. A timer only fires once so it has to be re-set for recurring events. When a timer triggers it will can the timer event as described above.
+Sets a timer to trigger in X seconds. The first parameter is the timer number and the second parameters the number of seconds before it fires. A timer only fires once so it has to be re-set for recurring events. When a timer triggers it will can the timer event as described above. E.g.
+
+```
+on System#Boot then
+  setTimer(3, 60);
+end
+
+on timer=3 then
+  [...]
+  setTimer(3, 60);
+end
+```
 
 ### Conditions
-The only supported conditions are `if` and `else`, `elseif` isn't supported:
+The only supported conditions are `if`, `else`, and `elseif`:
 
 ```
 if [condition] then
@@ -171,6 +186,22 @@ else
   if [condition] then
     [...]
   end
+end
+```
+
+```
+if [condition] then
+  [...]
+elseif [condition] then
+  if [condition] then
+    [...]
+  else
+    [...]
+  end
+elseif [condition] then
+  [...]
+else
+  [...]
 end
 ```
 
@@ -189,35 +220,31 @@ on calcWar then
 
 	if @Outside_Temp >= $Tb1 then
 		#maxTa = $Ta1;
+	elseif @Outside_Temp <= $Tb2 then
+		#maxTa = $Ta2;
 	else
-		if @Outside_Temp <= $Tb2 then
-			#maxTa = $Ta2;
-		else
-			#maxTa = $Ta1 + (($Tb1 - @Outside_Temp) * ($Ta2 - $Ta1) / ($Tb1 - $Tb2));
-		end
+		#maxTa = $Ta1 + (($Tb1 - @Outside_Temp) * ($Ta2 - $Ta1) / ($Tb1 - $Tb2));
 	end
 end
 ```
 
 *Thermostat setpoint*
 ```
-on ?temperature then
+on ?roomTemp then
 	calcWar();
 
 	$margin = 0.25;
 
-	if ?temperature > (?setpoint + $margin) then
+	if ?roomTemp > (?roomTempSet + $margin) then
 		if @Heatpump_State == 1 then
-			@Heatpump_State = 0;
+			@SetHeatpump = 0;
+		end
+	elseif ?roomTemp < (?roomTempSet - $margin) then
+		if @Heatpump_State == 0 then
+			@SetHeatpump = 1;
 		end
 	else
-		if ?temperature < (?setpoint - $margin) then
-			if @Heatpump_State == 0 then
-				@Heatpump_State = 1;
-			end
-		else
-			@SetZ1HeatRequestTemperature = round(#maxTa);
-		end
+		@SetZ1HeatRequestTemperature = round(#maxTa);
 	end
 end
 ```

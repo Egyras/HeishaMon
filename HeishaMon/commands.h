@@ -10,6 +10,7 @@ extern byte initialQuery[INITIALQUERYSIZE];
 extern byte panasonicQuery[PANASONICQUERYSIZE];
 
 
+
 #define OPTIONALPCBQUERYTIME 1000 //send optional pcb query each second
 #define OPTIONALPCBQUERYSIZE 19
 #define OPTIONALPCBSAVETIME 300 //save each 5 minutes the current optional pcb state into flash to have valid values during reboot
@@ -17,6 +18,7 @@ extern byte optionalPCBQuery[OPTIONALPCBQUERYSIZE];
 
 
 extern const char* mqtt_topic_values;
+extern const char* mqtt_topic_xvalues;
 extern const char* mqtt_topic_commands;
 extern const char* mqtt_topic_pcbvalues;
 extern const char* mqtt_topic_1wire;
@@ -55,6 +57,8 @@ unsigned int set_main_schedule(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_alt_external_sensor(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_external_pad_heater(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_buffer_delta(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_msg);
 
 //optional pcb commands
 unsigned int set_heat_cool_mode(char *msg, char *log_msg);
@@ -123,6 +127,9 @@ const cmdStruct commands[] PROGMEM = {
   { "SetAltExternalSensor", set_alt_external_sensor },
   { "SetExternalPadHeater", set_external_pad_heater },
   { "SetBufferDelta", set_buffer_delta },
+  { "SetBuffer", set_buffer },
+  // set Outdoor Temperature to stop heating 5-35
+  { "SetHeatingOffOutdoorTemp", set_heatingoffoutdoortemp },
 };
 
 struct optCmdStruct{

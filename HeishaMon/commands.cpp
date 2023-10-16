@@ -7,10 +7,8 @@ byte panasonicQuery[] = {0x71, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0
 byte optionalPCBQuery[] = {0xF1, 0x11, 0x01, 0x50, 0x00, 0x00, 0x40, 0xFF, 0xFF, 0xE5, 0xFF, 0xFF, 0x00, 0xFF, 0xEB, 0xFF, 0xFF, 0x00, 0x00};
 byte panasonicSendQuery[] PROGMEM = {0xf1, 0x6c, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-//timer for saving optional pcb data to flash
-unsigned long lastOptionalPCBSave = 0;
-
 const char* mqtt_topic_values PROGMEM = "main";
+const char* mqtt_topic_xvalues PROGMEM = "extra";
 const char* mqtt_topic_commands PROGMEM = "commands";
 const char* mqtt_topic_pcbvalues PROGMEM = "optional";
 const char* mqtt_topic_1wire PROGMEM = "1wire";
@@ -663,6 +661,51 @@ unsigned int set_buffer_delta(char *msg, unsigned char *cmd, char *log_msg) {
   return sizeof(panasonicSendQuery);
 }
 
+unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_buffer_string(msg);
+
+  byte set_buffer = 4;
+  if ( set_buffer_string.toInt() == 1 ) {
+    set_buffer = 8;
+  }
+
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set buffer enabled to %d"), ((set_buffer / 4) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[24] = set_buffer;
+  }
+
+  return sizeof(panasonicSendQuery);
+ 
+}
+
+unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_heatingoffoutdoortemp_string(msg);
+
+  byte request_temp = set_heatingoffoutdoortemp_string.toInt() + 128;
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set heating off outdoor temp %d"), request_temp - 128 );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[83] = request_temp;
+  }
+
+  return sizeof(panasonicSendQuery);
+  
+}
+
 //start of optional pcb commands
 unsigned int set_byte_6(int val, int base, int bit, char *log_msg, const char *func) {
   unsigned char hex = (optionalPCBQuery[6] & ~(base << bit)) | (val << bit);
@@ -834,14 +877,6 @@ void send_heatpump_command(char* topic, char *msg, bool (*send_command)(byte*, i
       if (strcmp(topic, tmp.name) == 0) {
         len = tmp.func(msg, log_msg);
         log_message(log_msg);
-        if ((unsigned long)(millis() - lastOptionalPCBSave) > (1000 * OPTIONALPCBSAVETIME)) {  // only save each 5 minutes
-          lastOptionalPCBSave = millis();
-          if (saveOptionalPCB(optionalPCBQuery, OPTIONALPCBQUERYSIZE)) {
-            log_message((char*)"Succesfully saved optional PCB data to flash!");
-          } else {
-            log_message((char*)"Failed to save optional PCB data to flash!");
-          }
-        }
       }
     }
   }

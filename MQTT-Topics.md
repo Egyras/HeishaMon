@@ -188,6 +188,8 @@ SET24 | SetMainSchedule | Set weekly schedule | 0=off, 1=on
 SET25 | SetAltExternalSensor | Set the alternative external outdoor sensor | 0=disabled, 1=enabled
 SET26 | SetExternalPadHeater | Set the external pad heater | 0=disabled, 1=type-A, 2=type-B
 SET27 | SetBufferDelta | Set buffer tank delta | 0 - 10
+SET28 | SetBuffer | Set buffer installed | 0=not installed, 1=installed
+SET29 | SetHeatingOffOutdoorTemp | Set Outdoor Temperature to stop heating | 5 to 35
 
 *If you operate your heatpump with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*
 
