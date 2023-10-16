@@ -24,6 +24,10 @@
 ## 1.4.0 (18-09-2022)
 ##   Added
 ##   - Split heatshift into separate Z1 and Z2
+##
+## 1.5.0 (16-10-2023)
+##   Added
+##   - Cool modes
 
 # Automations #
 ###############
@@ -106,10 +110,22 @@ automation:
         option: >-
           {%- if trigger.payload == "0" -%}
             Heat
+          {%- elif trigger.payload == "1" -%}
+            Cool
+          {%- elif trigger.payload == "2" -%}
+            Auto
           {%- elif trigger.payload == "3" -%}
             DHW
           {%- elif trigger.payload == "4" -%}
             Heat+DHW
+          {%- elif trigger.payload == "5" -%}
+            Cool+DHW
+          {%- elif trigger.payload == "6" -%}
+            Auto(Heat)+DHW
+          {%- elif trigger.payload == "7" -%}
+            Auto(Cool)
+          {%- elif trigger.payload == "8" -%}
+            Auto(Cool)+DHW
           {%- endif -%}
 
   #Sets heatmode to the selected value
@@ -125,10 +141,22 @@ automation:
         payload_template: >-
           {%- if states('input_select.heishamon_heatmode') == "Heat" -%}
             0
+          {%- elif states('input_select.heishamon_heatmode') == "Cool" -%}
+            1
+          {%- elif states('input_select.heishamon_heatmode') == "Auto" -%}
+            2
           {%- elif states('input_select.heishamon_heatmode') == "DHW" -%}
             3
           {%- elif states('input_select.heishamon_heatmode') == "Heat+DHW" -%}
             4
+          {%- elif states('input_select.heishamon_heatmode') == "Cool+DHW" -%}
+            5
+          {%- elif states('input_select.heishamon_heatmode') == "Auto(Head)+DHW" -%}
+            6
+          {%- elif states('input_select.heishamon_heatmode') == "Auto(Cool)" -%}
+            7
+          {%- elif states('input_select.heishamon_heatmode') == "Auto(Cool)+DHW" -%}
+            8
           {%- endif -%}
 
   #Fetches Z1 temperature from status and sets the selector accordingly
@@ -249,9 +277,15 @@ input_select:
   heishamon_heatmode:
     name: Set Heat Mode
     options:
-      - Heat+DHW
       - Heat
+      - Cool
+      - Auto
       - DHW
+      - Heat+DHW
+      - Cool+DHW
+      - Auto(Heat)+DHW
+      - Auto(Cool)
+      - Auto(Cool)+DHW
 
 # sensor #
 ##########
@@ -300,7 +334,11 @@ mqtt:
         {%- elif value == "5" -%}
           Cool+DHW
         {%- elif value == "6" -%}
-          Auto+DHW
+          Auto(Heat)+DHW
+        {%- elif value == "7" -%}
+          Auto(Cool)
+        {%- elif value == "8" -%}
+          Auto(Cool)+DHW
         {%- endif -%}
 
     #TOP5 - Water inlet temp
@@ -360,7 +398,7 @@ mqtt:
 #      state_class: "measurement"
 
     #TOP15 - Heating power produced
-    - name: Aquarea Power Produced
+    - name: Aquarea Heating Power Produced
       state_topic: "panasonic_heat_pump/main/Heat_Energy_Production"
       unit_of_measurement: "W"
       device_class: "power"
@@ -368,14 +406,14 @@ mqtt:
       force_update: true
 
     #TOP16 - Heating power consumed
-    - name: Aquarea Power Consumed
+    - name: Aquarea Heating Power Consumed
       state_topic: "panasonic_heat_pump/main/Heat_Energy_Consumption"
       unit_of_measurement: "W"
       device_class: "power"
       state_class: "measurement"
       force_update: true
 
-    #TOP17 - Heating powerful mode
+    #TOP17 - Powerful mode
     - name: Aquarea Powerful Mode
       state_topic: "panasonic_heat_pump/main/Powerful_Mode_Time"
       unit_of_measurement: "Min"
@@ -429,11 +467,81 @@ mqtt:
           Active
         {%- endif -%}
 
-    #TOP27 - Heatshift Temperature
-    - name: Aquarea Heatshift Temperature
+    #TOP27 - Z1 Heat Request
+    - name: Aquarea Z1 Heat Request Temperature
       state_topic: "panasonic_heat_pump/main/Z1_Heat_Request_Temp"
       unit_of_measurement: "°C"
       state_class: "measurement"
+
+    #TOP28 - Z1 cool request temp
+    - name: Aquarea Z1 Cool Request Temp
+      state_topic: "panasonic_heat_pump/main/Z1_Cool_Request_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
+
+    #TOP29 - Z1 Heat curve target high temperature
+    - name: Aquarea Z1 Heat Curve Target High Temperature
+      state_topic: "panasonic_heat_pump/main/Z1_Heat_Curve_Target_High_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
+
+    #TOP30 - Z1 Heat curve target low temperature
+    - name: Aquarea Z1 Heat Curve Target Low Temperature
+      state_topic: "panasonic_heat_pump/main/Z1_Heat_Curve_Target_Low_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
+
+    #TOP31 - Z1 Heat curve outside high temperature
+    - name: Aquarea Z1 Heat Curve Outside High Temperature
+      state_topic: "panasonic_heat_pump/main/Z1_Heat_Curve_Outside_High_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
+
+    #TOP32 - Z1 Heat curve outside low temperature
+    - name: Aquarea Z1 Heat Curve Outside Low Temperature
+      state_topic: "panasonic_heat_pump/main/Z1_Heat_Curve_Outside_Low_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
+
+    #TOP34 - Z2 Heat request temp
+    - name: Aquarea Z2 Heat Request Temperature
+      state_topic: "panasonic_heat_pump/main/Z2_Heat_Request_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
+
+    #TOP35 - Z2 Cool request temp
+    - name: Aquarea Z2 Cool Request Temperature
+      state_topic: "panasonic_heat_pump/main/Z2_Cool_Request_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
+
+    #TOP36 - Z1 water temperature
+    - name: Aquarea Z1 Water Temperature
+      state_topic: "panasonic_heat_pump/main/Z1_Water_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
+
+    #TOP37 - Z2 water temperature
+    - name: Aquarea Z2 Water Temperature
+      state_topic: "panasonic_heat_pump/main/Z2_Water_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
+
+    #TOP38 - Cool power produced
+    - name: Aquarea Cool Power Produced
+      state_topic: "panasonic_heat_pump/main/Cool_Energy_Production"
+      unit_of_measurement: "W"
+      device_class: "power"
+      state_class: "measurement"
+      force_update: true
+
+    #TOP39 - Cool power consumed
+    - name: Aquarea Cool Power Consumed
+      state_topic: "panasonic_heat_pump/main/Cool_Energy_Consumption"
+      unit_of_measurement: "W"
+      device_class: "power"
+      state_class: "measurement"
+      force_update: true
 
     #TOP40 - DHW power produced
     - name: Aquarea DHW Power Produced
@@ -450,6 +558,18 @@ mqtt:
       device_class: "power"
       state_class: "measurement"
       force_update: true
+
+    #TOP42 - Z1 water target temperature
+    - name: Aquarea Z1 Water Target Temperature
+      state_topic: "panasonic_heat_pump/main/Z1_Water_Target_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
+
+    #TOP42 - Z2 water target temperature
+    - name: Aquarea Z2 Water Target Temperature
+      state_topic: "panasonic_heat_pump/main/Z2_Water_Target_Temp"
+      unit_of_measurement: "°C"
+      state_class: "measurement"
 
     #TOP44 - Last active error
     - name: Aquarea Last Error
@@ -640,21 +760,20 @@ sensor:
         friendly_name: "Aquarea Energy Production"
         unit_of_measurement: "W"
         value_template: >-
-          {%- if states('sensor.aquarea_dhw_power_produced') != "0" -%}
-            {{ states('sensor.aquarea_dhw_power_produced') }}
-          {%- else -%}
-            {{ states('sensor.aquarea_power_produced') }}
-          {%- endif -%}
+            {{
+              states('sensor.aquarea_dhw_power_produced') | float +
+              states('sensor.aquarea_heating_power_produced') | float +
+              states('sensor.aquarea_cool_power_produced') | float
+            }}
       heishamon_w_consumption:
         friendly_name: "Aquarea Energy Consumption"
         unit_of_measurement: "W"
         value_template: >-
-          {%- if states('sensor.aquarea_dhw_power_consumed') != "0" -%}
-            {{ states('sensor.aquarea_dhw_power_consumed') }}
-          {%- else -%}
-            {{ states('sensor.aquarea_power_consumed') }}
-          {%- endif -%}
-
+            {{
+              states('sensor.aquarea_dhw_power_consumed') | float +
+              states('sensor.aquarea_heating_power_consumed') | float +
+              states('sensor.aquarea_cool_power_consumed') | float
+            }}
   #COP Calculations
   - platform: template
     sensors:
@@ -683,7 +802,13 @@ sensor:
     method: left
   #Calculation Energy consumed (kWh) - Heat
   - platform: integration
-    source: sensor.aquarea_power_consumed
+    source: sensor.aquarea_heating_power_consumed
     name: Aquarea Heat Energy Consumed
+    unit_prefix: k
+    method: left
+  #Calculation Energy consumed (kWh) - Cool
+  - platform: integration
+    source: sensor.aquarea_cool_power_consumed
+    name: Aquarea Cool Energy Consumed
     unit_prefix: k
     method: left
