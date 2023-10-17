@@ -768,6 +768,31 @@ sensor:
             false
           {%- endif %}
 
+  #Calculation Energy produced (kWh) - DHW
+  - platform: integration
+    source: sensor.aquarea_dhw_power_produced
+    name: Aquarea DHW Energy Produced
+    unit_prefix: k
+    method: left
+  #Calculation Energy produced (kWh) - Heat
+  - platform: integration
+    source: sensor.aquarea_heating_power_produced
+    name: Aquarea Heat Energy Produced
+    unit_prefix: k
+    method: left
+  #Calculation Energy produced (kWh) - Cool
+  - platform: integration
+    source: sensor.aquarea_cool_power_produced
+    name: Aquarea Cool Energy Produced
+    unit_prefix: k
+    method: left
+  #Calculation Energy produced (kWh) - Total
+  - platform: integration
+    source: sensor.heishamon_w_consumption
+    name: Aquarea Energy Produced
+    unit_prefix: k
+    method: left
+
   #Calculation Energy consumed (kWh) - DHW
   - platform: integration
     source: sensor.aquarea_dhw_power_consumed
@@ -784,5 +809,11 @@ sensor:
   - platform: integration
     source: sensor.aquarea_cool_power_consumed
     name: Aquarea Cool Energy Consumed
+    unit_prefix: k
+    method: left
+  #Calculation Energy consumed (kWh) - Total
+  - platform: integration
+    source: sensor.heishamon_w_consumption
+    name: Aquarea Energy Consumed
     unit_prefix: k
     method: left
