@@ -375,7 +375,7 @@ mqtt:
       state_class: "measurement"
 
     #TOP10 - Tank current temperature
-    - name: Aquarea Actual Tank Temperature
+    - name: Aquarea Tank Temperature
       state_topic: "panasonic_heat_pump/main/DHW_Temp"
       unit_of_measurement: "°C"
       state_class: "measurement"
@@ -393,8 +393,8 @@ mqtt:
 #      state_class: total
       state_class: "measurement"
 
-    #TOP14 - Outdoor unit ambient temperature
-    - name: Aquarea Outdoor Ambient
+    #TOP14 - Outside ambient temperature
+    - name: Aquarea Outside Ambient Temperature
       state_topic: "panasonic_heat_pump/main/Outside_Temp"
       unit_of_measurement: "°C"
       state_class: "measurement"
@@ -455,8 +455,8 @@ mqtt:
           Tank
         {%- endif -%}
 
-    #TOP21 - Outside pipe temp
-    - name: Aquarea Outdoor Pipe Temperature
+    #TOP21 - Outside pipe temperature
+    - name: Aquarea Outside Pipe Temperature
       state_topic: "panasonic_heat_pump/main/Outside_Pipe_Temp"
       unit_of_measurement: "°C"
 
@@ -470,14 +470,14 @@ mqtt:
           Active
         {%- endif -%}
 
-    #TOP27 - Z1 Heat Request
+    #TOP27 - Z1 heat request temperature
     - name: Aquarea Z1 Heat Request Temperature
       state_topic: "panasonic_heat_pump/main/Z1_Heat_Request_Temp"
       unit_of_measurement: "°C"
       state_class: "measurement"
 
-    #TOP28 - Z1 cool request temp
-    - name: Aquarea Z1 Cool Request Temp
+    #TOP28 - Z1 cool request temperature
+    - name: Aquarea Z1 Cool Request Temperature
       state_topic: "panasonic_heat_pump/main/Z1_Cool_Request_Temp"
       unit_of_measurement: "°C"
       state_class: "measurement"
@@ -731,8 +731,8 @@ sensor:
   #Energy use/production
   - platform: template
     sensors:
-      heishamon_w_production:
-        friendly_name: "Aquarea Energy Production"
+      heishamon_power_produced:
+        friendly_name: "Aquarea Power Produced"
         unit_of_measurement: "W"
         value_template: >-
             {{
@@ -740,8 +740,8 @@ sensor:
               states('sensor.aquarea_heat_power_produced') | float +
               states('sensor.aquarea_cool_power_produced') | float
             }}
-      heishamon_w_consumption:
-        friendly_name: "Aquarea Energy Consumption"
+      heishamon_power_consumed:
+        friendly_name: "Aquarea Power Consumed"
         unit_of_measurement: "W"
         value_template: >-
             {{
@@ -757,14 +757,14 @@ sensor:
         friendly_name: "Aquarea COP"
         unit_of_measurement: "x"
         value_template: >-
-          {%- if states('sensor.heishamon_w_consumption') | float(0) > 0 -%}
-            {{ '%0.1f' % ((states('sensor.heishamon_w_production') | float ) / (states('sensor.heishamon_w_consumption') | float )) }}
+          {%- if states('sensor.heishamon_power_consumed') | float(0) > 0 -%}
+            {{ '%0.1f' % ((states('sensor.heishamon_power_produced') | float ) / (states('sensor.heishamon_power_consumed') | float )) }}
           {%- else -%}
             0.0
           {%- endif -%}
 
         availability_template: >-
-          {%- if is_number(states('sensor.heishamon_w_consumption')) and is_number(states('sensor.heishamon_w_production')) %}
+          {%- if is_number(states('sensor.heishamon_power_consumed')) and is_number(states('sensor.heishamon_power_produced')) %}
             true
           {%- else %}
             false
@@ -790,7 +790,7 @@ sensor:
   - platform: template
     sensors:
       heishamon_heat_cop:
-        friendly_name: "Aquarea HEAT COP"
+        friendly_name: "Aquarea HeaT COP"
         unit_of_measurement: "x"
         value_template: >-
           {%- if states('sensor.aquarea_heat_power_consumed') | float(0) > 0 -%}
@@ -844,7 +844,7 @@ sensor:
     method: left
   #Calculation Energy produced (kWh) - Total
   - platform: integration
-    source: sensor.heishamon_w_consumption
+    source: sensor.heishamon_power_produced
     name: Aquarea Energy Produced
     unit_prefix: k
     method: left
@@ -869,7 +869,7 @@ sensor:
     method: left
   #Calculation Energy consumed (kWh) - Total
   - platform: integration
-    source: sensor.heishamon_w_consumption
+    source: sensor.heishamon_power_consumed
     name: Aquarea Energy Consumed
     unit_prefix: k
     method: left
