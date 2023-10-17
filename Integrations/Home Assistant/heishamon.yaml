@@ -28,6 +28,7 @@
 ## 1.5.0 (16-10-2023)
 ##   Added
 ##   - Cool modes
+##   - All modes COP calculations
 ##   Removed
 ##   - S0 energy calculations (we are already calculating it in sensors)
 
@@ -399,16 +400,16 @@ mqtt:
       state_class: "measurement"
 #      state_class: "measurement"
 
-    #TOP15 - Heating power produced
-    - name: Aquarea Heating Power Produced
+    #TOP15 - Heat power produced
+    - name: Aquarea Heat Power Produced
       state_topic: "panasonic_heat_pump/main/Heat_Energy_Production"
       unit_of_measurement: "W"
       device_class: "power"
       state_class: "measurement"
       force_update: true
 
-    #TOP16 - Heating power consumed
-    - name: Aquarea Heating Power Consumed
+    #TOP16 - Heat power consumed
+    - name: Aquarea Heat Power Consumed
       state_topic: "panasonic_heat_pump/main/Heat_Energy_Consumption"
       unit_of_measurement: "W"
       device_class: "power"
@@ -422,7 +423,7 @@ mqtt:
       value_template: >-
         {{ (value | int) * 30 }}
 
-    #TOP18 - Heating quiet mode
+    #TOP18 - Heat quiet mode
     - name: Aquarea Quiet Mode
       state_topic: "panasonic_heat_pump/main/Quiet_Mode_Level"
       value_template: >-
@@ -736,7 +737,7 @@ sensor:
         value_template: >-
             {{
               states('sensor.aquarea_dhw_power_produced') | float +
-              states('sensor.aquarea_heating_power_produced') | float +
+              states('sensor.aquarea_heat_power_produced') | float +
               states('sensor.aquarea_cool_power_produced') | float
             }}
       heishamon_w_consumption:
@@ -745,9 +746,10 @@ sensor:
         value_template: >-
             {{
               states('sensor.aquarea_dhw_power_consumed') | float +
-              states('sensor.aquarea_heating_power_consumed') | float +
+              states('sensor.aquarea_heat_power_consumed') | float +
               states('sensor.aquarea_cool_power_consumed') | float
             }}
+
   #COP Calculations
   - platform: template
     sensors:
@@ -767,6 +769,60 @@ sensor:
           {%- else %}
             false
           {%- endif %}
+  - platform: template
+    sensors:
+      heishamon_dhw_cop:
+        friendly_name: "Aquarea DHW COP"
+        unit_of_measurement: "x"
+        value_template: >-
+          {%- if states('sensor.aquarea_dhw_power_consumed') | float(0) > 0 -%}
+            {{ '%0.1f' % ((states('sensor.aquarea_dhw_power_produced') | float ) / (states('sensor.aquarea_dhw_power_consumed') | float )) }}
+          {%- else -%}
+            0.0
+          {%- endif -%}
+
+        availability_template: >-
+          {%- if is_number(states('sensor.aquarea_dhw_power_consumed')) and is_number(states('sensor.aquarea_dhw_power_produced')) %}
+            true
+          {%- else %}
+            false
+          {%- endif %}
+  - platform: template
+    sensors:
+      heishamon_heat_cop:
+        friendly_name: "Aquarea HEAT COP"
+        unit_of_measurement: "x"
+        value_template: >-
+          {%- if states('sensor.aquarea_heat_power_consumed') | float(0) > 0 -%}
+            {{ '%0.1f' % ((states('sensor.aquarea_heat_power_produced') | float ) / (states('sensor.aquarea_heat_power_consumed') | float )) }}
+          {%- else -%}
+            0.0
+          {%- endif -%}
+
+        availability_template: >-
+          {%- if is_number(states('sensor.aquarea_heat_power_consumed')) and is_number(states('sensor.aquarea_heat_power_produced')) %}
+            true
+          {%- else %}
+            false
+          {%- endif %}
+  - platform: template
+    sensors:
+      heishamon_cool_cop:
+        friendly_name: "Aquarea Cool COP"
+        unit_of_measurement: "x"
+        value_template: >-
+          {%- if states('sensor.aquarea_cool_power_consumed') | float(0) > 0 -%}
+            {{ '%0.1f' % ((states('sensor.aquarea_cool_power_produced') | float ) / (states('sensor.aquarea_cool_power_consumed') | float )) }}
+          {%- else -%}
+            0.0
+          {%- endif -%}
+
+        availability_template: >-
+          {%- if is_number(states('sensor.aquarea_cool_power_consumed')) and is_number(states('sensor.aquarea_cool_power_produced')) %}
+            true
+          {%- else %}
+            false
+          {%- endif %}
 
   #Calculation Energy produced (kWh) - DHW
   - platform: integration
@@ -776,7 +832,7 @@ sensor:
     method: left
   #Calculation Energy produced (kWh) - Heat
   - platform: integration
-    source: sensor.aquarea_heating_power_produced
+    source: sensor.aquarea_heat_power_produced
     name: Aquarea Heat Energy Produced
     unit_prefix: k
     method: left
@@ -801,7 +857,7 @@ sensor:
     method: left
   #Calculation Energy consumed (kWh) - Heat
   - platform: integration
-    source: sensor.aquarea_heating_power_consumed
+    source: sensor.aquarea_heat_power_consumed
     name: Aquarea Heat Energy Consumed
     unit_prefix: k
     method: left
