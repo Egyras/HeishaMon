@@ -1277,6 +1277,8 @@ void loop() {
     stats += toolongread;
     stats += F(",\"timeout reads\":");
     stats += timeoutread;
+    stats += F(",\"version\":");
+    stats += heishamon_version;
     stats += F("}");
     sprintf_P(mqtt_topic, PSTR("%s/stats"), heishamonSettings.mqtt_topic_base);
     mqtt_client.publish(mqtt_topic, stats.c_str(), MQTT_RETAIN_VALUES);
