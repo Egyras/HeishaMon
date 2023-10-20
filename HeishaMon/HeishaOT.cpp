@@ -30,6 +30,7 @@ struct heishaOTDataStruct_t heishaOTDataStruct[] = {
   { "flameState", TBOOL, { .b = false }, 1 }, //provides current flame state to thermostat
   { "chState", TBOOL, { .b = false }, 1 }, //provides if boiler is in centrale heating state
   { "dhwState", TBOOL, { .b = false }, 1 }, //provides if boiler is in dhw heating state
+  { "roomSetOverride", TFLOAT, { .f = 0 }, 1 }, //provides a room setpoint override ID9 (not implemented completly in heishamon)
   { NULL, 0, 0, 0 }
 };
 
@@ -225,7 +226,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
           unsigned long data = ot.temperatureToData(getOTStructMember(_F("inletTemp"))->value.f);
           otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::Tret, data);
         } else {
-          otResponse = ot.buildResponse(OpenThermMessageType::DATA_INVALID, OpenThermMessageID::Tboiler, request & 0xffff);
+          otResponse = ot.buildResponse(OpenThermMessageType::DATA_INVALID, OpenThermMessageID::Tret, request & 0xffff);
         }
       } break;
     case OpenThermMessageID::Tdhw: {
@@ -234,7 +235,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
           unsigned long data = ot.temperatureToData(getOTStructMember(_F("dhwTemp"))->value.f);
           otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::Tdhw, data);
         } else {
-          otResponse = ot.buildResponse(OpenThermMessageType::DATA_INVALID, OpenThermMessageID::Tboiler, request & 0xffff);
+          otResponse = ot.buildResponse(OpenThermMessageType::DATA_INVALID, OpenThermMessageID::Tdhw, request & 0xffff);
         }
       } break;
     case OpenThermMessageID::Toutside: {
@@ -244,9 +245,21 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
           otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::Toutside, data);
 
         } else {
-          otResponse = ot.buildResponse(OpenThermMessageType::DATA_INVALID, OpenThermMessageID::Tboiler, request & 0xffff);
+          otResponse = ot.buildResponse(OpenThermMessageType::DATA_INVALID, OpenThermMessageID::Toutside, request & 0xffff);
         }
       } break;
+    case OpenThermMessageID::TrOverride: {
+        log_message(_F("OpenTherm: Received read room set override temp"));
+        if (getOTStructMember(_F("roomSetOverride"))->value.f > -99) {
+          unsigned long data = ot.temperatureToData(getOTStructMember(_F("roomSetOverride"))->value.f);
+          otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::TrOverride, data);
+
+        } else {
+          otResponse = ot.buildResponse(OpenThermMessageType::DATA_INVALID, OpenThermMessageID::TrOverride, request & 0xffff);
+        }
+      } break;
+
+      
     /*
       case OpenThermMessageID::ASFflags: {
         log_message(_F("OpenTherm: Received read ASF flags"));

@@ -49,7 +49,7 @@ struct settingsStruct {
   bool logMqtt = false; //log to mqtt from start
   bool logHexdump = false; //log hexdump from start
   bool logSerial1 = true; //log to serial1 (gpio2) from start
-  bool opentherm = true; //opentherm enable flag, current default true for opentherm build
+  bool opentherm = false; //opentherm enable flag
 
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
   gpioSettingsStruct gpioSettings;
