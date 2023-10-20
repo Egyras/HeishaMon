@@ -549,7 +549,7 @@ static unsigned char *vm_value_get(struct rules_t *obj, uint16_t token) {
       }
     }
   }
-  if(node->token[0] == '&') {
+  if(node->token[0] == '~') {
     for(i=0;i<NUMBER_OF_TOPICS_EXTRA;i++) {
       char cpy[MAX_TOPIC_LEN];
       memcpy_P(&cpy, topics[i], MAX_TOPIC_LEN);
