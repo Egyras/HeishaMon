@@ -191,7 +191,9 @@ SET27 | SetBufferDelta | Set buffer tank delta | 0 - 10
 SET28 | SetBuffer | Set buffer installed | 0=not installed, 1=installed
 SET29 | SetHeatingOffOutdoorTemp | Set Outdoor Temperature to stop heating | 5 to 35
 
-*If you operate your heatpump with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*
+*If you operate your heatpump in water mode with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature.*
+
+*But if you operature your heatpump in internal/external thermostat or thermistor mode with direct temperature, you can not use these SET15 and other topics to set the direct temperature. The direct temperature in that modes is stored in the high target compenstation curve value. So to change the requested direct temperature in those modes, use the SET16 to set this value. Maybe this weird behaviour is different for newer heatpump types. So if your heatpump works different, please feel free to updates this note in github.*
 
 *To send Heating/Cooling Curves on topic SET16 you need to send a flattened JSON document. For example:*
 
