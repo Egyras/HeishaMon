@@ -58,9 +58,6 @@ These variables live inside a rule block. When a rule block finishes, these vari
 - `@`: Heatpump parameters
 These are the same as listed in the Manage Topics documentation page and as found on the HeishaMon homepage. The ruleset also follows the R/W logic as used through the MQTT and REST API. That means that the read topics differ from the write topics. So reading the heatpump state is done through `@Heatpump_State`, changing the heatpump state through `@SetHeatpump`.
 
-- `~`: Heatpump extra parameters
-These are the extra XTOP parameters for the newer heatpump models K and L which has some new values in a seperate information data block. Some are also visible on the normal TOP but only the XTOP versions of these values are the correct value, for example the Heat_Power_Consumption. So to use the Heat_Power_Consumption value in a rule, use @Heat_Power_Consumption for a H and J series heatpump and ~Heat_Power_Consumption for the K and L series heatpump.
-
 - `%`: Datetime variables
 These can be used for date and time based rules. Currently `%hour` (0 - 23), `%minute` (0 - 59), `%month` (1 - 12), and `day` (1 - 7)  are supported. All are plain integers. A proper NTP configuration is needed to set the correct system date and time on the HeishaMon.
 

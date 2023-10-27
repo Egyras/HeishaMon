@@ -9,6 +9,7 @@ void resetlastalldatatime();
 
 String getDataValue(char* data, unsigned int Topic_Number);
 String getDataValueExtra(char* data, unsigned int Topic_Number);
+String getOptDataValue(char* data, unsigned int Topic_Number);
 void decode_heatpump_data(char* data, char* actData, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime);
 void decode_heatpump_data_extra(char* data, char* actDataExtra, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime);
 void decode_optional_heatpump_data(char* data, char* actOptDat, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime);
@@ -136,12 +137,12 @@ static const char optTopics[][20] PROGMEM = {
 };
 
 static const char xtopics[][MAX_TOPIC_LEN] PROGMEM = {
-  "Heat_Power_Consumption", //XTOP0
-  "Cool_Power_Consumption", //XTOP1
-  "DHW_Power_Consumption", //XTOP2
-  "Heat_Power_Production",  //XTOP3
-  "Cool_Power_Production",  //XTOP4
-  "DHW_Power_Production",  //XTOP5
+  "Heat_Power_Consumption_Extra", //XTOP0
+  "Cool_Power_Consumption_Extra", //XTOP1
+  "DHW_Power_Consumption_Extra", //XTOP2
+  "Heat_Power_Production_Extra",  //XTOP3
+  "Cool_Power_Production_Extra",  //XTOP4
+  "DHW_Power_Production_Extra",  //XTOP5
 };
 
 static const byte xtopicBytes[] PROGMEM = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode

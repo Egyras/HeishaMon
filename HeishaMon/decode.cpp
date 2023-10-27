@@ -321,7 +321,7 @@ void decode_heatpump_data_extra(char* data, char* actDataExtra, PubSubClient &mq
       log_message(log_msg);
       sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_xvalues, xtopics[Topic_Number]);
       mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
-      rules_event_cb(_F("~"),xtopics[Topic_Number]);
+      rules_event_cb(_F("@"), xtopics[Topic_Number]);
     }
   }
 }
