@@ -313,12 +313,7 @@ void decode_heatpump_data_extra(char* data, char* actDataExtra, PubSubClient &mq
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS_EXTRA ; Topic_Number++) {
     String Topic_Value;
     Topic_Value = getDataValueExtra(data, Topic_Number);
-    {
-      char log_msg[256];
-      sprintf_P(log_msg, PSTR("testing XTOP%d %s: %s"), Topic_Number, xtopics[Topic_Number], Topic_Value.c_str());
-      log_message(log_msg);
-    }
-
+    
     if ((updatenow) || ( getDataValueExtra(actDataExtra, Topic_Number) != Topic_Value )) {
       char log_msg[256];
       char mqtt_topic[256];
