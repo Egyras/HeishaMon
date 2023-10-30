@@ -543,7 +543,7 @@ static const char webCSS[] PROGMEM =
   "#cli, textarea { height: 75vh!important; width: 100%; }"
   "table { margin-bottom: 10px; }"
   "td { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }"
-  "@media (prefers-color-scheme: dark) { html, div.w3-container.w3-center.heishatable, #cli, textarea { background-color: #23262a; color: #e1e1e1 }"
+  "@media (prefers-color-scheme: dark) { html, div.w3-container.w3-center.heishatable, #cli, textarea, input, button, select { background-color: #23262a; color: #e1e1e1 }"
   "@media (prefers-color-scheme: dark) { div.w3-container.w3-left { color: #e1e1e1 } }"
   "@media (prefers-color-scheme: dark) { .w3-theme, .w3-sidebar {color:#e1e1e1 !important; background-color:#000000 !important} }"
   "@media (prefers-color-scheme: dark) { .w3-red, .w3-hover-red:hover { color: #e1e1e1!important; background-color: #616161!important; }}"
