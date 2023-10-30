@@ -539,6 +539,17 @@ static const char webCSS[] PROGMEM =
   ".w3-btn { margin-bottom:10px; }"
   ".heishatable { display: none; }"
   "#cli{ background: black; color: white; width: 100%; height: 400px!important; }"
+  "/* Style additions by @fbloemhof"
+  "#cli, textarea { height: 75vh!important; width: 100%; }"
+  "table { margin-bottom: 10px; }"
+  "td { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }"
+  "@media (prefers-color-scheme: dark) { html, div.w3-container.w3-center.heishatable, #cli, textarea { background-color: #23262a; color: #e1e1e1 }"
+  "@media (prefers-color-scheme: dark) { div.w3-container.w3-left { color: #e1e1e1 } }"
+  "@media (prefers-color-scheme: dark) { .w3-theme, .w3-sidebar {color:#e1e1e1 !important; background-color:#000000 !important} }"
+  "@media (prefers-color-scheme: dark) { .w3-red, .w3-hover-red:hover { color: #e1e1e1!important; background-color: #616161!important; }}"
+  "@media (prefers-color-scheme: dark) { .w3-table-all tr:nth-child(odd){background-color:#23262a}.w3-table-all tr:nth-child(even){background-color:#2f3338} }"
+  "@media (prefers-color-scheme: dark) { .w3-bordered tr,.w3-table-all tr{border-bottom:1px solid #000000}.w3-striped tbody tr:nth-child(even){background-color:#000000} }"
+  "@media (prefers-color-scheme: dark) { .w3-table,.w3-table-all{border-collapse:collapse;border-spacing:0;width:100%;display:table}.w3-table-all{border:1px solid #000} }"
   "</style>";
 
 
