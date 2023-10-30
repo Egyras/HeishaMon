@@ -539,7 +539,7 @@ static const char webCSS[] PROGMEM =
   ".w3-btn { margin-bottom:10px; }"
   ".heishatable { display: none; }"
   "#cli{ background: black; color: white; width: 100%; height: 400px!important; }"
-  "/* Style additions by @fbloemhof"
+  "/* Style additions by @fbloemhof */"
   "#cli, textarea { height: 75vh!important; width: 100%; }"
   "table { margin-bottom: 10px; }"
   "td { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }"
