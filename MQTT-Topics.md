@@ -27,14 +27,14 @@ TOP7 | main/Main_Target_Temp | Main outlet water target temperature (°C)
 TOP8 | main/Compressor_Freq | Compressor frequency (Hz)
 TOP9 | main/DHW_Target_Temp | DHW target temperature (°C)
 TOP10 | main/DHW_Temp | Actual DHW temperature (°C)
-TOP11 | main/Operations_Hours | Heatpump operating time (Hour)
+TOP11 | main/Operations_Hours | Heatpump operating time (Hours)
 TOP12 | main/Operations_Counter | Heatpump starts (counter)
-TOP13 | main/Main_Schedule_State | Main thermostat schedule state (inactive - active)
+TOP13 | main/Main_Schedule_State | Main thermostat schedule state (0=inactive, 1=active)
 TOP14 | main/Outside_Temp | Outside ambient temperature (°C)
 TOP15 | main/Heat_Energy_Production | Thermal heat power production (Watt)
 TOP16 | main/Heat_Energy_Consumption | Elektrical heat power consumption at heat mode (Watt)
 TOP17 | main/Powerful_Mode_Time | Powerful state in minutes (0, 1, 2 or 3 x 30min)
-TOP18 | main/Quiet_Mode_Level | Quiet mode level (0, 1, 2, 3)
+TOP18 | main/Quiet_Mode_Level | Quiet mode level (0=off, 1=less power, 2=even less power, 3=least power)
 TOP19 | main/Holiday_Mode_State | Holiday mode (0=off, 1=scheduled, 2=active)
 TOP20 | main/ThreeWay_Valve_State | 3-way valve mode (0=Room, 1=DHW)
 TOP21 | main/Outside_Pipe_Temp | Outside pipe temperature (°C)
@@ -74,10 +74,10 @@ TOP54 | main/Bypass_Outlet_Temp | Bypass Outlet temperature (°C)
 TOP55 | main/Ipm_Temp | Ipm temperature (°C)
 TOP56 | main/Z1_Temp | Zone1: Actual Temperature (°C) 
 TOP57 | main/Z2_Temp | Zone2: Actual Temperature (°C) 
-TOP58 | main/DHW_Heater_State | When enabled, backup/booster heater can be used for DHW heating (disabled - enabled)
-TOP59 | main/Room_Heater_State | When enabled, backup heater can be used for room heating (disabled - enabled)
-TOP60 | main/Internal_Heater_State | Internal backup heater state (inactive - active)
-TOP61 | main/External_Heater_State | External backup/booster heater state (inactive - active)
+TOP58 | main/DHW_Heater_State | When enabled, backup/booster heater can be used for DHW heating (0=disabled, 1=enabled)
+TOP59 | main/Room_Heater_State | When enabled, backup heater can be used for room heating (0=disabled, 1=enabled)
+TOP60 | main/Internal_Heater_State | Internal backup heater state (0=inactive, 1=active)
+TOP61 | main/External_Heater_State | External backup/booster heater state (0=inactive, 1=active)
 TOP62 | main/Fan1_Motor_Speed | Fan 1 Motor rotation speed (R/Min)
 TOP63 | main/Fan2_Motor_Speed | Fan 2 Motor rotation speed (R/Min)
 TOP64 | main/High_Pressure | High Pressure (Kgf/Cm2)
@@ -127,15 +127,15 @@ TOP107 | main/Liquid_Type | Type of liquid in settings (Water / Glycol)
 TOP108 | main/Alt_External_Sensor | If external outdoor sensor is selected
 TOP109 | main/Anti_Freeze_Mode | Is anti freeze mode enabled or disabled
 TOP110 | main/Optional_PCB | If the optional PCB is enabled (if installed)
-TOP111 | main/Z2_Sensor_Settings | Setting of the sensor for zone 2 (water, ext thermostat, int. thermostat or thermistor)
-TOP112 | main/Z1_Sensor_Settings | Setting of the sensor for zone 1 (water, ext thermostat, int. thermostat or thermistor)
+TOP111 | main/Z2_Sensor_Settings | Setting of the sensor for zone 2 (0=water, 1=ext thermostat, 2=int. thermostat or thermistor)
+TOP112 | main/Z1_Sensor_Settings | Setting of the sensor for zone 1 (0=water, 1=ext thermostat, 2=int. thermostat or thermistor)
 TOP113 | main/Buffer_Tank_Delta | Delta of buffer tank setting in Kelvin
 TOP114 | main/External_Pad_Heater | If the external pad heater is enabled (if installed)
 
 
 
 
-All Topics realated with state can have also value -1 - unknown - but only in abnormal situations.
+All Topics related with state can have also value -1 - unknown - but only in abnormal situations.
 
 ## Option PCB Topics:
 The following topics are actions from the heatpump to the optional pcb (for example, start pump on zone 2). This is only available if you have enable optional pcb emulation.
@@ -163,7 +163,7 @@ HTTP REST API: http://x.x.x.x/command?[topic]=[value]&[topic]=[value] (e.g.: htt
 :--- | :--- | --- | ---
 SET1  | SetHeatpump | Set heatpump on or off | 0=off, 1=on
 SET2  | SetHolidayMode | Set holiday mode on or off | 0=off, 1=on
-SET3  | SetQuietMode | Set quiet mode level | 0, 1, 2 or 3
+SET3  | SetQuietMode | Set quiet mode level | 0=off, 1=less power, 2=even less power, 3=least power
 SET4  | SetPowerfulMode | Set powerful mode run time in minutes | 0=off, 1=30, 2=60 or 3=90
 SET5  | SetZ1HeatRequestTemperature | Set Z1 heat shift or direct heat temperature | -5 to 5 or 20 to max
 SET6  | SetZ1CoolRequestTemperature | Set Z1 cool shift or direct cool temperature | -5 to 5 or 20 to max
