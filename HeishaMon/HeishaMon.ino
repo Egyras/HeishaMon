@@ -1,3 +1,4 @@
+
 #define LWIP_INTERNAL
 
 #include <ESP8266WiFi.h>
@@ -1013,6 +1014,9 @@ void timer_cb(int nr) {
       case -1: {
           LittleFS.begin();
           LittleFS.format();
+          //create first boot file
+          File startupFile = LittleFS.open("/heishamon", "w");
+          startupFile.close(); 
           WiFi.disconnect(true);
           timerqueue_insert(1, 0, -2);
         } break;
@@ -1142,11 +1146,13 @@ void send_panasonic_query() {
     send_command(panasonicQuery, PANASONICQUERYSIZE);
     panasonicQuery[3] = 0x10; //setting 4th back to 0x10 for normal data request next time
   } else if (!extraDataBlockChecked) {
-    extraDataBlockChecked = true;
-    log_message(_F("Checking if connected heatpump has extra data"));
-    panasonicQuery[3] = 0x21;
-    send_command(panasonicQuery, PANASONICQUERYSIZE);
-    panasonicQuery[3] = 0x10;   
+    if ((actData[0] == 0x71) && (actData[193] == 0) ) { //do we have data but 0 value in heat consumptiom power, then assume K or L series
+      extraDataBlockChecked = true;
+      log_message(_F("Checking if connected heatpump has extra data"));
+      panasonicQuery[3] = 0x21;
+      send_command(panasonicQuery, PANASONICQUERYSIZE);
+      panasonicQuery[3] = 0x10;   
+    }
   }
 }
 

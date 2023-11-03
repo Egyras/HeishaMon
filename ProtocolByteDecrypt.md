@@ -128,7 +128,7 @@
 |  TOP | 122 | 00 |   | 0 byte |
 |  TOP | 123 | 00 |   | 0 byte |
 |  TOP | 124 | 00 |   | 0 byte |
-|  TOP | 125 | 00 |   | 0 byte |
+|  TOP | 125 | 00 | (DEC-1)*2  | Possible water pressure (K/L series) |
 |  TOP | 126 | 00 |   | 0 byte |
 |  TOP | 127 | 00 |   | 0 byte |
 |  TOP | 128 | 00 |   | 0 byte |

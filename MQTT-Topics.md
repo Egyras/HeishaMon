@@ -31,8 +31,8 @@ TOP11 | main/Operations_Hours | Heatpump operating time (Hour)
 TOP12 | main/Operations_Counter | Heatpump starts (counter)
 TOP13 | main/Main_Schedule_State | Main thermostat schedule state (inactive - active)
 TOP14 | main/Outside_Temp | Outside ambient temperature (°C)
-TOP15 | main/Heat_Energy_Production | Thermal heat power production (Watt)
-TOP16 | main/Heat_Energy_Consumption | Elektrical heat power consumption at heat mode (Watt)
+TOP15 | main/Heat_Power_Production | Thermal heat power production (Watt)
+TOP16 | main/Heat_Power_Consumption | Elektrical heat power consumption at heat mode (Watt)
 TOP17 | main/Powerful_Mode_Time | Powerful state in minutes (0, 1, 2 or 3 x 30min)
 TOP18 | main/Quiet_Mode_Level | Quiet mode level (0, 1, 2, 3)
 TOP19 | main/Holiday_Mode_State | Holiday mode (0=off, 1=scheduled, 2=active)
@@ -54,10 +54,10 @@ TOP34 | main/Z2_Heat_Request_Temp | Zone 2 Heat Requested shift temp (-5 to 5) o
 TOP35 | main/Z2_Cool_Request_Temp | Zone 2 Cool Requested shift temp (-5 to 5) or direct cool temp (5 to 20)
 TOP36 | main/Z1_Water_Temp | Zone 1 Water outlet temperature (°C)
 TOP37 | main/Z2_Water_Temp | Zone 2 Water outlet temperature (°C)
-TOP38 | main/Cool_Energy_Production | Thermal cooling power production (Watt)
-TOP39 | main/Cool_Energy_Consumption | Elektrical cooling power consumption (Watt)
-TOP40 | main/DHW_Energy_Production | Thermal DHW power production (Watt)
-TOP41 | main/DHW_Energy_Consumption | Elektrical DHW power consumption (Watt)
+TOP38 | main/Cool_Power_Production | Thermal cooling power production (Watt)
+TOP39 | main/Cool_Power_Consumption | Elektrical cooling power consumption (Watt)
+TOP40 | main/DHW_Power_Production | Thermal DHW power production (Watt)
+TOP41 | main/DHW_Power_Consumption | Elektrical DHW power consumption (Watt)
 TOP42 | main/Z1_Water_Target_Temp | Zone 1 water target temperature (°C)
 TOP43 | main/Z2_Water_Target_Temp | Zone 2 water target temperature (°C)
 TOP44 | main/Error | Last active Error from Heat Pump
@@ -191,7 +191,9 @@ SET27 | SetBufferDelta | Set buffer tank delta | 0 - 10
 SET28 | SetBuffer | Set buffer installed | 0=not installed, 1=installed
 SET29 | SetHeatingOffOutdoorTemp | Set Outdoor Temperature to stop heating | 5 to 35
 
-*If you operate your heatpump with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature*
+*If you operate your heatpump in water mode with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature.*
+
+*But if you operature your heatpump in internal/external thermostat or thermistor mode with direct temperature, you can not use these SET15 and other topics to set the direct temperature. The direct temperature in that modes is stored in the high target compenstation curve value. So to change the requested direct temperature in those modes, use the SET16 to set this value. Maybe this weird behaviour is different for newer heatpump types. So if your heatpump works different, please feel free to updates this note in github.*
 
 *To send Heating/Cooling Curves on topic SET16 you need to send a flattened JSON document. For example:*
 
