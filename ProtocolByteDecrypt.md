@@ -128,9 +128,9 @@
 |  TOP | 122 | 00 |   | 0 byte |
 |  TOP | 123 | 00 |   | 0 byte |
 |  TOP | 124 | 00 |   | 0 byte |
-|  TOP | 125 | 00 | (DEC-1)*2  | Possible water pressure (K/L series) |
-|  TOP | 126 | 00 |   | 0 byte |
-|  TOP | 127 | 00 |   | 0 byte |
+|  TOP | 125 | 00 | (Convert to DEC-1)*2  | Water Pressure [bar] (K/L series) |
+|  TOP | 126 | 00 | Convert to DEC-128 | Water Inlet 2 Temperature [°C] (L series) |
+|  TOP | 127 | 00 | Convert to DEC-128 | Economizer Outlet Temperature [°C] (K/L series) |
 |  TOP | 128 | 00 |   | 0 byte |
 |  TOP92 | 129 | e2 | look in HeatPumpType.md  | Heat pump model |
 |  TOP92 | 130 | ce | look in HeatPumpType.md  | Heat pump model |
@@ -159,7 +159,7 @@
 |  TOP7 | 153 | b7 |  Convert to DEC-128 | Outlet Water Temperature (Target) [°C] |
 |  TOP49 | 154 | af |  Convert to DEC-128 | Outlet 2 heat exchanger water temperature [°C] |
 |  TOP50 | 155 | cd |  Convert to DEC-128 | Discharge Temperature [°C] |
-|  TOP33 | 156 | 9a |  Convert to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
+|  TOP33 | 156 | 9a |  Convert to DEC-128 | RC-1:Room Thermostat Internal Sensor Temperature [°C] |
 |  TOP51 | 157 | ac |  Convert to DEC-128 | Indoor Piping Temperature [°C] |
 |  TOP21 | 158 | 79 |  Convert to DEC-128 | Outdoor Piping Temperature [°C] |
 |  TOP52 | 159 | 80 |  Convert to DEC-128 | Defrost Temperature [°C] |
@@ -203,7 +203,7 @@
 |  TOP40 | 197 | 0a | Convert to DEC (x-1) / 5   | Power Consumption for DHW in [kw] |
 |  TOP41 | 198 | 14 | Convert to DEC (x-1) / 5   | Power Generation for DHW in [kw] |
 |  TOP | 199 | 00 |   | byte 0 |
-|  TOP | 200 | 00 |   | byte 0 |
+|  TOP | 200 | 00 |  Convert to DEC-128 | RC-2:Room Thermostat Internal Sensor Temperature [°C] (K/L series) |
 |  TOP | 201 | 00 |   | byte 0 |
 |  TOP | 202 | 79 |  CHECKSUM |  |
 
