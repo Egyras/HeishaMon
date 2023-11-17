@@ -13,7 +13,7 @@
 |  TOP | 08 | 00 |   | 0 byte |
 |  TOP58+TOP59 | 09 | 05 | 3rd & 4th bit = b01 Standard, b10 - DHW Standard/Variable (J-series only)<br/>5rd & 6th bit = b01 DHW heater off, b10 - DHW heater on<br/>7rd & 8th bit = b01 Water heater off, b10 - Water heater on | DHW capacity (J-series only)<br/>Heaters enable allowed status|
 |  TOP | 10 | 00 |   | 0 byte |
-|  TOP | 11 | 00 | 01- DHW Top sensor , 02 - DHW Center Sensor   | Only All-In-One |
+|  TOP | 11 | 00 | 3rd & 4th bit = b01 - Sound , b10 - Capacity <br/> 7th & 8th bit = b01 - DHW Top sensor , b10 - DHW Center Sensor | Quiet Mode Priority (K/L series) <br/> Only All-In-One |
 |  TOP | 12 | 00 |   | 0 byte |
 |  TOP | 13 | 00 |   | 0 byte |
 |  TOP | 14 | 00 |   | 0 byte |
@@ -32,8 +32,8 @@
 |  TOP | 26 | 55 | (hex) Bivalent Off=55, Bivalent alternative =56, Bivalent parallel=5A | Bivalent settings |
 |  TOP | 27 | 05 | SG Ready Control on/off (bit5and6) ,Demand Control on/off (bit7and8)  | SG Ready Control, Demand Control |
 |  TOP76+TOP81 | 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
-|  TOP106 | 29 | 00 |   | 3d and 4th bit setting for J-series deltaT or max flow switch |
-|  TOP | 30 | 00 |   | 0 byte |
+|  TOP106 | 29 | 00 | 3rd & 4th bit = b01 - deltaT , b10 - Max. Duty | Pump flowrate (J/K/L series) |
+|  TOP | 30 | 00 |  5th & 6th bit = b01 - Comfort , b10 - Efficiency <br/> 7th & 8th bit = b01 - DHW Defrost NO , b10 - DHW Defrost YES | Heating Control (K/L series) <br/> DHW Defrost (K/L series) |
 |  TOP | 31 | 00 |   | 0 byte |
 |  TOP | 32 | 00 |   | 0 byte |
 |  TOP | 33 | 00 |   | 0 byte |
@@ -202,7 +202,7 @@
 |  TOP39 | 196 | 01 | Convert to DEC (x-1) / 5   | Power Generation for Cool in [kw] |
 |  TOP40 | 197 | 0a | Convert to DEC (x-1) / 5   | Power Consumption for DHW in [kw] |
 |  TOP41 | 198 | 14 | Convert to DEC (x-1) / 5   | Power Generation for DHW in [kw] |
-|  TOP | 199 | 00 |   | byte 0 |
+|  TOP | 199 | 00 |   | If value greather then 0x03 CZ-TAW1 starts asking for extra querty ,look <a href="https://github.com/Egyras/HeishaMon/blob/master/ProtocolByteDecrypt-extra.md">Extra Querty</a>   |
 |  TOP | 200 | 00 |  Convert to DEC-128 | RC-2:Room Thermostat Internal Sensor Temperature [°C] (K/L series) |
 |  TOP | 201 | 00 |   | byte 0 |
 |  TOP | 202 | 79 |  CHECKSUM |  |
