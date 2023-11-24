@@ -405,7 +405,7 @@ mqtt:
 
     #TOP15 - Heat power produced
     - name: Aquarea Heat Power Produced
-      state_topic: "panasonic_heat_pump/main/Heat_Energy_Production"
+      state_topic: "panasonic_heat_pump/main/Heat_Power_Production"
       unit_of_measurement: "W"
       device_class: "power"
       state_class: "measurement"
@@ -413,7 +413,7 @@ mqtt:
 
     #TOP16 - Heat power consumed
     - name: Aquarea Heat Power Consumed
-      state_topic: "panasonic_heat_pump/main/Heat_Energy_Consumption"
+      state_topic: "panasonic_heat_pump/main/Heat_Power_Consumption"
       unit_of_measurement: "W"
       device_class: "power"
       state_class: "measurement"
@@ -535,7 +535,7 @@ mqtt:
 
     #TOP38 - Cool power produced
     - name: Aquarea Cool Power Produced
-      state_topic: "panasonic_heat_pump/main/Cool_Energy_Production"
+      state_topic: "panasonic_heat_pump/main/Cool_Power_Production"
       unit_of_measurement: "W"
       device_class: "power"
       state_class: "measurement"
@@ -543,7 +543,7 @@ mqtt:
 
     #TOP39 - Cool power consumed
     - name: Aquarea Cool Power Consumed
-      state_topic: "panasonic_heat_pump/main/Cool_Energy_Consumption"
+      state_topic: "panasonic_heat_pump/main/Cool_Power_Consumption"
       unit_of_measurement: "W"
       device_class: "power"
       state_class: "measurement"
@@ -551,7 +551,7 @@ mqtt:
 
     #TOP40 - DHW power produced
     - name: Aquarea DHW Power Produced
-      state_topic: "panasonic_heat_pump/main/DHW_Energy_Production"
+      state_topic: "panasonic_heat_pump/main/DHW_Power_Production"
       unit_of_measurement: "W"
       device_class: "power"
       state_class: "measurement"
@@ -559,7 +559,7 @@ mqtt:
 
     #TOP41 - DHW power consumed
     - name: Aquarea DHW Power Consumed
-      state_topic: "panasonic_heat_pump/main/DHW_Energy_Consumption"
+      state_topic: "panasonic_heat_pump/main/DHW_Power_Consumption"
       unit_of_measurement: "W"
       device_class: "power"
       state_class: "measurement"
