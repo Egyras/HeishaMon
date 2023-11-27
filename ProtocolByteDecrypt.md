@@ -11,7 +11,7 @@
 |  TOP94+TOP4 | 06 | 62 | 1st Bit = Zone2<br/> 2nd Bit = Zone1<br/>3rd & 4th bit = b01 DHW off ,b10 DHW on<br/> 5th ,6th,7th & 8th bit = b0001 - only DHW , b0010 - Heat , b0011 - Cool , b1001 - Auto(Heat) , b1010 - Auto(Cool) | Zone on/off <br/>Mode status   |
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerful mode status |
 |  TOP | 08 | 00 |   | 0 byte |
-|  TOP58+TOP59 | 09 | 05 | 3rd & 4th bit = b01 Standard, b10 - DHW Standard/Variable (J-series only)<br/>5rd & 6th bit = b01 DHW heater off, b10 - DHW heater on<br/>7rd & 8th bit = b01 Water heater off, b10 - Water heater on | DHW capacity (J-series only)<br/>Heaters enable allowed status|
+|  TOP58+TOP59 | 09 | 05 | 3rd & 4th bit = b01 Standard, b10 - DHW Standard/Variable (J-series only)<br/>5th & 6th bit = b01 DHW heater off, b10 - DHW heater on<br/>7rd & 8th bit = b01 Water heater off, b10 - Water heater on | DHW capacity (J-series only)<br/>Heaters enable allowed status|
 |  TOP | 10 | 00 |   | 0 byte |
 |  TOP | 11 | 00 | 3rd & 4th bit = b01 - Sound , b10 - Capacity <br/> 7th & 8th bit = b01 - DHW Top sensor , b10 - DHW Center Sensor | Quiet Mode Priority (K/L series) <br/> Only All-In-One |
 |  TOP | 12 | 00 |   | 0 byte |
@@ -22,7 +22,6 @@
 |  TOP | 17 | 00 |   | 0 byte |
 |  TOP | 18 | 00 |   | 0 byte |
 |  TOP | 19 | 00 |   | 0 byte |
-|  TOP107/108/109/110 | 20 | 19 | 1st Bit = b0 Water , b1 Glycol<br/>3rd & 4th bit = b01 Alternative Sensor Off ,b10 Alternative Sensor On<br/>5rd & 6th bit = b01 Antifreezing Off ,b10 Antifreezing on<br/>7rd & 8th bit = b01 Optional PCB Off ,b10 Optional PCB on<br/>| Circulation liquid<br/> ,Alternative outdoor temp sensor<br/> Anti freezing<br/> Optional PCB |
 |  TOP107/108/109/110 | 20 | 19 | 1st Bit = b0 Water , b1 Glycol<br/>3rd & 4th bit = b01 Alternative Sensor Off ,b10 Alternative Sensor On<br/>5rd & 6th bit = b01 Antifreezing Off ,b10 Antifreezing on<br/>7rd & 8th bit = b01 Optional PCB Off ,b10 Optional PCB on<br/>| Circulation liquid<br/> ,Alternative outdoor temp sensor<br/> Anti freezing<br/> Optional PCB |
 |  TOP | 21 | 15 |  (hex) 15 - One  Zone and Z1 as room , 19 - One Zone and Z1 as pool, 16 - Two Zones and Z2 as room, 26 - Two Zones ,Z2 as pool| No. of Zones and Zone Destination |
 |  TOP111+TOP112 | 22 | 11 |First digit -Z2 ,Second digit Z1 (hex) 1 - water temperature,2 - External Thermostat, 3 - Internal Thermostat, , 4 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
@@ -123,9 +122,7 @@
 |  TOP69 | 117 | 05 | Sterilization on/off (bit5and6)  , Z2 active (bit7) ,Z1 active (bit8)| Sterilization status Zone active information (look byte #6) |
 |  TOP | 118 | 12 |   | fractional info for TOP5 and TOP6 values |
 |  TOP | 119 | 12 |   | ? |
-|  TOP | 120 | 19 |   | Possible 3e/4e bit for backup heater custom menu disable/enable |
-|  TOP | 121 | 00 |   | 0 byte |
-|  TOP | 122 | 00 |   | 0 byte |
+|  TOP | 120 | 19 | 3rd & 4th bit = b01 Heater Inactive ,b10 Heater Active<br/> 5th & 6th bit = b01 Cooling Inactive ,b10 Cooling Active<br/> | Custom menu settings<br/>Back-up Heater<br/>Cool Mode |
 |  TOP | 123 | 00 |   | 0 byte |
 |  TOP | 124 | 00 |   | 0 byte |
 |  TOP | 125 | 00 | (Convert to DEC-1)*2  | Water Pressure [bar] (K/L series) |
