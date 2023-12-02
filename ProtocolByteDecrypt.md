@@ -123,6 +123,8 @@
 |  TOP | 118 | 12 |   | fractional info for TOP5 and TOP6 values |
 |  TOP | 119 | 12 |   | ? |
 |  TOP | 120 | 19 | 3rd & 4th bit = b01 Heater Inactive ,b10 Heater Active<br/> 5th & 6th bit = b01 Cooling Inactive ,b10 Cooling Active<br/> | Custom menu settings<br/>Back-up Heater<br/>Cool Mode |
+|  TOP | 121 | 00 |   | 0 byte |
+|  TOP | 122 | 00 |   | 0 byte |
 |  TOP | 123 | 00 |   | 0 byte |
 |  TOP | 124 | 00 |   | 0 byte |
 |  TOP | 125 | 00 | (Convert to DEC-1)*2  | Water Pressure [bar] (K/L series) |
@@ -163,8 +165,8 @@
 |  TOP53 | 160 | 77 |  Convert to DEC-128 | Eva Outlet Temperature [°C] |
 |  TOP54 | 161 | 80 |  Convert to DEC-128 | Bypass Outlet Temperature [°C] |
 |  TOP55 | 162 | ff |  Convert to DEC-128 | Ipm Temperature [°C]  |
-|  TOP64 | 163 | 91 |  Convert to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
-|  TOP66 | 164 | 01 |  Convert to DEC x-1 | Low Pressure [Kgf/Cm2] |
+|  TOP64 | 163 | 91 |  Convert to DEC (x-1)/5 | High Pressure [kgf/cm2] |
+|  TOP66 | 164 | 01 |  Convert to DEC (x-1)/5 | Low Pressure [kgf/cm2] |
 |  TOP67 | 165 | 29 |  Convertto DEC (X-1)/5 | Outdoor Current [A] |
 |  TOP8 | 166 | 59 | Convert to DEC x-1  | Compressor Frequency [Hz] |
 |  TOP | 167 | 00 |   | 0 byte |
@@ -172,13 +174,13 @@
 |  TOP1 | 169 | 3b | Convert to DEC (X -1)/256 | 2nd Value for Pump Flow Rate [L/Min]  |
 |  TOP1 | 170 | 0b | Convert to DEC | 1st Value for Pump Flow Rate [L/Min] |
 |  TOP65 | 171 | 1c | Convert to DEC (X-1) X 50 | Pump Speed [R/Min] |
-|  TOP93 | 172 | 51 | Convert to DEC X-1   | Pump Duty [Duty] |
-|  TOP62 | 173 | 59 | Convert to DEC (X-1) X10  | Fan 1 Motor Speed [R/Min |
+|  TOP93 | 172 | 51 | Convert to DEC X-1   | Pump Duty [duty] |
+|  TOP62 | 173 | 59 | Convert to DEC (X-1) X10  | Fan 1 Motor Speed [R/Min] |
 |  TOP63 | 174 | 01 | Convert to DEC (X-1) X10  | Fan 2 Motor Speed [R/Min] |
 |  TOP | 175 | 36 |   | ? |
 |  TOP | 176 | 79 |   | ? |
-|  TOP | 177 | 01 | Convert to DEC -1  | ? Posible Time for Mixing vave 1 Zone2 [seconds]|
-|  TOP | 178 | 01 | Convert to DEC -1  | ? Posible Time for Mixing vave 2 Zone2 [seconds] |
+|  TOP | 177 | 01 | Convert to DEC -1  | 2 Zone mixing valve 1 opening [sec]|
+|  TOP | 178 | 01 | Convert to DEC -1  | 2 Zone mixing valve 2 opening [sec] |
 |  TOP12 | 179 | c3 | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
 |  TOP12 | 180 | 02 |  look at 179 | number of operations |
 |  TOP | 181 | 00 |   | 0 byte |
@@ -191,7 +193,7 @@
 |  TOP91 | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
 |  TOP91 | 189 | 00 | look at 188 | DHW Heater operation time in h |
 |  TOP | 190 | 00 |   | 0 byte |
-|  TOP | 191 | 06 | Convert to DEC X-1  | ? Possible heat pump power in Kw |
+|  TOP | 191 | 06 | Convert to DEC X-1  | Heat pump power in Kw |
 |  TOP | 192 | 01 | (hex) simple model=1, T-CAP=2  | ? Possible Heat pump indicator for T-CAP  |
 |  TOP16 | 193 | 01 | Convert to DEC (x-1) / 5   | Power Consumption for Heat in [kw]  |
 |  TOP15 | 194 | 01 | Convert to DEC (x-1) / 5   | Power Generation for Heat in [kw] |
