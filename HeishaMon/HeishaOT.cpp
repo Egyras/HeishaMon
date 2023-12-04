@@ -106,6 +106,18 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::TSet, request & 0xffff);
         rules_event_cb(_F("?"), _F("chsetpoint"));
       } break;
+    case OpenThermMessageID::MConfigMMemberIDcode: {
+      unsigned long data = ot.getUInt(request);
+      unsigned int SmartPower = (data >> 8) & (1 << 0);
+      sprintf_P(log_msg,
+			  PSTR("OpenTherm: Received master config: %d, Smartpower: %d"),
+              data >> 8, SmartPower
+             );
+      log_message(log_msg);
+      otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::MConfigMMemberIDcode, data);
+
+      //ot.setSmartPower((bool)SmartPower); not working correctly yet
+      } break;      
     case OpenThermMessageID::SConfigSMemberIDcode: { //mandatory
         log_message(_F("OpenTherm: Received read slave config"));
         unsigned int DHW = true;
@@ -331,18 +343,6 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
       log_message(_F("OpenTherm: Received read slave device version"));
       otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::SlaveVersion, 0);
 
-      } break;
-      case OpenThermMessageID::MConfigMMemberIDcode: {
-      unsigned long data = ot.getUInt(request);
-      unsigned int SmartPower = (data >> 8) & (1 << 0);
-      sprintf_P(log_msg,
-			  PSTR("OpenTherm: Received master config: %d, Smartpower: %d"),
-              data >> 8, SmartPower
-             );
-      log_message(log_msg);
-      otResponse = ot.buildResponse(OpenThermMessageType::WRITE_ACK, OpenThermMessageID::MConfigMMemberIDcode, data);
-
-      //ot.setSmartPower((bool)SmartPower); not working correctly yet
       } break;
 
       case OpenThermMessageID::TSP: {
