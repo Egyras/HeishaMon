@@ -156,7 +156,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
     // now adding some more useful, not mandatory, types
     case OpenThermMessageID::RBPflags: { //Pre-Defined Remote Boiler Parameters
         log_message(_F("OpenTherm: Received Remote Boiler parameters request"));
-        //fixed settings for now
+        //fixed settings for now - allow read and write DHWset and maxTset remote params
         const unsigned int DHWsetTransfer = true;
         const unsigned int maxCHsetTransfer = true;
         const unsigned int DHWsetReadWrite = true;
@@ -165,7 +165,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::RBPflags, responsedata);
       } break;
     case OpenThermMessageID::TdhwSetUBTdhwSetLB : { //DHW boundaries
-        log_message(_F("OpenTherm: Received DHW set boundaries request"));
+        log_message(_F("OpenTherm: Received DHW set boundaries remote parameters request"));
         //fixed settings for now
         const unsigned int DHWsetUppBound = 75;
         const unsigned int DHWsetLowBound = 40;
@@ -173,7 +173,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
         otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::TdhwSetUBTdhwSetLB, responsedata);
       } break;
     case OpenThermMessageID::MaxTSetUBMaxTSetLB  : { //CHset boundaries
-        log_message(_F("OpenTherm: Received CH set boundaries request"));
+        log_message(_F("OpenTherm: Received CH set boundaries remote parameters request"));
         //fixed settings for now, seems valid for most heatpump types
         const unsigned int CHsetUppBound = 65;
         const unsigned int CHsetLowBound = 20;
@@ -298,13 +298,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
       otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::RemoteParameterSettingsVH, 0);
 
       } break;
-
-      case OpenThermMessageID::RBPflags: {
-      Serial1.println("OpenTherm: Received read RBP flags");
-      otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::RBPflags, 0);
-
-      } break;
-
+      
       case OpenThermMessageID::TrOverride: {
       log_message(_F("OpenTherm: Received read remote override setpoint"));
       otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::TrOverride, 0);
