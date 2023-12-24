@@ -11,9 +11,9 @@
 |  TOP94+TOP4 | 06 | 62 | 1st Bit = Zone2<br/> 2nd Bit = Zone1<br/>3rd & 4th bit = b01 DHW off ,b10 DHW on<br/> 5th ,6th,7th & 8th bit = b0001 - only DHW , b0010 - Heat , b0011 - Cool , b1001 - Auto(Heat) , b1010 - Auto(Cool) | Zone on/off <br/>Mode status   |
 |  TOP18+TOP17 | 07 | 49 | Left 5 bits = quiet level (0b01001 = Off, 0b01010 = level 1, 0b01011 = level 2, 0b01100 - level 3, 0b10001 = scheduled) last 3 bits is powermode level (0b001= Off, 0b010 - power mode 30min, 0b011 -60min, 0b100-90 min) | Quiet Mode status + Powerful mode status |
 |  TOP | 08 | 00 |   | 0 byte |
-|  TOP58+TOP59 | 09 | 05 | 3rd & 4th bit = b01 Standard, b10 - DHW Standard/Variable (J-series only)<br/>5rd & 6th bit = b01 DHW heater off, b10 - DHW heater on<br/>7rd & 8th bit = b01 Water heater off, b10 - Water heater on | DHW capacity (J-series only)<br/>Heaters enable allowed status|
+|  TOP58+TOP59 | 09 | 05 | 3rd & 4th bit = b01 Standard, b10 - DHW Standard/Variable (J-series only)<br/>5th & 6th bit = b01 DHW heater off, b10 - DHW heater on<br/>7rd & 8th bit = b01 Water heater off, b10 - Water heater on | DHW capacity (J-series only)<br/>Heaters enable allowed status|
 |  TOP | 10 | 00 |   | 0 byte |
-|  TOP | 11 | 00 | 01- DHW Top sensor , 02 - DHW Center Sensor   | Only All-In-One |
+|  TOP | 11 | 00 | 3rd & 4th bit = b01 - Sound , b10 - Capacity <br/> 7th & 8th bit = b01 - DHW Top sensor , b10 - DHW Center Sensor | Quiet Mode Priority (K/L series) <br/> Only All-In-One |
 |  TOP | 12 | 00 |   | 0 byte |
 |  TOP | 13 | 00 |   | 0 byte |
 |  TOP | 14 | 00 |   | 0 byte |
@@ -23,7 +23,6 @@
 |  TOP | 18 | 00 |   | 0 byte |
 |  TOP | 19 | 00 |   | 0 byte |
 |  TOP107/108/109/110 | 20 | 19 | 1st Bit = b0 Water , b1 Glycol<br/>3rd & 4th bit = b01 Alternative Sensor Off ,b10 Alternative Sensor On<br/>5rd & 6th bit = b01 Antifreezing Off ,b10 Antifreezing on<br/>7rd & 8th bit = b01 Optional PCB Off ,b10 Optional PCB on<br/>| Circulation liquid<br/> ,Alternative outdoor temp sensor<br/> Anti freezing<br/> Optional PCB |
-|  TOP107/108/109/110 | 20 | 19 | 1st Bit = b0 Water , b1 Glycol<br/>3rd & 4th bit = b01 Alternative Sensor Off ,b10 Alternative Sensor On<br/>5rd & 6th bit = b01 Antifreezing Off ,b10 Antifreezing on<br/>7rd & 8th bit = b01 Optional PCB Off ,b10 Optional PCB on<br/>| Circulation liquid<br/> ,Alternative outdoor temp sensor<br/> Anti freezing<br/> Optional PCB |
 |  TOP | 21 | 15 |  (hex) 15 - One  Zone and Z1 as room , 19 - One Zone and Z1 as pool, 16 - Two Zones and Z2 as room, 26 - Two Zones ,Z2 as pool| No. of Zones and Zone Destination |
 |  TOP111+TOP112 | 22 | 11 |First digit -Z2 ,Second digit Z1 (hex) 1 - water temperature,2 - External Thermostat, 3 - Internal Thermostat, , 4 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
 |  TOP | 23 | 55 | (hex) all off=55, extneral control enable=56, external error signal=65, External compressor control On=95  | External control, error signal and External compressor control switch |
@@ -32,8 +31,8 @@
 |  TOP | 26 | 55 | (hex) Bivalent Off=55, Bivalent alternative =56, Bivalent parallel=5A | Bivalent settings |
 |  TOP | 27 | 05 | SG Ready Control on/off (bit5and6) ,Demand Control on/off (bit7and8)  | SG Ready Control, Demand Control |
 |  TOP76+TOP81 | 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
-|  TOP106 | 29 | 00 |   | 3d and 4th bit setting for J-series deltaT or max flow switch |
-|  TOP | 30 | 00 |   | 0 byte |
+|  TOP106 | 29 | 00 | 3rd & 4th bit = b01 - deltaT , b10 - Max. Duty | Pump flowrate (J/K/L series) |
+|  TOP | 30 | 00 |  5th & 6th bit = b01 - Comfort , b10 - Efficiency <br/> 7th & 8th bit = b01 - DHW Defrost NO , b10 - DHW Defrost YES | Heating Control (K/L series) <br/> DHW Defrost (K/L series) |
 |  TOP | 31 | 00 |   | 0 byte |
 |  TOP | 32 | 00 |   | 0 byte |
 |  TOP | 33 | 00 |   | 0 byte |
@@ -123,14 +122,14 @@
 |  TOP69 | 117 | 05 | Sterilization on/off (bit5and6)  , Z2 active (bit7) ,Z1 active (bit8)| Sterilization status Zone active information (look byte #6) |
 |  TOP | 118 | 12 |   | fractional info for TOP5 and TOP6 values |
 |  TOP | 119 | 12 |   | ? |
-|  TOP | 120 | 19 |   | Possible 3e/4e bit for backup heater custom menu disable/enable |
+|  TOP | 120 | 19 | 3rd & 4th bit = b01 Heater Inactive ,b10 Heater Active<br/> 5th & 6th bit = b01 Cooling Inactive ,b10 Cooling Active<br/> | Custom menu settings<br/>Back-up Heater<br/>Cool Mode |
 |  TOP | 121 | 00 |   | 0 byte |
 |  TOP | 122 | 00 |   | 0 byte |
 |  TOP | 123 | 00 |   | 0 byte |
 |  TOP | 124 | 00 |   | 0 byte |
-|  TOP | 125 | 00 | (DEC-1)*2  | Possible water pressure (K/L series) |
-|  TOP | 126 | 00 |   | 0 byte |
-|  TOP | 127 | 00 |   | 0 byte |
+|  TOP | 125 | 00 | (Convert to DEC-1)*2  | Water Pressure [bar] (K/L series) |
+|  TOP | 126 | 00 | Convert to DEC-128 | Water Inlet 2 Temperature [°C] (L series) |
+|  TOP | 127 | 00 | Convert to DEC-128 | Economizer Outlet Temperature [°C] (K/L series) |
 |  TOP | 128 | 00 |   | 0 byte |
 |  TOP92 | 129 | e2 | look in HeatPumpType.md  | Heat pump model |
 |  TOP92 | 130 | ce | look in HeatPumpType.md  | Heat pump model |
@@ -159,15 +158,15 @@
 |  TOP7 | 153 | b7 |  Convert to DEC-128 | Outlet Water Temperature (Target) [°C] |
 |  TOP49 | 154 | af |  Convert to DEC-128 | Outlet 2 heat exchanger water temperature [°C] |
 |  TOP50 | 155 | cd |  Convert to DEC-128 | Discharge Temperature [°C] |
-|  TOP33 | 156 | 9a |  Convert to DEC-128 | Room Thermostat Internal Sensor Temperature [°C] |
+|  TOP33 | 156 | 9a |  Convert to DEC-128 | RC-1:Room Thermostat Internal Sensor Temperature [°C] |
 |  TOP51 | 157 | ac |  Convert to DEC-128 | Indoor Piping Temperature [°C] |
 |  TOP21 | 158 | 79 |  Convert to DEC-128 | Outdoor Piping Temperature [°C] |
 |  TOP52 | 159 | 80 |  Convert to DEC-128 | Defrost Temperature [°C] |
 |  TOP53 | 160 | 77 |  Convert to DEC-128 | Eva Outlet Temperature [°C] |
 |  TOP54 | 161 | 80 |  Convert to DEC-128 | Bypass Outlet Temperature [°C] |
 |  TOP55 | 162 | ff |  Convert to DEC-128 | Ipm Temperature [°C]  |
-|  TOP64 | 163 | 91 |  Convert to DEC (x-1)/5 |  High Pressure [Kgf/Cm2] |
-|  TOP66 | 164 | 01 |  Convert to DEC x-1 | Low Pressure [Kgf/Cm2] |
+|  TOP64 | 163 | 91 |  Convert to DEC (x-1)/5 | High Pressure [kgf/cm2] |
+|  TOP66 | 164 | 01 |  Convert to DEC (x-1)/5 | Low Pressure [kgf/cm2] |
 |  TOP67 | 165 | 29 |  Convertto DEC (X-1)/5 | Outdoor Current [A] |
 |  TOP8 | 166 | 59 | Convert to DEC x-1  | Compressor Frequency [Hz] |
 |  TOP | 167 | 00 |   | 0 byte |
@@ -175,13 +174,13 @@
 |  TOP1 | 169 | 3b | Convert to DEC (X -1)/256 | 2nd Value for Pump Flow Rate [L/Min]  |
 |  TOP1 | 170 | 0b | Convert to DEC | 1st Value for Pump Flow Rate [L/Min] |
 |  TOP65 | 171 | 1c | Convert to DEC (X-1) X 50 | Pump Speed [R/Min] |
-|  TOP93 | 172 | 51 | Convert to DEC X-1   | Pump Duty [Duty] |
-|  TOP62 | 173 | 59 | Convert to DEC (X-1) X10  | Fan 1 Motor Speed [R/Min |
+|  TOP93 | 172 | 51 | Convert to DEC X-1   | Pump Duty [duty] |
+|  TOP62 | 173 | 59 | Convert to DEC (X-1) X10  | Fan 1 Motor Speed [R/Min] |
 |  TOP63 | 174 | 01 | Convert to DEC (X-1) X10  | Fan 2 Motor Speed [R/Min] |
 |  TOP | 175 | 36 |   | ? |
 |  TOP | 176 | 79 |   | ? |
-|  TOP | 177 | 01 | Convert to DEC -1  | ? Posible Time for Mixing vave 1 Zone2 [seconds]|
-|  TOP | 178 | 01 | Convert to DEC -1  | ? Posible Time for Mixing vave 2 Zone2 [seconds] |
+|  TOP | 177 | 01 | Convert to DEC -1  | 2 Zone mixing valve 1 opening [sec]|
+|  TOP | 178 | 01 | Convert to DEC -1  | 2 Zone mixing valve 2 opening [sec] |
 |  TOP12 | 179 | c3 | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
 |  TOP12 | 180 | 02 |  look at 179 | number of operations |
 |  TOP | 181 | 00 |   | 0 byte |
@@ -194,7 +193,7 @@
 |  TOP91 | 188 | 01 | combine both bytes (189) 00  (188) 0001 = 1 - 1 = 0   | DHW Heater operation time in h  |
 |  TOP91 | 189 | 00 | look at 188 | DHW Heater operation time in h |
 |  TOP | 190 | 00 |   | 0 byte |
-|  TOP | 191 | 06 | Convert to DEC X-1  | ? Possible heat pump power in Kw |
+|  TOP | 191 | 06 | Convert to DEC X-1  | Heat pump power in Kw |
 |  TOP | 192 | 01 | (hex) simple model=1, T-CAP=2  | ? Possible Heat pump indicator for T-CAP  |
 |  TOP16 | 193 | 01 | Convert to DEC (x-1) / 5   | Power Consumption for Heat in [kw]  |
 |  TOP15 | 194 | 01 | Convert to DEC (x-1) / 5   | Power Generation for Heat in [kw] |
@@ -202,8 +201,8 @@
 |  TOP39 | 196 | 01 | Convert to DEC (x-1) / 5   | Power Generation for Cool in [kw] |
 |  TOP40 | 197 | 0a | Convert to DEC (x-1) / 5   | Power Consumption for DHW in [kw] |
 |  TOP41 | 198 | 14 | Convert to DEC (x-1) / 5   | Power Generation for DHW in [kw] |
-|  TOP | 199 | 00 |   | Provides hint for extra data (if value >= 3) |
-|  TOP | 200 | 00 |   | byte 0 |
+|  TOP | 199 | 00 |   | If value greather then 0x03 CZ-TAW1 starts asking for extra querty ,look <a href="https://github.com/Egyras/HeishaMon/blob/master/ProtocolByteDecrypt-extra.md">Extra Querty</a>   |
+|  TOP | 200 | 00 |  Convert to DEC-128 | RC-2:Room Thermostat Internal Sensor Temperature [°C] (K/L series) |
 |  TOP | 201 | 00 |   | byte 0 |
 |  TOP | 202 | 79 |  CHECKSUM |  |
 
