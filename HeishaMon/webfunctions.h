@@ -33,10 +33,10 @@ struct settingsStruct {
   char wifi_password[65] = "";
   char wifi_hostname[40] = "HeishaMon";
   char ota_password[40] = "heisha";
-  char mqtt_server[64];
+  char mqtt_server[65];
   char mqtt_port[6] = "1883";
-  char mqtt_username[64];
-  char mqtt_password[64];
+  char mqtt_username[65];
+  char mqtt_password[65];
   char mqtt_topic_base[128] = "panasonic_heat_pump";
   char mqtt_topic_listen[128] = "master_panasonic_heat_pump";
   char ntp_servers[254] = "pool.ntp.org";
