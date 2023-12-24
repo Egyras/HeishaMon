@@ -127,7 +127,7 @@
 |  TOP | 122 | 00 |   | 0 byte |
 |  TOP | 123 | 00 |   | 0 byte |
 |  TOP | 124 | 00 |   | 0 byte |
-|  TOP | 125 | 00 | (Convert to DEC-1)*2  | Water Pressure [bar] (K/L series) |
+|  TOP | 125 | 00 | Convert to (DEC-1)/50  | Water Pressure [bar] (K/L series) |
 |  TOP | 126 | 00 | Convert to DEC-128 | Water Inlet 2 Temperature [°C] (L series) |
 |  TOP | 127 | 00 | Convert to DEC-128 | Economizer Outlet Temperature [°C] (K/L series) |
 |  TOP | 128 | 00 |   | 0 byte |
@@ -201,7 +201,7 @@
 |  TOP39 | 196 | 01 | Convert to DEC (x-1) / 5   | Power Generation for Cool in [kw] |
 |  TOP40 | 197 | 0a | Convert to DEC (x-1) / 5   | Power Consumption for DHW in [kw] |
 |  TOP41 | 198 | 14 | Convert to DEC (x-1) / 5   | Power Generation for DHW in [kw] |
-|  TOP | 199 | 00 |   | If value greather then 0x03 CZ-TAW1 starts asking for extra querty ,look <a href="https://github.com/Egyras/HeishaMon/blob/master/ProtocolByteDecrypt-extra.md">Extra Querty</a>   |
+|  TOP | 199 | 00 |   | If value equal or greather '=>' then 0x03 CZ-TAW1 starts asking for <a href="https://github.com/Egyras/HeishaMon/blob/master/ProtocolByteDecrypt-extra.md">extra query</a>   |
 |  TOP | 200 | 00 |  Convert to DEC-128 | RC-2:Room Thermostat Internal Sensor Temperature [°C] (K/L series) |
 |  TOP | 201 | 00 |   | byte 0 |
 |  TOP | 202 | 79 |  CHECKSUM |  |

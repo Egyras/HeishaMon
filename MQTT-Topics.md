@@ -131,6 +131,11 @@ TOP111 | main/Z2_Sensor_Settings | Setting of the sensor for zone 2 (water, ext 
 TOP112 | main/Z1_Sensor_Settings | Setting of the sensor for zone 1 (water, ext thermostat, int. thermostat or thermistor)
 TOP113 | main/Buffer_Tank_Delta | Delta of buffer tank setting in Kelvin
 TOP114 | main/External_Pad_Heater | If the external pad heater is enabled (if installed)
+TOP115 | main/Water_Pressure | Water Pressure in bar (K/L series)
+TOP116 | main/Second_Inlet_Temp | Water Inlet 2 Temperature(K/L series)
+TOP117 | main/Economizer_Outlet_Temp | Economizer Outlet Temperature (K/L series)
+TOP118 | main/Second_Room_Thermostat_Temp | Remote control 2 thermostat temp (°C)
+
 
 
 

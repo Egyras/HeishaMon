@@ -1155,6 +1155,7 @@ void send_panasonic_query() {
     panasonicQuery[3] = 0x10; //setting 4th back to 0x10 for normal data request next time
   } else  {
     if ((actData[0] == 0x71) && (actData[1] == 0xc8) && (actData[2] == 0x01) && (actData[193] == 0)  && (actData[195] == 0)  && (actData[197] == 0) ) { //do we have valid data but 0 value in heat consumptiom power, then assume K or L series
+    //can be replaced with: if ((actData[0] == 0x71) && (actData[0xc7] >= 3) ) { //do we have valid header and byte 0xc7 is more or equal 3 then assume K&L series
       log_message(_F("Assuming K or L heatpump type due to missing heat/cool/dhw power data"));
       extraDataBlockAvailable = true; //request for extra data next run
     }
