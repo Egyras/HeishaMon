@@ -597,7 +597,7 @@ int cacheSettings(struct webserver_t *client, struct arguments_t * args) {
         exit(-1);
       }
       memset(cpy, 0, args->len + 1);
-      strlcpy(cpy, (char *)args->value, args->len);
+      strncpy(cpy, (char *)args->value, args->len);
       node->value += cpy;
       free(cpy);
     }
