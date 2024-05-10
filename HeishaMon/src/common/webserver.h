@@ -26,19 +26,7 @@
 #endif
 
 #ifndef WEBSERVER_MAX_SENDLIST
-  #define WEBSERVER_MAX_SENDLIST 0
-#endif
-
-#ifndef WEBSERVER_SENDLIST_BUFSIZE
-  #define WEBSERVER_SENDLIST_BUFSIZE 0
-#endif
-
-#ifndef WEBSERVER_MAX_SENDLIST
-  #define WEBSERVER_MAX_SENDLIST 0
-#endif
-
-#ifndef WEBSERVER_SENDLIST_BUFSIZE
-  #define WEBSERVER_SENDLIST_BUFSIZE 0
+#define WEBSERVER_MAX_SENDLIST 0
 #endif
 
 #ifndef WEBSERVER_CLIENT_TIMEOUT
@@ -94,16 +82,9 @@ typedef struct arguments_t {
 } arguments_t;
 
 typedef struct sendlist_t {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
   union {
     void *ptr;
   } data;
-#else
-  union {
-    void *ptr;
-    unsigned char fixed[WEBSERVER_SENDLIST_BUFSIZE];
-  } data;
-#endif
   uint16_t type:1;
   uint16_t size:15;
 #if WEBSERVER_MAX_SENDLIST == 0

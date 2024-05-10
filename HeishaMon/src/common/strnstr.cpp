@@ -18,7 +18,7 @@ unsigned char *strnstr(unsigned char *str1, const char *str2, uint16_t size) {
     if(ch == str2[0] && a+len <= size) {
       c = a;
       a++;
-      for(b=1;b<=len;a++, b++) {
+      for(b=1;b<len;a++, b++) {
         ch = str1[a];
         if(str2[b] != ch) {
           break;
