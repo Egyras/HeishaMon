@@ -15,42 +15,62 @@
 #include <string.h>
 #include <math.h>
 
+#include "../../common/uint32float.h"
 #include "../function.h"
-#include "../../common/mem.h"
 #include "../rules.h"
 
-int rule_function_round_callback(struct rules_t *obj, uint16_t argc, uint16_t *argv, int *ret) {
-/* LCOV_EXCL_START*/
-#ifdef DEBUG
-  printf("%s\n", __FUNCTION__);
-#endif
-/* LCOV_EXCL_STOP*/
+int8_t rule_function_round_callback(struct rules_t *obj) {
+  float x = 0, z = 0;
+  uint8_t dec = 0;
+  uint8_t nr = rules_gettop(obj), y = nr;
 
-  if(argc != 1) {
+  if(nr > 2) {
     return -1;
+  } else if(nr == 2) {
+    switch(rules_type(obj, nr)) {
+      case VINTEGER: {
+        dec = rules_tointeger(obj, nr);
+      } break;
+    }
+    rules_remove(obj, nr--);
   }
 
-  *ret = obj->varstack.nrbytes;
-
-  unsigned int size = alignedbytes(obj->varstack.nrbytes+sizeof(struct vm_vinteger_t));
-
-  struct vm_vinteger_t *out = (struct vm_vinteger_t *)&obj->varstack.buffer[obj->varstack.nrbytes];
-  out->ret = 0;
-  out->type = VINTEGER;
-
-  switch(obj->varstack.buffer[argv[0]]) {
+  switch(rules_type(obj, nr)) {
+    case VNULL: {
+      rules_remove(obj, nr--);
+      rules_pushnil(obj);
+      return 0;
+    } break;
     case VINTEGER: {
-      struct vm_vinteger_t *val = (struct vm_vinteger_t *)&obj->varstack.buffer[argv[0]];
-      out->value = val->value;
+      x = (float)rules_tointeger(obj, nr);
     } break;
     case VFLOAT: {
-      struct vm_vfloat_t *val = (struct vm_vfloat_t *)&obj->varstack.buffer[argv[0]];
-      out->value = (int)val->value;
+      x = rules_tofloat(obj, nr);
     } break;
   }
+  rules_remove(obj, nr--);
 
-  obj->varstack.nrbytes = size;
-  obj->varstack.bufsize = MAX(obj->varstack.bufsize, alignedvarstack(obj->varstack.nrbytes));
+  if(modff(x, &z) == 0) {
+#ifdef DEBUG
+    printf("\tround = %d\n", (int)x);
+#endif
+    rules_pushinteger(obj, x);
+  } else {
+    if(y == 2) {
+      uint8_t size = snprintf(NULL, 0, "%.*f", dec, x)+1;
+      char buf[size] = { '\0' };
+      snprintf((char *)&buf, size, "%.*f", dec, x);
+#ifdef DEBUG
+      printf("\tround = %f\n", atof(buf));
+#endif
+      rules_pushfloat(obj, atof(buf));
+    } else {
+#ifdef DEBUG
+      printf("\tround = %d\n", (int)x);
+#endif
+      rules_pushinteger(obj, (int)x);
+    }
+  }
 
   return 0;
 }

@@ -69,7 +69,7 @@ Use these variables to read the temperature of the connected sensors. These valu
 
 When a variable is called but not yet set to a value, the value will be `NULL`.
 
-Variables can be of boolean (`1` or `0`), float (`3.14`), or integer (`10`) type.
+Variables can be of boolean (`1` or `0`), float (`3.14`), integer (`10`), and string type. Defining strings is done with single or double quotes.
 
 ### Events or functions
 Rules are written in `event` or `function` blocks. These are blocks that are triggered when something happened; either a new heatpump or thermostat value has been received or a timer fired. Or can be used as plain functions
@@ -99,7 +99,7 @@ on timer=1 then
 end
 ```
 
-When defining function, you just name your block and then you can call it from anywhere else:
+When defining functions, you just name your block and then you can call it from anywhere else:
 ```
 on foobar then
   [...]
@@ -109,6 +109,18 @@ on @Heatpump_State then
   foobar();
 end
 ```
+
+Functions can have parameters which you can call:
+```
+on foobar($a, $b, $c) then
+  [...]
+
+on @Heatpump_State then
+  foobar(1, 2, 3);
+end
+```
+
+If you call a function less values then the function takes, all other parameters will have a NULL value.
 
 There is currently one special function that calls when the system is booted on when a new ruleset is saved:
 ```
@@ -162,6 +174,9 @@ The smallest integer value greater than or equal to the input float.
 - `setTimer`
 Sets a timer to trigger in X seconds. The first parameter is the timer number and the second parameters the number of seconds before it fires. A timer only fires once so it has to be re-set for recurring events. When a timer triggers it will can the timer event as described above. E.g.
 
+- `print`
+Prints a value to the console.
+
 ```
 on System#Boot then
   setTimer(3, 60);
@@ -207,12 +222,7 @@ Once the rules system is in used by more and more users, additional examples wil
 
 *Calculating WAR*
 ```
-on calcWar then
-	$Ta1 = 32;
-	$Tb1 = 14;
-	$Ta2 = 41;
-	$Tb2 = -4;
-
+on calcWar($Ta1, $Tb1, $Ta2, $Tb2) then
 	#maxTa = $Ta1;
 
 	if @Outside_Temp >= $Tb1 then
@@ -228,7 +238,7 @@ end
 *Thermostat setpoint*
 ```
 on ?roomTemp then
-	calcWar();
+	calcWar(32, 14, 41, -4);
 
 	$margin = 0.25;
 

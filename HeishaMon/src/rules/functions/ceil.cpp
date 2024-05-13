@@ -15,44 +15,44 @@
 #include <string.h>
 #include <math.h>
 
+#include "../../common/uint32float.h"
 #include "../function.h"
-#include "../../common/mem.h"
 #include "../rules.h"
 
-int rule_function_ceil_callback(struct rules_t *obj, uint16_t argc, uint16_t *argv, int *ret) {
-/* LCOV_EXCL_START*/
-#ifdef DEBUG
-  printf("%s\n", __FUNCTION__);
-#endif
-/* LCOV_EXCL_STOP*/
+int8_t rule_function_ceil_callback(struct rules_t *obj) {
+  float x = 0, z = 0;
+  uint8_t nr = rules_gettop(obj);
 
-  if(argc != 1) {
+  if(nr > 1) {
     return -1;
   }
 
-  *ret = obj->varstack.nrbytes;
-
-  unsigned int size = alignedbytes(obj->varstack.nrbytes+sizeof(struct vm_vinteger_t));
-  if((obj->varstack.buffer = (unsigned char *)REALLOC(obj->varstack.buffer, alignedbuffer(size))) == NULL) {
-    OUT_OF_MEMORY /*LCOV_EXCL_LINE*/
-  }
-  struct vm_vinteger_t *out = (struct vm_vinteger_t *)&obj->varstack.buffer[obj->varstack.nrbytes];
-  out->ret = 0;
-  out->type = VINTEGER;
-
-  switch(obj->varstack.buffer[argv[0]]) {
+  switch(rules_type(obj, nr)) {
+    case VNULL: {
+      rules_remove(obj, nr--);
+      rules_pushnil(obj);
+      return 0;
+    } break;
     case VINTEGER: {
-      struct vm_vinteger_t *val = (struct vm_vinteger_t *)&obj->varstack.buffer[argv[0]];
-      out->value = val->value;
+      x = (float)rules_tointeger(obj, nr);
     } break;
     case VFLOAT: {
-      struct vm_vfloat_t *val = (struct vm_vfloat_t *)&obj->varstack.buffer[argv[0]];
-      out->value = (int)ceil(val->value);
+      x = rules_tofloat(obj, nr);
     } break;
   }
+  rules_remove(obj, nr--);
 
-  obj->varstack.nrbytes = size;
-  obj->varstack.bufsize = alignedbuffer(size);
+  if(modff(x, &z) == 0) {
+#ifdef DEBUG
+    printf("\tround = %d\n", (int)x);
+#endif
+    rules_pushinteger(obj, x);
+  } else {
+#ifdef DEBUG
+    printf("\tround = %f\n", (int)ceil(x));
+#endif
+    rules_pushinteger(obj, (int)ceil(x));
+  }
 
   return 0;
 }

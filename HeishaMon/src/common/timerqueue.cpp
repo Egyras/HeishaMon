@@ -196,7 +196,7 @@ void timerqueue_update(void) {
 
     if(timerqueue[a]->sec < 0 || (timerqueue[a]->sec == 0 && timerqueue[a]->usec <= 0)) {
       int nr = timerqueue[a]->nr;
-      if((calls = (unsigned int *)realloc(calls, (nrcalls+1)*sizeof(int))) == NULL) {
+      if((calls = (unsigned int *)realloc(calls, (nrcalls+1)*sizeof(unsigned int))) == NULL) {
 #ifdef ESP8266
         Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
         ESP.restart();

@@ -377,11 +377,11 @@ bool readSerial()
             mqtt_client.publish(mqtt_topic, (const uint8_t *)actDataExtra, DATASIZE, false); //do not retain this raw data
           }
           data_length = 0;
-          return true;        
+          return true;
         } else {
           log_message(_F("Received an unknown full size datagram. Can't decode this yet."));
           data_length = 0;
-          return false;       
+          return false;
         }
       }
       else if (data_length == OPTDATASIZE ) { //optional pcb acknowledge answer
@@ -897,7 +897,7 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
         }
         client->userdata = NULL;
       } break;
-    default: {
+      default: {
         return 0;
       } break;
   }
@@ -916,7 +916,7 @@ void doubleResetDetect() {
     LittleFS.format();
     //create first boot file
     File startupFile = LittleFS.open("/heishamon", "w");
-    startupFile.close();    
+    startupFile.close();
     WiFi.persistent(true);
     WiFi.disconnect();
     WiFi.persistent(false);
@@ -1073,11 +1073,11 @@ void setup() {
     } else if (LittleFS.exists("/config.json")) {
       //from old firmware, create file and then normal boot
       File startupFile = LittleFS.open("/heishamon", "w");
-      startupFile.close();    
+      startupFile.close();
     } else {
       //first boot
       File startupFile = LittleFS.open("/heishamon", "w");
-      startupFile.close();    
+      startupFile.close();
       pinMode(2, FUNCTION_0); //set it as gpio
       pinMode(2, OUTPUT);
       while (true) {
@@ -1258,7 +1258,8 @@ void loop() {
     message += mqttReconnects;
     message += F(" ## Correct data: ");
     message += readpercentage;
-    message += F("%");
+    message += F("% Rules active: ");
+    message += nrrules;
     log_message((char*)message.c_str());
 
     String stats;
@@ -1291,7 +1292,9 @@ void loop() {
     stats += timeoutread;
     stats += F(",\"version\":\"");
     stats += heishamon_version;
-    stats += F("\"}");
+    stats += F("\",\"rules active\":");
+    stats += nrrules;
+    stats += F("}");
     sprintf_P(mqtt_topic, PSTR("%s/stats"), heishamonSettings.mqtt_topic_base);
     mqtt_client.publish(mqtt_topic, stats.c_str(), MQTT_RETAIN_VALUES);
 

@@ -11,6 +11,8 @@
 #define _RULES_H_
 
 #include <stdint.h>
+#include <unistd.h>
+#include "stack.h"
 
 #ifndef ESP8266
   #define F
@@ -24,18 +26,27 @@
     uint8_t flags;
     uint16_t ref;
   } pbuf;
+
+  typedef struct serial_t {
+    void (*printf)(const char *fmt, ...);
+    void (*println)(const char *val);
+    void (*flush)(void);
+  } serial_t;
+  extern struct serial_t Serial;
+  extern void *MMU_SEC_HEAP;
+  uint8_t mmu_set_uint8(void *ptr, uint8_t src);
+  uint8_t mmu_get_uint8(void *ptr);
+  uint16_t mmu_set_uint16(void *ptr, uint16_t src);
+  uint16_t mmu_get_uint16(void *ptr);
 #else
   #include <Arduino.h>
   #include "lwip/pbuf.h"
-  #define MEMPOOL_SIZE MMU_SEC_HEAP_SIZE
+  #ifdef MMU_SEC_HEAP_SIZE
+    #define MEMPOOL_SIZE MMU_SEC_HEAP_SIZE
+  #else
+    #define MEMPOOL_SIZE 16000
+  #endif
 #endif
-
-#define EPSILON  0.000001
-
-/*
- * max(sizeof(vm_vfloat_t), sizeof(vm_vinteger_t), sizeof(vm_vnull_t))
- */
-#define MAX_VARSTACK_NODE_SIZE 7
 
 #define MAX(a,b) \
    ({ __typeof__ (a) _a = (a); \
@@ -47,6 +58,9 @@
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })
 
+/*
+ * Max 32 tokens are allowed
+ */
 typedef enum {
   TOPERATOR = 1,
   TFUNCTION = 2,
@@ -64,230 +78,122 @@ typedef enum {
   TELSEIF = 14,
   TTHEN = 15,
   TEVENT = 16,
-  TCEVENT = 17,
-  TEND = 18,
-  TVAR = 19,
-  TASSIGN = 20,
-  TSEMICOLON = 21,
-  TTRUE = 22,
-  TFALSE = 23,
-  TSTART = 24,
+  TEND = 17,
+  TVAR = 18,
+  TASSIGN = 19,
+  TSEMICOLON = 20,
+  TTRUE = 21,
+  TFALSE = 22,
+  TSTART = 23,
+  TVALUE = 24,
   VCHAR = 25,
-  VINTEGER = 26,
-  VFLOAT = 27,
-  VNULL = 28,
+  VPTR = 26,
+  VINTEGER = 27,
+  VFLOAT = 28,
+  VNULL = 29
 } token_types;
 
-#ifdef DEBUG
-struct {
-  const char *name;
-} token_names[] = {
-  "",
-  "TOPERATOR",
-  "TFUNCTION",
-  "TSTRING",
-  "TNUMBER",
-  "TNUMBER1",
-  "TNUMBER2",
-  "TNUMBER3",
-  "TEOF",
-  "LPAREN",
-  "RPAREN",
-  "TCOMMA",
-  "TIF",
-  "TELSE",
-  "TELSEIF",
-  "TTHEN",
-  "TEVENT",
-  "TCEVENT",
-  "TEND",
-  "TVAR",
-  "TASSIGN",
-  "TSEMICOLON",
-  "TTRUE",
-  "TFALSE",
-  "TSTART",
-  "VCHAR",
-  "VINTEGER",
-  "VFLOAT",
-  "VNULL",
-};
-#endif
+typedef enum {
+  OP_EQ = 1,
+  OP_NE = 2,
+  OP_LT = 3,
+  OP_LE = 4,
+  OP_GT = 5,
+  OP_GE = 6,
+  OP_AND = 7,
+  OP_OR = 8,
+  OP_SUB = 9,
+  OP_ADD = 10,
+  OP_DIV = 11,
+  OP_MUL = 12,
+  OP_POW = 13,
+  OP_MOD = 14,
+  OP_TEST = 15,
+  OP_JMP = 16,
+  OP_SETVAL = 17,
+  OP_GETVAL = 18,
+  OP_PUSH = 19,
+  OP_CALL = 20,
+  OP_CLEAR = 21,
+  OP_RET = 22
+} opcodes;
 
 typedef struct rules_t {
-  unsigned short nr;
+  /* --- PUBLIC MEMBERS --- */
 
+   /* To what rule do we return after
+    * being called from another rule.
+    */
   struct {
-#if defined(DEBUG) or defined(ESP8266)
-  #ifdef ESP8266
-      unsigned long first;
-      unsigned long second;
-  #else
-      struct timespec first;
-      struct timespec second;
-  #endif
+    struct rules_t *go;
+    struct rules_t *ret;
+  } __attribute__((aligned(4))) ctx;
+#ifndef NON32XFER_HANDLER
+  uint32_t nr;
+#else
+  uint8_t nr;
 #endif
-  }  timestamp;
 
-  struct {
-    int parsed;
-    int vars;
-  } pos;
+  const char *name;
+
+  /* --- PRIVATE MEMBERS --- */
 
   /* Continue here after we processed
    * another rule call.
    */
-  struct {
-    uint16_t go;
-    uint16_t ret;
-  } cont;
-
-  /* To which rule do we return after
-   * being called from another rule.
-   */
-  int caller;
-
-  struct {
-    unsigned char *buffer;
-    unsigned int nrbytes;
-    unsigned int bufsize;
-  } ast;
-
-  struct {
-    unsigned char *buffer;
-    unsigned int nrbytes;
-    unsigned int bufsize;
-  } varstack;
+  uint16_t cont;
 
   void *userdata;
-} rules_t;
+
+  struct rule_stack_t bc;
+  struct rule_stack_t *heap;
+
+} __attribute__((aligned(4))) rules_t;
 
 typedef struct rule_options_t {
   /*
    * Identifying callbacks
    */
-  int (*is_token_cb)(char *text, unsigned int *pos, unsigned int size);
-  int (*is_event_cb)(char *text, unsigned int *pos, unsigned int size);
+  int8_t (*is_variable_cb)(char *text, uint16_t size);
+  int8_t (*is_event_cb)(char *text, uint16_t size);
 
-  /*
-   * Variables
-   */
-  unsigned char *(*get_token_val_cb)(struct rules_t *obj, uint16_t token);
-  void (*cpy_token_val_cb)(struct rules_t *obj, uint16_t token);
-  void (*clr_token_val_cb)(struct rules_t *obj, uint16_t token);
-  void (*set_token_val_cb)(struct rules_t *obj, uint16_t token, uint16_t val);
-  void (*prt_token_val_cb)(struct rules_t *obj, char *out, int size);
+  int8_t (*vm_value_set)(struct rules_t *obj);
+  int8_t (*vm_value_get)(struct rules_t *obj);
 
   /*
    * Events
    */
-  int (*event_cb)(struct rules_t *obj, char *name);
+  int8_t (*event_cb)(struct rules_t *obj, char *name);
+  void (*done_cb)(struct rules_t *obj);
 } rule_options_t;
 
 extern struct rule_options_t rule_options;
 
-/*
- * Each position field is the closest
- * aligned width of 11 bits.
- */
-#define VM_GENERIC_FIELDS \
-  uint8_t type; \
-  uint16_t ret;
+int8_t rule_token(struct rule_stack_t *obj, uint16_t pos, unsigned char **out);
+const char *rule_by_nr(struct rules_t **rule, uint8_t nrrules, uint8_t nr);
+int8_t rule_by_name(struct rules_t **rule, uint8_t nrrules, char *name);
+int8_t rule_initialize(struct pbuf *input, struct rules_t ***rules, uint8_t *nrrules, struct pbuf *mempool, void *userdata);
+int8_t rule_run(struct rules_t *rule, uint8_t validate);
+void rules_gc(struct rules_t ***rules, uint8_t *nrrules);
 
-typedef struct vm_vchar_t {
-  VM_GENERIC_FIELDS
-  char value[];
-} __attribute__((packed)) vm_vchar_t;
+int8_t rules_pushnil(struct rules_t *obj);
+int8_t rules_pushfloat(struct rules_t *obj, float nr);
+int8_t rules_pushinteger(struct rules_t *obj, int nr);
+int8_t rules_pushstring(struct rules_t *obj, char *str);
 
-typedef struct vm_vnull_t {
-  VM_GENERIC_FIELDS
-} __attribute__((packed)) vm_vnull_t;
+void rules_ref(const char *str);
+void rules_unref(const char *str);
 
-typedef struct vm_vinteger_t {
-  VM_GENERIC_FIELDS
-  int value;
-} __attribute__((packed)) vm_vinteger_t;
+int rules_tointeger(struct rules_t *obj, int8_t pos);
+float rules_tofloat(struct rules_t *obj, int8_t pos);
+const char *rules_tostring(struct rules_t *obj, int8_t pos);
 
-typedef struct vm_vfloat_t {
-  VM_GENERIC_FIELDS
-  float value;
-} __attribute__((packed)) vm_vfloat_t;
+void rules_remove(struct rules_t *rule, int8_t pos);
+uint8_t rules_gettop(struct rules_t *rule);
+uint8_t rules_type(struct rules_t *rule, int8_t pos);
 
-typedef struct vm_tgeneric_t {
-  VM_GENERIC_FIELDS
-} __attribute__((packed)) vm_tgeneric_t;
-
-typedef struct vm_tstart_t {
-  VM_GENERIC_FIELDS
-  uint16_t go;
-} __attribute__((packed)) vm_tstart_t;
-
-typedef struct vm_tif_t {
-  VM_GENERIC_FIELDS
-  uint16_t go;
-  uint16_t true_;
-  uint16_t false_;
-} __attribute__((packed)) vm_tif_t;
-
-typedef struct vm_lparen_t {
-  VM_GENERIC_FIELDS
-  uint16_t go;
-  uint16_t value;
-} __attribute__((packed)) vm_lparen_t;
-
-typedef struct vm_tnumber_t {
-  VM_GENERIC_FIELDS
-  uint8_t token[];
-} __attribute__((packed)) vm_tnumber_t;
-
-typedef struct vm_ttrue_t {
-  VM_GENERIC_FIELDS
-  uint8_t nrgo;
-  uint16_t go[];
-} __attribute__((packed)) vm_ttrue_t;
-
-typedef struct vm_tfunction_t {
-  VM_GENERIC_FIELDS
-  uint16_t token;
-  uint16_t value;
-  uint8_t nrgo;
-  uint16_t go[];
-} __attribute__((packed)) vm_tfunction_t;
-
-typedef struct vm_tvar_t {
-  VM_GENERIC_FIELDS
-  uint16_t go;
-  uint16_t value;
-  uint8_t token[];
-} __attribute__((packed)) vm_tvar_t;
-
-typedef struct vm_tevent_t {
-  VM_GENERIC_FIELDS
-  uint16_t go;
-  uint8_t token[];
-} __attribute__((packed)) vm_tevent_t;
-
-typedef struct vm_tcevent_t {
-  VM_GENERIC_FIELDS
-  uint8_t token[];
-} __attribute__((packed)) vm_tcevent_t;
-
-typedef struct vm_toperator_t {
-  VM_GENERIC_FIELDS
-  uint8_t token;
-  uint16_t left;
-  uint16_t right;
-  uint16_t value;
-} __attribute__((packed)) vm_toperator_t;
-
-typedef struct vm_teof_t {
-  uint8_t type;
-} __attribute__((packed)) vm_teof_t;
-
-unsigned int alignedvarstack(int v);
-int rule_initialize(struct pbuf *input, struct rules_t ***rules, int *nrrules, struct pbuf *mempool, void *userdata);
-void rules_gc(struct rules_t ***obj, unsigned int nrrules);
-int rule_run(struct rules_t *obj, int validate);
-void valprint(struct rules_t *obj, char *out, int size);
+#if defined(DEBUG) || defined(COVERALLS)
+uint16_t rules_memused(void);
+#endif
 
 #endif

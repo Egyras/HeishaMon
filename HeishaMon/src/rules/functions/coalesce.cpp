@@ -15,59 +15,42 @@
 #include <string.h>
 #include <math.h>
 
+#include "../../common/uint32float.h"
 #include "../function.h"
-#include "../../common/mem.h"
 #include "../rules.h"
 
-int rule_function_coalesce_callback(struct rules_t *obj, uint16_t argc, uint16_t *argv, int *ret) {
-/* LCOV_EXCL_START*/
-#ifdef DEBUG
-  printf("%s\n", __FUNCTION__);
-#endif
-/* LCOV_EXCL_STOP*/
+int8_t rule_function_coalesce_callback(struct rules_t *obj) {
+  float x = 0, z = 0;
+  uint8_t nr = rules_gettop(obj), loop = 1, y = 0;
 
-  *ret = obj->varstack.nrbytes;
-
-  int i = 0;
-  for(i=0;i<argc;i++) {
-    if(obj->varstack.buffer[argv[i]] == VNULL) {
-      continue;
-    } else {
-      switch(obj->varstack.buffer[argv[i]]) {
-        case VINTEGER: {
-          unsigned int size = alignedbytes(obj->varstack.nrbytes+sizeof(struct vm_vinteger_t));
-
-          struct vm_vinteger_t *out = (struct vm_vinteger_t *)&obj->varstack.buffer[obj->varstack.nrbytes];
-          struct vm_vinteger_t *val = (struct vm_vinteger_t *)&obj->varstack.buffer[argv[i]];
-          out->type = VINTEGER;
-          out->ret = 0;
-          out->value = val->value;
-          obj->varstack.nrbytes = size;
-          obj->varstack.bufsize = MAX(obj->varstack.bufsize, alignedvarstack(obj->varstack.nrbytes));
-          return 0;
-        } break;
-        case VFLOAT: {
-          unsigned int size = alignedbytes(obj->varstack.nrbytes+sizeof(struct vm_vfloat_t));
-
-          struct vm_vfloat_t *out = (struct vm_vfloat_t *)&obj->varstack.buffer[obj->varstack.nrbytes];
-          struct vm_vfloat_t *val = (struct vm_vfloat_t *)&obj->varstack.buffer[argv[i]];
-          out->type = VFLOAT;
-          out->ret = 0;
-          out->value = val->value;
-          obj->varstack.nrbytes = size;
-          obj->varstack.bufsize = MAX(obj->varstack.bufsize, alignedvarstack(obj->varstack.nrbytes));
-          return 0;
-        } break;
-        /* LCOV_EXCL_START*/
-        case VCHAR: {
-          exit(-1);
-        } break;
-        /* LCOV_EXCL_STOP*/
-        default: {
-
-        } break;
-      }
+  for(y=1;y<=nr && loop == 1;y++) {
+    switch(rules_type(obj, y)) {
+      case VNULL: {
+      } break;
+      case VINTEGER: {
+        x = (float)rules_tointeger(obj, y);
+        loop = 0;
+      } break;
+      case VFLOAT: {
+        x = rules_tofloat(obj, y);
+        loop = 0;
+      } break;
     }
+  }
+  while(nr > 0) {
+    rules_remove(obj, nr--);
+  }
+
+  if(modff(x, &z) == 0) {
+#ifdef DEBUG
+    printf("\tcoalesce = %d\n", (int)x);
+#endif
+    rules_pushinteger(obj, x);
+  } else {
+#ifdef DEBUG
+    printf("\tcoalesce = %f\n", x);
+#endif
+    rules_pushfloat(obj, x);
   }
 
   return 0;

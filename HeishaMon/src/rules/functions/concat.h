@@ -6,11 +6,12 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-#ifndef _RULES_LT_H_
-#define _RULES_LT_H_
+#ifndef _RULES_CONCAT_H_
+#define _RULES_CONCAT_H_
 
+#include <stdint.h>
 #include "../rules.h"
 
-int rule_operator_lt_callback(struct rules_t *obj, int a, int b, int *ret);
+int8_t rule_function_concat_callback(struct rules_t *obj);
 
 #endif

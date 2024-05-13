@@ -16,39 +16,32 @@
 #include <math.h>
 
 #include "../function.h"
-#include "../../common/mem.h"
 #include "../rules.h"
 
-int rule_function_isset_callback(struct rules_t *obj, uint16_t argc, uint16_t *argv, int *ret) {
-/* LCOV_EXCL_START*/
-#ifdef DEBUG
-  printf("%s\n", __FUNCTION__);
-#endif
-/* LCOV_EXCL_STOP*/
+int8_t rule_function_isset_callback(struct rules_t *obj) {
+  uint8_t x = rules_gettop(obj);
+  uint8_t ret = 0;
 
-  if(argc != 1) {
+  if(x < 1 || x > 1) {
     return -1;
   }
 
-  *ret = obj->varstack.nrbytes;
-
-  unsigned int size = alignedbytes(obj->varstack.nrbytes+sizeof(struct vm_vinteger_t));
-
-  struct vm_vinteger_t *out = (struct vm_vinteger_t *)&obj->varstack.buffer[obj->varstack.nrbytes];
-  out->ret = 0;
-  out->type = VINTEGER;
-
-  switch(obj->varstack.buffer[argv[0]]) {
+  switch(rules_type(obj, -1)) {
     case VNULL: {
-      out->value = 0;
+      ret = 0;
+#ifdef DEBUG
+      printf(".. %s NULL -> 0\n", __FUNCTION__);
+#endif
     } break;
-    default: {
-      out->value = 1;
+    case VINTEGER:
+    case VFLOAT: {
+      ret = 1;
+#ifdef DEBUG
+      printf(".. %s !NULL -> 1\n", __FUNCTION__);
+#endif
     } break;
   }
-
-  obj->varstack.nrbytes = size;
-  obj->varstack.bufsize = MAX(obj->varstack.bufsize, alignedvarstack(obj->varstack.nrbytes));
-
+  rules_remove(obj, -1);
+  rules_pushinteger(obj, ret);
   return 0;
 }

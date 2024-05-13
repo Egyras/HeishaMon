@@ -24,38 +24,24 @@
 #include <math.h>
 
 #include "../common/mem.h"
+#include "rules.h"
 #include "operator.h"
 
-#include "operators/eq.h"
-#include "operators/ne.h"
-#include "operators/plus.h"
-#include "operators/multiply.h"
-#include "operators/and.h"
-#include "operators/mod.h"
-#include "operators/or.h"
-#include "operators/divide.h"
-#include "operators/ge.h"
-#include "operators/gt.h"
-#include "operators/lt.h"
-#include "operators/le.h"
-#include "operators/power.h"
-#include "operators/minus.h"
-
 struct rule_operator_t rule_operators[] = {
-  { "==", 30, 1, rule_operator_eq_callback },
-  { "!=", 30, 1, rule_operator_ne_callback },
-  { "+", 60, 1, rule_operator_plus_callback },
-  { "-", 60, 1, rule_operator_minus_callback },
-  { "*", 70, 1, rule_operator_multiply_callback },
-  { "%", 70, 1, rule_operator_mod_callback },
-  { "&&", 20, 1, rule_operator_and_callback },
-  { "||", 10, 1, rule_operator_or_callback },
-  { "/", 70, 1, rule_operator_divide_callback },
-  { ">=", 30, 1, rule_operator_ge_callback },
-  { "<=", 30, 1, rule_operator_le_callback },
-  { "<", 30, 1, rule_operator_lt_callback },
-  { ">", 30, 1, rule_operator_gt_callback },
-  { "^", 80, 2, rule_operator_power_callback },
+  { OP_EQ, "==", 30, 1 },
+  { OP_NE, "!=", 30, 1 },
+  { OP_ADD, "+", 60, 1 },
+  { OP_SUB, "-", 60, 1 },
+  { OP_MUL, "*", 70, 1 },
+  { OP_MOD, "%", 70, 1 },
+  { OP_AND, "&&", 20, 1 },
+  { OP_OR, "||", 10, 1 },
+  { OP_DIV, "/", 70, 1 },
+  { OP_GE, ">=", 30, 1 },
+  { OP_LE, "<=", 30, 1 },
+  { OP_LT, "<", 30, 1, },
+  { OP_GT, ">", 30, 1 },
+  { OP_POW, "^", 80, 2 },
 };
 
-unsigned int nr_rule_operators = sizeof(rule_operators)/sizeof(rule_operators[0]);
+uint8_t nr_rule_operators = sizeof(rule_operators)/sizeof(rule_operators[0]);

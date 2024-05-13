@@ -1,4 +1,4 @@
-#include "OpenTherm.h"
+#include "src/opentherm/opentherm.h"
 #include "HeishaOT.h"
 #include "decode.h"
 #include "rules.h"
@@ -391,54 +391,51 @@ void HeishaOTLoop(char * actData, PubSubClient &mqtt_client, char* mqtt_topic_ba
 }
 
 void mqttOTCallback(char* topic, char* value) {
-  //only READ values(strcmp_P(PSTR("dhwTem can be overwritten using received mqtt messages
-  //log_message(_F("OpenTherm: MQTT message received"));
-  if (strcmp_P(PSTR("outsideTemp"), topic) == 0) {
+  if (strcmp_P(topic,PSTR("outsideTemp")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'outsideTemp'"));
     getOTStructMember(_F("outsideTemp"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
   }
-  else if (strcmp_P(PSTR("inletTemp"), topic) == 0) {
+  else if (strcmp_P(topic, PSTR("inletTemp")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'inletTemp'"));
     getOTStructMember(_F("inletTemp"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
   }
-  else if (strcmp_P(PSTR("outletTemp"), topic) == 0) {
+  else if (strcmp_P(topic, PSTR("outletTemp")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'outletTemp'"));
     getOTStructMember(_F("outletTemp"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
   }
-  else if (strcmp_P(PSTR("dhwTemp"), topic) == 0) {
+  else if (strcmp_P(topic, PSTR("dhwTemp")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'dhwTemp'"));
     getOTStructMember(_F("dhwTemp"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
   }
-  else if (strcmp_P(PSTR("dhwSetpoint"), topic) == 0) {
+  else if (strcmp_P(topic, PSTR("dhwSetpoint")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'dhwSetpoint'"));
     getOTStructMember(_F("dhwSetpoint"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
   }
-  else if (strcmp_P(PSTR("maxTSet"), topic) == 0) {
+  else if (strcmp_P(topic, PSTR("maxTSet")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'maxTSet'"));
     getOTStructMember(_F("maxTSet"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
   }
-  else if (strcmp_P(PSTR("flameState"), topic) == 0) {
+  else if (strcmp_P(topic, PSTR("flameState")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'flameState'"));
     getOTStructMember(_F("flameState"))->value.b = ((stricmp((char*)"true", value) == 0) || (String(value).toInt() == 1 ));
     rules_event_cb(_F("?"), topic);
   }
-  else if (strcmp_P(PSTR("chState"), topic) == 0) {
+  else if (strcmp_P(topic, PSTR("chState")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'chState'"));
     getOTStructMember(_F("chState"))->value.b = ((stricmp((char*)"true", value) == 0) || (String(value).toInt() == 1 ));
     rules_event_cb(_F("?"), topic);
   }
-  else if (strcmp_P(PSTR("dhwState"), topic) == 0) {
+  else if (strcmp_P(topic, PSTR("dhwState")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'dhwState'"));
     getOTStructMember(_F("dhwState"))->value.b = ((stricmp((char*)"true", value) == 0) || (String(value).toInt() == 1 ));
     rules_event_cb(_F("?"), topic);
   }
-
 }
 
 void openthermTableOutput(struct webserver_t *client) {

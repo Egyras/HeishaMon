@@ -682,7 +682,6 @@ unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg) {
   }
 
   return sizeof(panasonicSendQuery);
- 
 }
 
 unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_msg) {
