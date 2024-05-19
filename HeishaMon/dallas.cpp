@@ -5,6 +5,8 @@
 #include "dallas.h"
 #include "rules.h"
 #include "src/common/progmem.h"
+#include <ArduinoJson.h>
+#include <LittleFS.h>
 
 #define MQTT_RETAIN_VALUES 1 // do we retain 1wire values?
 
@@ -25,6 +27,7 @@ unsigned long lastalldatatime_dallas = 0;
 unsigned long dallasTimer = 0;
 unsigned int updateAllDallasTime = 30000; // will be set using heishmonSettings
 unsigned int dallasTimerWait = 30000; // will be set using heishmonSettings
+void loadDallasAlias();
 
 void initDallasSensors(void (*log_message)(char*), unsigned int updateAllDallasTimeSettings, unsigned int dallasTimerWaitSettings, unsigned int dallasResolution) {
   char log_msg[256];
@@ -40,6 +43,7 @@ void initDallasSensors(void (*log_message)(char*), unsigned int updateAllDallasT
   }
 
   //init array
+  delete actDallasData;
   actDallasData = new dallasDataStruct [dallasDevicecount];
   for (int j = 0 ; j < dallasDevicecount; j++) {
     DS18B20.getAddress(actDallasData[j].sensor, j);
@@ -56,6 +60,7 @@ void initDallasSensors(void (*log_message)(char*), unsigned int updateAllDallasT
     sprintf_P(log_msg, PSTR("Found 1wire sensor: %s"), actDallasData[i].address ); log_message(log_msg);
   }
   if (DALLASASYNC) DS18B20.setWaitForConversion(false); //async 1wire during next loops
+  loadDallasAlias();
 }
 
 void resetlastalldatatime_dallas() {
@@ -65,7 +70,7 @@ void resetlastalldatatime_dallas() {
 void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
   char log_msg[256];
   char mqtt_topic[256];
-  char valueStr[20];
+  char valueStr[80];
   bool updatenow = false;
 
   if ((lastalldatatime_dallas == 0) || ((unsigned long)(millis() - lastalldatatime_dallas) >  (1000 * updateAllDallasTime))) {
@@ -88,8 +93,15 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
           actDallasData[i].temperature = temp;
           sprintf(log_msg, PSTR("Received 1wire sensor temperature (%s): %.2f"), actDallasData[i].address, actDallasData[i].temperature);
           log_message(log_msg);
-          sprintf_P(valueStr, PSTR("%.2f"), actDallasData[i].temperature);
-          sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+          if (true) {
+            sprintf_P(valueStr, PSTR("%.2f"), actDallasData[i].temperature);
+            sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+            sprintf_P(valueStr, PSTR("%s"), actDallasData[i].alias);
+            sprintf_P(mqtt_topic, PSTR("%s/%s/%s/alias"), mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+          } else {
+            sprintf_P(valueStr, PSTR("{\"Temperature\":%.2f,\"Alias\":\"%s\"}"), actDallasData[i].temperature, actDallasData[i].alias);
+            sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+          }
           rules_event_cb(_F("ds18b20#"), actDallasData[i].address);
         }
       }
@@ -114,10 +126,12 @@ void dallasJsonOutput(struct webserver_t *client) {
   for (int i = 0; i < dallasDevicecount; i++) {
     webserver_send_content_P(client, PSTR("{\"Sensor\":\""), 11);
     webserver_send_content(client, actDallasData[i].address, strlen(actDallasData[i].address));
-    webserver_send_content_P(client, PSTR("\",\"Temperature\":\""), 17);
+    webserver_send_content_P(client, PSTR("\",\"Temperature\":"), 16);
     char str[64];
     dtostrf(actDallasData[i].temperature, 0, 2, str);
     webserver_send_content(client, str, strlen(str));
+    webserver_send_content_P(client, PSTR(",\"Alias\":\""), 10);
+    webserver_send_content(client, actDallasData[i].alias, strlen(actDallasData[i].alias));
     if (i < dallasDevicecount - 1) {
       webserver_send_content_P(client, PSTR("\"},"), 3);
     } else {
@@ -135,6 +149,47 @@ void dallasTableOutput(struct webserver_t *client) {
     char str[64];
     dtostrf(actDallasData[i].temperature, 0, 2, str);
     webserver_send_content(client, str, strlen(str));
-    webserver_send_content_P(client, PSTR("</td></tr>"), 10);
+    webserver_send_content_P(client, PSTR("</td><td><div class=\"dallas_alias w3-border w3-border-light-grey w3-hover-border-black\" data-address=\""), 102);
+    webserver_send_content(client, actDallasData[i].address, strlen(actDallasData[i].address));
+    webserver_send_content_P(client, PSTR("\" contentEditable=\"true\">"), 26);
+    webserver_send_content(client, actDallasData[i].alias, strlen(actDallasData[i].alias));
+    webserver_send_content_P(client, PSTR("</div></td></tr>"), 16);
+  }
+}
+
+void changeDallasAlias(char* address, char* alias) {
+  DynamicJsonDocument jsonDoc(1024);
+  for (int i = 0 ; i < dallasDevicecount; i++) {
+    if (strcmp(address, actDallasData[i].address) == 0) {
+      strlcpy(actDallasData[i].alias, alias, sizeof(actDallasData[i].alias));
+    }
+    jsonDoc[actDallasData[i].address] = actDallasData[i].alias;
+  }
+  if (LittleFS.begin()) {
+    File configFile = LittleFS.open("/dallas.json", "w");
+    if (configFile) {
+      serializeJson(jsonDoc, configFile);
+      configFile.close();
+    }
+  }
+}
+
+void loadDallasAlias() {
+  if (LittleFS.begin()) {
+    if (LittleFS.exists("/dallas.json")) {
+      File configFile = LittleFS.open("/dallas.json", "r");
+      if (configFile) {
+        size_t size = configFile.size();
+        std::unique_ptr<char[]> buf(new char[size]);
+        configFile.readBytes(buf.get(), size);
+        DynamicJsonDocument jsonDoc(1024);
+        DeserializationError error = deserializeJson(jsonDoc, buf.get());
+        if (!error) {
+          for (int i = 0 ; i < dallasDevicecount; i++) {
+            if ( jsonDoc[actDallasData[i].address] ) strncpy(actDallasData[i].alias, jsonDoc[actDallasData[i].address], sizeof(actDallasData[i].alias));
+          }
+        }
+      }
+    }
   }
 }

@@ -18,7 +18,11 @@
 #endif
 
 #ifndef WEBSERVER_BUFFER_SIZE
-  #define WEBSERVER_BUFFER_SIZE 128
+  #ifdef ESP8266
+    #define WEBSERVER_BUFFER_SIZE 128
+  #else
+	#define WEBSERVER_BUFFER_SIZE 512  
+  #endif
 #endif
 
 #ifndef WEBSERVER_MAX_CLIENTS
@@ -50,11 +54,11 @@
   #include <WiFiClient.h>
 #endif
 
-#if !defined(err_t) && !defined(ESP8266)
+#if !defined(err_t) && !defined(ESP8266) && !defined(ESP32)
   #define err_t uint8_t
 #endif
 
-#ifndef ESP8266
+#if !defined(ESP8266) && !defined(ESP32)
 typedef struct tcp_pcb {
 } tcp_pcb;
 
@@ -92,12 +96,13 @@ typedef struct sendlist_t {
 #endif
 } sendlist_t;
 
-#ifndef ESP8266
+#if !defined(ESP8266) && !defined(ESP32)
 struct WiFiClient {
   int (*write)(unsigned char *, int i);
   int (*write_P)(const char *, int i);
   int (*available)();
   int (*connected)();
+  void (*stop)();
   int (*read)(uint8_t *buffer, int size);
 };
   #define PGM_P unsigned char *

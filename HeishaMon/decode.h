@@ -1,7 +1,5 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
-#include <ESP8266WiFi.h>
-
 
 #define MQTT_RETAIN_VALUES 1
 

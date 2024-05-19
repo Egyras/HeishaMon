@@ -210,7 +210,7 @@
 
 
 To get decimal values you must convert from hexadecimal and do some calulation depending on value. Most of them need just -128(DEC). \
-As example 43 byte value to get DHW set temperature b1 (HEX) = 177(DEC) - 128 = 49 C  \
+As example 43 byte value to get DHW set temperature b1 (HEX) = 177(DEC) - 128 = 49 C  \s
 Panasonic query, answer and commands are using 8-bit Checksum to verify serial data ( sum(all bytes) & 0xFF == 0 ). Last byte is checksum value.
 
 

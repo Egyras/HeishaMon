@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include "stack.h"
 
-#ifndef ESP8266
+#if !defined(ESP8266) && !defined(ESP32)
   #define F
   #define MEMPOOL_SIZE 16000
   typedef struct pbuf {
@@ -38,10 +38,15 @@
   uint8_t mmu_get_uint8(void *ptr);
   uint16_t mmu_set_uint16(void *ptr, uint16_t src);
   uint16_t mmu_get_uint16(void *ptr);
-#else
+#elif defined(ESP32)
+  #include <Arduino.h>
+  #include "lwip/pbuf.h" 	
+  #define MEMPOOL_SIZE 32*1024 //use 32kb PSRAM on esp32-mini-1-n4r2 (can not assign more than 64kb due to uint16_t in pbuf)
+#elif defined(ESP8266)	
   #include <Arduino.h>
   #include "lwip/pbuf.h"
   #ifdef MMU_SEC_HEAP_SIZE
+    #define MEMPOOL_ADDRESS MMU_SEC_HEAP
     #define MEMPOOL_SIZE MMU_SEC_HEAP_SIZE
   #else
     #define MEMPOOL_SIZE 16000

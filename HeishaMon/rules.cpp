@@ -72,7 +72,11 @@ typedef struct varstack_t {
 
 static struct varstack_t global_varstack = { .array = NULL, .nr = 0 };
 
-unsigned char *mempool = (unsigned char *)MMU_SEC_HEAP;
+#if defined(ESP8266)
+unsigned char *mempool = (unsigned char *)MEMPOOL_ADDRESS;
+#elif defined(ESP32)
+unsigned char *mempool; //malloc in runtime
+#endif
 unsigned int memptr = 0;
 
 // static int readRuleFromFS(int i) {
@@ -781,9 +785,53 @@ void rules_timer_cb(int nr) {
   FREE(name);
 }
 
+void rules_setup(void) {
+  if(!LittleFS.begin()) {
+    return;
+  }
+    if (rule_options.event_cb == NULL) { //check if not initialized before
+#ifdef ESP32
+      if (mempool == NULL) { //make sure we only malloc if not done before
+        mempool = (unsigned char *)ps_malloc(MEMPOOL_SIZE);  //in arduino IDE normal malloc causes big block to go to PSRAM if PSRAM is enabled. But seems to be unstable so for now don't enable PSRAM
+        if (mempool == NULL) {
+          logprintln_P(F("Mempool OOM"));
+          OUT_OF_MEMORY
+        }
+      }
+#endif  
+    memset(mempool, 0, MEMPOOL_SIZE);
+
+    logprintf_P(F("rules mempool size: %d"), MEMPOOL_SIZE);
+
+    logprintln_P(F("reading rules"));
+
+    memset(&rule_options, 0, sizeof(struct rule_options_t));
+    rule_options.is_variable_cb = is_variable;
+    rule_options.is_event_cb = is_event;
+    rule_options.done_cb = rule_done_cb;
+    rule_options.vm_value_set = vm_value_set;
+    rule_options.vm_value_get = vm_value_get;
+    rule_options.event_cb = event_cb;
+
+  }
+}
+
+bool existsRulesFile(char *file) {
+  if (LittleFS.begin() && (LittleFS.exists(file))) {
+    File f = LittleFS.open(file, "r");
+    if ((f) && (f.size() > 0)) {
+      f.close();
+      return true; //only return true if file exists and isn't empty
+    }
+  }
+  return false;
+}
+
 int rules_parse(char *file) {
-  File frules = LittleFS.open(file, "r");
-  if(frules) {
+  if (existsRulesFile(file)) { //only parse an existing and not empty, file
+    rules_setup(); //check there if done already
+	
+    File frules = LittleFS.open(file, "r");
     parsing = 1;
 
     if(nrrules > 0) {
@@ -805,7 +853,7 @@ int rules_parse(char *file) {
     int chunk = 0, len1 = 0;
 
     unsigned int txtoffset = alignedbuffer(MEMPOOL_SIZE-len-5);
-
+	
     while(chunk*BUFFER_SIZE < len) {
       memset(content, 0, BUFFER_SIZE);
       frules.seek(chunk*BUFFER_SIZE, SeekSet);
@@ -860,7 +908,7 @@ int rules_parse(char *file) {
     parsing = 0;
     return 0;
   } else {
-    return -1;
+	  return -2; //empty file or not existing
   }
 }
 
@@ -915,29 +963,25 @@ void rules_boot(void) {
   }
 }
 
-void rules_setup(void) {
-  if(!LittleFS.begin()) {
-    return;
-  }
-  memset(mempool, 0, MEMPOOL_SIZE);
-
-  logprintf_P(F("rules mempool size: %d"), MEMPOOL_SIZE);
-
-  logprintln_P(F("reading rules"));
-
-  memset(&rule_options, 0, sizeof(struct rule_options_t));
-  rule_options.is_variable_cb = is_variable;
-  rule_options.is_event_cb = is_event;
-  rule_options.done_cb = rule_done_cb;
-  rule_options.vm_value_set = vm_value_set;
-  rule_options.vm_value_get = vm_value_get;
-  rule_options.event_cb = event_cb;
-
-  if(LittleFS.exists("/rules.txt")) {
-    if(rules_parse("/rules.txt") == -1) {
-      return;
+void rules_deinitialize() {
+  if (rule_options.event_cb != NULL) { 
+    logprintln_P(F("Deinitialize rules engine..."));
+#ifdef ESP32
+    FREE(mempool);
+#endif 
+    if(nrrules > 0) {
+      for(int i=0;i<nrrules;i++) {
+        if(rules[i]->userdata != NULL) {
+          FREE(rules[i]->userdata);
+        }
+      }
+      rules_gc(&rules, &nrrules);
+	  rules_free_stack();
     }
-  }
 
-  rules_boot();
+
+    // set this to NULL so a new initialize can start if necessary. 
+    rule_options.event_cb = NULL;
+  }
 }
+
