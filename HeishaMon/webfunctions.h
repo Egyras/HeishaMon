@@ -57,6 +57,7 @@ struct settingsStruct {
   bool logHexdump = false; //log hexdump from start
   bool logSerial1 = true; //log to serial1 (gpio2) from start
   bool opentherm = false; //opentherm enable flag
+  bool hotspot = true; //enable wifi hotspot when wifi is not connected
 #ifdef ESP32
   bool proxy = true; //cztaw proxy port enable flag
 #endif

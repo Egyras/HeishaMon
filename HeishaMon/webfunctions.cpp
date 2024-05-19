@@ -221,6 +221,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
           if ( jsonDoc["timezone"]) heishamonSettings->timezone = jsonDoc["timezone"];
           heishamonSettings->use_1wire = ( jsonDoc["use_1wire"] == "enabled" ) ? true : false;
           heishamonSettings->use_s0 = ( jsonDoc["use_s0"] == "enabled" ) ? true : false;
+          heishamonSettings->hotspot = ( jsonDoc["hotspot"] == "disabled" ) ? false : true; //default to true if not found in settings
           heishamonSettings->listenonly = ( jsonDoc["listenonly"] == "enabled" ) ? true : false;
           heishamonSettings->listenmqtt = ( jsonDoc["listenmqtt"] == "enabled" ) ? true : false;
           heishamonSettings->logMqtt = ( jsonDoc["logMqtt"] == "enabled" ) ? true : false;
@@ -294,10 +295,11 @@ void setupWifi(settingsStruct *heishamonSettings) {
     }
   }
   else {
-    log_message(_F("Wifi hotspot mode..."));
-    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP(_F("HeishaMon-Setup"));
-    
+    if (heishamonSettings->hotspot) {
+      log_message(_F("Wifi hotspot mode..."));
+      WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+      WiFi.softAP(_F("HeishaMon-Setup"));
+    }
   }
 
   if (heishamonSettings->wifi_hostname[0] == '\0') {
@@ -328,9 +330,11 @@ void setupWifi(settingsStruct *heishamonSettings) {
       }
   }
   else {
-    log_message(_F("Wifi hotspot mode..."));
-    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0)); 
-    WiFi.softAP("HeishaMon-Setup");
+    if (heishamonSettings->hotspot) {
+      log_message(_F("Wifi hotspot mode..."));
+      WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0)); 
+      WiFi.softAP("HeishaMon-Setup");
+    }
   }
 
 
@@ -402,6 +406,11 @@ void settingsToJson(JsonDocument &jsonDoc, settingsStruct *heishamonSettings) {
     jsonDoc["use_s0"] = "enabled";
   } else {
     jsonDoc["use_s0"] = "disabled";
+  }
+  if (heishamonSettings->hotspot) {
+    jsonDoc["hotspot"] = "enabled";
+  } else {
+    jsonDoc["hotspot"] = "disabled";
   }
   if (heishamonSettings->listenonly) {
     jsonDoc["listenonly"] = "enabled";
@@ -475,18 +484,19 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 
   settingsToJson(jsonDoc, heishamonSettings); //stores current settings in a json document
 
-  jsonDoc["listenonly"] = String("");
-  jsonDoc["listenmqtt"] = String("");
-  jsonDoc["logMqtt"] = String("");
-  jsonDoc["logHexdump"] = String("");
-  jsonDoc["logSerial1"] = String("");
-  jsonDoc["optionalPCB"] = String("");
-  jsonDoc["opentherm"] = String("");
+  jsonDoc["hotspot"] = String("disabled");
+  jsonDoc["listenonly"] = String("disabled");
+  jsonDoc["listenmqtt"] = String("disabled");
+  jsonDoc["logMqtt"] = String("disabled");
+  jsonDoc["logHexdump"] = String("disabled");
+  jsonDoc["logSerial1"] = String("disabled");
+  jsonDoc["optionalPCB"] = String("disabled");
+  jsonDoc["opentherm"] = String("disabled");
 #ifdef ESP32  
-  jsonDoc["proxy"] = String("");
+  jsonDoc["proxy"] = String("disabled");
 #endif  
-  jsonDoc["use_1wire"] = String("");
-  jsonDoc["use_s0"] = String("");
+  jsonDoc["use_1wire"] = String("disabled");
+  jsonDoc["use_s0"] = String("disabled");
 
   struct websettings_t *tmp = (struct websettings_t *)client->userdata;
   while (tmp) {
@@ -511,6 +521,8 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
       if (strcmp(tmp->value.c_str(), "enabled") == 0) {
         use_s0 = tmp->value.c_str();
       }
+    } else if (strcmp(tmp->name.c_str(), "hotspot") == 0) {
+      jsonDoc["hotspot"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "listenonly") == 0) {
       jsonDoc["listenonly"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "listenmqtt") == 0) {
@@ -772,6 +784,11 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         itoa(heishamonSettings->updateAllTime, str, 10);
         webserver_send_content(client, str, strlen(str));
 
+        webserver_send_content_P(client, PSTR(",\"hotspot\":"), 11);
+
+        itoa(heishamonSettings->hotspot, str, 10);
+        webserver_send_content(client, str, strlen(str));
+        
         webserver_send_content_P(client, PSTR(",\"listenonly\":"), 14);
 
         itoa(heishamonSettings->listenonly, str, 10);
@@ -1035,7 +1052,11 @@ int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconne
         if (ETH.phyAddr() != 0) {        
           if (ETH.connected()) {
             if (ETH.hasIP()) {
-              webserver_send_content_P(client, PSTR("connected"), 9);
+              webserver_send_content_P(client, PSTR("connected - IP: "), 16);
+              char ipaddress[30];
+              ETH.localIP().toString().toCharArray(ipaddress,30);
+              webserver_send_content(client, ipaddress, strlen(ipaddress));              
+              
             } else {
               webserver_send_content_P(client, PSTR("connected - no IP"), 17);
             }
