@@ -1,7 +1,7 @@
 [![Join us on Slack chat room](https://img.shields.io/badge/Slack-Join%20the%20chat%20room-orange)](https://join.slack.com/t/panasonic-wemos/shared_invite/enQtODg2MDY0NjE1OTI3LTgzYjkwMzIwNTAwZTMyYzgwNDQ1Y2QxYjkwODg3NjMyN2MyM2ViMDM3Yjc3OGE3MGRiY2FkYzI4MzZiZDVkNGE)
 
 
-# Panasonic H & J Series Aquarea air-water heat pump protocol
+# Panasonic H, J, K & L Series Aquarea air-water heat pump protocol
 
 This project makes it possible to read information from Panasonic Aquarea heat pump and report the data either to an MQTT server or as JSON format over HTTP.
 
@@ -12,11 +12,11 @@ Suomen kielellä [README_FI.md](README_FI.md) luettavissa täällä.
 *Help on translation to other languages is welcome.*
 
 # Current releases
-Current release is version 2. The [compiled binary](binaries/HeishaMon.ino.d1-v2.0.bin) can be installed on a Wemos D1 mini, on the HeishaMon PCB and generally on any ESP8266 based board compatible with Wemos build settings (at least 4MB flash). You can also download the code and compile it yourself (see required libraries below).
+Current release is version 3.5. The ESP8266 compiled binary can be installed on a Wemos D1 mini, on the HeishaMon PCB and generally on any ESP8266 based board compatible with Wemos build settings (at least 4MB flash). You can also download the code and compile it yourself (see required libraries below). The ESP32-S3 binary is for the newer, large, version of heishamon.
 
 
 # Using the software
-HeishaMon is able to communicate with the Panasonic Aquarea H & J-series. [Confirmed by users types of HP you can find here](HeatPumpType.md) \
+HeishaMon is able to communicate with the Panasonic Aquarea H, J, K and L&series. [Confirmed by users types of HP you can find here](HeatPumpType.md) \
 If you want to compile this image yourself be sure to use the mentioned libraries and support for a filesystem on the esp8266 so select the correct flash option in arduino ide for that.
 
 When starting, without a configured wifi, an open-wifi-hotspot will be visible allowing you to configure your wifi network and your MQTT server. Configuration page will be located at http://192.168.4.1 . \
@@ -318,6 +318,9 @@ All the [libs we use](LIBSUSED.md) necessary for compiling.
 
 ## DS18b20 1-wire support
 The software also supports ds18b20 1-wire temperature sensors reading. A proper 1-wire configuration (with 4.7kohm pull-up resistor) connected to GPIO4 will be read each configured secs (minimal 5) and send at the panasonic_heat_pump/1wire/"sensor-hex-address" topic. On the pre-made boards this 4.7kohm resistor is already installed.
+
+## Large board relay control
+The newer, large, heishamon contains two onboard relays which can be switched on and off using MQTT commands. The relays can be used for any contact switching, even 230V mains (max 5A). For example to switch the 230V contacts in the heatpump for controlling the 'external thermostat', switching a pump on or off or other lower power devices. I do not recommend to use the relay as a switch for a electric heater as they use too much power. To control the relay just send a value of 1 or 0 to the MQTT topic "panasonic_heat_pump/gpio/relay/one" for relay one or "panasonic_heat_pump/gpio/relay/two" for relay two.
 
 ## Opentherm support
 If your heishamon board supports opentherm the software can also be used to bridge opentherm information from a compatible thermostat to your home automation over MQTT or JSON and as mentioned above it can also be connected directly in the rules to connect opentherm information to the heatpump and back, for example to display the outside temperature from the heatpump on your opentherm thermostat. If you enable opentherm support in settings there will be a new tab visible in the web page. On that tab you will see opentherm values. Some are of type R(ead) and some are W(rite), and some are both. Read means that the thermostat can read that information from the heishamon. You provide that information over MQTT (or using the rules) by updating this value on the mqtt 'opentherm/read' topic, for example 'panasonic_heat_pump/opentherm/read/outsideTemp'. The write values are information from the thermostat, like 'roomTemp'. These are available on mqtt topic 'opentherm/write'. You can use these values to change the heatpump behaviour in anyway you want using your home automation and mqtt set-commands to heishamon on using the internal rules.
