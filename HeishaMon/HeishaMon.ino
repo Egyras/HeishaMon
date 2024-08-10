@@ -7,6 +7,7 @@
   #define loggingSerial Serial1
   #define ENABLEPIN 5
   #define LEDPIN 2
+  #define BOOTPIN 0
 #elif defined(ESP32)
   #define heatpumpSerial Serial1
   #define loggingSerial Serial //usb serial CDC
@@ -19,6 +20,7 @@
   #define ENABLEPIN 5
   #define ENABLEOTPIN 4
   #define LEDPIN 42
+  #define BOOTPIN 0
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <Adafruit_NeoPixel.h>
@@ -66,6 +68,8 @@ bool extraDataBlockAvailable = false; // this will be set to true if, during boo
 
 #define MQTTRECONNECTTIMER 30000 //it takes 30 secs for each mqtt server reconnect attempt
 unsigned long lastMqttReconnectAttempt = 0;
+
+unsigned long bootButtonNotPressed = 0;
 
 #define WIFIRETRYTIMER 15000 // switch between hotspot and configured SSID each 10 secs if SSID is lost
 unsigned long lastWifiRetryTimer = 0;
@@ -1158,9 +1162,8 @@ void setupHttp() {
   webserver_start(80, &webserver_cb, 0);
 }
 
-void doubleResetDetect() {
-  if (LittleFS.exists("/doublereset")) {
-    loggingSerial.println("Factory reset request detected, clearing config."); //save to print on std serial because serial switch didn't happen yet
+void factoryReset() {
+    loggingSerial.println("Factory reset request detected, clearing config."); 
     LittleFS.format();
     //create first boot file
     File startupFile = LittleFS.open("/heishamon", "w");
@@ -1192,6 +1195,10 @@ void doubleResetDetect() {
      pixels.show();
     }
 #endif
+}
+void doubleResetDetect() {
+  if (LittleFS.exists("/doublereset")) {
+    factoryReset();
   }
   File doubleresetFile = LittleFS.open("/doublereset", "w");
   doubleresetFile.close();
@@ -1409,9 +1416,11 @@ void setup() {
 #endif      
     }
   }
-  //double reset detect from start
-  loggingSerial.println(F("Check for double reset..."));
-  doubleResetDetect();
+  //double reset detect from start - removed, using boot button now
+  //loggingSerial.println(F("Check for double reset..."));
+  //doubleResetDetect();
+
+  pinMode(BOOTPIN,INPUT_PULLUP); //enable the boot switch to be used as an input after booting
 
   loggingSerial.println(F("Send current wifi info to serial..."));
   WiFi.printDiag(loggingSerial);
@@ -1489,9 +1498,10 @@ void setup() {
   pixels.show(); 
   #endif
   //end of setup, clear double reset flag
-  loggingSerial.println(F("Clearing double reset flag.."));
-  LittleFS.remove("/doublereset");  
-  loggingSerial.println(F("End of setup.."));
+  //loggingSerial.println(F("Clearing double reset flag.."));
+  //LittleFS.remove("/doublereset");  
+  //loggingSerial.println(F("End of setup.."));
+
   inSetup = false;
 }
 
@@ -1543,7 +1553,21 @@ void readHeatpump() {
   if ( (heishamonSettings.listenonly || sending) && (heatpumpSerial.available() > 0)) readSerial();
 }
 
+void checkBootButton() {
+  if (digitalRead(BOOTPIN)) { //true = 1, not pressed
+    bootButtonNotPressed = millis();
+  } else {
+      if ((unsigned long)(millis() - bootButtonNotPressed) > 10000) {
+        //initiate factory reset
+        factoryReset();
+      }
+  }
+}
+
 void loop() {
+  //check boot button state
+  checkBootButton();
+
   //webserver function
   webserver_loop();
 
