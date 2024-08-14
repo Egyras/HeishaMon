@@ -60,21 +60,27 @@
   #define ERR_OK 0
 #endif
 
+#if defined(ESP8266)
+  #define loggingSerial Serial1
+#elif defined(ESP32)
+  #define loggingSerial Serial //usb serial CDC
+#endif
+
+
 void log_message(char *string);
-void log_message(const __FlashStringHelper *msg);
 
 struct webserver_client_t clients[WEBSERVER_MAX_CLIENTS];
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 static tcp_pcb *async_server = NULL;
 static WiFiServer sync_server(0);
 #endif
 static uint8_t *rbuffer = NULL;
 
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ESP32)
 static uint16_t tcp_write_P(tcp_pcb *pcb, PGM_P buf, uint16_t len, uint8_t flags) {
   char *str = (char *)malloc(len+1);
   if(str == NULL) {
-    Serial1.printf(PSTR("Out of memory %s:#%d\n"), __FUNCTION__, __LINE__);
+    loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
     ESP.restart();
     exit(-1);
   }
@@ -116,20 +122,31 @@ static int webserver_parse_post(struct webserver_t *client, uint16_t size) {
   unsigned char *ptrA = (unsigned char *)memchr(client->buffer, '=', size);
   unsigned char *ptrB = (unsigned char *)memchr(client->buffer, ' ', size);
   unsigned char *ptrC = (unsigned char *)memchr(client->buffer, '&', size);
-  unsigned char *ptrD = ptrA;
-  unsigned char *ptrE = ptrC;
+  unsigned char *ptrD = (unsigned char *)strnstr(client->buffer, "\r\n", client->ptr);
+  unsigned char *ptrE = NULL;
+  unsigned char *ptrF = NULL;
   char c = '=';
   int16_t pos = 0;
-  int16_t posA = WEBSERVER_BUFFER_SIZE+1, posB = WEBSERVER_BUFFER_SIZE+1, posC = WEBSERVER_BUFFER_SIZE+1;
+  int16_t posA = WEBSERVER_BUFFER_SIZE+1, posB = WEBSERVER_BUFFER_SIZE+1;
+  int16_t posC = WEBSERVER_BUFFER_SIZE+1, posD = WEBSERVER_BUFFER_SIZE+1;
 
+  if(ptrD != NULL) {
+    posD = ptrD - client->buffer;
+  }
   if(ptrA != NULL) {
     posA = ptrA - client->buffer;
+    if((ptrD == NULL) || (posD > posA)) {
+      ptrE = ptrA;
+    }
   }
   if(ptrB != NULL) {
     posB = ptrB - client->buffer;
   }
   if(ptrC != NULL) {
     posC = ptrC - client->buffer;
+    if((ptrD == NULL) || (posD > posC)) {
+      ptrF = ptrC;
+    }
   }
 
   pos = MIN(posA, MIN(posB, posC));
@@ -311,7 +328,7 @@ static int webserver_parse_post(struct webserver_t *client, uint16_t size) {
       }
     }
 
-    if(client->ptr >= WEBSERVER_BUFFER_SIZE && strncmp((char *)&client->buffer[pos+1], "HTTP/1.1", 8) != 0) {
+    if((client->ptr >= WEBSERVER_BUFFER_SIZE || ptrD != NULL) && strncmp((char *)&client->buffer[pos+1], "HTTP/1.1", 8) != 0) {
       /*
        * GET end delimiter before HTTP/1.1
        */
@@ -428,7 +445,7 @@ static int webserver_parse_post(struct webserver_t *client, uint16_t size) {
       }
     }
 
-    if(ptrD == NULL && ptrE == NULL && ptrA != NULL && (posB == WEBSERVER_BUFFER_SIZE+1 || posB > 0)) {
+    if(ptrE == NULL && ptrF == NULL && ptrA != NULL && (posB == WEBSERVER_BUFFER_SIZE+1 || posB > 0)) {
       uint16_t pos1 = ptrA-client->buffer;
 
       int16_t pos2 = urldecode(client->buffer,
@@ -473,8 +490,7 @@ static int webserver_parse_post(struct webserver_t *client, uint16_t size) {
 
 int8_t http_parse_request(struct webserver_t *client, uint8_t **buf, uint16_t *len) {
   uint16_t hasread = MIN(WEBSERVER_BUFFER_SIZE-client->ptr, *len);
-
-  while(*len > 0) {
+  while((*len > 0) || (strnstr(client->buffer, "\r\n\r\n", client->ptr) != NULL)) {
     hasread = MIN(WEBSERVER_BUFFER_SIZE-client->ptr, (*len));
     memcpy(&client->buffer[client->ptr], &(*buf)[0], hasread);
 
@@ -563,6 +579,9 @@ int8_t http_parse_request(struct webserver_t *client, uint8_t **buf, uint16_t *l
         client->ptr -= pos;
       }
     }
+      /*
+       * Parse GET/POST
+       */	
     if(client->substep == 2) {
       client->step = WEBSERVER_CLIENT_ARGS;
       int ret = webserver_parse_post(client, client->ptr);
@@ -584,6 +603,9 @@ int8_t http_parse_request(struct webserver_t *client, uint8_t **buf, uint16_t *l
         }
       }
     }
+      /*
+       * Cleanup request from buffer
+       */	
     if(client->substep == 3) {
       uint16_t i = 0;
       while(i < client->ptr-2) {
@@ -596,15 +618,16 @@ int8_t http_parse_request(struct webserver_t *client, uint8_t **buf, uint16_t *l
         i++;
       }
     }
+      /*
+       * Get headers
+       */	
     if(client->substep == 4) {
-	  //look if end exists in buffer
-	  unsigned char *ptrEnd = strnstr(client->buffer, "\r\n\r\n", client->ptr);
-	  uint16_t posEnd = client->ptr;
-	  if (ptrEnd != NULL) {
-		  posEnd = (ptrEnd-client->buffer);
-	  }
-	  //don't search for more args past this end
-	  unsigned char *ptr = (unsigned char *)memchr(client->buffer, ':', posEnd);
+      unsigned char *ptrEnd = (unsigned char *)strnstr(client->buffer, "\r\n\r\n", client->ptr);
+      uint16_t posEnd = client->ptr;
+      if(ptrEnd != NULL) {
+        posEnd = (ptrEnd-client->buffer) + 4;
+      } 
+      unsigned char *ptr = (unsigned char *)memchr(client->buffer, ':', posEnd);
 
       while(ptr != NULL) {
         struct arguments_t args;
@@ -645,8 +668,8 @@ int8_t http_parse_request(struct webserver_t *client, uint8_t **buf, uint16_t *l
               memset(&tmp, 0, args.len+1);
               memcpy(tmp, &client->buffer[x+1], args.len);
               if((client->data.websockkey = strdup(tmp)) == NULL) {
-#ifdef ESP8266
-                Serial1.printf(PSTR("Out of memory %s:#%d\n"), __FUNCTION__, __LINE__);
+#if defined(ESP8266) || defined(ESP32)
+                loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
                 ESP.restart();
                 exit(-1);
 #endif
@@ -664,8 +687,8 @@ int8_t http_parse_request(struct webserver_t *client, uint8_t **buf, uint16_t *l
                   memmove(&tmp[0], &tmp[pos], args.len-pos);
                   tmp[args.len-pos] = 0;
                   if((client->data.boundary = strdup(tmp)) == NULL) {
-#ifdef ESP8266
-                    Serial1.printf(PSTR("Out of memory %s:#%d\n"), __FUNCTION__, __LINE__);
+#if defined(ESP8266) || defined(ESP32)
+                    loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
                     ESP.restart();
                     exit(-1);
 #endif
@@ -687,9 +710,11 @@ int8_t http_parse_request(struct webserver_t *client, uint8_t **buf, uint16_t *l
               memmove(&client->buffer[x], &client->buffer[i+2], client->ptr-(i+2));
               client->buffer[x-1] = ':';
               client->ptr -= (i + 2 - x);
+              posEnd -= (i + 2 - x);
             } else {
               memmove(&client->buffer[0], &client->buffer[i+2], client->ptr-(i+2));
               client->ptr -= (i + 2);
+              posEnd -= (i + 2);
             }
             break;
           }
@@ -768,18 +793,16 @@ char *strnstr(const char *haystack, const char *needle, size_t len) {
   return NULL;
 }
 
-
 int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, uint16_t len) {
   uint16_t hasread = MIN(WEBSERVER_BUFFER_SIZE-client->ptr, len);
   uint16_t rpos = 0, loop = 1;
-
-  while(rpos < len) {
+  while((rpos < len) || ((loop == 1) && (client->ptr > 0))) {
     hasread = MIN(WEBSERVER_BUFFER_SIZE-client->ptr, len-rpos);
     memcpy(&client->buffer[client->ptr], &buf[rpos], hasread);
     client->ptr += hasread;
     rpos += hasread;
     loop = 1;
-
+	
     while(loop) {
       switch(client->substep) {
         // Boundary
@@ -792,6 +815,7 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
           }
           if(ptr != NULL) {
             uint16_t pos = (ptr-client->buffer)+strlen(client->data.boundary);
+			
             if(pos1 > pos) {
               /*
                * Only compensate for the key at the
@@ -802,7 +826,6 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
                */
               pos1 = 0;
             }
-
             if(pos+1 <= client->ptr) {
               if(client->buffer[pos] == '\r' && client->buffer[pos+1] == '\n') {
                 memmove(&client->buffer[0], &client->buffer[pos+1], client->ptr-(pos+1));
@@ -824,16 +847,9 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
                   return 0;
                 } else {
                   // Error, content length does not match end boundary
-				  char log_msg[256];
-				  sprintf_P(log_msg, "Too large read! Readlen: %d, Totallen: %d", client->readlen, client->totallen);
-				  log_message(log_msg);
-				  return -1;
+                  return -1;
                 }
-              } else {
-                loop = 0;
               }
-            } else {
-              loop = 0;
             }
           } else if(client->ptr < WEBSERVER_BUFFER_SIZE) {
             loop = 0;
@@ -989,7 +1005,6 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
           unsigned char *ptr = strnstr(client->buffer, "\r\n--", client->ptr);
           if(ptr != NULL && client->substep != 8) {
             uint16_t pos = (ptr-client->buffer);
-
             ptr = (unsigned char *)memchr(client->buffer, '=', client->ptr);
             uint16_t vlen = 0;
 
@@ -999,36 +1014,44 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
               // error
               return -1; /*LCOV_EXCL_LINE*/
             }
+			struct arguments_t args;
+			client->buffer[vlen] = 0;
 
-			if (pos != (vlen+1)) { //check if separator was already at begin buffer, so nothing to do here
-				struct arguments_t args;
-				client->buffer[vlen] = 0;
+			args.name = &client->buffer[0];
+			args.value = &client->buffer[vlen+1];
+			args.len = pos-(vlen+1);
 
-				args.name = &client->buffer[0];
-				args.value = &client->buffer[vlen+1];
-				args.len = pos-(vlen+1);
-
-				if(client->callback != NULL) {
-					uint8_t ret = client->callback(client, &args);
-					if(ret == -1) {
-						return -1;
-					}
+			if(client->callback != NULL) {
+				uint8_t ret = client->callback(client, &args);
+				if(ret == -1) {
+					return -1;
 				}
-
-				client->buffer[vlen] = '=';
-				memmove(&client->buffer[vlen+1], &client->buffer[pos], client->ptr-pos);
-				client->readlen += (pos-(vlen+1));
-				client->ptr -= (pos-(vlen+1));
 			}
+
+			client->buffer[vlen] = '=';
+			memmove(&client->buffer[vlen+1], &client->buffer[pos], client->ptr-pos);
+			client->readlen += (pos-(vlen+1));
+			client->ptr -= (pos-(vlen+1));
             client->substep = 0;
-          } else if(client->ptr == WEBSERVER_BUFFER_SIZE) {
+		  } else if(client->ptr == WEBSERVER_BUFFER_SIZE) {
             uint8_t ending = 0;
+            uint8_t dash = 0;
             /*
              * Double check that the CR / LN don't belong
              * to the boundary delimiter.
              */
+            if(strncmp((char *)&client->buffer[client->ptr-1], "\r", 1) == 0) {
+              ending = 1;
+            }
             if(strncmp((char *)&client->buffer[client->ptr-2], "\r\n", 2) == 0) {
               ending = 2;
+            }
+            if(strncmp((char *)&client->buffer[client->ptr-3], "\r\n\r", 3) == 0) {
+              ending = 3;
+            }
+            if(strncmp((char *)&client->buffer[client->ptr-3], "\r\n-", 3) == 0) {
+              ending = 3;
+              dash = 1;
             }
             if(client->substep == 8) {
               client->substep = 7;
@@ -1042,8 +1065,8 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
 
               args.name = &client->buffer[0];
               args.value = &client->buffer[pos+1];
-              args.len = (WEBSERVER_BUFFER_SIZE-ending)-(pos+1);
-
+              args.len = (client->ptr-ending)-(pos+1);
+		  
               if(client->callback != NULL) {
                 uint8_t ret = client->callback(client, &args);
                 if(ret == -1) {
@@ -1051,19 +1074,31 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
                 }
               }
               client->buffer[pos] = '=';
+              if(ending == 1) {
+                client->buffer[pos+1] = '\r';
+              }
               if(ending == 2) {
                 client->buffer[pos+1] = '\r';
                 client->buffer[pos+2] = '\n';
               }
+              if(ending == 3) {
+                client->buffer[pos+1] = '\r';
+                client->buffer[pos+2] = '\n';
+                client->buffer[pos+3] = '\r';
+                if(dash) {
+                  client->buffer[pos+3] = '-';
+                }
+              }
               client->readlen += ((client->ptr-(pos+1))-ending);
               client->ptr = pos+1+ending;
+              loop = 0;
             } else {
               // error
               return -1;
             }
           } else {
-            loop = 0;
-          }
+			loop = 0;
+		  }
         } break;
       }
     }
@@ -1200,7 +1235,7 @@ static uint16_t webserver_create_header(struct webserver_t *client, uint16_t cod
     i = header.ptr;
     client->step = WEBSERVER_CLIENT_WRITE;
   }
-  i += snprintf_P((char *)&p[i], sizeof(buffer) - i, PSTR("Server: ESP8266\r\n"));
+  i += snprintf_P((char *)&p[i], sizeof(buffer) - i, PSTR("Server: HeishaMon\r\n"));
   i += snprintf_P((char *)&p[i], sizeof(buffer) - i, PSTR("Keep-Alive: timeout=15, max=100\r\n"));
   i += snprintf_P((char *)&p[i], sizeof(buffer) - i, PSTR("Content-Type: %s\r\n"), mimetype);
   i += snprintf_P((char *)&p[i], sizeof(buffer) - i, PSTR("Content-Length: %d\r\n\r\n"), len);
@@ -1231,14 +1266,7 @@ static int webserver_process_send(struct webserver_t *client) {
 #else
   uint8_t x = 0, y = 0;
   for(x=0;x<WEBSERVER_MAX_SENDLIST;x++) {
-    if(
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
-      client->sendlist[x].data.ptr != NULL
-#else
-      (client->sendlist[x].type == 1 && client->sendlist[x].data.ptr != NULL) ||
-      (client->sendlist[x].type == 0 && strlen((char *)client->sendlist[x].data.fixed) > 0)
-#endif
-    ) {
+    if(client->sendlist[x].data.ptr != NULL) {
       tmp = &client->sendlist[x];
       break;
     }
@@ -1256,14 +1284,7 @@ static int webserver_process_send(struct webserver_t *client) {
 #else
           tmp = NULL;
           for(y=x+1;y<WEBSERVER_MAX_SENDLIST;y++) {
-            if(
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
-              client->sendlist[y].data.ptr != NULL
-#else
-              (client->sendlist[y].type == 1 && client->sendlist[y].data.ptr != NULL) ||
-              (client->sendlist[y].type == 0 && strlen((char *)client->sendlist[y].data.fixed) > 0)
-#endif
-            ) {
+            if(client->sendlist[y].data.ptr != NULL) {
               tmp = &client->sendlist[y];
               x = y;
               break;
@@ -1282,14 +1303,7 @@ static int webserver_process_send(struct webserver_t *client) {
 #else
           tmp = NULL;
           for(y=x+1;y<WEBSERVER_MAX_SENDLIST;y++) {
-            if(
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
-              client->sendlist[y].data.ptr != NULL
-#else
-              (client->sendlist[y].type == 1 && client->sendlist[y].data.ptr != NULL) ||
-              (client->sendlist[y].type == 0 && strlen((char *)client->sendlist[y].data.fixed) > 0)
-#endif
-            ) {
+            if(client->sendlist[y].data.ptr != NULL) {
               tmp = &client->sendlist[y];
               x = y;
               break;
@@ -1323,14 +1337,7 @@ static int webserver_process_send(struct webserver_t *client) {
 #else
   x = 0, y = 0;
   for(x=0;x<WEBSERVER_MAX_SENDLIST;x++) {
-    if(
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
-      client->sendlist[x].data.ptr != NULL
-#else
-      (client->sendlist[x].type == 1 && client->sendlist[x].data.ptr != NULL) ||
-      (client->sendlist[x].type == 0 && strlen((char *)client->sendlist[x].data.fixed) > 0)
-#endif
-    ) {
+    if(client->sendlist[x].data.ptr != NULL) {
       tmp = &client->sendlist[x];
       break;
     }
@@ -1341,7 +1348,14 @@ static int webserver_process_send(struct webserver_t *client) {
       if(client->ptr == 0) {
         if(client->totallen >= tmp->size) {
           if(tmp->type == 1) {
-            memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], tmp->size);
+#if (!defined(NON32XFER_HANDLER) && defined(MMU_SEC_HEAP))
+            uint16_t x = 0;
+            for(x=0;x<tmp->size;x++) {
+              cpy[x] = pgm_read_byte(&((PGM_P)tmp->data.ptr)[client->ptr+x]);
+            }
+#else
+             memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], tmp->size);
+#endif
             if(client->async == 1) {
               tcp_write(client->pcb, cpy, tmp->size, TCP_WRITE_FLAG_MORE);
             } else {
@@ -1353,17 +1367,9 @@ static int webserver_process_send(struct webserver_t *client) {
             }
           } else {
             if(client->async == 1) {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
               tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], tmp->size, TCP_WRITE_FLAG_MORE);
-#else
-              tcp_write(client->pcb, &((unsigned char *)tmp->data.fixed)[client->ptr], tmp->size, TCP_WRITE_FLAG_MORE);
-#endif
             } else {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
               if(client->client->write(&((unsigned char *)tmp->data.ptr)[client->ptr], tmp->size) > 0) {
-#else
-              if(client->client->write(&((unsigned char *)tmp->data.fixed)[client->ptr], tmp->size) > 0) {
-#endif
                 if(client->is_websocket == 0) {
                   client->lastseen = millis();
                 }
@@ -1375,11 +1381,7 @@ static int webserver_process_send(struct webserver_t *client) {
           client->totallen -= tmp->size;
 
           if(tmp->type == 0) {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
             free(tmp->data.ptr);
-#else
-            memset(&tmp->data.fixed, 0, WEBSERVER_SENDLIST_BUFSIZE);
-#endif
           }
 
           tmp->data.ptr = NULL;
@@ -1390,14 +1392,7 @@ static int webserver_process_send(struct webserver_t *client) {
 #else
           tmp = NULL;
           for(y=x+1;y<WEBSERVER_MAX_SENDLIST;y++) {
-            if(
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
-              client->sendlist[y].data.ptr != NULL
-#else
-              (client->sendlist[y].type == 1 && client->sendlist[y].data.ptr != NULL) ||
-              (client->sendlist[y].type == 0 && strlen((char *)client->sendlist[y].data.fixed) > 0)
-#endif
-            ) {
+            if(client->sendlist[y].data.ptr != NULL) {
               tmp = &client->sendlist[y];
               x = y;
               break;
@@ -1407,7 +1402,14 @@ static int webserver_process_send(struct webserver_t *client) {
           client->ptr = 0;
         } else {
           if(tmp->type == 1) {
-            memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], client->totallen);
+#if (!defined(NON32XFER_HANDLER) && defined(MMU_SEC_HEAP))
+            uint16_t x = 0;
+            for(x=0;x<client->totallen;x++) {
+              cpy[x] = pgm_read_byte(&((PGM_P)tmp->data.ptr)[client->ptr+x]);
+            }
+#else
+             memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], client->totallen);
+#endif
             if(client->async == 1) {
               tcp_write(client->pcb, cpy, client->totallen, TCP_WRITE_FLAG_MORE);
             } else {
@@ -1419,17 +1421,9 @@ static int webserver_process_send(struct webserver_t *client) {
             }
           } else {
             if(client->async == 1) {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
               tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], client->totallen, TCP_WRITE_FLAG_MORE);
-#else
-              tcp_write(client->pcb, &((unsigned char *)tmp->data.fixed)[client->ptr], client->totallen, TCP_WRITE_FLAG_MORE);
-#endif
             } else {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
               if(client->client->write(&((unsigned char *)tmp->data.ptr)[client->ptr], client->totallen) > 0) {
-#else
-              if(client->client->write(&((unsigned char *)tmp->data.fixed)[client->ptr], client->totallen) > 0) {
-#endif
                 if(client->is_websocket == 0) {
                   client->lastseen = millis();
                 }
@@ -1442,7 +1436,14 @@ static int webserver_process_send(struct webserver_t *client) {
         }
       } else if(client->ptr+client->totallen >= tmp->size) {
         if(tmp->type == 1) {
-          memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], (tmp->size-client->ptr));
+#if (!defined(NON32XFER_HANDLER) && defined(MMU_SEC_HEAP))
+          uint16_t x = 0;
+          for(x=0;x<(tmp->size-client->ptr);x++) {
+            cpy[x] = pgm_read_byte(&((PGM_P)tmp->data.ptr)[client->ptr+x]);
+          }
+#else
+           memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], (tmp->size-client->ptr));
+#endif
           if(client->async == 1) {
             tcp_write(client->pcb, cpy, (tmp->size-client->ptr), TCP_WRITE_FLAG_MORE);
           } else {
@@ -1454,17 +1455,9 @@ static int webserver_process_send(struct webserver_t *client) {
           }
         } else {
           if(client->async == 1) {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
             tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], (tmp->size-client->ptr), TCP_WRITE_FLAG_MORE);
-#else
-            tcp_write(client->pcb, &((unsigned char *)tmp->data.fixed)[client->ptr], (tmp->size-client->ptr), TCP_WRITE_FLAG_MORE);
-#endif
           } else {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
             if(client->client->write(&((unsigned char *)tmp->data.ptr)[client->ptr], (tmp->size-client->ptr)) > 0) {
-#else
-            if(client->client->write(&((unsigned char *)tmp->data.fixed)[client->ptr], (tmp->size-client->ptr)) > 0) {
-#endif
               if(client->is_websocket == 0) {
                 client->lastseen = millis();
               }
@@ -1475,12 +1468,8 @@ static int webserver_process_send(struct webserver_t *client) {
         client->totallen -= (tmp->size-client->ptr);
 
         if(tmp->type == 0) {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
-            free(tmp->data.ptr);
-#else
-            memset(&tmp->data.fixed, 0, WEBSERVER_SENDLIST_BUFSIZE);
-#endif
-          }
+          free(tmp->data.ptr);
+        }
 
         tmp->data.ptr = NULL;
 #if WEBSERVER_MAX_SENDLIST == 0
@@ -1490,14 +1479,7 @@ static int webserver_process_send(struct webserver_t *client) {
 #else
         tmp = NULL;
         for(y=x+1;y<WEBSERVER_MAX_SENDLIST;y++) {
-          if(
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
-            client->sendlist[y].data.ptr != NULL
-#else
-            (client->sendlist[y].type == 1 && client->sendlist[y].data.ptr != NULL) ||
-            (client->sendlist[y].type == 0 && strlen((char *)client->sendlist[y].data.fixed) > 0)
-#endif
-          ) {
+          if(client->sendlist[y].data.ptr != NULL) {
             tmp = &client->sendlist[y];
             x = y;
             break;
@@ -1507,7 +1489,14 @@ static int webserver_process_send(struct webserver_t *client) {
         client->ptr = 0;
       } else {
         if(tmp->type == 1) {
-          memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], client->totallen);
+#if (!defined(NON32XFER_HANDLER) && defined(MMU_SEC_HEAP))
+          uint16_t x = 0;
+          for(x=0;x<client->totallen;x++) {
+            cpy[x] = pgm_read_byte(&((PGM_P)tmp->data.ptr)[client->ptr+x]);
+          }
+#else
+           memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], client->totallen);
+#endif
           if(client->async == 1) {
             tcp_write(client->pcb, cpy, client->totallen, TCP_WRITE_FLAG_MORE);
           } else {
@@ -1519,17 +1508,9 @@ static int webserver_process_send(struct webserver_t *client) {
           }
         } else {
           if(client->async == 1) {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
             tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], client->totallen, TCP_WRITE_FLAG_MORE);
-#else
-            tcp_write(client->pcb, &((unsigned char *)tmp->data.fixed)[client->ptr], client->totallen, TCP_WRITE_FLAG_MORE);
-#endif
           } else {
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
             if(client->client->write(&((unsigned char *)tmp->data.ptr)[client->ptr], client->totallen) > 0) {
-#else
-            if(client->client->write(&((unsigned char *)tmp->data.fixed)[client->ptr], client->totallen) > 0) {
-#endif
               if(client->is_websocket == 0) {
                 client->lastseen = millis();
               }
@@ -1558,11 +1539,6 @@ static int webserver_process_send(struct webserver_t *client) {
     uint8_t x = 0;
     for(x=0;x<WEBSERVER_MAX_SENDLIST;x++) {
       tmp = &client->sendlist[x];
-      if(tmp->type == 0) {
-        #if WEBSERVER_SENDLIST_BUFSIZE > 0
-          memset(&tmp->data.fixed, 0, WEBSERVER_SENDLIST_BUFSIZE+1);
-        #endif
-      }
       tmp->data.ptr = NULL;
       memset(tmp, 0, sizeof(struct sendlist_t));
     }
@@ -1574,7 +1550,6 @@ static int webserver_process_send(struct webserver_t *client) {
       client->step = WEBSERVER_CLIENT_WEBSOCKET;
     } else {
       client->step = WEBSERVER_CLIENT_WRITE;
-
       if(client->callback(client, NULL) == -1) {
         client->step = WEBSERVER_CLIENT_CLOSE;
       } else {
@@ -1585,14 +1560,7 @@ static int webserver_process_send(struct webserver_t *client) {
       tmp = client->sendlist;
 #else
       for(x=0;x<WEBSERVER_MAX_SENDLIST;x++) {
-        if(
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
-          client->sendlist[x].data.ptr != NULL
-#else
-          (client->sendlist[x].type == 1 && client->sendlist[x].data.ptr != NULL) ||
-          (client->sendlist[x].type == 0 && strlen((char *)client->sendlist[x].data.fixed) > 0)
-#endif
-        ) {
+        if(client->sendlist[x].data.ptr != NULL) {
           tmp = &client->sendlist[x];
           break;
         }
@@ -1643,8 +1611,8 @@ void webserver_send_content_P(struct webserver_t *client, PGM_P buf, uint16_t si
   node = (struct sendlist_t *)malloc(sizeof(struct sendlist_t));
   /*LCOV_EXCL_START*/
   if(node == NULL) {
-  #ifdef ESP8266
-    Serial1.printf(PSTR("Out of memory %s:#%d\n"), __FUNCTION__, __LINE__);
+  #if defined(ESP8266) || defined(ESP32)
+    loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
     ESP.restart();
     exit(-1);
   #endif
@@ -1652,21 +1620,14 @@ void webserver_send_content_P(struct webserver_t *client, PGM_P buf, uint16_t si
 #else
   uint8_t i = 0;
   for(i=0;i<WEBSERVER_MAX_SENDLIST;i++) {
-    if(
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
-      client->sendlist[i].data.ptr == NULL
-#else
-      (client->sendlist[i].type == 1 && client->sendlist[i].data.ptr == NULL) ||
-      (client->sendlist[i].type == 0 && strlen((char *)client->sendlist[i].data.fixed) == 0)
-#endif
-    ) {
+    if(client->sendlist[i].data.ptr == NULL) {
       node = &client->sendlist[i];
       break;
     }
   }
   if(node == NULL) {
-  #ifdef ESP8266
-    log_message(PSTR("Sendlist queue is full"));
+  #if defined(ESP8266) || defined(ESP32)
+    loggingSerial.printf("Sendlist queue is full\n");
   #else
     printf("Sendlist queue is full\n");
   #endif
@@ -1698,8 +1659,8 @@ void webserver_send_content(struct webserver_t *client, char *buf, uint16_t size
   node = (struct sendlist_t *)malloc(sizeof(struct sendlist_t));
   /*LCOV_EXCL_START*/
   if(node == NULL) {
-  #ifdef ESP8266
-    Serial1.printf(PSTR("Out of memory %s:#%d\n"), __FUNCTION__, __LINE__);
+  #if defined(ESP8266) || defined(ESP32)
+    loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
     ESP.restart();
     exit(-1);
   #endif
@@ -1707,21 +1668,14 @@ void webserver_send_content(struct webserver_t *client, char *buf, uint16_t size
 #else
   uint8_t i = 0;
   for(i=0;i<WEBSERVER_MAX_SENDLIST;i++) {
-    if(
-#if WEBSERVER_SENDLIST_BUFSIZE == 0
-      client->sendlist[i].data.ptr == NULL
-#else
-      (client->sendlist[i].type == 1 && client->sendlist[i].data.ptr == NULL) ||
-      (client->sendlist[i].type == 0 && strlen((char *)client->sendlist[i].data.fixed) == 0)
-#endif
-    ) {
+    if(client->sendlist[i].data.ptr == NULL) {
       node = &client->sendlist[i];
       break;
     }
   }
   if(node == NULL) {
-  #ifdef ESP8266
-    log_message(PSTR("Sendlist queue is full"));
+  #if defined(ESP8266) || defined(ESP32)
+    loggingSerial.printf("Sendlist queue is full\n");
   #else
     printf("Sendlist queue is full\n");
   #endif
@@ -1729,21 +1683,14 @@ void webserver_send_content(struct webserver_t *client, char *buf, uint16_t size
   }
 #endif
   memset(node, 0, sizeof(struct sendlist_t));
-#if WEBSERVER_SENDLIST_BUFSIZE > 0
-  int x = 0;
-  for(x=0;x<size && x<WEBSERVER_SENDLIST_BUFSIZE;x++) {
-    node->data.fixed[x] = buf[x];
-  }
-#else
   if((node->data.ptr = malloc(size+1)) == NULL) {
-  #ifdef ESP8266
-    Serial1.printf(PSTR("Out of memory %s:#%d\n"), __FUNCTION__, __LINE__);
+  #if defined(ESP8266) || defined(ESP32)
+    loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
     ESP.restart();
     exit(-1);
   #endif
   }
   memcpy(node->data.ptr, buf, size);
-#endif
 
   node->size = size;
   node->type = 0;
@@ -1824,10 +1771,14 @@ static void webserver_client_close(struct webserver_t *client) {
   if(client->callback != NULL) {
     client->callback(client, NULL);
   }
-#ifdef ESP8266
-  char log_msg[256];
-  sprintf_P(log_msg, PSTR("Closing webserver client: %s:%d"), IPAddress(client->pcb->remote_ip.addr).toString().c_str(), client->pcb->remote_port);
-  log_message(log_msg);
+#if defined(ESP8266) || defined(ESP32)
+  loggingSerial.print(F("Closing webserver client: "));
+  loggingSerial.print(client->client->remoteIP().toString().c_str());
+  loggingSerial.print(F(":"));
+  loggingSerial.println(client->pcb->remote_port);
+  if(client->callback != NULL) {
+    client->callback(client, NULL);
+  }
 
   client->step = 0;
 
@@ -1843,7 +1794,7 @@ static void webserver_client_close(struct webserver_t *client) {
 }
 /* LCOV_EXCL_STOP*/
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 err_t webserver_sent(void *arg, tcp_pcb *pcb, uint16_t len) {
   uint16_t i = 0;
   for(i=0;i<WEBSERVER_MAX_CLIENTS;i++) {
@@ -2058,13 +2009,12 @@ uint8_t webserver_sync_receive(struct webserver_t *client, uint8_t *rbuffer, uin
           if(http_parse_body(client, (char *)rbuffer, size) == -1) {
             client->step = WEBSERVER_CLIENT_CLOSE;
           }
-         } else if(client->reqtype == 1) {
+        } else if(client->reqtype == 1) {
           client->substep = 0;
           if(http_parse_multipart_body(client, (unsigned char *)rbuffer, size) == -1) {
             client->step = WEBSERVER_CLIENT_CLOSE;
           }
-         }
-
+        }
         if(client->readlen == client->totallen) {
           client->step = WEBSERVER_CLIENT_WRITE;
         }
@@ -2092,15 +2042,12 @@ uint8_t webserver_sync_receive(struct webserver_t *client, uint8_t *rbuffer, uin
         client->step = WEBSERVER_CLIENT_CLOSE;
       }
     }
+
     if(client->readlen == client->totallen) {
       client->step = WEBSERVER_CLIENT_WRITE;
     }
-    if((client->readlen + 2000) > client->totallen) {
-        char log_msg[256];
-        sprintf_P(log_msg, "Reaching end of read. Readlen: %d, Totallen: %d", client->readlen, client->totallen);
-		log_message(log_msg);
-    }
   }
+
   return 0;
 }
 
@@ -2158,7 +2105,7 @@ err_t webserver_async_receive(void *arg, tcp_pcb *pcb, struct pbuf *data, err_t 
   return ERR_OK;
 }
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 err_t webserver_poll(void *arg, struct tcp_pcb *pcb) {
   uint8_t i = 0;
   for(i=0;i<WEBSERVER_MAX_CLIENTS;i++) {
@@ -2170,10 +2117,8 @@ err_t webserver_poll(void *arg, struct tcp_pcb *pcb) {
         }
       }
       if((unsigned long)(millis() - clients[i].data.lastseen) > WEBSERVER_CLIENT_TIMEOUT) {
-  #ifdef ESP8266
-        char log_msg[256];
-        sprintf_P(log_msg, PSTR("Timeout webserver client: %s:%d"), clients[i].data.client->remoteIP().toString().c_str(), clients[i].data.client->remotePort());
-        log_message(log_msg);
+  #if defined(ESP8266) || defined(ESP32)
+        loggingSerial.printf("Timeout webserver client: %s:%d", clients[i].data.client->remoteIP().toString().c_str(), clients[i].data.client->remotePort());
   #endif
         clients[i].data.step = WEBSERVER_CLIENT_CLOSE;
         webserver_client_close(&clients[i].data);
@@ -2186,7 +2131,7 @@ err_t webserver_poll(void *arg, struct tcp_pcb *pcb) {
 #endif
 
 void webserver_reset_client(struct webserver_t *client) {
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
   if(client->pcb != NULL) {
     tcp_close(client->pcb);
     client->pcb = NULL;
@@ -2220,11 +2165,7 @@ void webserver_reset_client(struct webserver_t *client) {
     tmp = client->sendlist;
     client->sendlist = client->sendlist->next;
     if(tmp->type == 0) {
-      #if WEBSERVER_SENDLIST_BUFSIZE == 0
-        free(tmp->data.ptr);
-      #else
-        memset(&tmp->data.fixed, 0, WEBSERVER_SENDLIST_BUFSIZE);
-      #endif
+      free(tmp->data.ptr);
     }
     tmp->data.ptr = NULL;
     free(tmp);
@@ -2234,11 +2175,7 @@ void webserver_reset_client(struct webserver_t *client) {
   for(i=0;i<WEBSERVER_MAX_SENDLIST;i++) {
     tmp = &client->sendlist[i];
     if(tmp->type == 0) {
-      #if WEBSERVER_SENDLIST_BUFSIZE == 0
-        free(tmp->data.ptr);
-      #else
-        memset(&tmp->data.fixed, 0, WEBSERVER_SENDLIST_BUFSIZE);
-      #endif
+      free(tmp->data.ptr);
     }
     tmp->data.ptr = NULL;
     memset(tmp, 0, sizeof(struct sendlist_t));
@@ -2261,7 +2198,7 @@ void webserver_reset_client(struct webserver_t *client) {
   memset(&client->buffer, 0, WEBSERVER_BUFFER_SIZE);
 }
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 err_t webserver_client(void *arg, tcp_pcb *pcb, err_t err) {
   uint8_t i = 0;
   for(i=0;i<WEBSERVER_MAX_CLIENTS;i++) {
@@ -2271,9 +2208,10 @@ err_t webserver_client(void *arg, tcp_pcb *pcb, err_t err) {
       clients[i].data.async = 1;
       clients[i].data.step = WEBSERVER_CLIENT_READ_HEADER;
 
-      char log_msg[256];
-      sprintf_P(log_msg, PSTR("New webserver client: %s:%d"), IPAddress(clients[i].data.pcb->remote_ip.addr).toString().c_str(), clients[i].data.pcb->remote_port);
-      log_message(log_msg);
+      loggingSerial.print(F("New webserver client: "));
+      loggingSerial.print(clients[i].data.client->remoteIP().toString().c_str());
+      loggingSerial.print(F(":"));
+      loggingSerial.println(clients[i].data.pcb->remote_port);
 
       //tcp_nagle_disable(pcb);
       tcp_recv(pcb, &webserver_async_receive);
@@ -2294,6 +2232,7 @@ void webserver_loop(void) {
     if(clients[i].data.step == 0 || clients[i].data.async == 1) {
       continue;
     }
+
     if(clients[i].data.is_websocket == 1) {
       if((unsigned long)(millis() - clients[i].data.lastping) > WEBSERVER_CLIENT_PING_INTERVAL) {
         websocket_send_header(&clients[i].data, WEBSOCKET_OPCODE_PING, 0);
@@ -2301,18 +2240,17 @@ void webserver_loop(void) {
       }
     }
     if((unsigned long)(millis() - clients[i].data.lastseen) > WEBSERVER_CLIENT_TIMEOUT) {
-#ifdef ESP8266
-      char log_msg[256];
-      sprintf_P(log_msg, PSTR("Timeout webserver client: %s:%d"), clients[i].data.client->remoteIP().toString().c_str(), clients[i].data.client->remotePort());
-      log_message(log_msg);
+#if defined(ESP8266) || defined(ESP32)
+        loggingSerial.print("Timeout webserver client: ");
+        loggingSerial.print(clients[i].data.client->remoteIP());
+        loggingSerial.print(":");
+        loggingSerial.println(clients[i].data.client->remotePort());
 #endif
       clients[i].data.step = WEBSERVER_CLIENT_CLOSE;
     }
-
     if(!clients[i].data.client->connected()) {
       clients[i].data.step = WEBSERVER_CLIENT_CLOSE;
     }
-
     switch(clients[i].data.step) {
       case WEBSERVER_CLIENT_CONNECTING: {
         if(clients[i].data.client->available()) {
@@ -2368,24 +2306,24 @@ void webserver_loop(void) {
         clients[i].data.totallen -= 16;
         webserver_process_send(&clients[i].data);
       } break;
-#ifdef ESP8266
       case WEBSERVER_CLIENT_CLOSE: {
+#if defined(ESP8266) || defined(ESP32)
+        loggingSerial.print("Closing webserver client: ");
+        loggingSerial.print(clients[i].data.client->remoteIP());
+        loggingSerial.print(":");
+        loggingSerial.println(clients[i].data.client->remotePort());
+#endif
         if(clients[i].data.callback != NULL) {
           clients[i].data.callback(&clients[i].data, NULL);
         }
 
-        char log_msg[256];
-        sprintf_P(log_msg, PSTR("Closing webserver client: %s:%d"), clients[i].data.client->remoteIP().toString().c_str(), clients[i].data.client->remotePort());
-        log_message(log_msg);
-
         clients[i].data.client->stop();
         webserver_reset_client(&clients[i].data);
       } break;
-#endif
     }
   }
 
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ESP32)
   if(sync_server.hasClient()) {
     for(i=0;i<WEBSERVER_MAX_CLIENTS;i++) {
       if(clients[i].data.client == NULL) {
@@ -2400,9 +2338,10 @@ void webserver_loop(void) {
           clients[i].data.client->setNoDelay(true);
           clients[i].data.client->setTimeout(5000);
 
-          char log_msg[256];
-          sprintf_P(log_msg, PSTR("New webserver client: %s:%d"), clients[i].data.client->remoteIP().toString().c_str(), clients[i].data.client->remotePort());
-          log_message(log_msg);
+          loggingSerial.print("New webserver client: ");
+          loggingSerial.print(clients[i].data.client->remoteIP());
+          loggingSerial.print(":");
+          loggingSerial.println(clients[i].data.client->remotePort());
           break;
         }
       }
@@ -2411,7 +2350,6 @@ void webserver_loop(void) {
 #endif
 }
 
-#ifdef ESP8266
 int8_t webserver_start(int port, webserver_cb_t *callback, uint8_t async) {
   uint8_t i = 0;
 
@@ -2422,6 +2360,7 @@ int8_t webserver_start(int port, webserver_cb_t *callback, uint8_t async) {
       clients[i].data.async = 1;
     }
 
+#if defined(ESP8266) || defined(ESP32)
     async_server = tcp_new();
     if(async_server == NULL) {
       return -1;
@@ -2430,7 +2369,12 @@ int8_t webserver_start(int port, webserver_cb_t *callback, uint8_t async) {
     tcp_setprio(async_server, TCP_PRIO_MIN);
 
     ip_addr_t local_addr;
+#ifdef ESP8266
     local_addr.addr = (uint32_t)IPADDR_ANY;
+#endif
+#ifdef ESP32
+    local_addr.u_addr.ip4.addr= (uint32_t)IPADDR_ANY;
+#endif
     uint8_t err = tcp_bind(async_server, &local_addr, port);
     if(err != ERR_OK) {
       tcp_close(async_server);
@@ -2448,11 +2392,12 @@ int8_t webserver_start(int port, webserver_cb_t *callback, uint8_t async) {
     tcp_setprio(async_server, TCP_PRIO_MIN);
     tcp_accept(async_server, &webserver_client);
     tcp_arg(async_server, (void *)callback);
+#endif
   } else {
     rbuffer = (uint8_t *)malloc(WEBSERVER_READ_SIZE);
     if(rbuffer == NULL) {
-#ifdef ESP8266
-      Serial1.printf(PSTR("Out of memory %s:#%d\n"), __FUNCTION__, __LINE__);
+#if defined(ESP8266) || defined(ESP32)
+      loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
       ESP.restart();
       exit(-1);
 #endif
@@ -2463,15 +2408,19 @@ int8_t webserver_start(int port, webserver_cb_t *callback, uint8_t async) {
       clients[i].data.callback = callback;
       clients[i].data.async = 0;
     }
+#if defined(ESP8266) || defined(ESP32)
     sync_server.begin(port);
+#endif
   }
-  char log_msg[256];
+
+#if defined(ESP8266) || defined(ESP32)
   if(async == 1) {
-    sprintf_P(log_msg, PSTR("Async webserver started at port: %d"), port);
+    loggingSerial.print("A-sync ");
   } else {
-    sprintf_P(log_msg, PSTR("Sync webserver started at port: %d"), port);
+    loggingSerial.print("Sync ");
   }
-  log_message(log_msg);
+  loggingSerial.print("webserver server started at port: ");
+  loggingSerial.println(port);
+#endif
   return 0;
 }
-#endif

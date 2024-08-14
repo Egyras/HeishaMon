@@ -1,7 +1,5 @@
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
-#include <ESP8266WiFi.h>
-
 
 #define MQTT_RETAIN_VALUES 1
 
@@ -26,6 +24,7 @@ String getRight3bits(byte input);
 String getIntMinus1(byte input);
 String getIntMinus128(byte input);
 String getIntMinus1Div5(byte input);
+String getIntMinus1Div50(byte input);
 String getIntMinus1Times10(byte input);
 String getIntMinus1Times50(byte input);
 String getOpMode(byte input);
@@ -39,7 +38,7 @@ String getUintt16(char * data, byte input);
 static const char _unknown[] PROGMEM = "unknown";
 
 static const char *Model[] PROGMEM = {
-  "38", //string representation of number of known models (last model number + 1)
+  "45", //string representation of number of known models (last model number + 1)
   "WH-MDC05H3E5", //0
   "WH-MDC07H3E5", //1
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", //2
@@ -73,16 +72,18 @@ static const char *Model[] PROGMEM = {
   "IDU: WH-SXC12H6E5, ODU: WH-UX12HE5", //30
   "WH-MDC09J3E5", //31
   "WH-MXC09J3E5", //32
-  "IDU: WH-ADC1216H6E5C, ODU: WH-UD12HE5", //33
-  "IDU:	WH-ADC0509L3E5, ODU: WH-WDG07LE5", //34
-  "IDU:	WH-SXC09H3E8, ODU: WH-UX09HE8", //35
-  "IDU:	WH-ADC0309K3E5AN, ODU: WH-UDZ07KE5", //36
-  "IDU:	WH-SDC0309K3E5, ODU: WH-UDZ05KE5", //37
-  "IDU: WH-SDC0309K3E5, ODU: WH-UDZ07KE5", //38
-  "IDU: WH-ADC0916H9E8, ODU: WH-UX16HE8", //39
-  "IDU: WH-ADC0912H9E8, ODU: WH-UX12HE8", //40
-  "IDU: WH-SDC12H9E8, ODU: WH-UD12HE8", //41
-  "WH-MXC16J9E8", //42
+  "IDU: WH-ADC1216H6E5C ODU: WH-UD12HE5", //33
+  "IDU:	WH-ADC0509L3E5 ODU: WH-WDG07LE5", //34
+  "IDU:	WH-SXC09H3E8 ODU: WH-UX09HE8", //35
+  "IDU:	WH-ADC0309K3E5AN ODU: WH-UDZ07KE5", //36
+  "IDU:	WH-SDC0309K3E5 ODU: WH-UDZ05KE5", //37
+  "IDU:	WH-SDC0509L3E5 ODU: WH-WDG09LE5", //38
+  "IDU: WH-SDC12H9E8 ODU: WH-UDZ05KE5", //39
+  "IDU: WH-SDC0309K3E5, ODU: WH-UDZ07KE5", //40
+  "IDU: WH-ADC0916H9E8, ODU: WH-UX16HE8", //41
+  "IDU: WH-ADC0912H9E8, ODU: WH-UX12HE8", //42
+  "WH-MXC16J9E8", //44
+  "WH-MXC12J6E5", //44
 };
 
 static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { //stores the bytes #129 to #138 of known models in the same order as the const above
@@ -124,14 +125,16 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { 
   0xE2, 0xCF, 0x0D, 0x85, 0x05, 0x12, 0xD0, 0x0E, 0x94, 0x05, //35
   0xE2, 0xD5, 0x0D, 0x36, 0x99, 0x02, 0xD6, 0x0F, 0x67, 0x95, //36
   0xE2, 0xD5, 0x0B, 0x08, 0x95, 0x02, 0xD6, 0x0E, 0x66, 0x95, //37
-  0xE2, 0xD5, 0x0B, 0x08, 0x95, 0x02, 0xD6, 0x0E, 0x67, 0x95, //38
-  0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0C, 0x96, 0x05, //39
-  0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0E, 0x95, 0x05, //40
-  0xE2, 0xCF, 0x0C, 0x89, 0x05, 0x12, 0xD0, 0x0C, 0x98, 0x05, //41
-  0x32, 0xD4, 0x0B, 0x89, 0x84, 0x73, 0x90, 0x0C, 0x86, 0x84, //42
+  0xE2, 0xD5, 0x0B, 0x34, 0x99, 0x83, 0x92, 0x0C, 0x29, 0x98, //38
+  0xE2, 0xCF, 0x0C, 0x89, 0x05, 0x12, 0xD0, 0x0C, 0x98, 0x05, //39
+  0xE2, 0xD5, 0x0B, 0x08, 0x95, 0x02, 0xD6, 0x0E, 0x67, 0x95, //40
+  0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0C, 0x96, 0x05, //41
+  0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0E, 0x95, 0x05, //42
+  0x32, 0xD4, 0x0B, 0x89, 0x84, 0x73, 0x90, 0x0C, 0x86, 0x84, //43
+  0x32, 0xD4, 0x0B, 0x00, 0x78, 0x62, 0x90, 0x0B, 0x02, 0x78, //44
 };
 
-#define NUMBER_OF_TOPICS 115 //last topic number + 1
+#define NUMBER_OF_TOPICS 119 //last topic number + 1
 #define NUMBER_OF_TOPICS_EXTRA 6 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
 #define MAX_TOPIC_LEN 41 // max length + 1
@@ -280,6 +283,10 @@ static const char topics[][MAX_TOPIC_LEN] PROGMEM = {
   "Z2_Sensor_Settings",      //TOP112
   "Buffer_Tank_Delta",       //TOP113
   "External_Pad_Heater",     //TOP114
+  "Water_Pressure",          //TOP115
+  "Second_Inlet_Temp",       //TOP116
+  "Economizer_Outlet_Temp",  //TOP117
+  "Second_Room_Thermostat_Temp",//TOP118
 };
 
 static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
@@ -398,6 +405,10 @@ static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit 
   22,     //TOP112
   59,     //TOP113
   25,     //TOP114
+  125,    //TOP115
+  126,    //TOP116
+  127,    //TOP117
+  128,    //TOP118
 };
 
 
@@ -479,7 +490,7 @@ static const topicFP topicFunctions[] PROGMEM = {
   getIntMinus1Times10, //TOP63
   getIntMinus1Div5,    //TOP64
   getIntMinus1Times50, //TOP65
-  getIntMinus1,        //TOP66
+  getIntMinus1Times50, //TOP66
   getIntMinus1Div5,    //TOP67
   getBit5and6,         //TOP68
   getBit5and6,         //TOP69
@@ -528,6 +539,10 @@ static const topicFP topicFunctions[] PROGMEM = {
   getFirstByte,        //TOP112 
   getIntMinus128,      //TOP113
   getBit3and4,         //TOP114
+  getIntMinus1Div50,   //TOP115
+  getIntMinus128,      //TOP116
+  getIntMinus128,      //TOP117
+  getIntMinus128,      //TOP118
 };
 
 static const char *DisabledEnabled[] PROGMEM = {"2", "Disabled", "Enabled"};
@@ -542,6 +557,7 @@ static const char *Quietmode[] PROGMEM = {"4", "Off", "Level 1", "Level 2", "Lev
 static const char *Valve[] PROGMEM = {"2", "Room", "DHW"};
 static const char *LitersPerMin[] PROGMEM = {"0", "l/min"};
 static const char *RotationsPerMin[] PROGMEM = {"0", "r/min"};
+static const char *Bar[] PROGMEM = {"0", "Bar"};
 static const char *Pressure[] PROGMEM = {"0", "Kgf/cm2"};
 static const char *Celsius[] PROGMEM = {"0", "&deg;C"};
 static const char *Kelvin[] PROGMEM = {"0", "K"};
@@ -686,4 +702,8 @@ static const char **topicDescription[] PROGMEM = {
   ZonesSensorType, //TOP112
   Kelvin,          //TOP113
   ExtPadHeaterType,//TOP114
+  Bar,             //TOP115
+  Celsius,         //TOP116
+  Celsius,         //TOP117
+  Celsius,         //TOP118
 };

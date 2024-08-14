@@ -6,12 +6,8 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-unsigned int alignedbytes(int v) {
-  return v;
-}
-
 unsigned int alignedbuffer(int v) {
-#ifdef ESP8266
+#if defined(ESP8266)
   return (v + 3) & ~0x3;
 #else
   return v;

@@ -5,14 +5,22 @@
 #include "src/common/webserver.h"
 
 // opentherm
-const int inOTPin = 3; //RX pin from ESP8266
-const int outOTPin = 1; //TX pin from ESP8266
+#if defined(ESP8266)
+#define inOTPin 3 //RX pin from ESP8266
+#define outOTPin 1 //TX pin from ESP8266
+#elif defined(ESP32)
+#define inOTPin 6
+#define outOTPin 7
+#endif
 
 // mqtt
-extern const char* mqtt_topic_opentherm;
+extern const char* mqtt_topic_opentherm_read;
+extern const char* mqtt_topic_opentherm_write;
+
 
 #define TBOOL 1
 #define TFLOAT 2
+#define TINT8 3
 
 typedef struct heishaOTDataStruct_t {
   const char *name;
@@ -20,6 +28,7 @@ typedef struct heishaOTDataStruct_t {
   union {
     bool b;
     float f;
+    int8_t s8;
   } value;
   uint8_t rw;
 } heishaOTDataStruct_t;

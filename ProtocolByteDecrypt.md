@@ -201,7 +201,7 @@
 |  TOP39 | 196 | 01 | Convert to DEC (x-1) / 5   | Power Generation for Cool in [kw] |
 |  TOP40 | 197 | 0a | Convert to DEC (x-1) / 5   | Power Consumption for DHW in [kw] |
 |  TOP41 | 198 | 14 | Convert to DEC (x-1) / 5   | Power Generation for DHW in [kw] |
-|  TOP | 199 | 00 |   | If value greather then 0x03 CZ-TAW1 starts asking for extra querty ,look <a href="https://github.com/Egyras/HeishaMon/blob/master/ProtocolByteDecrypt-extra.md">Extra Querty</a>   |
+|  TOP | 199 | 00 |   | If value equal or greather '=>' then 0x03 CZ-TAW1 starts asking for <a href="https://github.com/Egyras/HeishaMon/blob/master/ProtocolByteDecrypt-extra.md">extra query</a>   |
 |  TOP | 200 | 00 |  Convert to DEC-128 | RC-2:Room Thermostat Internal Sensor Temperature [°C] (K/L series) |
 |  TOP | 201 | 00 |   | byte 0 |
 |  TOP | 202 | 79 |  CHECKSUM |  |
@@ -210,7 +210,7 @@
 
 
 To get decimal values you must convert from hexadecimal and do some calulation depending on value. Most of them need just -128(DEC). \
-As example 43 byte value to get DHW set temperature b1 (HEX) = 177(DEC) - 128 = 49 C  \
+As example 43 byte value to get DHW set temperature b1 (HEX) = 177(DEC) - 128 = 49 C  \s
 Panasonic query, answer and commands are using 8-bit Checksum to verify serial data ( sum(all bytes) & 0xFF == 0 ). Last byte is checksum value.
 
 

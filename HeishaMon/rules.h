@@ -17,11 +17,14 @@
 
 #include "src/common/mem.h"
 
-void rules_loop(void);
+extern uint8_t nrrules;
+
 void rules_boot(void);
+void rules_deinitialize(void);
 int rules_parse(char *file);
 void rules_setup(void);
 void rules_timer_cb(int nr);
 void rules_event_cb(const char *prefix, const char *name);
+void rules_execute(void);
 
 #endif

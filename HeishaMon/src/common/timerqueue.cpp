@@ -6,7 +6,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
   #include <Arduino.h>
 #endif
 
@@ -24,7 +24,7 @@ static unsigned int lasttime = 0;
 static unsigned int *calls = NULL;
 static unsigned int nrcalls = 0;
 
-#ifndef ESP8266
+#if !defined(ESP8266) && !defined(ESP32)
 static unsigned int micros() {
   struct timeval tv;
   gettimeofday(&tv,NULL);
@@ -66,8 +66,8 @@ struct timerqueue_t *timerqueue_pop() {
     timerqueue = NULL;
   } else {
     if((timerqueue = (struct timerqueue_t **)realloc(timerqueue, sizeof(struct timerqueue_t *)*timerqueue_size)) == NULL) {
-  #ifdef ESP8266
-      Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
+  #if defined(ESP8266) || defined(ESP32)
+      //loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
       ESP.restart();
       exit(-1);
   #else
@@ -143,8 +143,8 @@ void timerqueue_insert(int sec, int usec, int nr) {
   }
 
   if((timerqueue = (struct timerqueue_t **)realloc(timerqueue, sizeof(struct timerqueue_t *)*(timerqueue_size+1))) == NULL) {
-#ifdef ESP8266
-    Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
+#if defined(ESP8266) || defined(ESP32)
+    //loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
     ESP.restart();
     exit(-1);
 #else
@@ -155,8 +155,8 @@ void timerqueue_insert(int sec, int usec, int nr) {
 
   node = (struct timerqueue_t *)malloc(sizeof(struct timerqueue_t));
   if(node == NULL) {
-#ifdef ESP8266
-    Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
+#if defined(ESP8266) || defined(ESP32)
+    //loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
     ESP.restart();
     exit(-1);
 #else
@@ -196,9 +196,9 @@ void timerqueue_update(void) {
 
     if(timerqueue[a]->sec < 0 || (timerqueue[a]->sec == 0 && timerqueue[a]->usec <= 0)) {
       int nr = timerqueue[a]->nr;
-      if((calls = (unsigned int *)realloc(calls, (nrcalls+1)*sizeof(int))) == NULL) {
-#ifdef ESP8266
-        Serial1.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
+      if((calls = (unsigned int *)realloc(calls, (nrcalls+1)*sizeof(unsigned int))) == NULL) {
+#if defined(ESP8266) || defined(ESP32)
+        ///loggingSerial.printf("Out of memory %s:#%d\n", __FUNCTION__, __LINE__);
         ESP.restart();
         exit(-1);
 #else

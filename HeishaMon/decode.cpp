@@ -51,13 +51,15 @@ String getIntMinus128(byte input) {
 
 String getIntMinus1Div5(byte input) {
   return String((((float)input - 1) / 5), 1);
+}
 
+String getIntMinus1Div50(byte input) {
+  return String((((float)input - 1) / 50), 2);
 }
 
 String getIntMinus1Times10(byte input) {
   int value = (int)input - 1;
   return (String)(value * 10);
-
 }
 
 String getIntMinus1Times50(byte input) {

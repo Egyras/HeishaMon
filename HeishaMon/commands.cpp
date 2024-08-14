@@ -370,7 +370,7 @@ unsigned int set_operation_mode(char *msg, unsigned char *cmd, char *log_msg) {
 unsigned int set_curves(char *msg, unsigned char *cmd, char *log_msg) {
   memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
 
-  StaticJsonDocument<512> jsonDoc;
+  JsonDocument jsonDoc;
   DeserializationError error = deserializeJson(jsonDoc, msg);
   if (!error) {
     char tmpmsg[256] = { 0 };
@@ -682,7 +682,6 @@ unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg) {
   }
 
   return sizeof(panasonicSendQuery);
- 
 }
 
 unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_msg) {
@@ -704,6 +703,28 @@ unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_
 
   return sizeof(panasonicSendQuery);
   
+}
+
+//special command for gpio control
+unsigned int set_gpio16state(char *msg, unsigned char *cmd, char *log_msg) {
+  byte request_state;
+  String set_gpio16state_string(msg);
+
+  if ( set_gpio16state_string.toInt() == 1 ) {
+    request_state = 1;
+    digitalWrite(16, HIGH);
+  } else {
+    request_state = 0;
+    digitalWrite(16, LOW);
+  }
+  
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set gpio16 state to  %d"), request_state);
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+  
+  return 0; // do nothing
 }
 
 //start of optional pcb commands
@@ -865,7 +886,7 @@ void send_heatpump_command(char* topic, char *msg, bool (*send_command)(byte*, i
     if (strcmp(topic, tmp.name) == 0) {
       len = tmp.func(msg, cmd, log_msg);
       log_message(log_msg);
-      send_command(cmd, len);
+      if (len > 0) send_command(cmd, len);
     }
   }
 

@@ -6,9 +6,6 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-#ifdef ESP8266
-  #pragma GCC diagnostic warning "-fpermissive"
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,21 +26,25 @@
 #include "functions/max.h"
 #include "functions/min.h"
 #include "functions/coalesce.h"
+#include "functions/round.h"
 #include "functions/ceil.h"
 #include "functions/floor.h"
 #include "functions/settimer.h"
 #include "functions/isset.h"
-#include "functions/round.h"
+#include "functions/concat.h"
+#include "functions/print.h"
 
 struct rule_function_t rule_functions[] = {
   { "max", rule_function_max_callback },
   { "min", rule_function_min_callback },
-  { "ceil", rule_function_ceil_callback },
-  { "floor", rule_function_floor_callback },
   { "coalesce", rule_function_coalesce_callback },
-  { "settimer", rule_function_set_timer_callback },
+  { "round", rule_function_round_callback },
+  { "floor", rule_function_floor_callback },
+  { "ceil", rule_function_ceil_callback },
+  { "setTimer", rule_function_set_timer_callback },
   { "isset", rule_function_isset_callback },
-  { "round", rule_function_round_callback }
+  { "print", rule_function_print_callback },
+  { "concat", rule_function_concat_callback }
 };
 
-unsigned int nr_rule_functions = sizeof(rule_functions)/sizeof(rule_functions[0]);
+uint16_t nr_rule_functions = sizeof(rule_functions)/sizeof(rule_functions[0]);

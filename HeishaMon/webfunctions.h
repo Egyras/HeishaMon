@@ -1,7 +1,14 @@
 #define LWIP_INTERNAL
 
+#if defined(ESP8266)
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiGratuitous.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#include <ETH.h>
+#include <SPI.h>
+#include <Update.h>
+#endif
 #include <PubSubClient.h>
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
@@ -33,10 +40,10 @@ struct settingsStruct {
   char wifi_password[65] = "";
   char wifi_hostname[40] = "HeishaMon";
   char ota_password[40] = "heisha";
-  char mqtt_server[64];
+  char mqtt_server[65];
   char mqtt_port[6] = "1883";
-  char mqtt_username[64];
-  char mqtt_password[64];
+  char mqtt_username[65];
+  char mqtt_password[65];
   char mqtt_topic_base[128] = "panasonic_heat_pump";
   char mqtt_topic_listen[128] = "master_panasonic_heat_pump";
   char ntp_servers[254] = "pool.ntp.org";
@@ -50,7 +57,9 @@ struct settingsStruct {
   bool logHexdump = false; //log hexdump from start
   bool logSerial1 = true; //log to serial1 (gpio2) from start
   bool opentherm = false; //opentherm enable flag
-
+#ifdef ESP32
+  bool proxy = true; //cztaw proxy port enable flag
+#endif
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
   gpioSettingsStruct gpioSettings;
 };
@@ -78,8 +87,8 @@ int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExt
 int handleFactoryReset(struct webserver_t *client);
 int handleReboot(struct webserver_t *client);
 int handleDebug(struct webserver_t *client, char *hex, byte hex_len);
-void settingsToJson(DynamicJsonDocument &jsonDoc, settingsStruct *heishamonSettings);
-void saveJsonToConfig(DynamicJsonDocument &jsonDoc);
+void settingsToJson(JsonDocument  &jsonDoc, settingsStruct *heishamonSettings);
+void saveJsonToConfig(JsonDocument  &jsonDoc);
 void loadSettings(settingsStruct *heishamonSettings);
 int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings);
 int handleSettings(struct webserver_t *client);
