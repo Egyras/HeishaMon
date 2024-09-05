@@ -141,24 +141,8 @@ void dallasJsonOutput(struct webserver_t *client) {
   webserver_send_content_P(client, PSTR("]"), 1);
 }
 
-void dallasTableOutput(struct webserver_t *client) {
-  for (int i = 0; i < dallasDevicecount; i++) {
-    webserver_send_content_P(client, PSTR("<tr><td>"), 8);
-    webserver_send_content(client, actDallasData[i].address, strlen(actDallasData[i].address));
-    webserver_send_content_P(client, PSTR("</td><td>"), 9);
-    char str[64];
-    dtostrf(actDallasData[i].temperature, 0, 2, str);
-    webserver_send_content(client, str, strlen(str));
-    webserver_send_content_P(client, PSTR("</td><td><div class=\"dallas_alias w3-border w3-border-light-grey w3-hover-border-black\" data-address=\""), 102);
-    webserver_send_content(client, actDallasData[i].address, strlen(actDallasData[i].address));
-    webserver_send_content_P(client, PSTR("\" contentEditable=\"true\">"), 26);
-    webserver_send_content(client, actDallasData[i].alias, strlen(actDallasData[i].alias));
-    webserver_send_content_P(client, PSTR("</div></td></tr>"), 16);
-  }
-}
-
 void changeDallasAlias(char* address, char* alias) {
-  DynamicJsonDocument jsonDoc(1024);
+  JsonDocument jsonDoc;
   for (int i = 0 ; i < dallasDevicecount; i++) {
     if (strcmp(address, actDallasData[i].address) == 0) {
       strlcpy(actDallasData[i].alias, alias, sizeof(actDallasData[i].alias));
@@ -182,7 +166,7 @@ void loadDallasAlias() {
         size_t size = configFile.size();
         std::unique_ptr<char[]> buf(new char[size]);
         configFile.readBytes(buf.get(), size);
-        DynamicJsonDocument jsonDoc(1024);
+        JsonDocument jsonDoc;
         DeserializationError error = deserializeJson(jsonDoc, buf.get());
         if (!error) {
           for (int i = 0 ; i < dallasDevicecount; i++) {

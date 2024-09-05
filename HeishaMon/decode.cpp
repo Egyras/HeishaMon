@@ -285,67 +285,95 @@ String getSecondByte(byte input) {
 
 // Decode ////////////////////////////////////////////////////////////////////////////
 void decode_heatpump_data(char* data, char* actData, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {
-  bool updatenow = false;
+  bool updateTime = false;
+  bool updateTopic[NUMBER_OF_TOPICS] = { false };
+
   if ((lastalldatatime == 0) || ((unsigned long)(millis() - lastalldatatime) > (1000 * updateAllTime))) {
-    updatenow = true;
+    updateTime = true;
     lastalldatatime = millis();
   }
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS ; Topic_Number++) {
     String Topic_Value;
     Topic_Value = getDataValue(data, Topic_Number);
 
-    if ((updatenow) || ( getDataValue(actData, Topic_Number) != Topic_Value )) {
+    if(getDataValue(actData, Topic_Number) != Topic_Value) {
+      updateTopic[Topic_Number] = true;
+    }
+
+    if (updateTime || updateTopic[Topic_Number]) {
       char log_msg[256];
       char mqtt_topic[256];
       sprintf_P(log_msg, PSTR("received TOP%d %s: %s"), Topic_Number, topics[Topic_Number], Topic_Value.c_str());
       log_message(log_msg);
       sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_values, topics[Topic_Number]);
       mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
+    }
+  }
+  memcpy(actData, data, DATASIZE);
+  for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS ; Topic_Number++) {
+    if(updateTopic[Topic_Number]) {
       rules_event_cb(_F("@"), topics[Topic_Number]);
     }
   }
 }
 
 void decode_heatpump_data_extra(char* data, char* actDataExtra, PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {
-  bool updatenow = false;
+  bool updateTime = false;
+  bool updateTopic[NUMBER_OF_TOPICS_EXTRA] = { false };
+
   if ((lastallextradatatime == 0) || ((unsigned long)(millis() - lastallextradatatime) > (1000 * updateAllTime))) {
-    updatenow = true;
+    updateTime = true;
     lastallextradatatime = millis();
   }
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS_EXTRA ; Topic_Number++) {
     String Topic_Value;
     Topic_Value = getDataValueExtra(data, Topic_Number);
-    
-    if ((updatenow) || ( getDataValueExtra(actDataExtra, Topic_Number) != Topic_Value )) {
+
+    if(getDataValueExtra(actDataExtra, Topic_Number) != Topic_Value) {
+      updateTopic[Topic_Number] = true;
+    }
+
+    if (updateTime || updateTopic[Topic_Number]) {
       char log_msg[256];
       char mqtt_topic[256];
       sprintf_P(log_msg, PSTR("received XTOP%d %s: %s"), Topic_Number, xtopics[Topic_Number], Topic_Value.c_str());
       log_message(log_msg);
       sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_xvalues, xtopics[Topic_Number]);
       mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
+    }
+  }
+  memcpy(actDataExtra, data, DATASIZE);
+  for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS_EXTRA ; Topic_Number++) {
+    if(updateTopic[Topic_Number]) {
       rules_event_cb(_F("@"), xtopics[Topic_Number]);
     }
   }
 }
 
 void decode_optional_heatpump_data(char* data, char* actOptData, PubSubClient & mqtt_client, void (*log_message)(char*), char* mqtt_topic_base, unsigned int updateAllTime) {
-  bool updatenow = false;
+  bool updateTime = false;
+  bool updateTopic[NUMBER_OF_OPT_TOPICS] = { false };
+
   if ((lastalloptdatatime == 0) || ((unsigned long)(millis() - lastalloptdatatime) > (1000 * updateAllTime))) {
-    updatenow = true;
+    updateTime = true;
     lastalloptdatatime = millis();
   }
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_OPT_TOPICS ; Topic_Number++) {
     String Topic_Value;
     Topic_Value = getOptDataValue(data, Topic_Number);
 
-    if ((updatenow) || ( getOptDataValue(actOptData, Topic_Number) != Topic_Value )) {
+    if(getOptDataValue(actOptData, Topic_Number) != Topic_Value) {
+      updateTopic[Topic_Number] = true;
+    }
+
+    if (updateTime || updateTopic[Topic_Number]) {
       char log_msg[256];
       char mqtt_topic[256];
       sprintf_P(log_msg, PSTR("received OPT%d %s: %s"), Topic_Number, optTopics[Topic_Number], Topic_Value.c_str());
       log_message(log_msg);
       sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_pcbvalues, optTopics[Topic_Number]);
       mqtt_client.publish(mqtt_topic, Topic_Value.c_str(), MQTT_RETAIN_VALUES);
-      rules_event_cb(_F("@"), optTopics[Topic_Number]);
+
     }
   }
   //response to heatpump should contain the data from heatpump on byte 4 and 5
@@ -353,4 +381,12 @@ void decode_optional_heatpump_data(char* data, char* actOptData, PubSubClient & 
   optionalPCBQuery[4] = valueByte4;
   byte valueByte5 = data[5];
   optionalPCBQuery[5] = valueByte5;
+
+  memcpy(actOptData, data, OPTDATASIZE);
+  for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_OPT_TOPICS ; Topic_Number++) {
+    if(updateTopic[Topic_Number]) {
+      rules_event_cb(_F("@"), optTopics[Topic_Number]);
+    }
+  }
+
 }

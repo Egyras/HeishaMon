@@ -304,7 +304,7 @@ void OpenTherm::end() {
     detachInterrupt(digitalPinToInterrupt(inPin));
   }
 }
-
+/*
 const char *OpenTherm::statusToString(OpenThermResponseStatus status) {
   switch (status) {
     case NONE: return "NONE";
@@ -328,6 +328,7 @@ const char *OpenTherm::messageTypeToString(OpenThermMessageType message_type) {
     default: return "UNKNOWN";
   }
 }
+*/
 
 //building requests
 

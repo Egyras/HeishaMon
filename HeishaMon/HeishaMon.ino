@@ -104,12 +104,9 @@ Adafruit_NeoPixel pixels(1, LEDPIN);
 #endif
 
 // store actual data
-String openTherm[2];
 char actData[DATASIZE] = { '\0' };
 char actDataExtra[DATASIZE] = { '\0' };
-#define OPTDATASIZE 20
 char actOptData[OPTDATASIZE]  = { '\0' };
-String RESTmsg = "";
 
 // log message to sprintf to
 char log_msg[256];
@@ -271,10 +268,12 @@ void check_wifi() {
         WiFi.psk().toCharArray(heishamonSettings.wifi_password, 40);
         JsonDocument jsonDoc;
         settingsToJson(jsonDoc, &heishamonSettings);  //stores current settings in a json document
-        saveJsonToConfig(jsonDoc);                    //save to config file
+        saveJsonToFile(jsonDoc, "config.json");     //save to config file
       }
 
       ntpReload(&heishamonSettings);
+      logprintln_P(F("Try to syncing with ntp servers. Checking again in 5 minutes"));
+      timerqueue_insert(300, 0, -6);
     }
 
     /*
@@ -403,8 +402,11 @@ void log_message(char* string)
       mqtt_client.disconnect();
     }
   }
-  websocket_write_all(log_line, strlen(log_line));
+  char* websocketMsg = (char *) malloc(len+12);
+  snprintf(websocketMsg, len+12, "{\"logMsg\":\"%s\"}", log_line);
   free(log_line);
+  websocket_write_all(websocketMsg, strlen(websocketMsg));
+  free(websocketMsg);
 #ifdef ESP32
   if (!inSetup) blinkNeoPixel(false);
 #endif  
@@ -568,7 +570,6 @@ bool readSerial()
       if (data_length == DATASIZE)  {  //receive a full data block
         if  (data[3] == 0x10) { //decode the normal data block
           decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-          memcpy(actData, data, DATASIZE);
           {
             char mqtt_topic[256];
             sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
@@ -579,7 +580,6 @@ bool readSerial()
         } else if (data[3] == 0x21) { //decode the new model extra data block
           extraDataBlockAvailable = true; //set the flag to true so we know we can request this data always
           decode_heatpump_data_extra(data, actDataExtra, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-          memcpy(actDataExtra, data, DATASIZE);
           {
             char mqtt_topic[256];
             sprintf(mqtt_topic, "%s/raw/dataextra", heishamonSettings.mqtt_topic_base);
@@ -601,7 +601,6 @@ bool readSerial()
       else if (data_length == OPTDATASIZE ) { //optional pcb acknowledge answer
         log_message(_F("Received optional PCB ack answer. Decoding this in OPT topics."));
         decode_optional_heatpump_data(data, actOptData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-        memcpy(actOptData, data, OPTDATASIZE);
         data_length = 0;
         return true;
       }
@@ -756,8 +755,6 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
     case WEBSERVER_CLIENT_REQUEST_URI: {
         if (strcmp_P((char *)dat, PSTR("/")) == 0) {
           client->route = 1;
-        } else if (strcmp_P((char *)dat, PSTR("/tablerefresh")) == 0) {
-          client->route = 10;
         } else if (strcmp_P((char *)dat, PSTR("/json")) == 0) {
           client->route = 20;
         } else if (strcmp_P((char *)dat, PSTR("/reboot")) == 0) {
@@ -841,15 +838,6 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
     case WEBSERVER_CLIENT_ARGS: {
         struct arguments_t *args = (struct arguments_t *)dat;
         switch (client->route) {
-          case 10: {
-              if (strcmp_P((char *)args->name, PSTR("1wire")) == 0) {
-                client->route = 11;
-              } else if (strcmp_P((char *)args->name, PSTR("s0")) == 0) {
-                client->route = 12;
-              } else if (strcmp_P((char *)args->name, PSTR("opentherm")) == 0) {
-                client->route = 13;
-              }
-            } break;
           case 60: {
               sprintf_P(log_msg, PSTR("Dallas alias changed address %s to alias %s"), args->name, args->value);
               log_message(log_msg);
@@ -961,14 +949,8 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
           case 1: {
               return handleRoot(client, readpercentage, mqttReconnects, &heishamonSettings);
             } break;
-          case 10:
-          case 11:
-          case 12:
-          case 13: {
-              return handleTableRefresh(client, actData, actDataExtra, extraDataBlockAvailable);
-            } break;
           case 20: {
-              return handleJsonOutput(client, actData, actDataExtra, &heishamonSettings, extraDataBlockAvailable);
+              return handleJsonOutput(client, actData, actDataExtra, actOptData, &heishamonSettings, extraDataBlockAvailable);
             } break;
           case 30: {
               return handleReboot(client);
@@ -1347,6 +1329,29 @@ void timer_cb(int nr) {
             }
           }
           rules_boot();
+        } break;
+      case -5: {
+          ntpReload(&heishamonSettings);
+          logprintln_P(F("Resynced with NTP servers. Next sync after 24 hours."));
+          timerqueue_insert(86400, 0, -5);
+        } break;
+      case -6: {
+          time_t now = time(NULL);
+          struct tm *tm_struct = localtime(&now);
+          if(tm_struct->tm_year == 70) {
+            /*
+             * No valid time yet since reboot. Retry every 5 min
+             */
+            ntpReload(&heishamonSettings);
+            logprintln_P(F("Still trying to sync with ntp servers. Checking again in 5 minutes"));
+            timerqueue_insert(300, 0, -6);
+          } else {
+            /*
+             * Wait 300 sec less than a full day
+             */
+            logprintln_P(F("Successfully synced with ntp servers. Next sync after 24 hours."));
+            timerqueue_insert(86100, 0, -5);
+          }
         } break;
     }
   }

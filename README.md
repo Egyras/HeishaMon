@@ -177,6 +177,9 @@ Sets a timer to trigger in X seconds. The first parameter is the timer number an
 - `print`
 Prints a value to the console.
 
+- `concat`
+Concatenates various values into a combined string. E.g.: `@SetCurves = concat('{zone1:{heat:{target:{high:', @Z1_Heat_Curve_Target_High_Temp, ',low:32}}}}');`
+
 ```
 on System#Boot then
   setTimer(3, 60);

@@ -26,17 +26,17 @@ enum OpenThermResponseStatus {
 
 enum OpenThermMessageType {
   /*  Master to Slave */
-  READ_DATA       = B000,
+  READ_DATA       = 0b000,
   READ            = READ_DATA, // for backwared compatibility
-  WRITE_DATA      = B001,
+  WRITE_DATA      = 0b001,
   WRITE           = WRITE_DATA, // for backwared compatibility
-  INVALID_DATA    = B010,
-  RESERVED        = B011,
+  INVALID_DATA    = 0b010,
+  RESERVED        = 0b011,
   /* Slave to Master */
-  READ_ACK        = B100,
-  WRITE_ACK       = B101,
-  DATA_INVALID    = B110,
-  UNKNOWN_DATA_ID = B111
+  READ_ACK        = 0b100,
+  WRITE_ACK       = 0b101,
+  DATA_INVALID    = 0b110,
+  UNKNOWN_DATA_ID = 0b111
 };
 
 typedef OpenThermMessageType OpenThermRequestType; // for backwared compatibility
@@ -133,7 +133,7 @@ class OpenTherm
     unsigned long buildRequest(OpenThermMessageType type, OpenThermMessageID id, unsigned int data);
     unsigned long buildResponse(OpenThermMessageType type, OpenThermMessageID id, unsigned int data);
     OpenThermResponseStatus getLastResponseStatus();
-    const char *statusToString(OpenThermResponseStatus status);
+    //const char *statusToString(OpenThermResponseStatus status);
     void handleInterrupt();
     void process();
     void end();
@@ -141,7 +141,7 @@ class OpenTherm
     bool parity(unsigned long frame);
     OpenThermMessageType getMessageType(unsigned long message);
     OpenThermMessageID getDataID(unsigned long frame);
-    const char *messageTypeToString(OpenThermMessageType message_type);
+    //const char *messageTypeToString(OpenThermMessageType message_type);
     bool isValidRequest(unsigned long request);
     bool isValidResponse(unsigned long response);
 
