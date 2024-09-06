@@ -3,13 +3,14 @@
 #include <ArduinoJson.h>
 
 #define DATASIZE 203
+
 #define INITIALQUERYSIZE 7
 extern byte initialQuery[INITIALQUERYSIZE];
 #define PANASONICQUERYSIZE 110
 extern byte panasonicQuery[PANASONICQUERYSIZE];
 
 
-
+#define OPTDATASIZE 20
 #define OPTIONALPCBQUERYTIME 1000 //send optional pcb query each second
 #define OPTIONALPCBQUERYSIZE 19
 #define OPTIONALPCBSAVETIME 300 //save each 5 minutes the current optional pcb state into flash to have valid values during reboot

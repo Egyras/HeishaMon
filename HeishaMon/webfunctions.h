@@ -57,6 +57,7 @@ struct settingsStruct {
   bool logHexdump = false; //log hexdump from start
   bool logSerial1 = true; //log to serial1 (gpio2) from start
   bool opentherm = false; //opentherm enable flag
+  bool hotspot = true; //enable wifi hotspot when wifi is not connected
 #ifdef ESP32
   bool proxy = true; //cztaw proxy port enable flag
 #endif
@@ -82,13 +83,12 @@ void log_message(char *string);
 int8_t webserver_cb(struct webserver_t *client, void *data);
 void getWifiScanResults(int numSsid);
 int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings);
-int handleTableRefresh(struct webserver_t *client, char* actData, char* actDataExtra, bool extraDataBlockAvailable);
-int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExtra, settingsStruct *heishamonSettings, bool extraDataBlockAvailable);
+int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExtra, char* actOptData, settingsStruct *heishamonSettings, bool extraDataBlockAvailable);
 int handleFactoryReset(struct webserver_t *client);
 int handleReboot(struct webserver_t *client);
 int handleDebug(struct webserver_t *client, char *hex, byte hex_len);
 void settingsToJson(JsonDocument  &jsonDoc, settingsStruct *heishamonSettings);
-void saveJsonToConfig(JsonDocument  &jsonDoc);
+void saveJsonToFile(JsonDocument  &jsonDoc, const char *filename);
 void loadSettings(settingsStruct *heishamonSettings);
 int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings);
 int handleSettings(struct webserver_t *client);

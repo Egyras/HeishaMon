@@ -7,6 +7,7 @@
   #define loggingSerial Serial1
   #define ENABLEPIN 5
   #define LEDPIN 2
+  #define BOOTPIN 0
 #elif defined(ESP32)
   #define heatpumpSerial Serial1
   #define loggingSerial Serial //usb serial CDC
@@ -19,6 +20,7 @@
   #define ENABLEPIN 5
   #define ENABLEOTPIN 4
   #define LEDPIN 42
+  #define BOOTPIN 0
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <Adafruit_NeoPixel.h>
@@ -67,6 +69,8 @@ bool extraDataBlockAvailable = false; // this will be set to true if, during boo
 #define MQTTRECONNECTTIMER 30000 //it takes 30 secs for each mqtt server reconnect attempt
 unsigned long lastMqttReconnectAttempt = 0;
 
+unsigned long bootButtonNotPressed = 0;
+
 #define WIFIRETRYTIMER 15000 // switch between hotspot and configured SSID each 10 secs if SSID is lost
 unsigned long lastWifiRetryTimer = 0;
 bool doInitialWifiScan = true; //we want an initial wifi scan to fill in the dropbox on the wifi settings page
@@ -100,12 +104,9 @@ Adafruit_NeoPixel pixels(1, LEDPIN);
 #endif
 
 // store actual data
-String openTherm[2];
 char actData[DATASIZE] = { '\0' };
 char actDataExtra[DATASIZE] = { '\0' };
-#define OPTDATASIZE 20
 char actOptData[OPTDATASIZE]  = { '\0' };
-String RESTmsg = "";
 
 // log message to sprintf to
 char log_msg[256];
@@ -167,34 +168,35 @@ void setupETH() {
 /*
     check_wifi will process wifi reconnecting managing
 */
-void check_wifi()
-{
+void check_wifi() {
   int wifistatus = WiFi.status();
-  if ((wifistatus != WL_CONNECTED) && (WiFi.localIP()))  {
+  if ((wifistatus != WL_CONNECTED) && (WiFi.localIP())) {
     // special case where it seems that we are not connect but we do have working IP (causing the -1% wifi signal), do a reset.
-#ifdef ESP8266    
+#ifdef ESP8266
     log_message(_F("Weird case, WiFi seems disconnected but is not. Resetting WiFi!"));
     setupWifi(&heishamonSettings);
 #else
     log_message(_F("WiFi just got disconnected, still have IP addres."));
 #endif
-  } else if ((wifistatus != WL_CONNECTED) || (!WiFi.localIP()))  {
+  } else if ((wifistatus != WL_CONNECTED) || (!WiFi.localIP())) {
     /*
         if we are not connected to an AP
         we must be in softAP so respond to DNS
     */
-    dnsServer.processNextRequest();
-    #ifdef ESP32
-    neoPixelState = pixels.Color(16,16,0); //set neopixel to yellow to indicate lost wifi
-    #endif
+    if (heishamonSettings.hotspot) {
+      dnsServer.processNextRequest();
+#ifdef ESP32
+      neoPixelState = pixels.Color(16, 16, 0);  //set neopixel to yellow to indicate lost wifi
+#endif
+    }
 
     /* we need to stop reconnecting to a configured wifi network if there is a hotspot user connected
         also, do not disconnect if wifi network scan is active
     */
-#ifdef ESP8266    
-    if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_DISCONNECTED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0))  {
+#ifdef ESP8266
+    if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_DISCONNECTED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0)) {
 #else
-    if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_STOPPED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0))  {
+    if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_STOPPED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0)) {
 #endif
       log_message(_F("WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid..."));
       WiFi.disconnect(true);
@@ -203,23 +205,23 @@ void check_wifi()
     /*  only start this routine if timeout on
         reconnecting to AP and SSID is set
     */
-    if ((heishamonSettings.wifi_ssid[0] != '\0') && ((unsigned long)(millis() - lastWifiRetryTimer) > WIFIRETRYTIMER ) )  {
+    if ((heishamonSettings.wifi_ssid[0] != '\0') && ((unsigned long)(millis() - lastWifiRetryTimer) > WIFIRETRYTIMER)) {
       lastWifiRetryTimer = millis();
 #ifdef ESP8266
-      if (WiFi.softAPSSID() == "") {
+      if ((WiFi.softAPSSID() == "") && (heishamonSettings.hotspot)) {
         log_message(_F("WiFi lost, starting setup hotspot..."));
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
         WiFi.softAP(_F("HeishaMon-Setup"));
       }
-      if ((wifistatus == WL_DISCONNECTED)  && (WiFi.softAPgetStationNum() == 0 )) {
+      if ((wifistatus == WL_DISCONNECTED) && (WiFi.softAPgetStationNum() == 0)) {
         log_message(_F("Retrying configured WiFi, ..."));
 #else
-      if((WiFi.getMode() & WIFI_MODE_AP) == 0) {
+      if (((WiFi.getMode() & WIFI_MODE_AP) == 0) && (heishamonSettings.hotspot)) {
         log_message(_F("WiFi lost, starting setup hotspot..."));
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
         WiFi.softAP(_F("HeishaMon-Setup"));
       }
-      if ((wifistatus== WL_STOPPED) && (WiFi.softAPgetStationNum() == 0 )) {
+      if ((wifistatus == WL_STOPPED) && (WiFi.softAPgetStationNum() == 0)) {
         log_message(_F("Retrying configured WiFi, ..."));
 #endif
         if (heishamonSettings.wifi_password[0] == '\0') {
@@ -234,30 +236,30 @@ void check_wifi()
     }
   }
 #ifdef ESP8266
-  else { //WiFi connected
+  if (WiFi.localIP()) {  //WiFi connected
     if (WiFi.softAPSSID() != "") {
       log_message(_F("WiFi (re)connected, shutting down hotspot..."));
       WiFi.softAPdisconnect(true);
       MDNS.notifyAPChange();
-  }
+    }
 #else
-  else { //WiFi Status=WL_CONNECTED  and IP>0  check if active AP and disable if yes
-    neoPixelState = pixels.Color(0,0,0); //neopixel should be black again to indicate normale working
-    if((WiFi.getMode() & WIFI_MODE_AP) != 0) {
-      log_message(_F("WiFi (re)connected, shutting down hotspot..."));
+  if (WiFi.localIP() || ETH.hasIP()) {      //WiFi or ETH connected and IP>0  check if active AP and disable if yes
+    neoPixelState = pixels.Color(0, 0, 0);  //neopixel should be black again to indicate normale working      
+    if (((WiFi.getMode() & WIFI_MODE_AP) != 0) && ((heishamonSettings.wifi_ssid[0] != '\0') || (!heishamonSettings.hotspot)) ) { //shutdown hotspot if it is running with configured SSID or if hotspot config is disabled
+      log_message(_F("WiFi or ETH (re)connected, shutting down hotspot..."));
       WiFi.softAP("");
       WiFi.softAPdisconnect(true);
     }
 #endif
 
-    if (firstConnectSinceBoot) { // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
+    if (firstConnectSinceBoot) {  // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
       firstConnectSinceBoot = false;
-      lastMqttReconnectAttempt = 0; //initiate mqtt connection asap
+      lastMqttReconnectAttempt = 0;  //initiate mqtt connection asap
       setupOTA();
       MDNS.begin(heishamonSettings.wifi_hostname);
       MDNS.addService("http", "tcp", 80);
 #ifdef ESP8266
-      experimental::ESP8266WiFiGratuitous::stationKeepAliveSetIntervalMs(5000); //necessary for some users with bad wifi routers
+      experimental::ESP8266WiFiGratuitous::stationKeepAliveSetIntervalMs(5000);  //necessary for some users with bad wifi routers
 #endif
 
       if (heishamonSettings.wifi_ssid[0] == '\0') {
@@ -265,11 +267,13 @@ void check_wifi()
         WiFi.SSID().toCharArray(heishamonSettings.wifi_ssid, 40);
         WiFi.psk().toCharArray(heishamonSettings.wifi_password, 40);
         JsonDocument jsonDoc;
-        settingsToJson(jsonDoc, &heishamonSettings); //stores current settings in a json document
-        saveJsonToConfig(jsonDoc); //save to config file
+        settingsToJson(jsonDoc, &heishamonSettings);  //stores current settings in a json document
+        saveJsonToFile(jsonDoc, "config.json");     //save to config file
       }
 
       ntpReload(&heishamonSettings);
+      logprintln_P(F("Try to syncing with ntp servers. Checking again in 5 minutes"));
+      timerqueue_insert(300, 0, -6);
     }
 
     /*
@@ -283,16 +287,17 @@ void check_wifi()
     MDNS.update();
 #endif
   }
-  if (doInitialWifiScan && (millis() > 15000)) { //do a wifi scan a boot after 15 seconds
+  if (doInitialWifiScan && (millis() > 15000)) {  //do a wifi scan a boot after 15 seconds
     doInitialWifiScan = false;
     log_message(_F("Starting initial wifi scan ..."));
 #if defined(ESP8266)
-  WiFi.scanNetworksAsync(getWifiScanResults);
+    WiFi.scanNetworksAsync(getWifiScanResults);
 #elif defined(ESP32)
-  WiFi.scanNetworks(true);
-#endif    
+    WiFi.scanNetworks(true);
+#endif
   }
 }
+
 
 void mqtt_reconnect()
 {
@@ -397,8 +402,11 @@ void log_message(char* string)
       mqtt_client.disconnect();
     }
   }
-  websocket_write_all(log_line, strlen(log_line));
+  char* websocketMsg = (char *) malloc(len+12);
+  snprintf(websocketMsg, len+12, "{\"logMsg\":\"%s\"}", log_line);
   free(log_line);
+  websocket_write_all(websocketMsg, strlen(websocketMsg));
+  free(websocketMsg);
 #ifdef ESP32
   if (!inSetup) blinkNeoPixel(false);
 #endif  
@@ -562,7 +570,6 @@ bool readSerial()
       if (data_length == DATASIZE)  {  //receive a full data block
         if  (data[3] == 0x10) { //decode the normal data block
           decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-          memcpy(actData, data, DATASIZE);
           {
             char mqtt_topic[256];
             sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
@@ -573,7 +580,6 @@ bool readSerial()
         } else if (data[3] == 0x21) { //decode the new model extra data block
           extraDataBlockAvailable = true; //set the flag to true so we know we can request this data always
           decode_heatpump_data_extra(data, actDataExtra, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-          memcpy(actDataExtra, data, DATASIZE);
           {
             char mqtt_topic[256];
             sprintf(mqtt_topic, "%s/raw/dataextra", heishamonSettings.mqtt_topic_base);
@@ -595,7 +601,6 @@ bool readSerial()
       else if (data_length == OPTDATASIZE ) { //optional pcb acknowledge answer
         log_message(_F("Received optional PCB ack answer. Decoding this in OPT topics."));
         decode_optional_heatpump_data(data, actOptData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
-        memcpy(actOptData, data, OPTDATASIZE);
         data_length = 0;
         return true;
       }
@@ -750,8 +755,6 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
     case WEBSERVER_CLIENT_REQUEST_URI: {
         if (strcmp_P((char *)dat, PSTR("/")) == 0) {
           client->route = 1;
-        } else if (strcmp_P((char *)dat, PSTR("/tablerefresh")) == 0) {
-          client->route = 10;
         } else if (strcmp_P((char *)dat, PSTR("/json")) == 0) {
           client->route = 20;
         } else if (strcmp_P((char *)dat, PSTR("/reboot")) == 0) {
@@ -835,15 +838,6 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
     case WEBSERVER_CLIENT_ARGS: {
         struct arguments_t *args = (struct arguments_t *)dat;
         switch (client->route) {
-          case 10: {
-              if (strcmp_P((char *)args->name, PSTR("1wire")) == 0) {
-                client->route = 11;
-              } else if (strcmp_P((char *)args->name, PSTR("s0")) == 0) {
-                client->route = 12;
-              } else if (strcmp_P((char *)args->name, PSTR("opentherm")) == 0) {
-                client->route = 13;
-              }
-            } break;
           case 60: {
               sprintf_P(log_msg, PSTR("Dallas alias changed address %s to alias %s"), args->name, args->value);
               log_message(log_msg);
@@ -955,14 +949,8 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
           case 1: {
               return handleRoot(client, readpercentage, mqttReconnects, &heishamonSettings);
             } break;
-          case 10:
-          case 11:
-          case 12:
-          case 13: {
-              return handleTableRefresh(client, actData, actDataExtra, extraDataBlockAvailable);
-            } break;
           case 20: {
-              return handleJsonOutput(client, actData, actDataExtra, &heishamonSettings, extraDataBlockAvailable);
+              return handleJsonOutput(client, actData, actDataExtra, actOptData, &heishamonSettings, extraDataBlockAvailable);
             } break;
           case 30: {
               return handleReboot(client);
@@ -1156,9 +1144,8 @@ void setupHttp() {
   webserver_start(80, &webserver_cb, 0);
 }
 
-void doubleResetDetect() {
-  if (LittleFS.exists("/doublereset")) {
-    loggingSerial.println("Factory reset request detected, clearing config."); //save to print on std serial because serial switch didn't happen yet
+void factoryReset() {
+    loggingSerial.println("Factory reset request detected, clearing config."); 
     LittleFS.format();
     //create first boot file
     File startupFile = LittleFS.open("/heishamon", "w");
@@ -1190,6 +1177,10 @@ void doubleResetDetect() {
      pixels.show();
     }
 #endif
+}
+void doubleResetDetect() {
+  if (LittleFS.exists("/doublereset")) {
+    factoryReset();
   }
   File doubleresetFile = LittleFS.open("/doublereset", "w");
   doubleresetFile.close();
@@ -1339,6 +1330,29 @@ void timer_cb(int nr) {
           }
           rules_boot();
         } break;
+      case -5: {
+          ntpReload(&heishamonSettings);
+          logprintln_P(F("Resynced with NTP servers. Next sync after 24 hours."));
+          timerqueue_insert(86400, 0, -5);
+        } break;
+      case -6: {
+          time_t now = time(NULL);
+          struct tm *tm_struct = localtime(&now);
+          if(tm_struct->tm_year == 70) {
+            /*
+             * No valid time yet since reboot. Retry every 5 min
+             */
+            ntpReload(&heishamonSettings);
+            logprintln_P(F("Still trying to sync with ntp servers. Checking again in 5 minutes"));
+            timerqueue_insert(300, 0, -6);
+          } else {
+            /*
+             * Wait 300 sec less than a full day
+             */
+            logprintln_P(F("Successfully synced with ntp servers. Next sync after 24 hours."));
+            timerqueue_insert(86100, 0, -5);
+          }
+        } break;
     }
   }
 
@@ -1407,9 +1421,11 @@ void setup() {
 #endif      
     }
   }
-  //double reset detect from start
-  loggingSerial.println(F("Check for double reset..."));
-  doubleResetDetect();
+  //double reset detect from start - removed, using boot button now
+  //loggingSerial.println(F("Check for double reset..."));
+  //doubleResetDetect();
+
+  pinMode(BOOTPIN,INPUT_PULLUP); //enable the boot switch to be used as an input after booting
 
   loggingSerial.println(F("Send current wifi info to serial..."));
   WiFi.printDiag(loggingSerial);
@@ -1487,9 +1503,10 @@ void setup() {
   pixels.show(); 
   #endif
   //end of setup, clear double reset flag
-  loggingSerial.println(F("Clearing double reset flag.."));
-  LittleFS.remove("/doublereset");  
-  loggingSerial.println(F("End of setup.."));
+  //loggingSerial.println(F("Clearing double reset flag.."));
+  //LittleFS.remove("/doublereset");  
+  //loggingSerial.println(F("End of setup.."));
+
   inSetup = false;
 }
 
@@ -1541,7 +1558,21 @@ void readHeatpump() {
   if ( (heishamonSettings.listenonly || sending) && (heatpumpSerial.available() > 0)) readSerial();
 }
 
+void checkBootButton() {
+  if (digitalRead(BOOTPIN)) { //true = 1, not pressed
+    bootButtonNotPressed = millis();
+  } else {
+      if ((unsigned long)(millis() - bootButtonNotPressed) > 10000) {
+        //initiate factory reset
+        factoryReset();
+      }
+  }
+}
+
 void loop() {
+  //check boot button state
+  checkBootButton();
+
   //webserver function
   webserver_loop();
 

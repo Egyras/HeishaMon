@@ -25,7 +25,6 @@ void resetlastalldatatime_dallas();
 void dallasLoop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base);
 void initDallasSensors(void (*log_message)(char*), unsigned int updataAllDallasTimeSettings, unsigned int dallasTimerWaitSettings, unsigned int dallasResolution);
 void dallasJsonOutput(struct webserver_t *client);
-void dallasTableOutput(struct webserver_t *client);
 void changeDallasAlias(char* address, char* alias);
 
 #endif

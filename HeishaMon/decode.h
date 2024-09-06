@@ -38,7 +38,7 @@ String getUintt16(char * data, byte input);
 static const char _unknown[] PROGMEM = "unknown";
 
 static const char *Model[] PROGMEM = {
-  "45", //string representation of number of known models (last model number + 1)
+  "46", //string representation of number of known models (last model number + 1)
   "WH-MDC05H3E5", //0
   "WH-MDC07H3E5", //1
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", //2
@@ -78,12 +78,13 @@ static const char *Model[] PROGMEM = {
   "IDU:	WH-ADC0309K3E5AN ODU: WH-UDZ07KE5", //36
   "IDU:	WH-SDC0309K3E5 ODU: WH-UDZ05KE5", //37
   "IDU:	WH-SDC0509L3E5 ODU: WH-WDG09LE5", //38
-  "IDU: WH-SDC12H9E8 ODU: WH-UDZ05KE5", //39
+  "IDU: WH-SDC12H9E8 ODU: WH-UD12HE8", //39
   "IDU: WH-SDC0309K3E5, ODU: WH-UDZ07KE5", //40
   "IDU: WH-ADC0916H9E8, ODU: WH-UX16HE8", //41
   "IDU: WH-ADC0912H9E8, ODU: WH-UX12HE8", //42
-  "WH-MXC16J9E8", //44
+  "WH-MXC16J9E8", //43
   "WH-MXC12J6E5", //44
+  "IDU:WH-SQC09H3E8, ODU:WH-UQ09HE8", //45  
 };
 
 static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { //stores the bytes #129 to #138 of known models in the same order as the const above
@@ -132,6 +133,7 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { 
   0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0E, 0x95, 0x05, //42
   0x32, 0xD4, 0x0B, 0x89, 0x84, 0x73, 0x90, 0x0C, 0x86, 0x84, //43
   0x32, 0xD4, 0x0B, 0x00, 0x78, 0x62, 0x90, 0x0B, 0x02, 0x78, //44
+  0xE2, 0xCF, 0x0B, 0x82, 0x05, 0x12, 0xD0, 0x0D, 0x91, 0x05, //45  
 };
 
 #define NUMBER_OF_TOPICS 119 //last topic number + 1
@@ -555,11 +557,12 @@ static const char *OpModeDesc[] PROGMEM = {"9", "Heat", "Cool", "Auto(heat)", "D
 static const char *Powerfulmode[] PROGMEM = {"4", "Off", "30min", "60min", "90min"};
 static const char *Quietmode[] PROGMEM = {"4", "Off", "Level 1", "Level 2", "Level 3"};
 static const char *Valve[] PROGMEM = {"2", "Room", "DHW"};
+static const char *MixingValve[] PROGMEM = {"4", "Off", "Increase","Nothing","Decrease"};
 static const char *LitersPerMin[] PROGMEM = {"0", "l/min"};
 static const char *RotationsPerMin[] PROGMEM = {"0", "r/min"};
 static const char *Bar[] PROGMEM = {"0", "Bar"};
 static const char *Pressure[] PROGMEM = {"0", "Kgf/cm2"};
-static const char *Celsius[] PROGMEM = {"0", "&deg;C"};
+static const char *Celsius[] PROGMEM = {"0", "°C"};
 static const char *Kelvin[] PROGMEM = {"0", "K"};
 static const char *Hertz[] PROGMEM = {"0", "Hz"};
 static const char *Counter[] PROGMEM = {"0", "count"};
@@ -576,6 +579,16 @@ static const char *ZonesSensorType[] PROGMEM = {"4", "Water Temperature", "Exter
 static const char *LiquidType[] PROGMEM = {"2", "Water", "Glycol"};
 static const char *ExtPadHeaterType[] PROGMEM = {"3", "Disabled", "Type-A","Type-B"};
 
+
+static const char **opttopicDescription[] PROGMEM = {
+  OffOn,          //OPT0
+  MixingValve,    //OPT1
+  OffOn,          //OPT2
+  MixingValve,    //OPT3
+  OffOn,          //OPT4
+  OffOn,          //OPT5
+  OffOn,          //OPT6
+};
 
 static const char **xtopicDescription[] PROGMEM = {
   Watt,           //XTOP0
