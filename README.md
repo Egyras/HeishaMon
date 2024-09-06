@@ -12,7 +12,7 @@ Suomen kielellä [README_FI.md](README_FI.md) luettavissa täällä.
 *Help on translation to other languages is welcome.*
 
 # Current releases
-Current release is version 3.5. The ESP8266 compiled binary can be installed on a Wemos D1 mini, on the HeishaMon PCB and generally on any ESP8266 based board compatible with Wemos build settings (at least 4MB flash). You can also download the code and compile it yourself (see required libraries below). The ESP32-S3 binary is for the newer, large, version of heishamon.
+Latest release is available [here](https://github.com/Egyras/HeishaMon/releases). The ESP8266 compiled binary can be installed on a Wemos D1 mini, on the HeishaMon PCB and generally on any ESP8266 based board compatible with Wemos build settings (at least 4MB flash). You can also download the code and compile it yourself (see required libraries below). The ESP32-S3 binary is for the newer, large, version of heishamon.
 
 
 # Using the software
