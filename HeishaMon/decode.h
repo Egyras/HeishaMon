@@ -41,22 +41,22 @@ static const char *Model[] PROGMEM = {
   "46", //string representation of number of known models (last model number + 1)
   "WH-MDC05H3E5", //0
   "WH-MDC07H3E5", //1
-  "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", //2
-  "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8", //3
-  "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8", //4
-  "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8", //5
-  "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8", //6
-  "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5", //7
-  "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5",  //8
+  "IDU: WH-SXC09H3E5, ODU: WH-UX09HE5", //2
+  "IDU: WH-SDC09H3E8, ODU: WH-UD09HE8", //3
+  "IDU: WH-SXC09H3E8, ODU: WH-UX09HE8", //4
+  "IDU: WH-SXC12H9E8, ODU: WH-UX12HE8", //5
+  "IDU: WH-SXC16H9E8, ODU: WH-UX16HE8", //6
+  "IDU: WH-SDC05H3E5, ODU: WH-UD05HE5", //7
+  "IDU: WH-SDC0709J3E5, ODU: WH-UD09JE5",  //8
   "WH-MDC05J3E5", //9
   "WH-MDC09H3E5", //10
   "WH-MXC09H3E5", //11
-  "IDU:WH-ADC0309J3E5, ODU:WH-UD09JE5", //12
-  "IDU:WH-ADC0916H9E8, ODU:WH-UX12HE8", //13
-  "IDU:WH-SQC09H3E8, ODU:WH-UQ09HE8", //14
-  "IDU:WH-SDC09H3E5, ODU:WH-UD09HE5", //15
-  "IDU:WH-ADC0309H3E5, ODU:WH-UD09HE5", //16
-  "IDU:WH-ADC0309J3E5, ODU: WH-UD05JE5", //17
+  "IDU: WH-ADC0309J3E5, ODU: WH-UD09JE5", //12
+  "IDU: WH-ADC0916H9E8, ODU: WH-UX12HE8", //13
+  "IDU: WH-SQC09H3E8, ODU: WH-UQ09HE8", //14
+  "IDU: WH-SDC09H3E5, ODU: WH-UD09HE5", //15
+  "IDU: WH-ADC0309H3E5, ODU: WH-UD09HE5", //16
+  "IDU: WH-ADC0309J3E5, ODU: WH-UD05JE5", //17
   "IDU: WH-SDC0709J3E5, ODU: WH-UD07JE5", //18
   "IDU: WH-SDC07H3E5-1, ODU: WH-UD07HE5-1", //19
   "WH-MDC07J3E5", //20
@@ -73,18 +73,18 @@ static const char *Model[] PROGMEM = {
   "WH-MDC09J3E5", //31
   "WH-MXC09J3E5", //32
   "IDU: WH-ADC1216H6E5C ODU: WH-UD12HE5", //33
-  "IDU:	WH-ADC0509L3E5 ODU: WH-WDG07LE5", //34
-  "IDU:	WH-SXC09H3E8 ODU: WH-UX09HE8", //35
-  "IDU:	WH-ADC0309K3E5AN ODU: WH-UDZ07KE5", //36
-  "IDU:	WH-SDC0309K3E5 ODU: WH-UDZ05KE5", //37
-  "IDU:	WH-SDC0509L3E5 ODU: WH-WDG09LE5", //38
+  "IDU: WH-ADC0509L3E5 ODU: WH-WDG07LE5", //34
+  "IDU: WH-SXC09H3E8 ODU: WH-UX09HE8", //35
+  "IDU: WH-ADC0309K3E5AN ODU: WH-UDZ07KE5", //36
+  "IDU: WH-SDC0309K3E5 ODU: WH-UDZ05KE5", //37
+  "IDU: WH-SDC0509L3E5 ODU: WH-WDG09LE5", //38
   "IDU: WH-SDC12H9E8 ODU: WH-UD12HE8", //39
   "IDU: WH-SDC0309K3E5, ODU: WH-UDZ07KE5", //40
   "IDU: WH-ADC0916H9E8, ODU: WH-UX16HE8", //41
   "IDU: WH-ADC0912H9E8, ODU: WH-UX12HE8", //42
   "WH-MXC16J9E8", //43
   "WH-MXC12J6E5", //44
-  "IDU:WH-SQC09H3E8, ODU:WH-UQ09HE8", //45  
+  "IDU: WH-SQC09H3E8, ODU: WH-UQ09HE8", //45
 };
 
 static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { //stores the bytes #129 to #138 of known models in the same order as the const above
@@ -133,7 +133,7 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { 
   0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0E, 0x95, 0x05, //42
   0x32, 0xD4, 0x0B, 0x89, 0x84, 0x73, 0x90, 0x0C, 0x86, 0x84, //43
   0x32, 0xD4, 0x0B, 0x00, 0x78, 0x62, 0x90, 0x0B, 0x02, 0x78, //44
-  0xE2, 0xCF, 0x0B, 0x82, 0x05, 0x12, 0xD0, 0x0D, 0x91, 0x05, //45  
+  0xE2, 0xCF, 0x0B, 0x82, 0x05, 0x12, 0xD0, 0x0D, 0x91, 0x05, //45
 };
 
 #define NUMBER_OF_TOPICS 119 //last topic number + 1
@@ -518,7 +518,7 @@ static const topicFP topicFunctions[] PROGMEM = {
   getIntMinus128,      //TOP89
   unknown,             //TOP90
   unknown,             //TOP91
-  unknown,			       //TOP92
+  unknown,             //TOP92
   getIntMinus1,        //TOP93
   getBit1and2,         //TOP94
   getIntMinus1,        //TOP95
@@ -536,9 +536,9 @@ static const topicFP topicFunctions[] PROGMEM = {
   getBit1,             //TOP107
   getBit3and4,         //TOP108
   getBit5and6,         //TOP109
-  getBit7and8,         //TOP110  
+  getBit7and8,         //TOP110
   getSecondByte,       //TOP111
-  getFirstByte,        //TOP112 
+  getFirstByte,        //TOP112
   getIntMinus128,      //TOP113
   getBit3and4,         //TOP114
   getIntMinus1Div50,   //TOP115
