@@ -1009,22 +1009,6 @@ int handleDebug(struct webserver_t *client, char *hex, byte hex_len) {
   return 0;
 }
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length) {
-  switch (type) {
-    case WStype_DISCONNECTED:
-      break;
-    case WStype_CONNECTED: {
-      } break;
-    case WStype_TEXT:
-      break;
-    case WStype_BIN:
-      break;
-    case WStype_PONG: {
-      } break;
-    default:
-      break;
-  }
-}
 
 int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings) {
   switch (client->content) {

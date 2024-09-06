@@ -28,7 +28,7 @@ jobs:
           arduino-cli core install esp32:esp32
 
       - name: Install dependencies
-        run:  arduino-cli lib install ringbuffer pubsubclient arduinojson dallastemperature onewire WebSockets "Adafruit NeoPixel"
+        run:  arduino-cli lib install ringbuffer pubsubclient arduinojson dallastemperature onewire "Adafruit NeoPixel"
 
       - name: Fix Onewire lib for ESP32-3.0.0
         run: |

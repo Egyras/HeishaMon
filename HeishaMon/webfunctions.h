@@ -10,7 +10,6 @@
 #include <Update.h>
 #endif
 #include <PubSubClient.h>
-#include <WebSocketsServer.h>
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #include "src/common/webserver.h"
@@ -97,7 +96,6 @@ int settingsReconnectWifi(struct webserver_t *client, settingsStruct *heishamonS
 int settingsNewPassword(struct webserver_t *client, settingsStruct *heishamonSettings);
 int cacheSettings(struct webserver_t *client, struct arguments_t * args);
 int handleWifiScan(struct webserver_t *client);
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length);
 int showRules(struct webserver_t *client);
 int showFirmware(struct webserver_t *client);
 int showFirmwareSuccess(struct webserver_t *client);
