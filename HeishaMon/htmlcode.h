@@ -690,7 +690,7 @@ static const char populatescanwifiJS[] PROGMEM =
   " };"
   " request.open('GET', '/wifiscan', true);"
   " request.send();"
-  " setTimeout(refreshWifiScan,10000);"
+  " setTimeout(refreshWifiScan,30000);"
   "};"
   "setTimeout(refreshWifiScan,500);"
   "</script>";
