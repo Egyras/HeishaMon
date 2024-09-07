@@ -67,7 +67,7 @@ void getWifiScanResults(int numSsid) {
       String quality = String(dBmToQuality(WiFi.RSSI(indexes[i]))) + "%";
       wifiJsonObject["rssi"] = quality;
     }
-    saveJsonToFile(wifiJsonDoc,"wifiscan.json");
+    saveJsonToFile(wifiJsonDoc,"/wifiscan.json");
     WiFi.scanDelete();
   }
 }
@@ -613,7 +613,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
     jsonDoc["wifi_password"] = String(wifi_password);
   }
 
-  saveJsonToFile(jsonDoc, "config.json"); //save to config file
+  saveJsonToFile(jsonDoc, "/config.json"); //save to config file
   loadSettings(heishamonSettings); //load config file to current settings
 
   while (client->userdata) {
@@ -971,15 +971,23 @@ int handleWifiScan(struct webserver_t *client) {
   if (client->content == 0) {
     webserver_send(client, 200, (char *)"application/json", 0);
     if (LittleFS.begin()) {
-      File scanfile = LittleFS.open("wifiscan.json", "r");
+      File scanfile = LittleFS.open("/wifiscan.json", "r");
       if (scanfile) {
         size_t size = scanfile.size();
-        // Allocate a buffer to store contents of the file.
-        std::unique_ptr<char[]> buf(new char[size]);
-        scanfile.readBytes(buf.get(), size);
-        webserver_send_content(client, buf.get(), size);
-        scanfile.close();
+        if (size > 0 ) {
+          // Allocate a buffer to store contents of the file.
+          std::unique_ptr<char[]> buf(new char[size]);
+          scanfile.readBytes(buf.get(), size);
+          webserver_send_content(client, buf.get(), size);
+          scanfile.close();
+        } else {
+          webserver_send_content_P(client, PSTR("[]"), 2);
+        }
+      } else {
+        webserver_send_content_P(client, PSTR("[]"), 2);
       }
+    } else {
+      webserver_send_content_P(client, PSTR("[]"), 2);
     }
 
   }
@@ -1009,22 +1017,6 @@ int handleDebug(struct webserver_t *client, char *hex, byte hex_len) {
   return 0;
 }
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length) {
-  switch (type) {
-    case WStype_DISCONNECTED:
-      break;
-    case WStype_CONNECTED: {
-      } break;
-    case WStype_TEXT:
-      break;
-    case WStype_BIN:
-      break;
-    case WStype_PONG: {
-      } break;
-    default:
-      break;
-  }
-}
 
 int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings) {
   switch (client->content) {
