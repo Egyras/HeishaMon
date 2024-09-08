@@ -319,6 +319,9 @@ All the [libs we use](LIBSUSED.md) necessary for compiling.
 ## MQTT topics
 [Current list of documented MQTT topics can be found here](MQTT-Topics.md)
 
+## EEPROM warning
+As until today we don't know how the commands sent to the heatpump are processed in the heatpump itself. Most probably a lot of commands are written to EEPROM to be stored and available after a power failure, like setting the DHW temp. An EEPROM can facility a lot of writes but there is a limit. And we don't know the limit either. So make sure you don't overload the heatpump with too many commands. Every second is way too much. Just a few per hour, per settings, should probably be fine. Anyway, an heatpump is a slow heating(cooling) device so making changes that often is probably not even going to make any sense either.
+
 ## DS18b20 1-wire support
 The software also supports ds18b20 1-wire temperature sensors reading. A proper 1-wire configuration (with 4.7kohm pull-up resistor) connected to GPIO4 will be read each configured secs (minimal 5) and send at the panasonic_heat_pump/1wire/"sensor-hex-address" topic. On the pre-made boards this 4.7kohm resistor is already installed.
 
