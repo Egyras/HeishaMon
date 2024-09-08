@@ -1,7 +1,10 @@
 
 ## libs used
 
-Note: this is just a user friendly display of config file [platformio.ini](https://github.com/Egyras/HeishaMon/blob/master/platformio.ini)
+**Note:** 
+
+This is just a user friendly display of section "lib_deps" in config file [platformio.ini](https://github.com/Egyras/HeishaMon/blob/master/platformio.ini)
+
 Only config file is relevant!
 
 | lib | version | download |
