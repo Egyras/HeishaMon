@@ -3,9 +3,9 @@
 
 **Note:** 
 
-This is just a user friendly display of section "lib_deps" in config file [platformio.ini](https://github.com/Egyras/HeishaMon/blob/master/platformio.ini)
+This is just a user friendly display of commands used in build action https://github.com/Egyras/HeishaMon/blob/master/.github/workflows/main.yml
 
-Only config file is relevant!
+Only actual code in build action is relevant!
 
 | lib | version | download |
 | ---- | ---- | ---- |
