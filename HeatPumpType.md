@@ -51,6 +51,9 @@ Assuming that bytes from #129 to #138 are unique for each model of Aquarea heat 
 |44 | 32 D4 0B 00 78 62 90 0B 02 78 | Monoblock | WH-MXC12J6E5 | Monoblock | 12 | 1ph | T-CAP |
 |45 | E2 CF 0B 82 05 12 D0 0D 91 05 | WH-SQC09H3E8 | WH-UQ09HE8 | KIT-WQC09H3E8 | 9 | 3ph | T-CAP - Super Quiet revised model |
 |46 | E2 D5 0D 99 94 02 D6 0D 68 95 | WH-ADC0309K3E5 | WH-UDZ09KE5 | KIT-ADC09K3E5 | 9 | 1ph | HP - K-series All-in-One R32 |
+|47 | E2 CF 0C 74 09 12 D0 0C 95 05 | WH-ADC0916H9E8 | WH-UX12HE8 | KIT-AXC12HE8 | 12 | 3ph | T-CAP - All-In-One |
+|48 | E2 D5 0B 34 99 83 92 0C 28 98 | WH-SDC0509L3E5 |  WH-WDG07LE5 | KIT-WC07L3E5 | 7 | 1 ph | HP - split L-series 3kW elec heating |
+|49 | E2 CF 0D 77 09 12 D0 0C 05 11 | WH-SXC09H3E5 | WH-UX09HE5 | KIT-WXC09H3E5 | 9 | 1ph | T-CAP |
 
 All bytes are used for Heat Pump model identification in the code.
 
