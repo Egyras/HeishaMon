@@ -10,7 +10,7 @@ You can publish mqtt messages towards the 'topic base/commands/pcb_topic', so fo
 
 Remark 1: You need to set in HP Service settings Optional PCB to YES ,and appropriate function as well to have effect in sending MQTT topics.
 
-Remark 2: Turning on Optional PCB in HP's options will couse ,that Room Thermo 1 input will not work anymore. It is now possible to use PCB topics "SetExternalThermostat1State" (with substitute Room Thermo 1 now)  and "SetExternalThermostat2State".
+Remark 2: Turning on Optional PCB in HP's options will couse ,that Room Thermo 1 input will not work anymore (H/J series only). It is now possible to use PCB topics "SetExternalThermostat1State" (with substitute Room Thermo 1 now)  and "SetExternalThermostat2State".
 
 Remark 3: Setting in HP Service settings Optional PCB to YES gives expectation ,that Optional PCB emulator ( HeishaMon) will sent continuously Optional PCB Set Command. When communication disappear (for around 40s) HP generates H74 error and switches off to StandBy. So ensure continiues communication is very important , be aware during switch off , factory default of HeishaMon , or similar action.
 
