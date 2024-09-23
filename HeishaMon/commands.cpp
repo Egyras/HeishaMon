@@ -205,6 +205,45 @@ unsigned int set_z2_cool_request_temperature(char *msg, unsigned char *cmd, char
   return sizeof(panasonicSendQuery);
 }
 
+unsigned int set_bivalent_start_temperature(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_temperature_string(msg);
+
+  byte request_temp = set_temperature_string.toInt() + 128;
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set bivalent start temperature to %d"), request_temp - 128 );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[66] = request_temp;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+unsigned int set_bivalent_stop_temperature(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_temperature_string(msg);
+
+  byte request_temp = set_temperature_string.toInt() + 128;
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set bivalent stop temperature to %d"), request_temp - 128 );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[68] = request_temp;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+
 unsigned int set_force_DHW(char *msg, unsigned char *cmd, char *log_msg) {
 
   String set_force_DHW_string(msg);
@@ -362,6 +401,35 @@ unsigned int set_operation_mode(char *msg, unsigned char *cmd, char *log_msg) {
   {
     memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
     cmd[6] = set_mode;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+
+unsigned int set_bivalent_mode(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_bmode_string(msg);
+
+  byte set_bmode;
+  switch (set_bmode_string.toInt()) {
+    case 0: set_bmode = 100; break;
+    case 1: set_bmode = 101; break;
+    case 2: set_bmode = 104; break;
+    case 3: set_bmode = 105; break;
+    case 4: set_bmode = 108; break;
+    case 5: set_bmode = 109; break;
+    default: set_bmode = 100; break;
+  }
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set bivalent mode to %d"), set_bmode);
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[26] = set_bmode + 1;
   }
 
   return sizeof(panasonicSendQuery);
