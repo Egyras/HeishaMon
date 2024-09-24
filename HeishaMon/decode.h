@@ -38,7 +38,7 @@ String getUintt16(char * data, byte input);
 static const char _unknown[] PROGMEM = "unknown";
 
 static const char *Model[] PROGMEM = {
-  "47", //string representation of number of known models (last model number + 1)
+  "51", //string representation of number of known models (last model number + 1)
   "WH-MDC05H3E5", //0
   "WH-MDC07H3E5", //1
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", //2
