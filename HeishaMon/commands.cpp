@@ -418,6 +418,12 @@ unsigned int set_bivalent_mode(char *msg, unsigned char *cmd, char *log_msg) {
     case 3: set_bmode = 105; break;
     case 4: set_bmode = 108; break;
     case 5: set_bmode = 109; break;
+    case 100: set_bmode = 100; break;
+    case 101: set_bmode = 101; break;
+    case 104: set_bmode = 104; break;
+    case 105: set_bmode = 105; break;
+    case 108: set_bmode = 108; break;
+    case 109: set_bmode = 109; break;
     default: set_bmode = 100; break;
   }
 
