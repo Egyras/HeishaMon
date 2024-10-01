@@ -38,7 +38,7 @@ String getUintt16(char * data, byte input);
 static const char _unknown[] PROGMEM = "unknown";
 
 static const char *Model[] PROGMEM = {
-  "47", //string representation of number of known models (last model number + 1)
+  "51", //string representation of number of known models (last model number + 1)
   "WH-MDC05H3E5", //0
   "WH-MDC07H3E5", //1
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", //2
@@ -89,6 +89,7 @@ static const char *Model[] PROGMEM = {
   "IDU:WH-ADC0916H9E8, ODU:WH-UX12HE8", //47
   "IDU:WH-SDC0509L3E5 ODU:WH-WDG07LE5", //48
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", //49
+  "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8", //50
 };
 
 static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { //stores the bytes #129 to #138 of known models in the same order as the const above
@@ -142,12 +143,13 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { 
   0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0C, 0x95, 0x05, //47
   0xE2, 0xD5, 0x0B, 0x34, 0x99, 0x83, 0x92, 0x0C, 0x28, 0x98, //48
   0xE2, 0xCF, 0x0D, 0x77, 0x09, 0x12, 0xD0, 0x0C, 0x05, 0x11, //49
+  0xE2, 0xCF, 0x0D, 0x86, 0x05, 0x12, 0xD0, 0x0E, 0x95, 0x05, //50
 };
 
-#define NUMBER_OF_TOPICS 119 //last topic number + 1
+#define NUMBER_OF_TOPICS 127 //last topic number + 1
 #define NUMBER_OF_TOPICS_EXTRA 6 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
-#define MAX_TOPIC_LEN 41 // max length + 1
+#define MAX_TOPIC_LEN 42 // max length + 1
 
 static const char optTopics[][20] PROGMEM = {
   "Z1_Water_Pump", // OPT0
@@ -297,6 +299,14 @@ static const char topics[][MAX_TOPIC_LEN] PROGMEM = {
   "Second_Inlet_Temp",       //TOP116
   "Economizer_Outlet_Temp",  //TOP117
   "Second_Room_Thermostat_Temp",//TOP118
+  "Bivalent_Heating_Start_Temperature",//TOP119
+  "Bivalent_Heating_Parallel_Adv_Starttemp",//TOP120
+  "Bivalent_Heating_Parallel_Adv_Stoptemp",//TOP121
+  "Bivalent_Heating_Parallel_Adv_Start_Delay",//TOP122
+  "Bivalent_Heating_Parallel_Adv_Stop_Delay",//TOP123
+  "Bivalent_Heating_Setting",//TOP124
+  "2_Zone_mixing_valve_1_opening",//TOP125
+  "2_Zone_mixing_valve_2_opening",//TOP126
 };
 
 static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
@@ -419,6 +429,14 @@ static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit 
   126,    //TOP116
   127,    //TOP117
   128,    //TOP118
+  65,    //TOP119
+  66,    //TOP120
+  68,    //TOP121
+  67,    //TOP122
+  69,    //TOP123
+  26,    //TOP124
+  177,    //TOP125
+  178,    //TOP126
 };
 
 
@@ -553,6 +571,14 @@ static const topicFP topicFunctions[] PROGMEM = {
   getIntMinus128,      //TOP116
   getIntMinus128,      //TOP117
   getIntMinus128,      //TOP118
+  getIntMinus128,      //TOP119
+  getIntMinus128,      //TOP120
+  getIntMinus128,      //TOP121
+  getIntMinus1,      //TOP122
+  getIntMinus1,      //TOP123
+  getIntMinus1,      //TOP124
+  getIntMinus1,      //TOP125
+  getIntMinus1,      //TOP126
 };
 
 static const char *DisabledEnabled[] PROGMEM = {"2", "Disabled", "Enabled"};
@@ -586,6 +612,7 @@ static const char *SolarModeDesc[] PROGMEM = {"3", "Disabled", "Buffer", "DHW"};
 static const char *ZonesSensorType[] PROGMEM = {"4", "Water Temperature", "External Thermostat", "Internal Thermostat", "Thermistor"};
 static const char *LiquidType[] PROGMEM = {"2", "Water", "Glycol"};
 static const char *ExtPadHeaterType[] PROGMEM = {"3", "Disabled", "Type-A","Type-B"};
+static const char *Bivalent[] PROGMEM = {"6", "Off", "Alternativ", "A-Off", "Parallel", "P-Off", "Parallel Advanced"};
 
 
 static const char **opttopicDescription[] PROGMEM = {
@@ -727,4 +754,12 @@ static const char **topicDescription[] PROGMEM = {
   Celsius,         //TOP116
   Celsius,         //TOP117
   Celsius,         //TOP118
+  Celsius,         //TOP119
+  Celsius,         //TOP120
+  Celsius,         //TOP121
+  Minutes,         //TOP122
+  Minutes,         //TOP123
+  Bivalent,        //TOP124
+  Counter,         //TOP125
+  Counter,         //TOP126
 };
