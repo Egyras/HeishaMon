@@ -37,6 +37,9 @@
 ## 1.5.2 (28-12-2023)
 ##   Fixed
 ##   - Wait to enable selectors automations
+## 1.6.0 (27-10-2024)
+##   Fixed
+##   - Fix deprecation payload_template for mqtt in version 2025.2.0, see https://github.com/home-assistant/core/issues/123865
 
 # Automations #
 ###############
@@ -69,7 +72,7 @@ automation:
         data_template:
             topic: panasonic_heat_pump/commands/SetQuietMode
             retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
-            payload_template: >-
+            payload: >-
               {%- if states('input_select.heishamon_quietmode') == "Off" -%}
                 0
               {%- else -%}
@@ -112,7 +115,7 @@ automation:
         data_template:
           topic: panasonic_heat_pump/commands/SetPowerfulMode
           retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
-          payload_template: >-
+          payload: >-
             {%- if states('input_select.heishamon_powermode') == "Off" -%}
               0
             {%- else -%}
@@ -169,7 +172,7 @@ automation:
         data_template:
           topic: panasonic_heat_pump/commands/SetOperationMode
           retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
-          payload_template: >-
+          payload: >-
             {%- if states('input_select.heishamon_heatmode') == "Heat" -%}
               0
             {%- elif states('input_select.heishamon_heatmode') == "Cool" -%}
@@ -218,7 +221,7 @@ automation:
         data_template:
           topic: panasonic_heat_pump/commands/SetZ1HeatRequestTemperature
           retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
-          payload_template: >-
+          payload: >-
             {{ "%.0f" % (states('input_number.heishamon_heatshift_z1') | int) }}
       - delay:
             hours: 0
@@ -253,7 +256,7 @@ automation:
         data_template:
           topic: panasonic_heat_pump/commands/SetZ2HeatRequestTemperature
           retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
-          payload_template: >-
+          payload: >-
             {{ "%.0f" % (states('input_number.heishamon_heatshift_z2') | int) }}
       - delay:
             hours: 0
@@ -288,7 +291,7 @@ automation:
         data_template:
           topic: panasonic_heat_pump/commands/SetDHWTemp
           retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
-          payload_template: >-
+          payload: >-
             {{ "%.0f" % (states('input_number.heishamon_tank_temp') | int) }}
       - delay:
             hours: 0
