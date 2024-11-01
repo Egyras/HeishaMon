@@ -51,7 +51,7 @@ jobs:
         shell: bash        
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: HeishaMon.ino.bin
           path: HeishaMon/HeishaMon_*.bin
