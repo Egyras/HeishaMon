@@ -918,9 +918,11 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
                     Update.printError(loggingSerial);
                     Update.end(false);
                   } else {
-                    if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 20)) {
-                      uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 20);
-                      sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage * 5);
+                    //sprintf_P(log_msg, PSTR("Uploading new firmware, readlen: %d, totallen: %d\n"), client->readlen, client->totallen);
+                    //Serial1.println(log_msg);                    
+                    if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 50)) {
+                      uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 50);
+                      sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage * 2);
                       log_message(log_msg);
                     }
                   }
@@ -1532,8 +1534,8 @@ void send_panasonic_query() {
     send_command(panasonicQuery, PANASONICQUERYSIZE);
     panasonicQuery[3] = 0x10; //setting 4th back to 0x10 for normal data request next time
   } else  {
-    if ((actData[0] == 0x71) && (actData[1] == 0xc8) && (actData[2] == 0x01) && (actData[193] == 0)  && (actData[195] == 0)  && (actData[197] == 0) ) { //do we have valid data but 0 value in heat consumptiom power, then assume K or L series
-    //can be replaced with: if ((actData[0] == 0x71) && (actData[0xc7] >= 3) ) { //do we have valid header and byte 0xc7 is more or equal 3 then assume K&L series
+    //if ((actData[0] == 0x71) && (actData[1] == 0xc8) && (actData[2] == 0x01) && (actData[193] == 0)  && (actData[195] == 0)  && (actData[197] == 0) ) { //do we have valid data but 0 value in heat consumptiom power, then assume K or L series
+    if ((actData[0] == 0x71) && (actData[0xc7] >= 3) ) { //do we have valid header and byte 0xc7 is more or equal 3 then assume K&L and more series
       log_message(_F("Assuming K or L heatpump type due to missing heat/cool/dhw power data"));
       extraDataBlockAvailable = true; //request for extra data next run
     }
