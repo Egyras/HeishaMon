@@ -40,6 +40,9 @@
 ## 1.6.0 (27-10-2024)
 ##   Fixed
 ##   - Fix deprecation payload_template for mqtt in version 2025.2.0, see https://github.com/home-assistant/core/issues/123865
+## 1.6.1 (3-11-2024)
+##   Style
+##   - Fix indentation and remove trailing spaces
 
 # Automations #
 ###############
@@ -70,19 +73,19 @@ automation:
         entity_id: automation.set_quiet_level_selector
       - service: mqtt.publish
         data_template:
-            topic: panasonic_heat_pump/commands/SetQuietMode
-            retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
-            payload: >-
-              {%- if states('input_select.heishamon_quietmode') == "Off" -%}
-                0
-              {%- else -%}
-                {{ states('input_select.heishamon_quietmode') }}
-              {%- endif -%}
+          topic: panasonic_heat_pump/commands/SetQuietMode
+          retain: false #IMPORTANT! ALWAYS set retain flag false for commands!
+          payload: >-
+            {%- if states('input_select.heishamon_quietmode') == "Off" -%}
+              0
+            {%- else -%}
+              {{ states('input_select.heishamon_quietmode') }}
+            {%- endif -%}
       - delay:
-            hours: 0
-            minutes: 0
-            seconds: 5
-            milliseconds: 0
+          hours: 0
+          minutes: 0
+          seconds: 5
+          milliseconds: 0
         enabled: true
       - service: automation.turn_on
         entity_id: automation.set_quiet_level_selector
@@ -122,10 +125,10 @@ automation:
               {{ "%.0f" % ((states('input_select.heishamon_powermode') | replace("min", "") | int) / 30) }}
             {%- endif -%}
       - delay:
-            hours: 0
-            minutes: 0
-            seconds: 5
-            milliseconds: 0
+          hours: 0
+          minutes: 0
+          seconds: 5
+          milliseconds: 0
         enabled: true
       - service: automation.turn_on
         entity_id: automation.set_powerful_level_selector
@@ -167,7 +170,7 @@ automation:
       entity_id: input_select.heishamon_heatmode
     action:
       - service: automation.turn_off
-        entity_id: automation.set_heatmode_selector    
+        entity_id: automation.set_heatmode_selector
       - service: mqtt.publish
         data_template:
           topic: panasonic_heat_pump/commands/SetOperationMode
@@ -178,7 +181,7 @@ automation:
             {%- elif states('input_select.heishamon_heatmode') == "Cool" -%}
               1
             {%- elif states('input_select.heishamon_heatmode') == "Auto" -%}
-              2            
+              2
             {%- elif states('input_select.heishamon_heatmode') == "DHW" -%}
               3
             {%- elif states('input_select.heishamon_heatmode') == "Heat+DHW" -%}
@@ -189,10 +192,10 @@ automation:
               6
             {%- endif -%}
       - delay:
-            hours: 0
-            minutes: 0
-            seconds: 5
-            milliseconds: 0
+          hours: 0
+          minutes: 0
+          seconds: 5
+          milliseconds: 0
         enabled: true
       - service: automation.turn_on
         entity_id: automation.set_heatmode_selector
@@ -224,13 +227,13 @@ automation:
           payload: >-
             {{ "%.0f" % (states('input_number.heishamon_heatshift_z1') | int) }}
       - delay:
-            hours: 0
-            minutes: 0
-            seconds: 5
-            milliseconds: 0
+          hours: 0
+          minutes: 0
+          seconds: 5
+          milliseconds: 0
         enabled: true
       - service: automation.turn_on
-        entity_id: automation.set_Z1_selector       
+        entity_id: automation.set_Z1_selector
 
   #Fetches Z2 temperature from status and sets the selector accordingly
   - alias: Set Z2 selector
@@ -251,7 +254,7 @@ automation:
       entity_id: input_number.heishamon_heatshift_z2
     action:
       - service: automation.turn_off
-        entity_id: automation.set_Z2_selector  
+        entity_id: automation.set_Z2_selector
       - service: mqtt.publish
         data_template:
           topic: panasonic_heat_pump/commands/SetZ2HeatRequestTemperature
@@ -259,13 +262,13 @@ automation:
           payload: >-
             {{ "%.0f" % (states('input_number.heishamon_heatshift_z2') | int) }}
       - delay:
-            hours: 0
-            minutes: 0
-            seconds: 5
-            milliseconds: 0
+          hours: 0
+          minutes: 0
+          seconds: 5
+          milliseconds: 0
         enabled: true
       - service: automation.turn_on
-        entity_id: automation.set_Z2_selector      
+        entity_id: automation.set_Z2_selector
 
   #Fetches tank target temperature from status and sets the selector accordingly
   - alias: Set tank target temperature selector
@@ -286,7 +289,7 @@ automation:
       entity_id: input_number.heishamon_tank_temp
     action:
       - service: automation.turn_off
-        entity_id: automation.set_tank_target_temperature_selector    
+        entity_id: automation.set_tank_target_temperature_selector
       - service: mqtt.publish
         data_template:
           topic: panasonic_heat_pump/commands/SetDHWTemp
@@ -294,13 +297,13 @@ automation:
           payload: >-
             {{ "%.0f" % (states('input_number.heishamon_tank_temp') | int) }}
       - delay:
-            hours: 0
-            minutes: 0
-            seconds: 5
-            milliseconds: 0
+          hours: 0
+          minutes: 0
+          seconds: 5
+          milliseconds: 0
         enabled: true
       - service: automation.turn_on
-        entity_id: automation.set_tank_target_temperature_selector 
+        entity_id: automation.set_tank_target_temperature_selector
 
 # input_number #
 ################
