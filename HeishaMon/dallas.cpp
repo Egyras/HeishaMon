@@ -71,6 +71,7 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
   char log_msg[256];
   char mqtt_topic[256];
   char valueStr[80];
+  char alias[80];
   bool updatenow = false;
 
   if ((lastalldatatime_dallas == 0) || ((unsigned long)(millis() - lastalldatatime_dallas) >  (1000 * updateAllDallasTime))) {
@@ -96,8 +97,12 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
           if (true) {
             sprintf_P(valueStr, PSTR("%.2f"), actDallasData[i].temperature);
             sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
-            sprintf_P(valueStr, PSTR("%s"), actDallasData[i].alias);
-            sprintf_P(mqtt_topic, PSTR("%s/%s/%s/alias"), mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+            sprintf_P(alias, PSTR("%s"), actDallasData[i].alias);
+            sprintf_P(mqtt_topic, PSTR("%s/%s/%s/alias"), mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, alias, MQTT_RETAIN_VALUES);
+            if (strlen(alias) > 0 && alias[0] != '$' && alias[0] != '/' && alias[strlen(alias) - 1] != '/' && strchr(alias, '+') == nullptr && strchr(alias, '#') == nullptr 
+               && strstr(alias, "//") == nullptr) {        
+              sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_1wire_alias, alias); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+            }
           } else {
             sprintf_P(valueStr, PSTR("{\"Temperature\":%.2f,\"Alias\":\"%s\"}"), actDallasData[i].temperature, actDallasData[i].alias);
             sprintf_P(mqtt_topic, PSTR("%s/%s/%s"), mqtt_topic_base, mqtt_topic_1wire, actDallasData[i].address); mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);

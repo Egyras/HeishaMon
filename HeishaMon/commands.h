@@ -22,6 +22,7 @@ extern const char* mqtt_topic_xvalues;
 extern const char* mqtt_topic_commands;
 extern const char* mqtt_topic_pcbvalues;
 extern const char* mqtt_topic_1wire;
+extern const char* mqtt_topic_1wire_alias;
 extern const char* mqtt_topic_s0;
 extern const char* mqtt_topic_pcb;
 extern const char* mqtt_logtopic;
