@@ -223,8 +223,8 @@ void check_wifi() {
       }
       if ((wifistatus == WL_STOPPED) && (WiFi.softAPgetStationNum() == 0)) {
         log_message(_F("Retrying configured WiFi, ..."));
-#endif
         WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); //select best AP with same SSID
+#endif
         if (heishamonSettings.wifi_password[0] == '\0') {
           WiFi.begin(heishamonSettings.wifi_ssid);
         } else {
