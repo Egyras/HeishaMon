@@ -319,6 +319,7 @@ void setupWifi(settingsStruct *heishamonSettings) {
   } else {
     WiFi.setHostname(heishamonSettings->wifi_hostname);
   }
+  WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); //select best AP with same SSID
   if (heishamonSettings->wifi_ssid[0] != '\0') {
      log_message(_F("Wifi client mode..."));
     if (heishamonSettings->wifi_password[0] == '\0') {

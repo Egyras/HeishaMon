@@ -224,6 +224,7 @@ void check_wifi() {
       if ((wifistatus == WL_STOPPED) && (WiFi.softAPgetStationNum() == 0)) {
         log_message(_F("Retrying configured WiFi, ..."));
 #endif
+        WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); //select best AP with same SSID
         if (heishamonSettings.wifi_password[0] == '\0') {
           WiFi.begin(heishamonSettings.wifi_ssid);
         } else {
@@ -918,11 +919,9 @@ int8_t webserver_cb(struct webserver_t *client, void *dat) {
                     Update.printError(loggingSerial);
                     Update.end(false);
                   } else {
-                    //sprintf_P(log_msg, PSTR("Uploading new firmware, readlen: %d, totallen: %d\n"), client->readlen, client->totallen);
-                    //Serial1.println(log_msg);                    
-                    if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 50)) {
-                      uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 50);
-                      sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage * 2);
+                    if (uploadpercentage != (unsigned int)(((float)client->readlen / (float)client->totallen) * 20)) {
+                      uploadpercentage = (unsigned int)(((float)client->readlen / (float)client->totallen) * 20);
+                      sprintf_P(log_msg, PSTR("Uploading new firmware: %d%%"), uploadpercentage * 5);
                       log_message(log_msg);
                     }
                   }
