@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Update version.h
         if: github.ref != 'refs/heads/main' #do not change version in main branch run
@@ -19,13 +19,13 @@ jobs:
         shell: bash
 
       - name: Setup Arduino CLI
-        uses: arduino/setup-arduino-cli@v1.1.1
+        uses: arduino/setup-arduino-cli@v2
 
       - name: Install platform
         run:  |
           arduino-cli core update-index
           arduino-cli core install esp8266:esp8266
-          arduino-cli core install esp32:esp32
+          arduino-cli core install esp32:esp32@3.0.7
 
       - name: Install dependencies
         run:  arduino-cli lib install ringbuffer pubsubclient arduinojson dallastemperature onewire "Adafruit NeoPixel"
