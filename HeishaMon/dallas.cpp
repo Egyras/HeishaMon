@@ -12,7 +12,7 @@
 
 #define MAXTEMPDIFFPERSEC 0.5 // what is the allowed temp difference per second which is allowed (to filter bad values)
 
-#define DALLASASYNC 0 //async dallas yes or no (default no, because async seems to break 1wire sometimes with current code)
+#define DALLASASYNC 1 //async dallas yes or no (default no, because async seems to break 1wire sometimes with current code)
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
@@ -25,6 +25,7 @@ int dallasDevicecount = 0;
 unsigned long lastalldatatime_dallas = 0;
 
 unsigned long dallasTimer = 0;
+unsigned long dallasTimer1 = 0;
 unsigned int updateAllDallasTime = 30000; // will be set using heishmonSettings
 unsigned int dallasTimerWait = 30000; // will be set using heishmonSettings
 void loadDallasAlias();
@@ -115,14 +116,20 @@ void readNewDallasTemp(PubSubClient &mqtt_client, void (*log_message)(char*), ch
 }
 
 void dallasLoop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_topic_base) {
-  if ((DALLASASYNC) && ((unsigned long)(millis() - dallasTimer) > ((1000 * dallasTimerWait) - 1000)) ) {
-    DS18B20.requestTemperatures(); // get temperatures for next run 1 second before getting the temperatures (async)
-  }
   if ((unsigned long)(millis() - dallasTimer) > (1000 * dallasTimerWait)) {
     log_message((char*)"Requesting new 1wire temperatures");
     dallasTimer = millis();
-    readNewDallasTemp(mqtt_client, log_message, mqtt_topic_base);
+    if (DALLASASYNC){
+      DS18B20.requestTemperatures();
+      dallasTimer1=millis();
+    }else{
+      readNewDallasTemp(mqtt_client, log_message, mqtt_topic_base);
+    }
   }
+  if ((dallasTimer1!=0) && ((millis() - dallasTimer1)>750)){
+    dallasTimer1=0;
+    readNewDallasTemp(mqtt_client, log_message, mqtt_topic_base);
+  }   
 }
 
 void dallasJsonOutput(struct webserver_t *client) {
