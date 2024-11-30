@@ -12,6 +12,7 @@ const char* mqtt_topic_xvalues PROGMEM = "extra";
 const char* mqtt_topic_commands PROGMEM = "commands";
 const char* mqtt_topic_pcbvalues PROGMEM = "optional";
 const char* mqtt_topic_1wire PROGMEM = "1wire";
+const char* mqtt_topic_1wire_alias PROGMEM = "1wire_alias";
 const char* mqtt_topic_s0 PROGMEM = "s0";
 const char* mqtt_logtopic PROGMEM = "log";
 
