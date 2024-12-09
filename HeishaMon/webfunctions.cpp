@@ -240,12 +240,12 @@ void loadSettings(settingsStruct *heishamonSettings) {
           if (heishamonSettings->updateAllTime < heishamonSettings->waitTime) heishamonSettings->updateAllTime = heishamonSettings->waitTime;
           if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
           if (heishamonSettings->updataAllDallasTime < heishamonSettings->waitDallasTime) heishamonSettings->updataAllDallasTime = heishamonSettings->waitDallasTime;
-          if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
+          //if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
           if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
           if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
           if (jsonDoc["s0_1_minpulsewidth"]) heishamonSettings->s0Settings[0].minimalPulseWidth = jsonDoc["s0_1_minpulsewidth"];
           if (jsonDoc["s0_1_maxpulsewidth"]) heishamonSettings->s0Settings[0].maximalPulseWidth = jsonDoc["s0_1_maxpulsewidth"];
-          if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
+          //if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
           if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
           if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
           if (jsonDoc["s0_2_minpulsewidth"]) heishamonSettings->s0Settings[1].minimalPulseWidth = jsonDoc["s0_2_minpulsewidth"];
@@ -568,9 +568,10 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 
   tmp = (struct websettings_t *)client->userdata;
   while (tmp) {
-    if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_gpio") == 0) {
-      jsonDoc["s0_1_gpio"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_ppkwh") == 0) {
+    //if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_gpio") == 0) {
+    // jsonDoc["s0_1_gpio"] = tmp->value;
+    //} else
+    if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_ppkwh") == 0) {
       jsonDoc["s0_1_ppkwh"] = tmp->value;
     } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_interval") == 0) {
       jsonDoc["s0_1_interval"] = tmp->value;
@@ -578,8 +579,8 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
       jsonDoc["s0_1_minpulsewidth"] = tmp->value;
     } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_maxpulsewidth") == 0) {
       jsonDoc["s0_1_maxpulsewidth"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_gpio") == 0) {
-      jsonDoc["s0_2_gpio"] = tmp->value;
+    //} else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_gpio") == 0) {
+    //  jsonDoc["s0_2_gpio"] = tmp->value;
     } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
       jsonDoc["s0_2_ppkwh"] = tmp->value;
     } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
@@ -863,13 +864,13 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         itoa(heishamonSettings->use_s0, str, 10);
         webserver_send_content(client, str, strlen(str));
 
-        webserver_send_content_P(client, PSTR(",\"s0_1_gpio\":"), 13);
+        //webserver_send_content_P(client, PSTR(",\"s0_1_gpio\":"), 13);
 
         int i = 0;
 
-        if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_1;  //dirty hack
-        itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
-        webserver_send_content(client, str, strlen(str));
+        //if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_1;  //dirty hack
+        //itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
+        //webserver_send_content(client, str, strlen(str));
 
         webserver_send_content_P(client, PSTR(",\"s0_1_ppkwh\":"), 14);
 
@@ -896,15 +897,15 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         itoa((int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval), str, 10);
         webserver_send_content(client, str, strlen(str));
 
-        webserver_send_content_P(client, PSTR(",\"s0_2_gpio\":"), 13);
+        //webserver_send_content_P(client, PSTR(",\"s0_2_gpio\":"), 13);
       } break;
     case 12: {
         char str[20];
         int i = 1;
 
-        if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_2;  //dirty hack
-        itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
-        webserver_send_content(client, str, strlen(str));
+        //if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_2;  //dirty hack
+        //itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
+        //webserver_send_content(client, str, strlen(str));
 
         webserver_send_content_P(client, PSTR(",\"s0_2_ppkwh\":"), 14);
 
