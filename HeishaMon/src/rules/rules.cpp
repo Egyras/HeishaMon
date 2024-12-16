@@ -2279,6 +2279,7 @@ static int32_t bc_parse_math_order(char **text, struct rules_t *obj, uint16_t *p
         } break;
         case TVAR:
         case VNULL:
+        case TSTRING:
         case TNUMBER1:
         case TNUMBER2:
         case TNUMBER3:
