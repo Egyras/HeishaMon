@@ -12,7 +12,7 @@
 
 #define MAXTEMPDIFFPERSEC 0.5 // what is the allowed temp difference per second which is allowed (to filter bad values)
 
-#define DALLASASYNC 1 //async dallas yes or no (default no, because async seems to break 1wire sometimes with current code)
+#define DALLASASYNC 1 //async dallas yes or no (default yes)
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
