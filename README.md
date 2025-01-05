@@ -284,6 +284,8 @@ CN-NMODE Pin-out (from left to right) \
 2 - 0-5V RX (to heatpump) \
 1 - GND
 
+Note that the TX on these ports should be connected to the TX on the Heishamon and the RX to the RX.
+
 HeishaMon will receive power from the Panasonic over the cable (5v power).
 
 ## Long distance connection
