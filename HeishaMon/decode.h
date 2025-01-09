@@ -38,7 +38,7 @@ String getUintt16(char * data, byte input);
 static const char _unknown[] PROGMEM = "unknown";
 
 static const char *Model[] PROGMEM = {
-  "51", //string representation of number of known models (last model number + 1)
+  "53", //string representation of number of known models (last model number + 1)
   "WH-MDC05H3E5", //0
   "WH-MDC07H3E5", //1
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", //2
@@ -90,6 +90,8 @@ static const char *Model[] PROGMEM = {
   "IDU:WH-SDC0509L3E5 ODU:WH-WDG07LE5", //48
   "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", //49
   "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8", //50
+  "IDU:WH-ADC0509L3E5AN, ODU:WH-WDG05LE5", //51
+  "IDU:WH-SDC0509L3E5, ODU:WH-WDG05LE5", //52
 };
 
 static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { //stores the bytes #129 to #138 of known models in the same order as the const above
@@ -144,6 +146,8 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { 
   0xE2, 0xD5, 0x0B, 0x34, 0x99, 0x83, 0x92, 0x0C, 0x28, 0x98, //48
   0xE2, 0xCF, 0x0D, 0x77, 0x09, 0x12, 0xD0, 0x0C, 0x05, 0x11, //49
   0xE2, 0xCF, 0x0D, 0x86, 0x05, 0x12, 0xD0, 0x0E, 0x95, 0x05, //50
+  0xE2, 0xD5, 0x0C, 0x67, 0x00, 0x83, 0x92, 0x0C, 0x27, 0x98, //51
+  0xE2, 0xD5, 0x0B, 0x34, 0x99, 0x83, 0x92, 0x0C, 0x27, 0x98, //52
 };
 
 #define NUMBER_OF_TOPICS 127 //last topic number + 1
