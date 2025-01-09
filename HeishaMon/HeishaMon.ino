@@ -195,12 +195,10 @@ void check_wifi() {
     */
 #ifdef ESP8266
     if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_DISCONNECTED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0)) {
-#else
-    if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_STOPPED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0)) {
-#endif
       log_message(_F("WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid..."));
       WiFi.disconnect(true);
     }
+#endif
 
     /*  only start this routine if timeout on
         reconnecting to AP and SSID is set
@@ -221,7 +219,7 @@ void check_wifi() {
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
         WiFi.softAP(_F("HeishaMon-Setup"));
       }
-      if ((wifistatus == WL_STOPPED) && (WiFi.softAPgetStationNum() == 0)) {
+      if ((wifistatus == WL_STOPPED  ) && (WiFi.softAPgetStationNum() == 0)) { //make sure we start STA again if somehow it was stopped
         log_message(_F("Retrying configured WiFi, ..."));
         WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); //select best AP with same SSID
 #endif
@@ -230,16 +228,13 @@ void check_wifi() {
         } else {
           WiFi.begin(heishamonSettings.wifi_ssid, heishamonSettings.wifi_password);
         }
+#ifdef ESP8266        
       } else {
         log_message(_F("Reconnecting to WiFi failed. Waiting a few seconds before trying again."));
-#ifdef ESP8266        
         WiFi.disconnect(true);
-#else
-        WiFi.mode(WIFI_MODE_APSTA);
-        WiFi.disconnect(true);
-        WiFi.mode(WIFI_MODE_AP);
-#endif        
+#else        
       }
+#endif        
     }
   }
 #ifdef ESP8266
