@@ -232,9 +232,8 @@ void check_wifi() {
       } else {
         log_message(_F("Reconnecting to WiFi failed. Waiting a few seconds before trying again."));
         WiFi.disconnect(true);
-#else        
-      }
 #endif        
+      }
     }
   }
 #ifdef ESP8266
