@@ -25,7 +25,7 @@
 |  TOP107/108/109/110 | 20 | 19 | 1st Bit = b0 Water , b1 Glycol<br/>3rd & 4th bit = b01 Alternative Sensor Off ,b10 Alternative Sensor On<br/>5rd & 6th bit = b01 Antifreezing Off ,b10 Antifreezing on<br/>7rd & 8th bit = b01 Optional PCB Off ,b10 Optional PCB on<br/>| Circulation liquid<br/> ,Alternative outdoor temp sensor<br/> Anti freezing<br/> Optional PCB |
 |  TOP | 21 | 15 |  (hex) 15 - One  Zone and Z1 as room , 19 - One Zone and Z1 as pool, 16 - Two Zones and Z2 as room, 26 - Two Zones ,Z2 as pool| No. of Zones and Zone Destination |
 |  TOP111+TOP112 | 22 | 11 |First digit -Z2 ,Second digit Z1 (hex) 1 - water temperature,2 - External Thermostat, 3 - Internal Thermostat, , 4 - Thermistor  | Zone & sensor settings ( system setup - Installer ) | 
-|  TOP | 23 | 55 | (hex) all off=55, extneral control enable=56, external error signal=65, External compressor control On=95  | External control, error signal and External compressor control switch |
+| TOP119/120/121/122 | 23 | 55 | 1st/2nd bit = external compressor control, 3rd/4th bit = external error signal, 5th/6h bit = heat/cool-switch, 7th/8th bit = external control switch | External control, heat/cool switch, error signal and External compressor control switch (menu settings)|
 |  TOP99+TOP100+TOP101 | 24 | 16 | 1st & 2nd bit Smart DHW -All-In-One only, 3rd & 4th bit = solar buffer (0b01=no solar, 0b10=solar buffer, 0b11=solar dhw), 5th & 6th bit = buffer installed, 7th & 8th bit = DHW installed|
 |  TOP114 | 25 | 5e | 1st & 2nd bit = 10 <br/> 3rd & 4th bit = b01 no Pad Heater, b10 - Type A, b11 Type B <br/> 5th & 6th bit = b01 - Internal Heater 3kW, b10 - 6kW, b11 - 9kW <br/> 7th & 8th bit = b01 DHW Internal Heater , b10 - DHW External Heater | External Pad Heater <br/> Power of internal heater <br/> DHW heater Internal/External |
 |  TOP | 26 | 55 | (hex) Bivalent Off=55, Bivalent alternative =56, Bivalent parallel=5A | Bivalent settings |
@@ -118,7 +118,7 @@
 |  TOP44 | 113 | 21 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
 |  TOP44 | 114 | 53 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 |  TOP | 115 | 15 |   | ? |
-|  TOP | 116 | 5a | 1st & 2nd bit Zone 2 Pump ( b01 - OFF, b10 - ON ) ,  3rd & 4th bit = Zone 1 Pump ( b01 - OFF, b10 - ON ), 5th & 6th bit = 2way Valve ( b01 - Cooling, b10 - Heating) , 7th & 8th bit = 3way Valve ( b01 - Room, b10 - Tank)  | Z1 & Z2 Pump 2way & 3wa Valve staus |
+|  TOP123/124/125/126 | 116 | 5a | 1st & 2nd bit Zone 2 Pump ( b01 - OFF, b10 - ON ) ,  3rd & 4th bit = Zone 1 Pump ( b01 - OFF, b10 - ON ), 5th & 6th bit = 2way Valve ( b01 - Cooling, b10 - Heating) , 7th & 8th bit = 3way Valve ( b01 - Room, b10 - Tank)  | Z1 & Z2 Pump 2way & 3wa Valve staus |
 |  TOP69 | 117 | 05 | Sterilization on/off (bit5and6)  , Z2 active (bit7) ,Z1 active (bit8)| Sterilization status Zone active information (look byte #6) |
 |  TOP | 118 | 12 |   | fractional info for TOP5 and TOP6 values |
 |  TOP | 119 | 12 |   | ? |
@@ -177,10 +177,10 @@
 |  TOP93 | 172 | 51 | Convert to DEC X-1   | Pump Duty [duty] |
 |  TOP62 | 173 | 59 | Convert to DEC (X-1) X10  | Fan 1 Motor Speed [R/Min] |
 |  TOP63 | 174 | 01 | Convert to DEC (X-1) X10  | Fan 2 Motor Speed [R/Min] |
-|  TOP | 175 | 36 |   | ? |
-|  TOP | 176 | 79 |   | ? |
-|  TOP | 177 | 01 | Convert to DEC -1  | 2 Zone mixing valve 1 opening [sec]|
-|  TOP | 178 | 01 | Convert to DEC -1  | 2 Zone mixing valve 2 opening [sec] |
+|  TOP | 175 | 36 | Convert to DEC -1  | ?Possible EEV valve (PID) |
+|  TOP | 176 | 79 | Convert to DEC -1  | ?Possible ByPass valve |
+|  TOP127 | 177 | 01 | Convert to DEC -1  | 2 Zone mixing valve PID |
+|  TOP128 | 178 | 01 | Convert to DEC -1  | 1 Zone mixing valve PID |
 |  TOP12 | 179 | c3 | combine both bytes (180 byte) 08 (179 byte) be = 08be= 2238(DEC) - 1 = 2237  | number of operations |
 |  TOP12 | 180 | 02 |  look at 179 | number of operations |
 |  TOP | 181 | 00 |   | 0 byte |
