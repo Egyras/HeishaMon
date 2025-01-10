@@ -48,7 +48,7 @@ jobs:
 
       - name: Add MD5 checksum to ESP32 binary
         run: cd HeishaMon && MD5=`md5sum HeishaMon.ino.bin | cut -d\  -f1` && mv HeishaMon.ino.bin HeishaMon_ESP32-alpha-$MD5.bin
-        shell: bash        
+        shell: bash
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
