@@ -209,6 +209,24 @@ String getDataValue(char* data, unsigned int Topic_Number) {
     case 12:
       Topic_Value = String(word(data[180], data[179]) - 1);
       break;
+    case 56: {
+        byte cpy;
+        memcpy_P(&cpy, &topicBytes[Topic_Number], sizeof(byte));
+        Input_Byte = data[cpy];
+        Topic_Value = topicFunctions[Topic_Number](Input_Byte);
+        int fractional = (int)(data[119] & 0b11);
+        switch (fractional) {
+          case 1: // fractional .00
+            Topic_Value = Topic_Value + ".0";
+            break;
+          case 3: // fractional .50
+            Topic_Value = Topic_Value + ".5";
+            break;
+          default:
+            break;
+        }
+      }
+      break;
     case 90:
       Topic_Value = String(word(data[186], data[185]) - 1);
       break;
