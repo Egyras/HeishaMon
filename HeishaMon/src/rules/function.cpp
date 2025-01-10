@@ -33,6 +33,7 @@
 #include "functions/isset.h"
 #include "functions/concat.h"
 #include "functions/print.h"
+#include "functions/gpio.h"
 
 struct rule_function_t rule_functions[] = {
   { "max", rule_function_max_callback },
@@ -44,7 +45,8 @@ struct rule_function_t rule_functions[] = {
   { "setTimer", rule_function_set_timer_callback },
   { "isset", rule_function_isset_callback },
   { "print", rule_function_print_callback },
-  { "concat", rule_function_concat_callback }
+  { "concat", rule_function_concat_callback },
+  { "gpio", rule_function_gpio_callback }
 };
 
 uint16_t nr_rule_functions = sizeof(rule_functions)/sizeof(rule_functions[0]);

@@ -727,6 +727,82 @@ unsigned int set_gpio16state(char *msg, unsigned char *cmd, char *log_msg) {
   return 0; // do nothing
 }
 
+unsigned int set_external_control(char *msg, unsigned char *cmd, char *log_msg){
+  const byte off_state=1;
+  const byte address=23;
+  byte value = off_state;
+  if ( String(msg).toInt() == 1 ) {
+    value = off_state * 2;
+  }
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set external control enabled to %d"), ((value / off_state) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[address] = value;
+  }
+  return sizeof(panasonicSendQuery);
+}
+
+unsigned int set_external_heat_cool_control(char *msg, unsigned char *cmd, char *log_msg){
+  const byte off_state=4;
+  const byte address=23;
+  byte value = off_state;
+  if ( String(msg).toInt() == 1 ) {
+    value = off_state * 2;
+  }
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set external cool/heat control enabled to %d"), ((value / off_state) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[address] = value;
+  }
+  return sizeof(panasonicSendQuery);
+}
+
+unsigned int set_external_error(char *msg, unsigned char *cmd, char *log_msg){
+  const byte off_state=16;
+  const byte address=23;
+  byte value = off_state;
+  if ( String(msg).toInt() == 1 ) {
+    value = off_state * 2;
+  }
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set external error signal enabled to %d"), ((value / off_state) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[address] = value;
+  }
+  return sizeof(panasonicSendQuery);
+}
+
+unsigned int set_external_compressor_control(char *msg, unsigned char *cmd, char *log_msg){
+  const byte off_state=64;
+  const byte address=23;
+  byte value = off_state;
+  if ( String(msg).toInt() == 1 ) {
+    value = off_state * 2;
+  }
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set external compressor control enabled to %d"), ((value / off_state) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[address] = value;
+  }
+  return sizeof(panasonicSendQuery);
+}
+
 //start of optional pcb commands
 unsigned int set_byte_6(int val, int base, int bit, char *log_msg, const char *func) {
   unsigned char hex = (optionalPCBQuery[6] & ~(base << bit)) | (val << bit);
