@@ -608,8 +608,8 @@ static int8_t vm_value_set(struct rules_t *obj) {
         }
       }
 
-      memset(&cmd, 256, 0);
-      memset(&log_msg, 256, 0);
+      memset(&cmd, 0, sizeof(cmd));
+      memset(&log_msg, 0, sizeof(log_msg));
 
       if(heishamonSettings.optionalPCB) {
         //optional commands
