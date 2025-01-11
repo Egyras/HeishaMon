@@ -1739,11 +1739,11 @@ void loop() {
     stats += timeoutread;
     stats += F(",\"version\":\"");
     stats += heishamon_version;
-    stats += F(",\"board\":\"");
+    stats += F("\",\"board\":\"");
 #ifdef ESP8266
-    stats += F("\"ESP8266\"");
+    stats += F("ESP8266");
 #else
-    stats += F("\"ESP32\"");
+    stats += F("ESP32");
 #endif
     stats += F("\",\"rules active\":");
     stats += nrrules;
