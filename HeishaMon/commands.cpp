@@ -406,36 +406,51 @@ unsigned int set_operation_mode(char *msg, unsigned char *cmd, char *log_msg) {
   return sizeof(panasonicSendQuery);
 }
 
-unsigned int set_bivalent_mode(char *msg, unsigned char *cmd, char *log_msg) {
 
-  String set_bmode_string(msg);
+unsigned int set_bivalent_control(char *msg, unsigned char *cmd, char *log_msg) {
 
-  byte set_bmode;
-  switch (set_bmode_string.toInt()) {
-    case 0: set_bmode = 100; break;
-    case 1: set_bmode = 101; break;
-    case 2: set_bmode = 104; break;
-    case 3: set_bmode = 105; break;
-    case 4: set_bmode = 108; break;
-    case 5: set_bmode = 109; break;
-    case 100: set_bmode = 100; break;
-    case 101: set_bmode = 101; break;
-    case 104: set_bmode = 104; break;
-    case 105: set_bmode = 105; break;
-    case 108: set_bmode = 108; break;
-    case 109: set_bmode = 109; break;
-    default: set_bmode = 100; break;
+  byte set_bcontrol = 1;
+  String set_bivalent_control_string(msg);
+
+  if ( set_bivalent_control_string.toInt() == 1 ) {
+    set_bcontrol = 2;
   }
 
   {
     char tmp[256] = { 0 };
-    snprintf_P(tmp, 255, PSTR("set bivalent mode to %d"), set_bmode);
+    snprintf_P(tmp, 255, PSTR("set bivalent control to %d"), set_bivalent_control_string.toInt());
     memcpy(log_msg, tmp, sizeof(tmp));
   }
 
   {
     memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
-    cmd[26] = set_bmode + 1;
+    cmd[26] = set_bcontrol;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+
+
+unsigned int set_bivalent_mode(char *msg, unsigned char *cmd, char *log_msg) {
+
+  byte set_bmode = 4; // alternative mode
+  String set_bivalent_mode_string(msg);
+
+  if ( set_bivalent_mode_string.toInt() == 1 ) { //parallel mode
+    set_bmode = 8;
+  }
+  if ( set_bivalent_mode_string.toInt() == 2 ) { //advanced parallel mode
+    set_bmode = 12;
+  }
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set bivalent mode to %d"), set_bivalent_mode_string.toInt());
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[26] = set_bmode;
   }
 
   return sizeof(panasonicSendQuery);

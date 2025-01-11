@@ -150,7 +150,7 @@ static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { 
   0xE2, 0xD5, 0x0B, 0x34, 0x99, 0x83, 0x92, 0x0C, 0x27, 0x98, //52
 };
 
-#define NUMBER_OF_TOPICS 135 //last topic number + 1
+#define NUMBER_OF_TOPICS 139 //last topic number + 1
 #define NUMBER_OF_TOPICS_EXTRA 6 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
 #define MAX_TOPIC_LEN 42 // max length + 1
@@ -313,12 +313,16 @@ static const char topics[][MAX_TOPIC_LEN] PROGMEM = {
   "ThreeWay_Valve_State2",   //TOP126
   "Z2_Valve_PID",            //TOP127
   "Z1_Valve_PID",            //TOP128
-  "Bivalent_Heating_Start_Temperature",//TOP129
-  "Bivalent_Heating_Parallel_Adv_Starttemp",//TOP130
-  "Bivalent_Heating_Parallel_Adv_Stoptemp",//TOP131
-  "Bivalent_Heating_Parallel_Adv_Start_Delay",//TOP132
-  "Bivalent_Heating_Parallel_Adv_Stop_Delay",//TOP133
-  "Bivalent_Heating_Setting",//TOP134
+  "Bivalent_Control",        //TOP129
+  "Bivalent_Mode",           //TOP130
+  "Bivalent_Start_Temp",     //TOP131
+  "Bivalent_Advanced_Heat",  //TOP132
+  "Bivalent_Advanced_DHW",   //TOP133
+  "Bivalent_Advanced_Start_Temp",//TOP134
+  "Bivalent_Advanced_Stop_Temp",//TOP135
+  "Bivalent_Advanced_Start_Delay",//TOP136
+  "Bivalent_Advanced_Stop_Delay",//TOP137
+  "Bivalent_Advanced_DHW_Delay",//TOP138
 };
 
 static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
@@ -451,12 +455,16 @@ static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit 
   116,    //TOP126
   177,    //TOP127
   178,    //TOP128
-  65,    //TOP129
-  66,    //TOP130
-  68,    //TOP131
-  67,    //TOP132
-  69,    //TOP133
-  26,    //TOP134
+  26,    //TOP129
+  26,    //TOP130
+  65,    //TOP131
+  26,    //TOP132
+  26,    //TOP133
+  66,    //TOP134
+  68,    //TOP135
+  67,    //TOP136
+  69,    //TOP137
+  70,    //TOP138
 };
 
 
@@ -601,12 +609,16 @@ static const topicFP topicFunctions[] PROGMEM = {
   getBit7and8,         //TOP126
   getIntMinus1,        //TOP127
   getIntMinus1,        //TOP128
-  getIntMinus128,      //TOP129
-  getIntMinus128,      //TOP130
+  getBit7and8,      //TOP129
+  getBit5and6,      //TOP130
   getIntMinus128,      //TOP131
-  getIntMinus1,      //TOP132
-  getIntMinus1,      //TOP133
-  getIntMinus1,      //TOP134
+  getBit3and4,      //TOP132
+  getBit1and2,      //TOP133
+  getIntMinus128,      //TOP134
+  getIntMinus128,      //TOP135
+  getIntMinus1,      //TOP136
+  getIntMinus1,      //TOP137
+  getIntMinus1,      //TOP138
 };
 
 static const char *DisabledEnabled[] PROGMEM = {"2", "Disabled", "Enabled"};
@@ -641,7 +653,7 @@ static const char *SolarModeDesc[] PROGMEM = {"3", "Disabled", "Buffer", "DHW"};
 static const char *ZonesSensorType[] PROGMEM = {"4", "Water Temperature", "External Thermostat", "Internal Thermostat", "Thermistor"};
 static const char *LiquidType[] PROGMEM = {"2", "Water", "Glycol"};
 static const char *ExtPadHeaterType[] PROGMEM = {"3", "Disabled", "Type-A","Type-B"};
-static const char *Bivalent[] PROGMEM = {"6", "Off", "Alternativ", "A-Off", "Parallel", "P-Off", "Parallel Advanced"};
+static const char *Bivalent[] PROGMEM = {"3", "Alternative", "Parallel", "Advanced Parallel"};
 static const char *Percent[] PROGMEM = {"0", "%"};
 
 static const char **opttopicDescription[] PROGMEM = {
@@ -793,10 +805,14 @@ static const char **topicDescription[] PROGMEM = {
   Valve,           //TOP126
   Percent,         //TOP127
   Percent,         //TOP128
-  Celsius,         //TOP129
-  Celsius,         //TOP130
+  DisabledEnabled, //TOP129
+  Bivalent,        //TOP130
   Celsius,         //TOP131
-  Minutes,         //TOP132
-  Minutes,         //TOP133
-  Bivalent,        //TOP134
+  DisabledEnabled, //TOP132
+  DisabledEnabled, //TOP133
+  Celsius,         //TOP134
+  Celsius,         //TOP135
+  Minutes,         //TOP136
+  Minutes,         //TOP137
+  Minutes,         //TOP138
 };

@@ -60,6 +60,7 @@ unsigned int set_buffer_delta(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_gpio16state(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_bivalent_control(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_bivalent_mode(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_bivalent_start_temperature(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_bivalent_stop_temperature(char *msg, unsigned char *cmd, char *log_msg);
@@ -118,7 +119,9 @@ const cmdStruct commands[] PROGMEM = {
   { "SetPowerfulMode", set_powerful_mode },
   // set Heat pump operation mode  3 = DHW only, 0 = heat only, 1 = cool only, 2 = Auto, 4 = Heat+DHW, 5 = Cool+DHW, 6 = Auto + DHW
   { "SetOperationMode", set_operation_mode },
-  // set Bivalent operation mode  0 = Off, 1 = Alternativ, 2 = A-Off, 3 = Parallel, 4 = P-Off, 5 = Parallel Advanced
+  // set Bivalent control mode  0 = off, 1 = on
+  { "SetBivalentControl", set_bivalent_control },
+  // set Bivalent operation mode  0 = Alternativ, 1 = Parallel, 2 = Advanced Parallel
   { "SetBivalentMode", set_bivalent_mode },
   // bivalent start temp -  set from -15C to 35C 
   { "SetBivalentStartTemperature", set_bivalent_start_temperature },
