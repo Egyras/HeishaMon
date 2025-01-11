@@ -135,6 +135,8 @@ static uint8_t cmdnrel = 0;
 WiFiClient mqtt_wifi_client;
 PubSubClient mqtt_client;
 
+
+
 bool firstConnectSinceBoot = true; //if this is true there is no first connection made yet
 
 struct timerqueue_t **timerqueue = NULL;
@@ -198,6 +200,11 @@ void check_wifi() {
       log_message(_F("WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid..."));
       WiFi.disconnect(true);
     }
+#else
+    if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_STOPPED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0)) {
+      log_message(_F("WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid..."));
+      WiFi.mode(WIFI_AP);
+    }
 #endif
 
     /*  only start this routine if timeout on
@@ -219,7 +226,7 @@ void check_wifi() {
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
         WiFi.softAP(_F("HeishaMon-Setup"));
       }
-      if ((wifistatus == WL_STOPPED  ) && (WiFi.softAPgetStationNum() == 0)) { //make sure we start STA again if somehow it was stopped
+      if ((wifistatus == WL_STOPPED  ) && (WiFi.softAPgetStationNum() == 0)) { //make sure we start STA again if it was stopped
         log_message(_F("Retrying configured WiFi, ..."));
         WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); //select best AP with same SSID
 #endif
@@ -745,7 +752,11 @@ void setupOTA() {
   ArduinoOTA.begin();
 }
 
+
+
 int8_t webserver_cb(struct webserver_t *client, void *dat) {
+  
+
   switch (client->step) {
     case WEBSERVER_CLIENT_REQUEST_METHOD: {
         if (strcmp_P((char *)dat, PSTR("POST")) == 0) {
@@ -1584,7 +1595,7 @@ void loop() {
 
   // check wifi
   check_wifi();
-  // Handle OTA first.
+  // Handle OTA first.s
   ArduinoOTA.handle();
 
   mqtt_client.loop();

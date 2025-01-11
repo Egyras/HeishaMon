@@ -310,6 +310,7 @@ void setupWifi(settingsStruct *heishamonSettings) {
 #elif defined(ESP32)
   //WiFi.setTxPower(WIFI_POWER_8_5dBm); //fix for bad chips
   WiFi.setSleep(false);
+  WiFi.mode(WIFI_AP_STA);
   WiFi.softAPdisconnect(true); 
   delay(100);  // must delay to avoid error 
   WiFi.disconnect(true); 
