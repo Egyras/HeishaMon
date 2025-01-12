@@ -1157,7 +1157,7 @@ int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExt
 
       webserver_send_content_P(client, topics[topic], strlen_P(topics[topic]));
 
-      if (topic != 44) { //ERROR topic #44 is only one to be a string value
+      if ((topic != 44) && (topic != 92)) { //ERROR topic #44 and #92 are the only one to be a string value
         webserver_send_content_P(client, PSTR("\",\"Value\":"), 10);
       }
       else {
@@ -1170,7 +1170,7 @@ int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExt
         webserver_send_content(client, str, strlen(str));
       }
 
-      if (topic != 44) { //ERROR topic #44 is only one to be a string value
+      if ((topic != 44) && (topic != 92)) { //ERROR topic #44 and #92 are the only one to be a string value
         webserver_send_content_P(client, PSTR(",\"Description\":\""), 16);
       } else {
         webserver_send_content_P(client, PSTR("\",\"Description\":\""), 17);
