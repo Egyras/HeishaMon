@@ -794,28 +794,6 @@ unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_
   
 }
 
-//special command for gpio control
-unsigned int set_gpio16state(char *msg, unsigned char *cmd, char *log_msg) {
-  byte request_state;
-  String set_gpio16state_string(msg);
-
-  if ( set_gpio16state_string.toInt() == 1 ) {
-    request_state = 1;
-    digitalWrite(16, HIGH);
-  } else {
-    request_state = 0;
-    digitalWrite(16, LOW);
-  }
-  
-  {
-    char tmp[256] = { 0 };
-    snprintf_P(tmp, 255, PSTR("set gpio16 state to  %d"), request_state);
-    memcpy(log_msg, tmp, sizeof(tmp));
-  }
-  
-  return 0; // do nothing
-}
-
 unsigned int set_external_control(char *msg, unsigned char *cmd, char *log_msg){
   const byte off_state=1;
   const byte address=23;

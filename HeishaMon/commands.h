@@ -147,7 +147,6 @@ const cmdStruct commands[] PROGMEM = {
   { "SetBuffer", set_buffer },
   // set Outdoor Temperature to stop heating 5-35
   { "SetHeatingOffOutdoorTemp", set_heatingoffoutdoortemp },
-  { "SetGPIO16State", set_gpio16state },
   { "SetExternalControl", set_external_control },
   { "SetExternalError", set_external_error },
   { "SetExternalCompressorControl", set_external_compressor_control },
