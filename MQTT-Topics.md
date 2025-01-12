@@ -217,10 +217,10 @@ SET30 | SetExternalControl | Set external control switch | 0=disabled, 1=enabled
 SET31 | SetExternalError | Set external error signal| 0=disabled, 1=enabled
 SET32 | SetExternalCompressorControl | Set external compressor control switch | 0=disabled, 1=enabled
 SET33 | SetExternalHeatCoolControl | Set external heat/cool control switch | 0=disabled, 1=enabled
-SET34 | SetBivalentControl } Set bivalent control switch | 0=disabled, 1=enabled
-SET35 | SetBivalentMode } Set bivalent mode | 0=alternative, 1=parallel, 2=advanced parallel
-SET35 | SetBivalentStartTemp } Set bivalent adv. par. start temp | -15 to 35
-SET35 | SetBivalentStopTemp } Set bivalent adv. par. stop temp | -15 to 35
+SET34 | SetBivalentControl | Set bivalent control switch | 0=disabled, 1=enabled
+SET35 | SetBivalentMode | Set bivalent mode | 0=alternative, 1=parallel, 2=advanced parallel
+SET35 | SetBivalentStartTemp | Set bivalent adv. par. start temp | -15 to 35
+SET35 | SetBivalentStopTemp | Set bivalent adv. par. stop temp | -15 to 35
 
 
 *If you operate your heatpump in water mode with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature.*
