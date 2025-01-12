@@ -28,7 +28,7 @@
 | TOP119/120/121/122 | 23 | 55 | 1st/2nd bit = external compressor control, 3rd/4th bit = external error signal, 5th/6h bit = heat/cool-switch, 7th/8th bit = external control switch | External control, heat/cool switch, error signal and External compressor control switch (menu settings)|
 |  TOP99+TOP100+TOP101 | 24 | 16 | 1st & 2nd bit Smart DHW -All-In-One only, 3rd & 4th bit = solar buffer (0b01=no solar, 0b10=solar buffer, 0b11=solar dhw), 5th & 6th bit = buffer installed, 7th & 8th bit = DHW installed|
 |  TOP114 | 25 | 5e | 1st & 2nd bit = 10 <br/> 3rd & 4th bit = b01 no Pad Heater, b10 - Type A, b11 Type B <br/> 5th & 6th bit = b01 - Internal Heater 3kW, b10 - 6kW, b11 - 9kW <br/> 7th & 8th bit = b01 DHW Internal Heater , b10 - DHW External Heater | External Pad Heater <br/> Power of internal heater <br/> DHW heater Internal/External |
-|  TOP | 26 | 55 | (hex) Bivalent Off=55, Bivalent alternative =56, Bivalent parallel=5A | Bivalent settings |
+|  TOP129/130/13/132 | 26 | 55 | (hex) Bivalent control, mode and ap settings. | Bivalent settings |
 |  TOP | 27 | 05 | SG Ready Control on/off (bit5and6) ,Demand Control on/off (bit7and8)  | SG Ready Control, Demand Control |
 |  TOP76+TOP81 | 28 | 09 | (hex) 09 - Compensation curve heat and direct cool, 05 - both compensation curves , 0a - direct heat and direct cool, 06 - heat direct, cool compensation curve  | Operation Setup -Installer -water temperature heating on status and cooling |
 |  TOP106 | 29 | 00 | 3rd & 4th bit = b01 - deltaT , b10 - Max. Duty | Pump flowrate (J/K/L series) |
@@ -67,12 +67,12 @@
 |  TOP103 | 62 | 85 | Convert to DEC-128 | Solar Connection Set delta T for tank OFF (DHW or Buffer)| 
 |  TOP104 | 63 | 85 | Convert to DEC-128 | Set Antifreeze for solar |
 |  TOP105 | 64 | d0 | Convert to DEC-128 | Set Hi limit for solar |
-|  TOP | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Bivalent device -15-35[°C]|
-|  TOP | 66 | 78 | Convert to DEC-128  | ? Possible Control pattern in Bivalent set temperature source to start the bivalent heat source |
-|  TOP | 67 | 1f | Convert to DEC X-1  | ?  Possible Bivalent Delay timer to start the bivalent heat source |
-|  TOP | 68 | 7e | Convert to DEC-128  | ?  Possible Controll pattern in Bivalent set temperature source to stop the bivalent heat source |
-|  TOP | 69 | 1f | Convert to DEC X-1  | ? Possible Bivalent Delay timer to stop the bivalent heat source |
-|  TOP | 70 | 1f | Convert to DEC X-1  | ? Possible Bivalent Control pattern for DHW delay timer to start the bivalent source  |
+|  TOP131 | 65 | 7b | Convert to DEC-128  | Outdoor Temperature to turn on Bivalent device -15-35[°C]|
+|  TOP134 | 66 | 78 | Convert to DEC-128  | Control pattern in Bivalent set temperature source to start the bivalent heat source |
+|  TOP135 | 67 | 1f | Convert to DEC X-1  | Bivalent Delay timer to start the bivalent heat source |
+|  TOP136 | 68 | 7e | Convert to DEC-128  | Control pattern in Bivalent set temperature source to stop the bivalent heat source |
+|  TOP137 | 69 | 1f | Convert to DEC X-1  | Bivalent Delay timer to stop the bivalent heat source |
+|  TOP138 | 70 | 1f | Convert to DEC X-1  | Bivalent Control pattern for DHW delay timer to start the bivalent source  |
 |  TOP | 71 | 79 | Convert to DEC X-1  |SG Setting 1 Heating Capacity  |
 |  TOP | 72 | 79 | Convert to DEC X-1  |SG Setting 1 DHW Capacity  |
 |  TOP | 73 | 8d | Convert to DEC X-1  |SG Setting 2 Heating Capacity  |

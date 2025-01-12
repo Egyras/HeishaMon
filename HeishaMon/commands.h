@@ -119,14 +119,6 @@ const cmdStruct commands[] PROGMEM = {
   { "SetPowerfulMode", set_powerful_mode },
   // set Heat pump operation mode  3 = DHW only, 0 = heat only, 1 = cool only, 2 = Auto, 4 = Heat+DHW, 5 = Cool+DHW, 6 = Auto + DHW
   { "SetOperationMode", set_operation_mode },
-  // set Bivalent control mode  0 = off, 1 = on
-  { "SetBivalentControl", set_bivalent_control },
-  // set Bivalent operation mode  0 = Alternativ, 1 = Parallel, 2 = Advanced Parallel
-  { "SetBivalentMode", set_bivalent_mode },
-  // bivalent start temp -  set from -15C to 35C 
-  { "SetBivalentStartTemperature", set_bivalent_start_temperature },
-  // bivalent stop temp -  set from -15C to 35C
-  { "SetBivalentStopTemperature", set_bivalent_stop_temperature },
   // set DHW temperature by sending desired temperature between 40C-75C
   { "SetDHWTemp", set_DHW_temp },
   // set heat/cool curves on z1 and z2 using a json input
@@ -151,6 +143,16 @@ const cmdStruct commands[] PROGMEM = {
   { "SetExternalError", set_external_error },
   { "SetExternalCompressorControl", set_external_compressor_control },
   { "SetExternalHeatCoolControl", set_external_heat_cool_control },
+  // set Bivalent control mode  0 = off, 1 = on
+  { "SetBivalentControl", set_bivalent_control },
+  // set Bivalent operation mode  0 = Alternativ, 1 = Parallel, 2 = Advanced Parallel
+  { "SetBivalentMode", set_bivalent_mode },
+  // bivalent start temp -  set from -15C to 35C 
+  { "SetBivalentStartTemp", set_bivalent_start_temperature },
+  // bivalent AP start temp -  set from -15C to 35C 
+  { "SetBivalentAPStartTemp", set_bivalent_ap_start_temperature },
+  // bivalent AP stop temp -  set from -15C to 35C
+  { "SetBivalentAPStopTemp", set_bivalent_ap_stop_temperature },
 };
 
 struct optCmdStruct{
