@@ -205,7 +205,7 @@ unsigned int set_z2_cool_request_temperature(char *msg, unsigned char *cmd, char
   return sizeof(panasonicSendQuery);
 }
 
-unsigned int set_bivalent_start_temperature(char *msg, unsigned char *cmd, char *log_msg) {
+unsigned int set_bivalent_start_temp(char *msg, unsigned char *cmd, char *log_msg) {
 
   String set_temperature_string(msg);
 
@@ -224,7 +224,7 @@ unsigned int set_bivalent_start_temperature(char *msg, unsigned char *cmd, char 
 
   return sizeof(panasonicSendQuery);
 }
-unsigned int set_bivalent_ap_start_temperature(char *msg, unsigned char *cmd, char *log_msg) {
+unsigned int set_bivalent_ap_start_temp(char *msg, unsigned char *cmd, char *log_msg) {
 
   String set_temperature_string(msg);
 
@@ -243,7 +243,7 @@ unsigned int set_bivalent_ap_start_temperature(char *msg, unsigned char *cmd, ch
 
   return sizeof(panasonicSendQuery);
 }
-unsigned int set_bivalent_ap_stop_temperature(char *msg, unsigned char *cmd, char *log_msg) {
+unsigned int set_bivalent_ap_stop_temp(char *msg, unsigned char *cmd, char *log_msg) {
 
   String set_temperature_string(msg);
 

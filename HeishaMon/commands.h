@@ -59,11 +59,11 @@ unsigned int set_external_pad_heater(char *msg, unsigned char *cmd, char *log_ms
 unsigned int set_buffer_delta(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_msg);
-unsigned int set_gpio16state(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_bivalent_control(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_bivalent_mode(char *msg, unsigned char *cmd, char *log_msg);
-unsigned int set_bivalent_start_temperature(char *msg, unsigned char *cmd, char *log_msg);
-unsigned int set_bivalent_stop_temperature(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_bivalent_start_temp(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_bivalent_ap_start_temp(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_bivalent_ap_stop_temp(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_external_control(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_external_error(char *msg, unsigned char *cmd, char *log_msg);
 
@@ -148,11 +148,11 @@ const cmdStruct commands[] PROGMEM = {
   // set Bivalent operation mode  0 = Alternativ, 1 = Parallel, 2 = Advanced Parallel
   { "SetBivalentMode", set_bivalent_mode },
   // bivalent start temp -  set from -15C to 35C 
-  { "SetBivalentStartTemp", set_bivalent_start_temperature },
+  { "SetBivalentStartTemp", set_bivalent_start_temp },
   // bivalent AP start temp -  set from -15C to 35C 
-  { "SetBivalentAPStartTemp", set_bivalent_ap_start_temperature },
+  { "SetBivalentAPStartTemp", set_bivalent_ap_start_temp },
   // bivalent AP stop temp -  set from -15C to 35C
-  { "SetBivalentAPStopTemp", set_bivalent_ap_stop_temperature },
+  { "SetBivalentAPStopTemp", set_bivalent_ap_stop_temp },
 };
 
 struct optCmdStruct{
