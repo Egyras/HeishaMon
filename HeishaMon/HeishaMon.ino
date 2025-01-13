@@ -135,6 +135,8 @@ static uint8_t cmdnrel = 0;
 WiFiClient mqtt_wifi_client;
 PubSubClient mqtt_client;
 
+
+
 bool firstConnectSinceBoot = true; //if this is true there is no first connection made yet
 
 struct timerqueue_t **timerqueue = NULL;
@@ -195,12 +197,15 @@ void check_wifi() {
     */
 #ifdef ESP8266
     if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_DISCONNECTED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0)) {
-#else
-    if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_STOPPED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0)) {
-#endif
       log_message(_F("WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid..."));
       WiFi.disconnect(true);
     }
+#else
+    if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_STOPPED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0)) {
+      log_message(_F("WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid..."));
+      WiFi.mode(WIFI_AP);
+    }
+#endif
 
     /*  only start this routine if timeout on
         reconnecting to AP and SSID is set
@@ -221,22 +226,19 @@ void check_wifi() {
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
         WiFi.softAP(_F("HeishaMon-Setup"));
       }
-      if ((wifistatus == WL_STOPPED) && (WiFi.softAPgetStationNum() == 0)) {
+      if ((wifistatus == WL_STOPPED  ) && (WiFi.softAPgetStationNum() == 0)) { //make sure we start STA again if it was stopped
         log_message(_F("Retrying configured WiFi, ..."));
+        WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); //select best AP with same SSID
 #endif
         if (heishamonSettings.wifi_password[0] == '\0') {
           WiFi.begin(heishamonSettings.wifi_ssid);
         } else {
           WiFi.begin(heishamonSettings.wifi_ssid, heishamonSettings.wifi_password);
         }
+#ifdef ESP8266        
       } else {
         log_message(_F("Reconnecting to WiFi failed. Waiting a few seconds before trying again."));
-#ifdef ESP8266        
         WiFi.disconnect(true);
-#else
-        WiFi.mode(WIFI_MODE_APSTA);
-        WiFi.disconnect(true);
-        WiFi.mode(WIFI_MODE_AP);
 #endif        
       }
     }
@@ -750,7 +752,11 @@ void setupOTA() {
   ArduinoOTA.begin();
 }
 
+
+
 int8_t webserver_cb(struct webserver_t *client, void *dat) {
+  
+
   switch (client->step) {
     case WEBSERVER_CLIENT_REQUEST_METHOD: {
         if (strcmp_P((char *)dat, PSTR("POST")) == 0) {
@@ -1486,16 +1492,21 @@ void setup() {
   }
 
   loggingSerial.println(F("Enabling rules.."));
+  if (heishamonSettings.force_rules == false) {
 #if defined(ESP8266)
   rst_info *resetInfo = ESP.getResetInfoPtr();
   loggingSerial.printf(PSTR("Reset reason: %d, exception cause: %d\n"), resetInfo->reason, resetInfo->exccause);
-  if (resetInfo->reason > 0 && resetInfo->reason < 4) {
+    if (resetInfo->reason > 0 && resetInfo->reason < 4) {
 #elif defined(ESP32)
-  esp_reset_reason_t reset_reason = esp_reset_reason(); 
-  loggingSerial.printf(PSTR("Reset reason: %d\n"), reset_reason);
-  if (reset_reason > 3 && reset_reason < 12) {  //is this correct for esp32?
+      esp_reset_reason_t reset_reason = esp_reset_reason();
+      loggingSerial.printf(PSTR("Reset reason: %d\n"), reset_reason);
+    if (reset_reason > 3 && reset_reason < 12) {  //is this correct for esp32?
 #endif  
-    loggingSerial.println("Not loading rules due to crash reboot!");
+        loggingSerial.println("Not loading rules due to crash reboot!");
+    } else {
+      rules_parse((char *)"/rules.txt");
+      rules_boot();
+    }
   } else {
     rules_parse((char *)"/rules.txt");
     rules_boot();
@@ -1532,8 +1543,8 @@ void send_panasonic_query() {
     send_command(panasonicQuery, PANASONICQUERYSIZE);
     panasonicQuery[3] = 0x10; //setting 4th back to 0x10 for normal data request next time
   } else  {
-    if ((actData[0] == 0x71) && (actData[1] == 0xc8) && (actData[2] == 0x01) && (actData[193] == 0)  && (actData[195] == 0)  && (actData[197] == 0) ) { //do we have valid data but 0 value in heat consumptiom power, then assume K or L series
-    //can be replaced with: if ((actData[0] == 0x71) && (actData[0xc7] >= 3) ) { //do we have valid header and byte 0xc7 is more or equal 3 then assume K&L series
+    //if ((actData[0] == 0x71) && (actData[1] == 0xc8) && (actData[2] == 0x01) && (actData[193] == 0)  && (actData[195] == 0)  && (actData[197] == 0) ) { //do we have valid data but 0 value in heat consumptiom power, then assume K or L series
+    if ((actData[0] == 0x71) && (actData[0xc7] >= 3) ) { //do we have valid header and byte 0xc7 is more or equal 3 then assume K&L and more series
       log_message(_F("Assuming K or L heatpump type due to missing heat/cool/dhw power data"));
       extraDataBlockAvailable = true; //request for extra data next run
     }
@@ -1584,7 +1595,7 @@ void loop() {
 
   // check wifi
   check_wifi();
-  // Handle OTA first.
+  // Handle OTA first.s
   ArduinoOTA.handle();
 
   mqtt_client.loop();
@@ -1728,6 +1739,12 @@ void loop() {
     stats += timeoutread;
     stats += F(",\"version\":\"");
     stats += heishamon_version;
+    stats += F("\",\"board\":\"");
+#ifdef ESP8266
+    stats += F("ESP8266");
+#else
+    stats += F("ESP32");
+#endif
     stats += F("\",\"rules active\":");
     stats += nrrules;
     stats += F("}");

@@ -47,6 +47,7 @@ struct settingsStruct {
   char mqtt_topic_listen[128] = "master_panasonic_heat_pump";
   char ntp_servers[254] = "pool.ntp.org";
 
+  bool force_rules = false; //force rules on boot, even after a crash
   bool listenonly = false; //listen only so heishamon can be installed parallel to cz-taw1, set commands will not work though
   bool listenmqtt = false; //do we get heatpump data from another heishamon over mqtt?
   bool optionalPCB = false; //do we emulate an optional PCB?

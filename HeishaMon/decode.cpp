@@ -99,12 +99,11 @@ String getOpMode(byte input) {
 
 String getModel(char* data) { // TOP92 //
   byte model[10] = { data[129], data[130], data[131], data[132], data[133], data[134], data[135], data[136], data[137], data[138]};
-  byte modelResult = -1;
-  for (unsigned int i = 0 ; i < sizeof(knownModels) / sizeof(knownModels[0]) ; i++) {
-    if (memcmp_P(model, knownModels[i], 10) == 0) {
-      modelResult = i;
-    }
+  char modelResult[30];
+  for (size_t i = 0; i < 10; ++i) {
+    sprintf(&modelResult[i*3], "%02X ", model[i]);
   }
+  modelResult[29] = '\0';
   return String(modelResult);
 }
 
