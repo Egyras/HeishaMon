@@ -101,7 +101,7 @@ String getOpMode(byte input) {
 
 String getModel(char* data) { // TOP92 //
   byte model[10] = { data[129], data[130], data[131], data[132], data[133], data[134], data[135], data[136], data[137], data[138]};
-  char modelResult[30];
+  char modelResult[31];
   for (size_t i = 0; i < 10; ++i) {
     sprintf(&modelResult[i*3], "%02X ", model[i]);
   }
