@@ -10,7 +10,7 @@ You can publish mqtt messages towards the 'topic base/commands/pcb_topic', so fo
 
 Remark 1: You need to set in HP Service settings Optional PCB to YES ,and appropriate function as well to have effect in sending MQTT topics.
 
-Remark 2: Turning on Optional PCB in HP's options will couse ,that Room Thermo 1 input will not work anymore (H/J series only). It is now possible to use PCB topics "SetExternalThermostat1State" (with substitute Room Thermo 1 now)  and "SetExternalThermostat2State".
+Remark 2: Turning on Optional PCB in HP's options will couse ,that Room Thermo 1 input will not work anymore. It is now possible to use PCB topics "SetExternalThermostat1State" (with substitute Room Thermo 1 now)  and "SetExternalThermostat2State".
 
 Remark 3: Setting in HP Service settings Optional PCB to YES gives expectation ,that Optional PCB emulator ( HeishaMon) will sent continuously Optional PCB Set Command. When communication disappear (for around 40s) HP generates H74 error and switches off to StandBy. So ensure continiues communication is very important , be aware during switch off , factory default of HeishaMon , or similar action.
 
@@ -26,11 +26,11 @@ Remark 4: If you enable optional pcb emulation the HeishaMon not boot into a wif
 | |-| 03 | 50 |   | Header  |
 | |-| 04 | 00 |   | Acknowledge for Z1/Z2/Pool Water Pump & Mixing valves state  |
 | |-| 05 | 00 |   | Acknowledge for Alarm  |
-| SetHeatCoolMode<br/>SetCompressorState<br/>SetSmartGridMode<br/>SetExternalThermostat1State<br/>SetExternalThermostat2State |0/1<br/>0/1<br/>0/1/2/3<br/>0/1/2/3<br/>0/1/2/3<br/>| 06 | 40 | 1st bit = Heat/Cool<br/>2nd bit = Compressor state<br/>3rd/4th bit == SmartGrid Mode (00 = normal, 10 = HP/DHW off, 01 = Capacity 1, 11 = Capacity 2)<br/>5th/6th bit = Thermostat 1 (00 = no demand, 01 = cool demand, 10 = heat demand, 11 = heat and cool demand)<br/>7th/8th bit = Thermostat 2 (00 = no demand, 01 = cool demand, 10 = heat demand, 11 = heat and cool demand)  | SG ready values , External Compressor SW , Heat/Cool SW, Thermostat 1 (H/J series only), Thermostat 2 |
+| SetHeatCoolMode<br/>SetCompressorState<br/>SetSmartGridMode<br/>SetExternalThermostat1State<br/>SetExternalThermostat2State |0/1<br/>0/1<br/>0/1/2/3<br/>0/1/2/3<br/>0/1/2/3<br/>| 06 | 40 | 1st bit = Heat/Cool<br/>2nd bit = Compressor state<br/>3rd/4th bit == SmartGrid Mode (00 = normal, 10 = HP/DHW off, 01 = Capacity 1, 11 = Capacity 2)<br/>5th/6th bit = Thermostat 1 (00 = no demand, 01 = cool demand, 10 = heat demand, 11 = heat and cool demand)<br/>7th/8th bit = Thermostat 2 (00 = no demand, 01 = cool demand, 10 = heat demand, 11 = heat and cool demand)  | SG ready values , External Compressor SW , Heat/Cool SW, Thermostat 1/2 |
 | SetPoolTemp |Temp [C]| 07 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Pool  |
-| SetBufferTemp |Temp [C]| 08 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Buffer<br/>(H/J series only) |
+| SetBufferTemp |Temp [C]| 08 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Buffer  |
 | |-| 09 | E5 but also93,92,91 (90) ,A2 |   | ?  |
-| SetZ1RoomTemp |Temp [C]| 10 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Room<br/>(H/J series only)  |
+| SetZ1RoomTemp |Temp [C]| 10 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z1_Room   |
 | SetZ2RoomTemp |Temp [C]| 11 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Z2_Room   |
 | |-| 12 | 00 |   | 0 byte  |
 | SetSolarTemp |Temp [C]| 13 | FF |  NTC 6,5kOhm resistance characteristic value | Temp. Solar  |
