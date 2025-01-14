@@ -793,7 +793,6 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
 
         itoa(heishamonSettings->listenonly, str, 10);
         webserver_send_content(client, str, strlen(str));
-
         webserver_send_content_P(client, PSTR(",\"force_rules\":"), 15);
 
         itoa(heishamonSettings->force_rules, str, 10);
