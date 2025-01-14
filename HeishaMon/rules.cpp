@@ -348,31 +348,35 @@ static int8_t event_cb(struct rules_t *obj, char *name) {
   return 1;
 }
 
-static int8_t check_is_number(char *str) {
-  uint16_t i = 0, nrdot = 0, pos = 0, len = strlen(str);
-  char current = str[0];
+static int8_t check_is_number(const char *str) {
+  uint16_t pos = 0, nrdot = 0;
+  size_t len = strlen(str);
 
-  if(isdigit(current) || current == '-') {
-    /*
-     * The dot cannot be the first character
-     * and we cannot have more than 1 dot
-     */
-    while(pos <= len) {
-      if(!(isdigit(current) || (i == 0 && current == '-') || (i > 0 && nrdot == 0 && current == '.'))) {
-        return -1;
-      }
-      if(current == '.') {
-        nrdot++;
-      }
-      pos++;
-      current = str[pos];
-      i++;
-    }
+  if (len == 0) {
+    return -1;  // Empty string is not a number.
+  }
 
-    return 0;
-  } else {
+  // Check the first character (optional '-' or a digit).
+  if (str[0] != '-' && !isdigit((unsigned char)str[0])) {
     return -1;
   }
+
+  // Traverse the rest of the string.
+  for (pos = 1; pos < len; pos++) {
+    char current = str[pos];
+
+    if (current == '.') {
+      nrdot++;
+      if (nrdot > 1) {
+        return -1;  // More than one dot.
+      }
+    } else if (!isdigit((unsigned char)current)) {
+      return -1;  // Non-digit, non-dot character.
+    }
+  }
+
+  // Valid number if all checks pass.
+  return 0;
 }
 
 static int8_t vm_value_get(struct rules_t *obj) {
