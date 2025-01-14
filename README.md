@@ -180,14 +180,24 @@ Prints a value to the console.
 - `concat`
 Concatenates various values into a combined string. E.g.: `@SetCurves = concat('{zone1:{heat:{target:{high:', @Z1_Heat_Curve_Target_High_Temp, ',low:32}}}}');`
 
+- `gpio`
+Allows setting or getting a GPIO state. When called with a single argument, a GPIO state is returned. When called with two arguments the state of a GPIO is set. This function only sets digital pins so the state can only be 0 or 1. The two relays on the large heishamon are gpio21 and gpio47. See the example to switch them each two seconds.
+
 ```
 on System#Boot then
-  setTimer(3, 60);
+   setTimer(10, 2);
 end
 
-on timer=3 then
-  [...]
-  setTimer(3, 60);
+on timer=10 then
+   setTimer(20, 2);
+   gpio(0,21);
+   gpio(1,47);
+end
+
+on timer=20 then
+   setTimer(10, 2);
+   gpio(1,21);
+   gpio(0,47);
 end
 ```
 

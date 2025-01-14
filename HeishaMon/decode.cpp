@@ -3,6 +3,8 @@
 #include "rules.h"
 #include "src/common/progmem.h"
 
+void websocket_write_all(char *data, uint16_t data_len);
+
 unsigned long lastalldatatime = 0;
 unsigned long lastallextradatatime = 0;
 unsigned long lastalloptdatatime = 0;
@@ -99,12 +101,11 @@ String getOpMode(byte input) {
 
 String getModel(char* data) { // TOP92 //
   byte model[10] = { data[129], data[130], data[131], data[132], data[133], data[134], data[135], data[136], data[137], data[138]};
-  byte modelResult = -1;
-  for (unsigned int i = 0 ; i < sizeof(knownModels) / sizeof(knownModels[0]) ; i++) {
-    if (memcmp_P(model, knownModels[i], 10) == 0) {
-      modelResult = i;
-    }
+  char modelResult[30];
+  for (size_t i = 0; i < 10; ++i) {
+    sprintf(&modelResult[i*3], "%02X ", model[i]);
   }
+  modelResult[29] = '\0';
   return String(modelResult);
 }
 
@@ -312,6 +313,19 @@ void decode_heatpump_data(char* data, char* actData, PubSubClient &mqtt_client, 
   memcpy(actData, data, DATASIZE);
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS ; Topic_Number++) {
     if(updateTopic[Topic_Number]) {
+      char log_msg[256];
+      int maxvalue = atoi(topicDescription[Topic_Number][0]);
+      String dataValue = getDataValue(actData, Topic_Number);
+      if (maxvalue == 0) { //this takes the special case where the description is a real value description instead of a mode, so get description index 1
+        if ((Topic_Number != 44) && (Topic_Number != 92)) {
+          sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"TOP%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),topicDescription[Topic_Number][1]);
+        } else {
+          sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"TOP%u\", \"value\": \"%s\", \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),topicDescription[Topic_Number][1]);
+        }
+      } else {
+        sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"TOP%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),topicDescription[Topic_Number][dataValue.toInt() + 1]);
+      }
+      websocket_write_all(log_msg, strlen(log_msg));          
       rules_event_cb(_F("@"), topics[Topic_Number]);
     }
   }
@@ -345,6 +359,15 @@ void decode_heatpump_data_extra(char* data, char* actDataExtra, PubSubClient &mq
   memcpy(actDataExtra, data, DATASIZE);
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_TOPICS_EXTRA ; Topic_Number++) {
     if(updateTopic[Topic_Number]) {
+      char log_msg[256];
+      int maxvalue = atoi(xtopicDescription[Topic_Number][0]);
+      String dataValue = getDataValueExtra(actDataExtra, Topic_Number);
+      if (maxvalue == 0) { //this takes the special case where the description is a real value description instead of a mode, so get description index 1
+        sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"XTOP%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),xtopicDescription[Topic_Number][1]);
+      } else {
+        sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"XTOP%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),xtopicDescription[Topic_Number][dataValue.toInt() + 1]);
+      }
+      websocket_write_all(log_msg, strlen(log_msg));         
       rules_event_cb(_F("@"), xtopics[Topic_Number]);
     }
   }
@@ -385,6 +408,14 @@ void decode_optional_heatpump_data(char* data, char* actOptData, PubSubClient & 
   memcpy(actOptData, data, OPTDATASIZE);
   for (unsigned int Topic_Number = 0 ; Topic_Number < NUMBER_OF_OPT_TOPICS ; Topic_Number++) {
     if(updateTopic[Topic_Number]) {
+      char log_msg[256];
+      int maxvalue = atoi(opttopicDescription[Topic_Number][0]);
+      String dataValue = getOptDataValue(actOptData, Topic_Number);
+      if (maxvalue == 0) { //this takes the special case where the description is a real value description instead of a mode, so get description index 1
+        sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"OPTTOP%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),opttopicDescription[Topic_Number][1]);
+      } else {
+        sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"OPTTOP%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),opttopicDescription[Topic_Number][dataValue.toInt() + 1]);
+      }      
       rules_event_cb(_F("@"), optTopics[Topic_Number]);
     }
   }

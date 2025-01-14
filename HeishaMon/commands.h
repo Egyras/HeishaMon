@@ -59,8 +59,13 @@ unsigned int set_external_pad_heater(char *msg, unsigned char *cmd, char *log_ms
 unsigned int set_buffer_delta(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_buffer(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_msg);
-unsigned int set_gpio16state(char *msg, unsigned char *cmd, char *log_msg);
-
+unsigned int set_bivalent_control(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_bivalent_mode(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_bivalent_start_temp(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_bivalent_ap_start_temp(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_bivalent_ap_stop_temp(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_external_control(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_external_error(char *msg, unsigned char *cmd, char *log_msg);
 
 //optional pcb commands
 unsigned int set_heat_cool_mode(char *msg, char *log_msg);
@@ -77,9 +82,11 @@ unsigned int set_z2_room_temp(char *msg, char *log_msg);
 unsigned int set_z2_water_temp(char *msg, char *log_msg);
 unsigned int set_solar_temp(char *msg, char *log_msg);
 unsigned int set_byte_9(char *msg, char *log_msg);
+unsigned int set_external_compressor_control(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_external_heat_cool_control(char *msg, unsigned char *cmd, char *log_msg);
 
 struct cmdStruct {
-  char name[28];
+  char name[29];
   unsigned int (*func)(char *msg, unsigned char *cmd, char *log_msg);
 };
 
@@ -132,7 +139,20 @@ const cmdStruct commands[] PROGMEM = {
   { "SetBuffer", set_buffer },
   // set Outdoor Temperature to stop heating 5-35
   { "SetHeatingOffOutdoorTemp", set_heatingoffoutdoortemp },
-  { "SetGPIO16State", set_gpio16state },
+  { "SetExternalControl", set_external_control },
+  { "SetExternalError", set_external_error },
+  { "SetExternalCompressorControl", set_external_compressor_control },
+  { "SetExternalHeatCoolControl", set_external_heat_cool_control },
+  // set Bivalent control mode  0 = off, 1 = on
+  { "SetBivalentControl", set_bivalent_control },
+  // set Bivalent operation mode  0 = Alternativ, 1 = Parallel, 2 = Advanced Parallel
+  { "SetBivalentMode", set_bivalent_mode },
+  // bivalent start temp -  set from -15C to 35C 
+  { "SetBivalentStartTemp", set_bivalent_start_temp },
+  // bivalent AP start temp -  set from -15C to 35C 
+  { "SetBivalentAPStartTemp", set_bivalent_ap_start_temp },
+  // bivalent AP stop temp -  set from -15C to 35C
+  { "SetBivalentAPStopTemp", set_bivalent_ap_stop_temp },
 };
 
 struct optCmdStruct{

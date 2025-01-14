@@ -348,6 +348,33 @@ static int8_t event_cb(struct rules_t *obj, char *name) {
   return 1;
 }
 
+static int8_t check_is_number(char *str) {
+  uint16_t i = 0, nrdot = 0, pos = 0, len = strlen(str);
+  char current = str[0];
+
+  if(isdigit(current) || current == '-') {
+    /*
+     * The dot cannot be the first character
+     * and we cannot have more than 1 dot
+     */
+    while(pos <= len) {
+      if(!(isdigit(current) || (i == 0 && current == '-') || (i > 0 && nrdot == 0 && current == '.'))) {
+        return -1;
+      }
+      if(current == '.') {
+        nrdot++;
+      }
+      pos++;
+      current = str[pos];
+      i++;
+    }
+
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
 static int8_t vm_value_get(struct rules_t *obj) {
   int16_t x = 0;
 
@@ -414,7 +441,7 @@ static int8_t vm_value_get(struct rules_t *obj) {
         char *str = (char *)dataValue.c_str();
         if(strlen(str) == 0) {
           rules_pushnil(obj);
-        } else {
+        } else if(check_is_number(str) == 0) {
           float var = atof(str);
           float nr = 0;
 
@@ -425,6 +452,8 @@ static int8_t vm_value_get(struct rules_t *obj) {
             rules_pushfloat(obj, var);
             return 0;
           }
+        } else {
+          rules_pushstring(obj, str);
         }
       }
     }
@@ -436,7 +465,7 @@ static int8_t vm_value_get(struct rules_t *obj) {
         char *str = (char *)dataValue.c_str();
         if(strlen(str) == 0) {
           rules_pushnil(obj);
-        } else {
+        } else if(check_is_number(str) == 0) {
           float var = atof(str);
           float nr = 0;
 
@@ -447,6 +476,8 @@ static int8_t vm_value_get(struct rules_t *obj) {
             rules_pushfloat(obj, var);
             return 0;
           }
+        } else {
+          rules_pushstring(obj, str);
         }
       }
     }
@@ -458,7 +489,7 @@ static int8_t vm_value_get(struct rules_t *obj) {
         char *str = (char *)dataValue.c_str();
         if(strlen(str) == 0) {
           rules_pushnil(obj);
-        } else {
+        } else if(check_is_number(str) == 0) {
           float var = atof(str);
           float nr = 0;
 
@@ -469,6 +500,8 @@ static int8_t vm_value_get(struct rules_t *obj) {
             rules_pushfloat(obj, var);
             return 0;
           }
+        } else {
+          rules_pushstring(obj, str);
         }
       }
     }
@@ -575,8 +608,8 @@ static int8_t vm_value_set(struct rules_t *obj) {
         }
       }
 
-      memset(&cmd, 256, 0);
-      memset(&log_msg, 256, 0);
+      memset(&cmd, 0, sizeof(cmd));
+      memset(&log_msg, 0, sizeof(log_msg));
 
       if(heishamonSettings.optionalPCB) {
         //optional commands

@@ -4,6 +4,8 @@
 #define MQTT_RETAIN_VALUES 1
 
 void resetlastalldatatime();
+void websocket_write_all(char *data, uint16_t data_len);
+
 
 String getDataValue(char* data, unsigned int Topic_Number);
 String getDataValueExtra(char* data, unsigned int Topic_Number);
@@ -37,111 +39,12 @@ String getUintt16(char * data, byte input);
 
 static const char _unknown[] PROGMEM = "unknown";
 
-static const char *Model[] PROGMEM = {
-  "47", //string representation of number of known models (last model number + 1)
-  "WH-MDC05H3E5", //0
-  "WH-MDC07H3E5", //1
-  "IDU:WH-SXC09H3E5, ODU:WH-UX09HE5", //2
-  "IDU:WH-SDC09H3E8, ODU:WH-UD09HE8", //3
-  "IDU:WH-SXC09H3E8, ODU:WH-UX09HE8", //4
-  "IDU:WH-SXC12H9E8, ODU:WH-UX12HE8", //5
-  "IDU:WH-SXC16H9E8, ODU:WH-UX16HE8", //6
-  "IDU:WH-SDC05H3E5, ODU:WH-UD05HE5", //7
-  "IDU:WH-SDC0709J3E5, ODU:WH-UD09JE5",  //8
-  "WH-MDC05J3E5", //9
-  "WH-MDC09H3E5", //10
-  "WH-MXC09H3E5", //11
-  "IDU:WH-ADC0309J3E5, ODU:WH-UD09JE5", //12
-  "IDU:WH-ADC0916H9E8, ODU:WH-UX12HE8", //13
-  "IDU:WH-SQC09H3E8, ODU:WH-UQ09HE8", //14
-  "IDU:WH-SDC09H3E5, ODU:WH-UD09HE5", //15
-  "IDU:WH-ADC0309H3E5, ODU:WH-UD09HE5", //16
-  "IDU:WH-ADC0309J3E5, ODU:WH-UD05JE5", //17
-  "IDU:WH-SDC0709J3E5, ODU:WH-UD07JE5", //18
-  "IDU:WH-SDC07H3E5-1, ODU:WH-UD07HE5-1", //19
-  "WH-MDC07J3E5", //20
-  "WH-MDC09J3E5", //21
-  "IDU:WH-SDC0305J3E5, ODU:WH-UD05JE5", //22
-  "WH-MXC09J3E8", //23
-  "WH-MXC12J9E8", //24
-  "IDU:WH-ADC1216H6E5, ODU:WH-UD12HE5", //25
-  "IDU:WH-ADC0309J3E5C, ODU:WH-UD07JE5", //26
-  "WH-MDC07J3E5", //27
-  "WH-MDC05J3E5", //28
-  "IDU:WH-UQ12HE8, ODU:WH-SQC12H9E8", //29
-  "IDU:WH-SXC12H6E5, ODU:WH-UX12HE5", //30
-  "WH-MDC09J3E5", //31
-  "WH-MXC09J3E5", //32
-  "IDU:WH-ADC1216H6E5C ODU:WH-UD12HE5", //33
-  "IDU:WH-ADC0509L3E5 ODU:WH-WDG07LE5", //34
-  "IDU:WH-SXC09H3E8 ODU:WH-UX09HE8", //35
-  "IDU:WH-ADC0309K3E5AN ODU:WH-UDZ07KE5", //36
-  "IDU:WH-SDC0309K3E5 ODU:WH-UDZ05KE5", //37
-  "IDU:WH-SDC0509L3E5 ODU:WH-WDG09LE5", //38
-  "IDU:WH-SDC12H9E8 ODU:WH-UD12HE8", //39
-  "IDU:WH-SDC0309K3E5, ODU:WH-UDZ07KE5", //40
-  "IDU:WH-ADC0916H9E8, ODU:WH-UX16HE8", //41
-  "IDU:WH-ADC0912H9E8, ODU:WH-UX12HE8", //42
-  "WH-MXC16J9E8", //43
-  "WH-MXC12J6E5", //44
-  "IDU:WH-SQC09H3E8, ODU:WH-UQ09HE8", //45
-  "IDU:WH-ADC0309K3E5 ODU:WH-UDZ09KE5", //46
-};
 
-static const byte knownModels[sizeof(Model) / sizeof(Model[0])][10] PROGMEM = { //stores the bytes #129 to #138 of known models in the same order as the const above
-  0xE2, 0xCF, 0x0B, 0x13, 0x33, 0x32, 0xD1, 0x0C, 0x16, 0x33, //0
-  0xE2, 0xCF, 0x0B, 0x14, 0x33, 0x42, 0xD1, 0x0B, 0x17, 0x33, //1
-  0xE2, 0xCF, 0x0D, 0x77, 0x09, 0x12, 0xD0, 0x0B, 0x05, 0x11, //2
-  0xE2, 0xCF, 0x0C, 0x88, 0x05, 0x12, 0xD0, 0x0B, 0x97, 0x05, //3
-  0xE2, 0xCF, 0x0D, 0x85, 0x05, 0x12, 0xD0, 0x0C, 0x94, 0x05, //4
-  0xE2, 0xCF, 0x0D, 0x86, 0x05, 0x12, 0xD0, 0x0C, 0x95, 0x05, //5
-  0xE2, 0xCF, 0x0D, 0x87, 0x05, 0x12, 0xD0, 0x0C, 0x96, 0x05, //6
-  0xE2, 0xCE, 0x0D, 0x71, 0x81, 0x72, 0xCE, 0x0C, 0x92, 0x81, //7
-  0x62, 0xD2, 0x0B, 0x43, 0x54, 0x42, 0xD2, 0x0B, 0x72, 0x66, //8
-  0xC2, 0xD3, 0x0B, 0x33, 0x65, 0xB2, 0xD3, 0x0B, 0x94, 0x65, //9
-  0xE2, 0xCF, 0x0B, 0x15, 0x33, 0x42, 0xD1, 0x0B, 0x18, 0x33, //10
-  0xE2, 0xCF, 0x0B, 0x41, 0x34, 0x82, 0xD1, 0x0B, 0x31, 0x35, //11
-  0x62, 0xD2, 0x0B, 0x45, 0x54, 0x42, 0xD2, 0x0B, 0x47, 0x55, //12
-  0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0D, 0x95, 0x05, //13
-  0xE2, 0xCF, 0x0B, 0x82, 0x05, 0x12, 0xD0, 0x0C, 0x91, 0x05, //14
-  0xE2, 0xCF, 0x0C, 0x55, 0x14, 0x12, 0xD0, 0x0B, 0x15, 0x08, //15
-  0xE2, 0xCF, 0x0C, 0x43, 0x00, 0x12, 0xD0, 0x0B, 0x15, 0x08, //16
-  0x62, 0xD2, 0x0B, 0x45, 0x54, 0x32, 0xD2, 0x0C, 0x45, 0x55, //17
-  0x62, 0xD2, 0x0B, 0x43, 0x54, 0x42, 0xD2, 0x0C, 0x46, 0x55, //18
-  0xE2, 0xCF, 0x0C, 0x54, 0x14, 0x12, 0xD0, 0x0B, 0x14, 0x08, //19
-  0xC2, 0xD3, 0x0B, 0x34, 0x65, 0xB2, 0xD3, 0x0B, 0x95, 0x65, //20
-  0xC2, 0xD3, 0x0B, 0x35, 0x65, 0xB2, 0xD3, 0x0B, 0x96, 0x65, //21
-  0x62, 0xD2, 0x0B, 0x41, 0x54, 0x32, 0xD2, 0x0C, 0x45, 0x55, //22
-  0x32, 0xD4, 0x0B, 0x87, 0x84, 0x73, 0x90, 0x0C, 0x84, 0x84, //23
-  0x32, 0xD4, 0x0B, 0x88, 0x84, 0x73, 0x90, 0x0C, 0x85, 0x84, //24
-  0xE2, 0xCF, 0x0B, 0x75, 0x09, 0x12, 0xD0, 0x0C, 0x06, 0x11, //25
-  0x42, 0xD4, 0x0B, 0x83, 0x71, 0x42, 0xD2, 0x0C, 0x46, 0x55, //26
-  0xC2, 0xD3, 0x0C, 0x34, 0x65, 0xB2, 0xD3, 0x0B, 0x95, 0x65, //27
-  0xC2, 0xD3, 0x0C, 0x33, 0x65, 0xB2, 0xD3, 0x0B, 0x94, 0x65, //28
-  0xE2, 0xCF, 0x0B, 0x83, 0x05, 0x12, 0xD0, 0x0D, 0x92, 0x05, //29
-  0xE2, 0xCF, 0x0C, 0x78, 0x09, 0x12, 0xD0, 0x0B, 0x06, 0x11, //30
-  0xC2, 0xD3, 0x0C, 0x35, 0x65, 0xB2, 0xD3, 0x0B, 0x96, 0x65, //31
-  0x32, 0xD4, 0x0B, 0x99, 0x77, 0x62, 0x90, 0x0B, 0x01, 0x78, //32
-  0x42, 0xD4, 0x0B, 0x15, 0x76, 0x12, 0xD0, 0x0B, 0x10, 0x11, //33
-  0xE2, 0xD5, 0x0C, 0x29, 0x99, 0x83, 0x92, 0x0C, 0x28, 0x98, //34
-  0xE2, 0xCF, 0x0D, 0x85, 0x05, 0x12, 0xD0, 0x0E, 0x94, 0x05, //35
-  0xE2, 0xD5, 0x0D, 0x36, 0x99, 0x02, 0xD6, 0x0F, 0x67, 0x95, //36
-  0xE2, 0xD5, 0x0B, 0x08, 0x95, 0x02, 0xD6, 0x0E, 0x66, 0x95, //37
-  0xE2, 0xD5, 0x0B, 0x34, 0x99, 0x83, 0x92, 0x0C, 0x29, 0x98, //38
-  0xE2, 0xCF, 0x0C, 0x89, 0x05, 0x12, 0xD0, 0x0C, 0x98, 0x05, //39
-  0xE2, 0xD5, 0x0B, 0x08, 0x95, 0x02, 0xD6, 0x0E, 0x67, 0x95, //40
-  0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0C, 0x96, 0x05, //41
-  0xE2, 0xCF, 0x0C, 0x74, 0x09, 0x12, 0xD0, 0x0E, 0x95, 0x05, //42
-  0x32, 0xD4, 0x0B, 0x89, 0x84, 0x73, 0x90, 0x0C, 0x86, 0x84, //43
-  0x32, 0xD4, 0x0B, 0x00, 0x78, 0x62, 0x90, 0x0B, 0x02, 0x78, //44
-  0xE2, 0xCF, 0x0B, 0x82, 0x05, 0x12, 0xD0, 0x0D, 0x91, 0x05, //45  
-  0xE2, 0xD5, 0x0D, 0x99, 0x94, 0x02, 0xD6, 0x0D, 0x68, 0x95, //46
-};
 
-#define NUMBER_OF_TOPICS 119 //last topic number + 1
+#define NUMBER_OF_TOPICS 139 //last topic number + 1
 #define NUMBER_OF_TOPICS_EXTRA 6 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
-#define MAX_TOPIC_LEN 41 // max length + 1
+#define MAX_TOPIC_LEN 42 // max length + 1
 
 static const char optTopics[][20] PROGMEM = {
   "Z1_Water_Pump", // OPT0
@@ -291,6 +194,26 @@ static const char topics[][MAX_TOPIC_LEN] PROGMEM = {
   "Second_Inlet_Temp",       //TOP116
   "Economizer_Outlet_Temp",  //TOP117
   "Second_Room_Thermostat_Temp",//TOP118
+  "External_Control",        //TOP119
+  "External_Heat_Cool_Control", //TOP120
+  "External_Error_Signal",   //TOP121
+  "External_Compressor_Control", //TOP122
+  "Z2_Pump_State",           //TOP123
+  "Z1_Pump_State",           //TOP124
+  "TwoWay_Valve_State",      //TOP125
+  "ThreeWay_Valve_State2",   //TOP126
+  "Z2_Valve_PID",            //TOP127
+  "Z1_Valve_PID",            //TOP128
+  "Bivalent_Control",        //TOP129
+  "Bivalent_Mode",           //TOP130
+  "Bivalent_Start_Temp",     //TOP131
+  "Bivalent_Advanced_Heat",  //TOP132
+  "Bivalent_Advanced_DHW",   //TOP133
+  "Bivalent_Advanced_Start_Temp",//TOP134
+  "Bivalent_Advanced_Stop_Temp",//TOP135
+  "Bivalent_Advanced_Start_Delay",//TOP136
+  "Bivalent_Advanced_Stop_Delay",//TOP137
+  "Bivalent_Advanced_DHW_Delay",//TOP138
 };
 
 static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
@@ -413,6 +336,26 @@ static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit 
   126,    //TOP116
   127,    //TOP117
   128,    //TOP118
+  23,     //TOP119
+  23,     //TOP120
+  23,     //TOP121
+  23,     //TOP122
+  116,    //TOP123
+  116,    //TOP124
+  116,    //TOP125
+  116,    //TOP126
+  177,    //TOP127
+  178,    //TOP128
+  26,    //TOP129
+  26,    //TOP130
+  65,    //TOP131
+  26,    //TOP132
+  26,    //TOP133
+  66,    //TOP134
+  68,    //TOP135
+  67,    //TOP136
+  69,    //TOP137
+  70,    //TOP138
 };
 
 
@@ -547,6 +490,26 @@ static const topicFP topicFunctions[] PROGMEM = {
   getIntMinus128,      //TOP116
   getIntMinus128,      //TOP117
   getIntMinus128,      //TOP118
+  getBit7and8,         //TOP119
+  getBit5and6,         //TOP120
+  getBit3and4,         //TOP121
+  getBit1and2,         //TOP122
+  getBit1and2,         //TOP123
+  getBit3and4,         //TOP124
+  getBit5and6,         //TOP125
+  getBit7and8,         //TOP126
+  getIntMinus1,        //TOP127
+  getIntMinus1,        //TOP128
+  getBit7and8,      //TOP129
+  getBit5and6,      //TOP130
+  getIntMinus128,      //TOP131
+  getBit3and4,      //TOP132
+  getBit1and2,      //TOP133
+  getIntMinus128,      //TOP134
+  getIntMinus128,      //TOP135
+  getIntMinus1,      //TOP136
+  getIntMinus1,      //TOP137
+  getIntMinus1,      //TOP138
 };
 
 static const char *DisabledEnabled[] PROGMEM = {"2", "Disabled", "Enabled"};
@@ -559,6 +522,7 @@ static const char *OpModeDesc[] PROGMEM = {"9", "Heat", "Cool", "Auto(heat)", "D
 static const char *Powerfulmode[] PROGMEM = {"4", "Off", "30min", "60min", "90min"};
 static const char *Quietmode[] PROGMEM = {"4", "Off", "Level 1", "Level 2", "Level 3"};
 static const char *Valve[] PROGMEM = {"2", "Room", "DHW"};
+static const char *Valve2[] PROGMEM = {"2", "Cool", "Heat"};
 static const char *MixingValve[] PROGMEM = {"4", "Off", "Increase","Nothing","Decrease"};
 static const char *LitersPerMin[] PROGMEM = {"0", "l/min"};
 static const char *RotationsPerMin[] PROGMEM = {"0", "r/min"};
@@ -580,7 +544,9 @@ static const char *SolarModeDesc[] PROGMEM = {"3", "Disabled", "Buffer", "DHW"};
 static const char *ZonesSensorType[] PROGMEM = {"4", "Water Temperature", "External Thermostat", "Internal Thermostat", "Thermistor"};
 static const char *LiquidType[] PROGMEM = {"2", "Water", "Glycol"};
 static const char *ExtPadHeaterType[] PROGMEM = {"3", "Disabled", "Type-A","Type-B"};
-
+static const char *Bivalent[] PROGMEM = {"3", "Alternative", "Parallel", "Advanced Parallel"};
+static const char *Percent[] PROGMEM = {"0", "%"};
+static const char *Model[] PROGMEM = {"0", "Model"};
 
 static const char **opttopicDescription[] PROGMEM = {
   OffOn,          //OPT0
@@ -721,4 +687,24 @@ static const char **topicDescription[] PROGMEM = {
   Celsius,         //TOP116
   Celsius,         //TOP117
   Celsius,         //TOP118
+  DisabledEnabled, //TOP119
+  DisabledEnabled, //TOP120
+  DisabledEnabled, //TOP121
+  DisabledEnabled, //TOP122
+  OffOn,           //TOP123
+  OffOn,           //TOP124
+  Valve2,          //TOP125
+  Valve,           //TOP126
+  Percent,         //TOP127
+  Percent,         //TOP128
+  DisabledEnabled, //TOP129
+  Bivalent,        //TOP130
+  Celsius,         //TOP131
+  DisabledEnabled, //TOP132
+  DisabledEnabled, //TOP133
+  Celsius,         //TOP134
+  Celsius,         //TOP135
+  Minutes,         //TOP136
+  Minutes,         //TOP137
+  Minutes,         //TOP138
 };

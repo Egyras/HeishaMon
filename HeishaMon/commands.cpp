@@ -205,6 +205,64 @@ unsigned int set_z2_cool_request_temperature(char *msg, unsigned char *cmd, char
   return sizeof(panasonicSendQuery);
 }
 
+unsigned int set_bivalent_start_temp(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_temperature_string(msg);
+
+  byte request_temp = set_temperature_string.toInt() + 128;
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set bivalent start temperature to %d"), request_temp - 128 );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[65] = request_temp;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+unsigned int set_bivalent_ap_start_temp(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_temperature_string(msg);
+
+  byte request_temp = set_temperature_string.toInt() + 128;
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set bivalent ap start temperature to %d"), request_temp - 128 );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[66] = request_temp;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+unsigned int set_bivalent_ap_stop_temp(char *msg, unsigned char *cmd, char *log_msg) {
+
+  String set_temperature_string(msg);
+
+  byte request_temp = set_temperature_string.toInt() + 128;
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set bivalent stop ap temperature to %d"), request_temp - 128 );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[68] = request_temp;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+
 unsigned int set_force_DHW(char *msg, unsigned char *cmd, char *log_msg) {
 
   String set_force_DHW_string(msg);
@@ -362,6 +420,56 @@ unsigned int set_operation_mode(char *msg, unsigned char *cmd, char *log_msg) {
   {
     memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
     cmd[6] = set_mode;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+
+
+unsigned int set_bivalent_control(char *msg, unsigned char *cmd, char *log_msg) {
+
+  byte set_bcontrol = 1;
+  String set_bivalent_control_string(msg);
+
+  if ( set_bivalent_control_string.toInt() == 1 ) {
+    set_bcontrol = 2;
+  }
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set bivalent control to %d"), set_bivalent_control_string.toInt());
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[26] = set_bcontrol;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+
+
+unsigned int set_bivalent_mode(char *msg, unsigned char *cmd, char *log_msg) {
+
+  byte set_bmode = 4; // alternative mode
+  String set_bivalent_mode_string(msg);
+
+  if ( set_bivalent_mode_string.toInt() == 1 ) { //parallel mode
+    set_bmode = 8;
+  }
+  if ( set_bivalent_mode_string.toInt() == 2 ) { //advanced parallel mode
+    set_bmode = 12;
+  }
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set bivalent mode to %d"), set_bivalent_mode_string.toInt());
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[26] = set_bmode;
   }
 
   return sizeof(panasonicSendQuery);
@@ -705,26 +813,80 @@ unsigned int set_heatingoffoutdoortemp(char *msg, unsigned char *cmd, char *log_
   
 }
 
-//special command for gpio control
-unsigned int set_gpio16state(char *msg, unsigned char *cmd, char *log_msg) {
-  byte request_state;
-  String set_gpio16state_string(msg);
-
-  if ( set_gpio16state_string.toInt() == 1 ) {
-    request_state = 1;
-    digitalWrite(16, HIGH);
-  } else {
-    request_state = 0;
-    digitalWrite(16, LOW);
+unsigned int set_external_control(char *msg, unsigned char *cmd, char *log_msg){
+  const byte off_state=1;
+  const byte address=23;
+  byte value = off_state;
+  if ( String(msg).toInt() == 1 ) {
+    value = off_state * 2;
   }
-  
-  {
+    {
     char tmp[256] = { 0 };
-    snprintf_P(tmp, 255, PSTR("set gpio16 state to  %d"), request_state);
+    snprintf_P(tmp, 255, PSTR("set external control enabled to %d"), ((value / off_state) - 1) );
     memcpy(log_msg, tmp, sizeof(tmp));
   }
-  
-  return 0; // do nothing
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[address] = value;
+  }
+  return sizeof(panasonicSendQuery);
+}
+
+unsigned int set_external_heat_cool_control(char *msg, unsigned char *cmd, char *log_msg){
+  const byte off_state=4;
+  const byte address=23;
+  byte value = off_state;
+  if ( String(msg).toInt() == 1 ) {
+    value = off_state * 2;
+  }
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set external cool/heat control enabled to %d"), ((value / off_state) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[address] = value;
+  }
+  return sizeof(panasonicSendQuery);
+}
+
+unsigned int set_external_error(char *msg, unsigned char *cmd, char *log_msg){
+  const byte off_state=16;
+  const byte address=23;
+  byte value = off_state;
+  if ( String(msg).toInt() == 1 ) {
+    value = off_state * 2;
+  }
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set external error signal enabled to %d"), ((value / off_state) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[address] = value;
+  }
+  return sizeof(panasonicSendQuery);
+}
+
+unsigned int set_external_compressor_control(char *msg, unsigned char *cmd, char *log_msg){
+  const byte off_state=64;
+  const byte address=23;
+  byte value = off_state;
+  if ( String(msg).toInt() == 1 ) {
+    value = off_state * 2;
+  }
+    {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set external compressor control enabled to %d"), ((value / off_state) - 1) );
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[address] = value;
+  }
+  return sizeof(panasonicSendQuery);
 }
 
 //start of optional pcb commands
