@@ -105,13 +105,6 @@ typedef struct vm_vfloat_t {
 
 static void *jmptbl[JMPSIZE] = { NULL };
 
-/*
- * This additional category is needed to seperate
- * the event that is used to define a new function
- * block and when calling  an event.
- */
-#define TCEVENT 30
-
 #if defined(DEBUG) || defined(COVERALLS)
 uint16_t memused = 0;
 #endif
@@ -149,8 +142,7 @@ struct {
   "VPTR",
   "VINTEGER",
   "VFLOAT",
-  "VNULL",
-  "TCEVENT"
+  "VNULL"
 };
 
 struct {
@@ -705,7 +697,7 @@ static int8_t rule_prepare(char **text,
         pos+=2;
       }
     } else if(isdigit(current) || (current == '-' && pos < *len && isdigit(next))) {
-      if(ctx == TCEVENT) {
+      if(ctx == TEVENT) {
         /* LCOV_EXCL_START*/
         /* FIXME */
         if((*len - pos) > 5) {
@@ -960,12 +952,12 @@ static int8_t rule_prepare(char **text,
       uint16_t s = pos;
       lexer_parse_string((*text), *len, &pos);
 
-      if(ctx == TCEVENT || ctx == TTHEN) {
+      if(ctx == TEVENT || ctx == TTHEN) {
         logprintf_P(F("ERROR: nested 'on' block"));
         return -1;
       }
 
-      ctx = TCEVENT;
+      ctx = TEVENT;
 
       {
         uint16_t len = pos - s;
@@ -1042,12 +1034,12 @@ static int8_t rule_prepare(char **text,
     } else if(current == ',') {
       nrtokens++;
       *heapsize += sizeof(struct vm_vnull_t);
-      if(ctx != TCEVENT) {
+      if(ctx != TEVENT) {
         *bcsize += sizeof(struct vm_top_t);
       }
 
 #ifdef DEBUG
-      if(ctx != TCEVENT) {
+      if(ctx != TEVENT) {
         printf("[BC] OP_PUSH: %lu\n", sizeof(struct vm_top_t));
       }
       printf("[HEAP] VNULL: %lu\n", sizeof(struct vm_vnull_t));
@@ -1202,10 +1194,10 @@ static int8_t rule_prepare(char **text,
             if(ctx == TSEMICOLON) {
               *bcsize += sizeof(struct vm_top_t);
             }
-            if(ctx == TCEVENT) {
+            if(ctx == TEVENT) {
               do_clear = 0;
             }
-            if(ctx == TTHEN || ctx == TCEVENT) {
+            if(ctx == TTHEN || ctx == TEVENT) {
               *bcsize += sizeof(struct vm_top_t);
             }
             *heapsize += sizeof(struct vm_vnull_t);
@@ -1215,7 +1207,7 @@ static int8_t rule_prepare(char **text,
             if(ctx == TIF || ctx == TASSIGN || ctx == TSEMICOLON) {
               printf("[BC] OP_SETVAL: %lu\n", sizeof(struct vm_top_t));
             }
-            if(ctx == TTHEN || ctx == TCEVENT) {
+            if(ctx == TTHEN || ctx == TEVENT) {
               printf("[BC] OP_SETVAL: %lu\n", sizeof(struct vm_top_t));
             }
 #endif
@@ -1245,14 +1237,9 @@ static int8_t rule_prepare(char **text,
               printf("[BC] OP_SETVAL: %lu\n", sizeof(struct vm_top_t));
 #endif
 
-            } else if(ctx == TCEVENT) {
-#ifdef DEBUG
-              printf("[BC] OP_SETVAL: %lu\n", sizeof(struct vm_top_t));
-#endif
-              *bcsize += sizeof(struct vm_top_t);
             }
           }
-          if(ctx == TFUNCTION || ctx == TEVENT) {
+          if(ctx == TFUNCTION) {
             *bcsize += sizeof(struct vm_top_t);
 
 #ifdef DEBUG
@@ -1316,7 +1303,6 @@ static int8_t rule_prepare(char **text,
 #endif
         if(ctx != TASSIGN) {
           do_clear = 1;
-          ctx = TEVENT;
         }
       } else {
         if((*len - pos) > 5) {
@@ -2202,313 +2188,9 @@ static void bc_assign_slots(struct rules_t *obj) {
   }
 }
 
-static int16_t bc_find_math_dep(struct rules_t *obj, uint16_t start, uint16_t a) {
-  struct vm_top_t *tmp = NULL;
-  int32_t pos = -1;
-  if(a >= 0) {
-    pos = start;
-    while((pos = bc_before(obj, pos)) != -1) {
-      tmp = (struct vm_top_t *)&obj->bc.buffer[pos];
-      if(a == getval(tmp->a)) {
-        break;
-      }
-    }
-  }
-  return pos;
-}
-
-static void bc_math_move_closest(struct rules_t *obj, int16_t limit) {
-  int16_t tmp1 = -1, tmp1B = -1, tmp1C = -1;
-  uint16_t nrbytes = bc_before(obj, getval(obj->bc.nrbytes));
-
-  while(nrbytes > limit) {
-    struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[nrbytes];
-
-    if(gettype(x->type) == OP_GETVAL) {
-      tmp1 = nrbytes;
-      tmp1B = -1;
-
-      if(getval(x->a) >= 0) {
-        tmp1B = tmp1;
-        while((tmp1B = bc_before(obj, tmp1B)) != -1 && tmp1B >= limit) {
-          struct vm_top_t *xB = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-          if(getval(x->a) == getval(xB->c) && gettype(xB->type) != OP_GETVAL) {
-            break;
-          }
-        }
-      }
-
-      if(tmp1B != -1 && tmp1B >= limit) {
-        while(tmp1B < tmp1) {
-          struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-
-          if((tmp1B = bc_next(obj, tmp1B)) == -1) {
-            /* LCOV_EXCL_START*/
-            logprintf_P(F("FATAL: Internal error in %s #%d %d"), __FUNCTION__, __LINE__);
-            exit(-1);
-            /* LCOV_EXCL_STOP*/
-          }
-
-          if(tmp1B < limit) {
-            break;
-          }
-
-          struct vm_top_t *y = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-          int8_t xT = getval(x->type), xA = getval(x->a), xB = getval(x->b), xC = getval(x->c);
-          int8_t yA = getval(y->a);
-
-          setval(x->type, getval(y->type));
-          setval(x->b, getval(y->b));
-          setval(x->c, getval(y->c));
-
-          setval(y->type, xT);
-          setval(y->b, xB);
-          setval(y->c, xC);
-
-          tmp1C = limit;
-          while(tmp1C != -1) {
-            struct vm_top_t *z = (struct vm_top_t *)&obj->bc.buffer[tmp1C];
-
-            if(gettype(z->type) != OP_GETVAL) {
-              if(getval(z->c) == xA) {
-                setval(z->c, yA);
-              } else if(getval(z->c) == yA) {
-                setval(z->c, xA);
-              }
-              if(getval(z->b) == xA) {
-                setval(z->b, yA);
-              } else if(getval(z->b) == yA) {
-                setval(z->b, xA);
-              }
-            }
-            tmp1C = bc_next(obj, tmp1C);
-          }
-        }
-      }
-    }
-
-    x = (struct vm_top_t *)&obj->bc.buffer[nrbytes];
-    if(gettype(x->type) == OP_GETVAL) {
-      tmp1 = nrbytes;
-      tmp1B = -1;
-
-      if(getval(x->a) >= 0) {
-        tmp1B = tmp1;
-        while((tmp1B = bc_before(obj, tmp1B)) != -1 && tmp1B >= limit) {
-          struct vm_top_t *xB = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-          if(getval(x->a) == getval(xB->b)) {
-            break;
-          }
-        }
-      }
-
-      if(tmp1B != -1 && tmp1B >= limit) {
-        while(tmp1B < tmp1) {
-          struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-
-          if((tmp1B = bc_next(obj, tmp1B)) == -1) {
-            /* LCOV_EXCL_START*/
-            logprintf_P(F("FATAL: Internal error in %s #%d %d"), __FUNCTION__, __LINE__);
-            exit(-1);
-            /* LCOV_EXCL_STOP*/
-          }
-
-          if(tmp1B < limit) {
-            break;
-          }
-
-          struct vm_top_t *y = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-          int8_t xT = getval(x->type), xA = getval(x->a), xB = getval(x->b), xC = getval(x->c);
-          int8_t yA = getval(y->a);
-
-          setval(x->type, getval(y->type));
-          setval(x->b, getval(y->b));
-          setval(x->c, getval(y->c));
-
-          setval(y->type, xT);
-          setval(y->b, xB);
-          setval(y->c, xC);
-
-          tmp1C = limit;
-          while(tmp1C != -1) {
-            struct vm_top_t *z = (struct vm_top_t *)&obj->bc.buffer[tmp1C];
-
-            if(gettype(z->type) != OP_GETVAL) {
-              if(getval(z->c) == xA) {
-                setval(z->c, yA);
-              } else if(getval(z->c) == yA) {
-                setval(z->c, xA);
-              }
-              if(getval(z->b) == xA) {
-                setval(z->b, yA);
-              } else if(getval(z->b) == yA) {
-                setval(z->b, xA);
-              }
-            }
-            tmp1C = bc_next(obj, tmp1C);
-          }
-        }
-      }
-    }
-    x = (struct vm_top_t *)&obj->bc.buffer[nrbytes];
-    if(is_op_and_math(gettype(x->type))) {
-      tmp1 = nrbytes;
-      tmp1C = -1;
-      if(getval(x->c) >= 0) {
-        tmp1C = tmp1;
-        while((tmp1C = bc_before(obj, tmp1C)) != -1) {
-          struct vm_top_t *xC = (struct vm_top_t *)&obj->bc.buffer[tmp1C];
-
-          if(getval(x->c) == getval(xC->a)) {
-            break;
-          }
-        }
-      }
-
-      if(tmp1C != -1 && tmp1B >= limit) {
-        tmp1B = bc_find_math_dep(obj, tmp1, getval(x->b));
-        struct vm_top_t *xC = (struct vm_top_t *)&obj->bc.buffer[tmp1C];
-        struct vm_top_t *xB = NULL;
-        if(tmp1B != -1) {
-          xB = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-        }
-
-        if(xB == NULL || gettype(xC->type) == OP_GETVAL || (((int8_t)getval(xB->b) >= 0)+((int8_t)getval(xB->c) >= 0) < ((int8_t)getval(xC->b) >= 0)+((int8_t)getval(xC->c) >= 0))) {
-          while(tmp1C < tmp1) {
-            struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[tmp1C];
-            if(!is_op_and_math(gettype(x->type)) && gettype(x->type) != OP_GETVAL) {
-              break;
-            }
-
-            if((tmp1C = bc_next(obj, tmp1C)) == -1) {
-              /* LCOV_EXCL_START*/
-              logprintf_P(F("FATAL: Internal error in %s #%d %d"), __FUNCTION__, __LINE__);
-              exit(-1);
-              /* LCOV_EXCL_STOP*/
-            }
-
-            if(tmp1C == tmp1 || tmp1C < limit) {
-              break;
-            }
-
-            struct vm_top_t *y = (struct vm_top_t *)&obj->bc.buffer[tmp1C];
-            int8_t xT = getval(x->type), xA = getval(x->a), xB = getval(x->b), xC = getval(x->c);
-            int8_t yA = getval(y->a);
-
-            setval(x->type, getval(y->type));
-            setval(x->b, getval(y->b));
-            setval(x->c, getval(y->c));
-
-            setval(y->type, xT);
-            setval(y->b, xB);
-            setval(y->c, xC);
-
-            tmp1B = limit;
-            while(tmp1B != -1) {
-              struct vm_top_t *z = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-
-              if(gettype(z->type) != OP_GETVAL) {
-                if(getval(z->c) == xA) {
-                  setval(z->c, yA);
-                } else if(getval(z->c) == yA) {
-                  setval(z->c, xA);
-                }
-                if(getval(z->b) == xA) {
-                  setval(z->b, yA);
-                } else if(getval(z->b) == yA) {
-                  setval(z->b, xA);
-                }
-              }
-              tmp1B = bc_next(obj, tmp1B);
-            }
-          }
-        }
-      }
-    }
-
-    x = (struct vm_top_t *)&obj->bc.buffer[nrbytes];
-    if(is_op_and_math(gettype(x->type))) {
-      tmp1 = nrbytes;
-      tmp1B = -1;
-
-      if(getval(x->b) >= 0) {
-        tmp1B = tmp1;
-        while((tmp1B = bc_before(obj, tmp1B)) != -1) {
-          struct vm_top_t *xB = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-          if(getval(x->b) == getval(xB->a)) {
-            break;
-          }
-        }
-      }
-
-      if(tmp1B != -1 && tmp1B >= limit) {
-        tmp1C = bc_find_math_dep(obj, tmp1, getval(x->c));
-        struct vm_top_t *xB = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-        struct vm_top_t *xC = NULL;
-        if(tmp1C != -1) {
-          xC = (struct vm_top_t *)&obj->bc.buffer[tmp1C];
-        }
-
-        if(xC == NULL || gettype(xB->type) == OP_GETVAL || (((int8_t)getval(xB->b) >= 0)+((int8_t)getval(xB->c) >= 0) < ((int8_t)getval(xC->b) >= 0)+((int8_t)getval(xC->c) >= 0))) {
-          while(tmp1B < tmp1) {
-            struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-            if(!is_op_and_math(gettype(x->type)) && gettype(x->type) != OP_GETVAL) {
-              break;
-            }
-
-            if((tmp1B = bc_next(obj, tmp1B)) == -1) {
-              /* LCOV_EXCL_START*/
-              logprintf_P(F("FATAL: Internal error in %s #%d %d"), __FUNCTION__, __LINE__);
-              exit(-1);
-              /* LCOV_EXCL_STOP*/
-            }
-
-            if(tmp1B == tmp1 || tmp1B < limit) {
-              break;
-            }
-
-            struct vm_top_t *y = (struct vm_top_t *)&obj->bc.buffer[tmp1B];
-            int8_t xT = getval(x->type), xA = getval(x->a), xB = getval(x->b), xC = getval(x->c);
-            int8_t yA = getval(y->a);
-
-            setval(x->type, getval(y->type));
-            setval(x->b, getval(y->b));
-            setval(x->c, getval(y->c));
-
-            setval(y->type, xT);
-            setval(y->b, xB);
-            setval(y->c, xC);
-
-            tmp1C = limit;
-            while(tmp1C != -1) {
-              struct vm_top_t *z = (struct vm_top_t *)&obj->bc.buffer[tmp1C];
-
-              if(gettype(z->type) != OP_GETVAL) {
-                if(getval(z->c) == xA) {
-                  setval(z->c, yA);
-                } else if(getval(z->c) == yA) {
-                  setval(z->c, xA);
-                }
-                if(getval(z->b) == xA) {
-                  setval(z->b, yA);
-                } else if(getval(z->b) == yA) {
-                  setval(z->b, xA);
-                }
-              }
-              tmp1C = bc_next(obj, tmp1C);
-            }
-          }
-        }
-      }
-    }
-
-    nrbytes = bc_before(obj, nrbytes);
-  }
-}
-
 static int32_t bc_parse_math_order(char **text, struct rules_t *obj, uint16_t *pos, uint8_t *cnt) {
   uint16_t start = 0, len = 0;
-  int32_t first = 0, step = 0, bc_in = 0, heap_in = 0, limit = 0;
+  int32_t first = 0, step = 0, bc_in = 0, heap_in = 0;
   int16_t d = 0;
   uint8_t a = 0, b = 0, c = 0;
 
@@ -2627,20 +2309,9 @@ static int32_t bc_parse_math_order(char **text, struct rules_t *obj, uint16_t *p
     }
 
     step = bc_parent(obj, rule_operators[idx].opcode, ++(*cnt), heap_in, d);
-    if(*cnt > 63) {
-      logprintf_P(F("ERROR: Too many stacked conditions"));
-      return -1;
-    }
 
-
-    uint16_t nrbytes = getval(obj->bc.nrbytes);
-    while(nrbytes > 0) {
-      struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[nrbytes];
-      if(getval(x->a) == 1) {
-        limit = nrbytes;
-        break;
-      }
-      nrbytes = bc_before(obj, nrbytes);
+    if(first == 0) {
+      first = step;
     }
 
     if(step >= 0 && bc_in >= 0 && bc_in >= first && step >= first) {
@@ -2670,128 +2341,139 @@ static int32_t bc_parse_math_order(char **text, struct rules_t *obj, uint16_t *p
         uint8_t a_a = rule_operators[a_is_op].associativity;
 
         if(a_p > b_p || (b_p == a_p && a_a == 2)) {
-          int32_t tmp1 = bc_in, tmp2 = step, tmp2B = -1;
-
           if(a_a == 1) {
-            tmp1 = step, tmp2 = step;
+            int32_t tmp1 = step, tmp2 = step;
+            uint8_t runs = 1, i = 0;
 
-            tmp1 = bc_before(obj, tmp2);
-            while(tmp2 >= limit && tmp1 >= limit) {
-
-              struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[tmp2];
-
-              if(gettype(x->type) != OP_GETVAL) {
-                int8_t a = (int8_t)getval(x->type), d = (int8_t)getval(x->c);
-
-                tmp2B = bc_find_math_dep(obj, tmp2, getval(x->b));
-                if(tmp2B == -1) {
-                  break;
-                }
-
-                struct vm_top_t *z = (struct vm_top_t *)&obj->bc.buffer[tmp2B];
-                if(is_op_and_math(gettype(x->type)) && is_op_and_math(gettype(z->type))) {
-                  for(i=0;i<nr_rule_operators;i++) {
-                    if(gettype(x->type) == rule_operators[i].opcode) {
-                      a_is_op = i;
-                      break;
-                    }
-                  }
-
-                  for(i=0;i<nr_rule_operators;i++) {
-                    if(gettype(z->type) == rule_operators[i].opcode) {
-                      b_is_op = i;
-                      break;
-                    }
-                  }
-
-                  b_p = rule_operators[b_is_op].precedence;
-                  a_p = rule_operators[a_is_op].precedence;
-                  a_a = rule_operators[a_is_op].associativity;
-
-                  if(get_group(obj->bc.buffer[tmp2B]) != 0) {
-                    break;
-                  }
-
-                  if(!(a_p > b_p || (b_p == a_p && a_a == 2))) {
-                    break;
-                  }
-
-                  if(gettype(z->type) == OP_GETVAL) {
-                    break;
-                  }
-
-                  setval(x->type, getval(z->type));
-                  setval(x->b, getval(z->b));
-                  setval(x->c, getval(z->a));
-
-                  setval(z->type, a);
-                  setval(z->b, getval(z->c));
-                  setval(z->c, d);
-
-                  bc_math_move_closest(obj, limit);
-
-                  tmp2 = tmp2B;
-                } else {
-                  tmp2 = tmp1;
-                }
-              } else {
-                tmp2 = tmp1;
+            tmp1 = bc_before(obj, step);
+            if(tmp1 >= 0) {
+              if(gettype(obj->bc.buffer[tmp1]) == OP_GETVAL) {
+                runs = 2;
               }
-              tmp1 = bc_before(obj, tmp2);
+
+              for(i=0;i<runs;i++) {
+                tmp1 = step, tmp2 = step;
+
+                tmp1 = bc_before(obj, tmp2);
+                while(tmp2 >= bc_in && tmp2 != bc_in && tmp1 >= 0) {
+                  struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[tmp2];
+                  struct vm_top_t *y = (struct vm_top_t *)&obj->bc.buffer[tmp1];
+                  uint8_t typeX = gettype(obj->bc.buffer[tmp2]);
+                  uint8_t typeY = gettype(obj->bc.buffer[tmp1]);
+
+
+                  if(typeY == OP_GETVAL || typeX == OP_GETVAL) {
+                    int8_t a = (int8_t)getval(x->type), b = (int8_t)getval(x->a), c = (int8_t)getval(x->b), d = (int8_t)getval(x->c);
+
+                    setval(x->type, getval(y->type));
+                    setval(x->a, (int8_t)getval(y->a));
+                    setval(x->b, (int8_t)getval(y->b));
+                    setval(x->c, (int8_t)getval(y->c));
+
+                    setval(y->type, a);
+                    setval(y->a, b);
+                    setval(y->b, c);
+                    setval(y->c, d);
+                  } else {
+                    int8_t a = (int8_t)getval(x->type), b = (int8_t)getval(x->a), c = (int8_t)getval(x->b), d = (int8_t)getval(x->c);
+
+                    setval(x->type, getval(y->type));
+                    setval(y->type, a);
+
+                    setval(x->a, b);
+                    setval(x->b, (int8_t)getval(y->b));
+                    setval(x->c, c);
+
+                    setval(y->a, c);
+                    setval(y->b, (int8_t)getval(y->c));
+                    setval(y->c, d);
+                  }
+
+                  tmp2 = tmp1;
+                  tmp1 = bc_before(obj, tmp2);
+                }
+              }
             }
           } else {
-            tmp1 = step, tmp2 = step;
-            tmp1 = bc_before(obj, tmp2);
-            while(tmp2 >= limit && tmp1 >= limit) {
-              struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[tmp2];
+            uint16_t tmp = step;
+            tmp = bc_in;
+            bc_in = bc_before(obj, bc_in);
+            while(tmp >= 0 && tmp >= first && bc_in >= 0) {
+              struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[tmp];
+              struct vm_top_t *y = (struct vm_top_t *)&obj->bc.buffer[bc_in];
+              uint8_t type = gettype(obj->bc.buffer[bc_in]);
+              uint8_t a_immu = get_group(obj->bc.buffer[step]);
+              uint8_t b_immu = get_group(obj->bc.buffer[bc_in]);
 
-              if(is_op_and_math(gettype(x->type))) {
-                for(i=0;i<nr_rule_operators;i++) {
-                  if(gettype(x->type) == rule_operators[i].opcode) {
-                    a_is_op = i;
-                    break;
-                  }
-                }
-
-                a_a = rule_operators[a_is_op].associativity;
-                if(a_a == 2) {
-                  int8_t a = (int8_t)getval(x->type), d = (int8_t)getval(x->c);
-
-                  tmp2B = bc_find_math_dep(obj, tmp2, getval(x->b));
-                  if(tmp2B == -1) {
-                    tmp2 = tmp1;
-                    tmp1 = bc_before(obj, tmp2);
-                    continue;
-                  }
-
-                  struct vm_top_t *z = (struct vm_top_t *)&obj->bc.buffer[tmp2B];
-
-                  if(get_group(obj->bc.buffer[tmp2B]) != 0) {
-                    tmp2 = tmp1;
-                    tmp1 = bc_before(obj, tmp2);
-                    continue;
-                  }
-
-                  if(getval(z->type) == OP_GETVAL) {
-                    break;
-                  }
-
-                  setval(x->type, getval(z->type));
-                  setval(x->b, getval(z->b));
-                  setval(x->c, getval(z->a));
-
-                  setval(z->type, a);
-                  setval(z->b, getval(z->c));
-                  setval(z->c, d);
-
-                  bc_math_move_closest(obj, limit);
-                } else {
-                  tmp2 = tmp1;
-                }
-              } else {
-                tmp2 = tmp1;
+              if(type == OP_GETVAL) {
+                bc_in = bc_before(obj, bc_in);
+                continue;
               }
-              tmp1 = bc_before(obj, tmp2);
+
+              if(a_immu > 0 || b_immu > 0) {
+                break;
+              }
+
+              if((int8_t)getval(y->a) != (int8_t)getval(x->c)) {
+                break;
+              }
+
+              tmp = bc_in;
+
+              if(bc_in > 0) {
+                bc_in = bc_before(obj, bc_in);
+              } else {
+                break;
+              }
+            }
+
+            uint16_t tmp1 = step, tmp2 = step;
+            uint8_t runs = 1, i = 0;
+
+            tmp1 = bc_before(obj, tmp2);
+            if(tmp1 >= 0) {
+              if(gettype(obj->bc.buffer[tmp1]) == OP_GETVAL) {
+                runs = 2;
+              }
+
+              for(i=0;i<runs;i++) {
+                tmp1 = step, tmp2 = step;
+
+                tmp1 = bc_before(obj, tmp2);
+                while(tmp2 >= tmp && tmp2 != tmp && tmp1 >= 0) {
+                  struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[tmp2];
+                  struct vm_top_t *y = (struct vm_top_t *)&obj->bc.buffer[tmp1];
+                  uint8_t typeX = gettype(obj->bc.buffer[tmp2]);
+                  uint8_t typeY = gettype(obj->bc.buffer[tmp1]);
+
+                  if(typeY == OP_GETVAL || typeX == OP_GETVAL) {
+                    int8_t a = (int8_t)getval(x->type), b = (int8_t)getval(x->a), c = (int8_t)getval(x->b), d = (int8_t)getval(x->c);
+
+                    setval(x->type, getval(y->type));
+                    setval(x->a, (int8_t)getval(y->a));
+                    setval(x->b, (int8_t)getval(y->b));
+                    setval(x->c, (int8_t)getval(y->c));
+
+                    setval(y->type, a);
+                    setval(y->a, b);
+                    setval(y->b, c);
+                    setval(y->c, d);
+                  } else {
+                    int8_t a = (int8_t)getval(x->type), d = (int8_t)getval(x->c);
+
+                    setval(x->type, getval(y->type));
+                    setval(x->b, (int8_t)getval(y->b));
+                    setval(x->c, (int8_t)getval(y->a));
+
+                    setval(y->type, a);
+                    setval(y->b, (int8_t)getval(y->c));
+                    setval(y->c, d);
+                  }
+
+                  tmp2 = tmp1;
+                  tmp1 = bc_before(obj, tmp2);
+                }
+              }
             }
           }
         }
@@ -2799,6 +2481,84 @@ static int32_t bc_parse_math_order(char **text, struct rules_t *obj, uint16_t *p
     }
     heap_in = (*cnt);
     bc_in = step;
+  }
+
+  /*
+   * Move all operations as close to it's
+   * matching operation as possible
+   */
+  uint8_t l = 0;
+  for(l=0;l<2;l++) {
+    uint8_t upd = 1;
+    while(upd == 1) {
+      int32_t i = 0, a = 0;
+      upd = 0;
+
+      for(i=first;i<step;i = bc_next(obj, i)) {
+        if(i == -1) {
+          break;
+        }
+        struct vm_top_t *z = (struct vm_top_t *)&obj->bc.buffer[i];
+        if(is_op_and_math(gettype(obj->bc.buffer[i])) ||
+           gettype(obj->bc.buffer[i]) == OP_GETVAL) {
+          for(a=bc_next(obj, i);a<=step;a = bc_next(obj, a)) {
+            if(a == -1) {
+              break;
+            }
+            struct vm_top_t *y = (struct vm_top_t *)&obj->bc.buffer[a];
+            if(((int8_t)getval(z->a) == (int8_t)getval(y->b) && is_op_and_math(gettype(y->type)) /* || (int8_t)getval(z->a) == (int8_t)getval(y->c)*/)) {
+              if(((a-i)/sizeof(struct vm_top_t)) > 2) {
+                upd = 1;
+              }
+              break;
+            }
+          }
+        }
+        if(upd == 1) {
+          break;
+        }
+      }
+      if(upd == 1) {
+        int32_t tmp1 = a, tmp2 = a;
+        uint8_t runs = 1, t = 0;
+
+        tmp1 = bc_before(obj, i);
+        a = bc_before(obj, a);
+        if(tmp1 >= 0 && a >= 0) {
+          if(gettype(obj->bc.buffer[tmp1]) == OP_GETVAL) {
+            runs = 2;
+          }
+
+          for(t=0;t<runs;t++) {
+            tmp1 = i-(t*sizeof(struct vm_top_t)), tmp2 = i-(t*sizeof(struct vm_top_t));
+
+            tmp1 = bc_next(obj, tmp2);
+            while((a-(t*sizeof(struct vm_top_t))) >= 0 &&
+                  tmp2 <= (int32_t)(a-(t*sizeof(struct vm_top_t))) &&
+                  tmp2 != (int32_t)(a-(t*sizeof(struct vm_top_t)))
+                  ) {
+              struct vm_top_t *x = (struct vm_top_t *)&obj->bc.buffer[tmp2];
+              struct vm_top_t *y = (struct vm_top_t *)&obj->bc.buffer[tmp1];
+
+              int8_t p = (int8_t)getval(x->type), b = (int8_t)getval(x->a), c = (int8_t)getval(x->b), d = (int8_t)getval(x->c);
+
+              setval(x->type, getval(y->type));
+              setval(x->a, (int8_t)getval(y->a));
+              setval(x->b, (int8_t)getval(y->b));
+              setval(x->c, (int8_t)getval(y->c));
+
+              setval(y->type, p);
+              setval(y->a, b);
+              setval(y->b, c);
+              setval(y->c, d);
+
+              tmp2 = tmp1;
+              tmp1 = bc_next(obj, tmp2);
+            }
+          }
+        }
+      }
+    }
   }
 
   return step;
@@ -5465,7 +5225,6 @@ int8_t rule_initialize(struct pbuf *input, struct rules_t ***rules, uint8_t *nrr
 /*LCOV_EXCL_STOP*/
 
   if(stack != NULL) {
-/*LCOV_EXCL_START*/
     if((getval(stack->bufsize) % 4) != 0) {
 #if defined(ESP8266) || defined(ESP32)
       Serial.printf("Rules AST not 4 byte aligned!\n");
@@ -5473,7 +5232,6 @@ int8_t rule_initialize(struct pbuf *input, struct rules_t ***rules, uint8_t *nrr
       printf("Rules AST not 4 byte aligned!\n");
 #endif
       exit(-1);
-/*LCOV_EXCL_STOP*/
     }
   }
 
