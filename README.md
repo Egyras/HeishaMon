@@ -190,14 +190,14 @@ end
 
 on timer=10 then
    setTimer(20, 2);
-   gpio(0,21);
-   gpio(1,47);
+   gpio(21,0);
+   gpio(47,1);
 end
 
 on timer=20 then
    setTimer(10, 2);
-   gpio(1,21);
-   gpio(0,47);
+   gpio(21,1);
+   gpio(47,0);
 end
 ```
 
