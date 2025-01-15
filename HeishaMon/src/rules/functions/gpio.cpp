@@ -22,7 +22,7 @@ int8_t rule_function_gpio_callback(struct rules_t *obj) {
   if(nr == 1 || nr == 2) {
     if(rules_type(obj, x) == VINTEGER) {
       gpio = rules_tointeger(obj, x);
-      rules_remove(obj, x++);
+      rules_remove(obj, x);
 #ifdef DEBUG
       printf("\tgpio = %d\n", gpio);
 #endif
