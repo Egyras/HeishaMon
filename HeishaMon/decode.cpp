@@ -416,6 +416,7 @@ void decode_optional_heatpump_data(char* data, char* actOptData, PubSubClient & 
       } else {
         sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"OPT%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),opttopicDescription[Topic_Number][dataValue.toInt() + 1]);
       }      
+      websocket_write_all(log_msg, strlen(log_msg));
       rules_event_cb(_F("@"), optTopics[Topic_Number]);
     }
   }
