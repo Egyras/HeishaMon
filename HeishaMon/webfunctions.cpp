@@ -1253,7 +1253,7 @@ int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExt
       webserver_send_content_P(client, PSTR("\",\"Description\":\""), 17);
 
       int maxvalue = atoi(opttopicDescription[topic][0]);
-      int value = actOptData[0] == '\0' ? 0 : getOptDataValue(actDataExtra, topic).toInt();
+      int value = actOptData[0] == '\0' ? 0 : getOptDataValue(actOptData, topic).toInt();
       if (maxvalue == 0) { //this takes the special case where the description is a real value description instead of a mode, so value should take first index (= 0 + 1)
         value = 0;
       }

@@ -412,9 +412,9 @@ void decode_optional_heatpump_data(char* data, char* actOptData, PubSubClient & 
       int maxvalue = atoi(opttopicDescription[Topic_Number][0]);
       String dataValue = getOptDataValue(actOptData, Topic_Number);
       if (maxvalue == 0) { //this takes the special case where the description is a real value description instead of a mode, so get description index 1
-        sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"OPTTOP%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),opttopicDescription[Topic_Number][1]);
+        sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"OPT%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),opttopicDescription[Topic_Number][1]);
       } else {
-        sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"OPTTOP%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),opttopicDescription[Topic_Number][dataValue.toInt() + 1]);
+        sprintf_P(log_msg, PSTR("{\"data\": {\"heishavalues\": {\"topic\": \"OPT%u\", \"value\": %s, \"description\": \"%s\"}}}"), Topic_Number, dataValue.c_str(),opttopicDescription[Topic_Number][dataValue.toInt() + 1]);
       }      
       rules_event_cb(_F("@"), optTopics[Topic_Number]);
     }

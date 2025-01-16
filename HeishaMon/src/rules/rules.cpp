@@ -296,7 +296,7 @@ static int8_t lexer_parse_number(char *text, uint16_t len, uint16_t *pos) {
      * The dot cannot be the first character
      * and we cannot have more than 1 dot
      */
-    while(*pos <= len &&
+    while(*pos < len &&
         (
           isdigit(current) ||
           (i == 0 && current == '-') ||
@@ -320,7 +320,7 @@ static int8_t lexer_parse_number(char *text, uint16_t len, uint16_t *pos) {
 static uint16_t lexer_parse_string(char *text, uint16_t len, uint16_t *pos) {
   char current = getval(text[*pos]);
 
-  while(*pos <= len &&
+  while(*pos < len &&
       (current != ' ' &&
       current != ',' &&
       current != ';' &&
@@ -363,7 +363,7 @@ static int8_t lexer_parse_quoted_string(char *text, uint16_t len, uint16_t *pos)
 static int8_t lexer_parse_skip_characters(char *text, uint16_t len, uint16_t *pos) {
   char current = getval(text[*pos]);
 
-  while(*pos <= len &&
+  while(*pos < len &&
       (current == ' ' ||
       current == '\n' ||
       current == '\t' ||
