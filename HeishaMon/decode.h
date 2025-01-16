@@ -29,6 +29,7 @@ String getIntMinus1Div5(byte input);
 String getIntMinus1Div50(byte input);
 String getIntMinus1Times10(byte input);
 String getIntMinus1Times50(byte input);
+String getValvePID(byte input);
 String getOpMode(byte input);
 String getPower(byte input);
 String getHeatMode(byte input);
@@ -202,8 +203,8 @@ static const char topics[][MAX_TOPIC_LEN] PROGMEM = {
   "Z1_Pump_State",           //TOP124
   "TwoWay_Valve_State",      //TOP125
   "ThreeWay_Valve_State2",   //TOP126
-  "Z2_Valve_PID",            //TOP127
-  "Z1_Valve_PID",            //TOP128
+  "Z1_Valve_PID",            //TOP127
+  "Z2_Valve_PID",            //TOP128
   "Bivalent_Control",        //TOP129
   "Bivalent_Mode",           //TOP130
   "Bivalent_Start_Temp",     //TOP131
@@ -498,8 +499,8 @@ static const topicFP topicFunctions[] PROGMEM = {
   getBit3and4,         //TOP124
   getBit5and6,         //TOP125
   getBit7and8,         //TOP126
-  getIntMinus1,        //TOP127
-  getIntMinus1,        //TOP128
+  getValvePID,        //TOP127
+  getValvePID,        //TOP128
   getBit7and8,      //TOP129
   getBit5and6,      //TOP130
   getIntMinus128,      //TOP131
@@ -523,7 +524,7 @@ static const char *Powerfulmode[] PROGMEM = {"4", "Off", "30min", "60min", "90mi
 static const char *Quietmode[] PROGMEM = {"4", "Off", "Level 1", "Level 2", "Level 3"};
 static const char *Valve[] PROGMEM = {"2", "Room", "DHW"};
 static const char *Valve2[] PROGMEM = {"2", "Cool", "Heat"};
-static const char *MixingValve[] PROGMEM = {"4", "Off", "Increase","Nothing","Decrease"};
+static const char *MixingValve[] PROGMEM = {"4", "Off", "Decrease","Increase","Invalid"};
 static const char *LitersPerMin[] PROGMEM = {"0", "l/min"};
 static const char *RotationsPerMin[] PROGMEM = {"0", "r/min"};
 static const char *Bar[] PROGMEM = {"0", "Bar"};

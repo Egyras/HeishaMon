@@ -74,6 +74,10 @@ String unknown(byte input) {
   return "-1";
 }
 
+String getValvePID(byte input) {
+  return String((((float)input - 1) / 2), 1);
+}
+
 String getOpMode(byte input) {
   switch ((int)(input & 0b111111)) {
     case 18:
