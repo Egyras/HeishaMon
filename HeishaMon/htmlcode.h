@@ -27,6 +27,22 @@ static const char menuJS[] PROGMEM =
 static const char websocketJS[] PROGMEM =
   "<script>"
   "  var bConnected = false;"
+  "  var inactivityTimeout = 5000;"
+  "  var lastActivityTime = Date.now();"
+  "  function monitorWebSocket() {"
+  "      setInterval(() => {"
+  "          if (Date.now() - lastActivityTime > inactivityTimeout && oWebsocket.readyState === WebSocket.OPEN) {"
+  "              console.log('Detected inactivity, reconnecting...');"
+  "              oWebsocket.close();"
+  "          }"
+  "      }, inactivityTimeout);"
+  "  }  "
+  "  function attemptReconnect() {" 
+  "     if (!bConnected) {" 
+  "         console.log('Attempting to reconnect... ');" 
+  "         startWebsockets();" 
+  "     }" 
+  "  }" 
   "  function startWebsockets() {"
   "    if(typeof MozWebSocket != \"undefined\") {"
   "      oWebsocket = new MozWebSocket(\"ws://\" + location.host + \":80\");"
@@ -41,7 +57,8 @@ static const char websocketJS[] PROGMEM =
   "      };"
   ""
   "      oWebsocket.onclose = function(evt) {"
-  "        console.log('onclose: ' + evt);"
+  "        bConnected = false;"  
+  "        attemptReconnect();"
   "      };"
   ""
   "      oWebsocket.onerror = function(evt) {"
@@ -49,6 +66,7 @@ static const char websocketJS[] PROGMEM =
   "      };"
   ""
   "      oWebsocket.onmessage = function(evt) {"
+  "        lastActivityTime = Date.now();"
   "        if (evt.data.startsWith('{')) {"
   "          const jsonObject = JSON.parse(evt.data);"
   "          if (jsonObject.hasOwnProperty('logMsg')) {"
@@ -59,7 +77,32 @@ static const char websocketJS[] PROGMEM =
   "              obj.scrollTop = obj.scrollHeight;"
   "            }"
   "          } else if (jsonObject.hasOwnProperty('data')) {"
-  "            if (jsonObject.data.hasOwnProperty('heishavalues')) {"
+  "             if (jsonObject.data.hasOwnProperty('stats')) {"
+  "              const elementwifi = document.getElementById(`wifi`);"
+  "              if (elementwifi) {"
+  "                elementwifi.textContent = jsonObject.data.stats.wifi;"
+  "              }"
+  "              const elementeth = document.getElementById(`ethernet`);"
+  "              if (elementeth) {"
+  "                elementeth.textContent = jsonObject.data.stats.ethernet;"
+  "              }"
+  "              const elementmemory = document.getElementById(`memory`);"
+  "              if (elementmemory) {"
+  "                elementmemory.textContent = jsonObject.data.stats.memory;"
+  "              }"
+  "              const elementcorrect = document.getElementById(`correct`);"
+  "              if (elementcorrect) {"
+  "                elementcorrect.textContent = jsonObject.data.stats.correct;"
+  "              }"
+  "              const elementmqtt = document.getElementById(`mqtt`);"
+  "              if (elementmqtt) {"
+  "                elementmqtt.textContent = jsonObject.data.stats.mqtt;"
+  "              }"
+  "              const elementuptime = document.getElementById(`uptime`);"
+  "              if (elementuptime) {"
+  "                elementuptime.textContent = jsonObject.data.stats.uptime;"
+  "              }"              
+  "             } else if (jsonObject.data.hasOwnProperty('heishavalues')) {"
   "              const valueelement = document.getElementById(`${jsonObject.data.heishavalues.topic}-Value`);"
   "              if ((valueelement) && (valueelement.textContent !== jsonObject.data.heishavalues.value)) {"
   "                valueelement.classList.remove(\"update-effect\");"
@@ -135,6 +178,7 @@ static const char refreshJS[] PROGMEM =
   "    openTable('Heatpump');"
   "    document.getElementById(\"cli\").value = \"\";"
   "    startWebsockets();"
+  "    monitorWebSocket();"
   "    refreshTable();"
   " };"
   " var dallasAliasEdit = function() {"
@@ -361,17 +405,18 @@ static const char webBodyRootConsoleTab[] PROGMEM = "<button class=\"w3-bar-item
 
 static const char webBodyEndDiv[] PROGMEM = "</div>";
 
-static const char webBodyRootStatusWifi[] PROGMEM =   "<div class=\"w3-container w3-left\"><br>Wifi signal: ";
+static const char webBodyRootStatusWifi[] PROGMEM =   "<div class=\"w3-container w3-left\"><br>Wifi signal: <span id=\"wifi\">";
 #ifdef ESP8266
-static const char webBodyRootStatusMemory[] PROGMEM =   "%<br>Memory free: ";
+static const char webBodyRootStatusMemory[] PROGMEM =   "</span>%<br>Memory free: <span id=\"memory\">";
 #else
-static const char webBodyRootStatusEthernet[] PROGMEM =   "%<br>Ethernet status: ";
-static const char webBodyRootStatusMemory[] PROGMEM =   "<br>Memory free: ";
+static const char webBodyRootStatusEthernet[] PROGMEM =   "</span>%<br>Ethernet status: <span id=\"ethernet\">";
+static const char webBodyRootStatusMemory[] PROGMEM =   "</span><br>Memory free: <span id=\"memory\">";
 #endif
-static const char webBodyRootStatusReceived[] PROGMEM =  "%<br>Correct received data: ";
-static const char webBodyRootStatusReconnects[] PROGMEM =  "%<br>MQTT reconnects: ";
-static const char webBodyRootStatusUptime[] PROGMEM =   "<br>Uptime: ";
-static const char webBodyRootStatusListenOnly[] PROGMEM =   "<br><b>Listen only mode active</b>";
+static const char webBodyRootStatusReceived[] PROGMEM =  "</span>%<br>Correct received data: <span id=\"correct\">";
+static const char webBodyRootStatusReconnects[] PROGMEM =  "</span>%<br>MQTT reconnects: <span id=\"mqtt\">";
+static const char webBodyRootStatusUptime[] PROGMEM =   "</span><br>Uptime: <span id=\"uptime\">";
+static const char webBodyRootStatusEndSpan[] PROGMEM =   "</span>";
+static const char webBodyRootStatusListenOnly[] PROGMEM =   "</span><br><b>Listen only mode active</b>";
 
 static const char webBodyRootHeatpumpValues[] PROGMEM =
   "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">"

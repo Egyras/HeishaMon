@@ -1748,6 +1748,32 @@ void loop() {
     sprintf_P(mqtt_topic, PSTR("%s/stats"), heishamonSettings.mqtt_topic_base);
     mqtt_client.publish(mqtt_topic, stats.c_str(), MQTT_RETAIN_VALUES);
 
+    //websocket stats
+#ifdef ESP32
+    String ethernetStat;
+    if (ETH.phyAddr() != 0) {        
+      if (ETH.connected()) {
+        if (ETH.hasIP()) {
+          ethernetStat = F("connected - IP: ");
+          ethernetStat += ETH.localIP().toString();
+          ethernetStat += F(")");
+        } else {
+          ethernetStat = F("connected - no IP");
+        }
+      } 
+      else {
+        ethernetStat = F("not connected");
+      }
+    } else {
+      ethernetStat = F("not installed");
+    }
+    sprintf_P(log_msg, PSTR("{\"data\": {\"stats\": {\"wifi\": %d, \"ethernet\": \"%s\", \"memory\": %d, \"correct\": %.0f,\"mqtt\": %d,\"uptime\": \"%s\"}}}"), getWifiQuality(), ethernetStat.c_str(), getFreeMemory(), readpercentage, mqttReconnects, getUptime());
+#else
+    sprintf_P(log_msg, PSTR("{\"data\": {\"stats\": {\"wifi\": %d, \"memory\": %d, \"correct\": %.0f,\"mqtt\": %d,\"uptime\": \"%s\"}}}"), getWifiQuality(), getFreeMemory(), readpercentage, mqttReconnects, getUptime());    
+#endif
+    
+    websocket_write_all(log_msg, strlen(log_msg));        
+
     //get new data
     if (!heishamonSettings.listenonly) send_panasonic_query();
 
