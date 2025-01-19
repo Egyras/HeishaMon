@@ -1175,8 +1175,6 @@ void factoryReset() {
       yield();
     }
 #else
-    pixels.begin();
-    pixels.clear();
     while (true) {
      delay(100);
      pixels.setPixelColor(0, 128, 0, 0);
@@ -1417,8 +1415,6 @@ void setup() {
         yield();
       }
 #else
-      pixels.begin();
-      pixels.clear();
       while (true) {
         delay(50);
         pixels.setPixelColor(0, 128, 0, 0);
