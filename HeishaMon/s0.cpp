@@ -68,7 +68,8 @@ void initS0Sensors(s0SettingsStruct s0Settings[]) {
   //setup s0 port 1
 
   //TODO: check if this is still necessary
-  actS0Settings[0].gpiopin = s0Settings[0].gpiopin;
+  //actS0Settings[0].gpiopin = s0Settings[0].gpiopin;
+  actS0Settings[0].gpiopin = DEFAULT_S0_PIN_1;
   actS0Settings[0].ppkwh = s0Settings[0].ppkwh;
   actS0Settings[0].lowerPowerInterval = s0Settings[0].lowerPowerInterval;
   actS0Settings[0].minimalPulseWidth = s0Settings[0].minimalPulseWidth;
@@ -81,7 +82,8 @@ void initS0Sensors(s0SettingsStruct s0Settings[]) {
   //setup s0 port 2
 
   //TODO: check if this is still necessary
-  actS0Settings[1].gpiopin = s0Settings[1].gpiopin;
+  //actS0Settings[1].gpiopin = s0Settings[1].gpiopin; 
+  actS0Settings[1].gpiopin = DEFAULT_S0_PIN_2;
   actS0Settings[1].ppkwh = s0Settings[1].ppkwh;
   actS0Settings[1].lowerPowerInterval = s0Settings[1].lowerPowerInterval;
   actS0Settings[1].minimalPulseWidth = s0Settings[1].minimalPulseWidth;
@@ -177,6 +179,9 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
       sprintf(valueStr, "%u",  actS0Data[i].watt);
       sprintf(mqtt_topic, PSTR("%s/%s/Watt/%d"), mqtt_topic_base, mqtt_topic_s0, (i + 1));
       mqtt_client.publish(mqtt_topic, valueStr, MQTT_RETAIN_VALUES);
+      //update GUI over websocket
+      sprintf_P(log_msg, PSTR("{\"data\": {\"s0values\": {\"s0port\": %d, \"Watt\": %u, \"Watthour\": %.2f, \"WatthourTotal\": %.2f}}}"), i+1, actS0Data[i].watt,Watthour,WatthourTotal);
+      websocket_write_all(log_msg, strlen(log_msg));         
     }
   }
 }

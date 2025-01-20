@@ -210,18 +210,17 @@ void loadSettings(settingsStruct *heishamonSettings) {
           if ( jsonDoc["wifi_hostname"] ) strlcpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], sizeof(heishamonSettings->wifi_hostname));
           if ( jsonDoc["ota_password"] ) strlcpy(heishamonSettings->ota_password, jsonDoc["ota_password"], sizeof(heishamonSettings->ota_password));
           if ( jsonDoc["mqtt_topic_base"] ) strlcpy(heishamonSettings->mqtt_topic_base, jsonDoc["mqtt_topic_base"], sizeof(heishamonSettings->mqtt_topic_base));
-          if ( jsonDoc["mqtt_topic_listen"] ) strlcpy(heishamonSettings->mqtt_topic_listen, jsonDoc["mqtt_topic_listen"], sizeof(heishamonSettings->mqtt_topic_listen));
           if ( jsonDoc["mqtt_server"] ) strlcpy(heishamonSettings->mqtt_server, jsonDoc["mqtt_server"], sizeof(heishamonSettings->mqtt_server));
           if ( jsonDoc["mqtt_port"] ) strlcpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], sizeof(heishamonSettings->mqtt_port));
           if ( jsonDoc["mqtt_username"] ) strlcpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], sizeof(heishamonSettings->mqtt_username));
           if ( jsonDoc["mqtt_password"] ) strlcpy(heishamonSettings->mqtt_password, jsonDoc["mqtt_password"], sizeof(heishamonSettings->mqtt_password));
           if ( jsonDoc["ntp_servers"] ) strlcpy(heishamonSettings->ntp_servers, jsonDoc["ntp_servers"], sizeof(heishamonSettings->ntp_servers));
           if ( jsonDoc["timezone"]) heishamonSettings->timezone = jsonDoc["timezone"];
+          heishamonSettings->force_rules = ( jsonDoc["force_rules"] == "enabled" ) ? true : false;
           heishamonSettings->use_1wire = ( jsonDoc["use_1wire"] == "enabled" ) ? true : false;
           heishamonSettings->use_s0 = ( jsonDoc["use_s0"] == "enabled" ) ? true : false;
           heishamonSettings->hotspot = ( jsonDoc["hotspot"] == "disabled" ) ? false : true; //default to true if not found in settings
           heishamonSettings->listenonly = ( jsonDoc["listenonly"] == "enabled" ) ? true : false;
-          heishamonSettings->listenmqtt = ( jsonDoc["listenmqtt"] == "enabled" ) ? true : false;
           heishamonSettings->logMqtt = ( jsonDoc["logMqtt"] == "enabled" ) ? true : false;
           heishamonSettings->logHexdump = ( jsonDoc["logHexdump"] == "enabled" ) ? true : false;
           heishamonSettings->logSerial1 = ( jsonDoc["logSerial1"] == "enabled" ) ? true : false;
@@ -240,12 +239,12 @@ void loadSettings(settingsStruct *heishamonSettings) {
           if (heishamonSettings->updateAllTime < heishamonSettings->waitTime) heishamonSettings->updateAllTime = heishamonSettings->waitTime;
           if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
           if (heishamonSettings->updataAllDallasTime < heishamonSettings->waitDallasTime) heishamonSettings->updataAllDallasTime = heishamonSettings->waitDallasTime;
-          if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
+          //if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
           if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
           if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
           if (jsonDoc["s0_1_minpulsewidth"]) heishamonSettings->s0Settings[0].minimalPulseWidth = jsonDoc["s0_1_minpulsewidth"];
           if (jsonDoc["s0_1_maxpulsewidth"]) heishamonSettings->s0Settings[0].maximalPulseWidth = jsonDoc["s0_1_maxpulsewidth"];
-          if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
+          //if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
           if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
           if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
           if (jsonDoc["s0_2_minpulsewidth"]) heishamonSettings->s0Settings[1].minimalPulseWidth = jsonDoc["s0_2_minpulsewidth"];
@@ -309,6 +308,7 @@ void setupWifi(settingsStruct *heishamonSettings) {
 #elif defined(ESP32)
   //WiFi.setTxPower(WIFI_POWER_8_5dBm); //fix for bad chips
   WiFi.setSleep(false);
+  WiFi.mode(WIFI_AP_STA);
   WiFi.softAPdisconnect(true); 
   delay(100);  // must delay to avoid error 
   WiFi.disconnect(true); 
@@ -319,6 +319,7 @@ void setupWifi(settingsStruct *heishamonSettings) {
   } else {
     WiFi.setHostname(heishamonSettings->wifi_hostname);
   }
+  WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); //select best AP with same SSID
   if (heishamonSettings->wifi_ssid[0] != '\0') {
      log_message(_F("Wifi client mode..."));
     if (heishamonSettings->wifi_password[0] == '\0') {
@@ -390,7 +391,6 @@ void settingsToJson(JsonDocument &jsonDoc, settingsStruct *heishamonSettings) {
   jsonDoc["wifi_ssid"] = heishamonSettings->wifi_ssid;
   jsonDoc["ota_password"] = heishamonSettings->ota_password;
   jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
-  jsonDoc["mqtt_topic_listen"] = heishamonSettings->mqtt_topic_listen;
   jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
   jsonDoc["mqtt_port"] = heishamonSettings->mqtt_port;
   jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
@@ -414,11 +414,10 @@ void settingsToJson(JsonDocument &jsonDoc, settingsStruct *heishamonSettings) {
     jsonDoc["listenonly"] = "enabled";
   } else {
     jsonDoc["listenonly"] = "disabled";
-  }
-  if (heishamonSettings->listenmqtt) {
-    jsonDoc["listenmqtt"] = "enabled";
+  }  if (heishamonSettings->force_rules) {
+    jsonDoc["force_rules"] = "enabled";
   } else {
-    jsonDoc["listenmqtt"] = "disabled";
+    jsonDoc["force_rules"] = "disabled";
   }
   if (heishamonSettings->logMqtt) {
     jsonDoc["logMqtt"] = "enabled";
@@ -482,14 +481,15 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 
   settingsToJson(jsonDoc, heishamonSettings); //stores current settings in a json document
 
+  jsonDoc["force_rules"] = String("disabled");
   jsonDoc["hotspot"] = String("disabled");
   jsonDoc["listenonly"] = String("disabled");
-  jsonDoc["listenmqtt"] = String("disabled");
   jsonDoc["logMqtt"] = String("disabled");
   jsonDoc["logHexdump"] = String("disabled");
   jsonDoc["logSerial1"] = String("disabled");
   jsonDoc["optionalPCB"] = String("disabled");
   jsonDoc["opentherm"] = String("disabled");
+
 #ifdef ESP32  
   jsonDoc["proxy"] = String("disabled");
 #endif  
@@ -502,8 +502,6 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
       jsonDoc["wifi_hostname"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_topic_base") == 0) {
       jsonDoc["mqtt_topic_base"] = tmp->value;
-    } else if (strcmp(tmp->name.c_str(), "mqtt_topic_listen") == 0) {
-      jsonDoc["mqtt_topic_listen"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_server") == 0) {
       jsonDoc["mqtt_server"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_port") == 0) {
@@ -523,8 +521,8 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
       jsonDoc["hotspot"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "listenonly") == 0) {
       jsonDoc["listenonly"] = tmp->value;
-    } else if (strcmp(tmp->name.c_str(), "listenmqtt") == 0) {
-      jsonDoc["listenmqtt"] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "force_rules") == 0) {
+      jsonDoc["force_rules"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "logMqtt") == 0) {
       jsonDoc["logMqtt"] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "logHexdump") == 0) {
@@ -567,9 +565,10 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 
   tmp = (struct websettings_t *)client->userdata;
   while (tmp) {
-    if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_gpio") == 0) {
-      jsonDoc["s0_1_gpio"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_ppkwh") == 0) {
+    //if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_gpio") == 0) {
+    // jsonDoc["s0_1_gpio"] = tmp->value;
+    //} else
+    if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_ppkwh") == 0) {
       jsonDoc["s0_1_ppkwh"] = tmp->value;
     } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_interval") == 0) {
       jsonDoc["s0_1_interval"] = tmp->value;
@@ -577,8 +576,8 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
       jsonDoc["s0_1_minpulsewidth"] = tmp->value;
     } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_maxpulsewidth") == 0) {
       jsonDoc["s0_1_maxpulsewidth"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_gpio") == 0) {
-      jsonDoc["s0_2_gpio"] = tmp->value;
+    //} else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_gpio") == 0) {
+    //  jsonDoc["s0_2_gpio"] = tmp->value;
     } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
       jsonDoc["s0_2_ppkwh"] = tmp->value;
     } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
@@ -787,24 +786,22 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         itoa(heishamonSettings->hotspot, str, 10);
         webserver_send_content(client, str, strlen(str));
         
+      } break;
+    case 6: {
+        char str[20];
         webserver_send_content_P(client, PSTR(",\"listenonly\":"), 14);
 
         itoa(heishamonSettings->listenonly, str, 10);
         webserver_send_content(client, str, strlen(str));
-      } break;
-    case 6: {
-        char str[20];
-        webserver_send_content_P(client, PSTR(",\"listenmqtt\":"), 14);
+        webserver_send_content_P(client, PSTR(",\"force_rules\":"), 15);
 
-        itoa(heishamonSettings->listenmqtt, str, 10);
+        itoa(heishamonSettings->force_rules, str, 10);
         webserver_send_content(client, str, strlen(str));
 
-        webserver_send_content_P(client, PSTR(",\"mqtt_topic_listen\":\""), 22);
-        webserver_send_content(client, heishamonSettings->mqtt_topic_listen, strlen(heishamonSettings->mqtt_topic_listen));
       } break;
     case 7: {
         char str[20];
-        webserver_send_content_P(client, PSTR("\",\"logMqtt\":"), 12);
+        webserver_send_content_P(client, PSTR(",\"logMqtt\":"), 11);
 
         itoa(heishamonSettings->logMqtt, str, 10);
         webserver_send_content(client, str, strlen(str));
@@ -862,13 +859,13 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         itoa(heishamonSettings->use_s0, str, 10);
         webserver_send_content(client, str, strlen(str));
 
-        webserver_send_content_P(client, PSTR(",\"s0_1_gpio\":"), 13);
+        //webserver_send_content_P(client, PSTR(",\"s0_1_gpio\":"), 13);
 
         int i = 0;
 
-        if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_1;  //dirty hack
-        itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
-        webserver_send_content(client, str, strlen(str));
+        //if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_1;  //dirty hack
+        //itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
+        //webserver_send_content(client, str, strlen(str));
 
         webserver_send_content_P(client, PSTR(",\"s0_1_ppkwh\":"), 14);
 
@@ -895,15 +892,15 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
         itoa((int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval), str, 10);
         webserver_send_content(client, str, strlen(str));
 
-        webserver_send_content_P(client, PSTR(",\"s0_2_gpio\":"), 13);
+        //webserver_send_content_P(client, PSTR(",\"s0_2_gpio\":"), 13);
       } break;
     case 12: {
         char str[20];
         int i = 1;
 
-        if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_2;  //dirty hack
-        itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
-        webserver_send_content(client, str, strlen(str));
+        //if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_2;  //dirty hack
+        //itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
+        //webserver_send_content(client, str, strlen(str));
 
         webserver_send_content_P(client, PSTR(",\"s0_2_ppkwh\":"), 14);
 
@@ -1139,7 +1136,7 @@ int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExt
 
       webserver_send_content_P(client, topics[topic], strlen_P(topics[topic]));
 
-      if (topic != 44) { //ERROR topic #44 is only one to be a string value
+      if ((topic != 44) && (topic != 92)) { //ERROR topic #44 and #92 are the only one to be a string value
         webserver_send_content_P(client, PSTR("\",\"Value\":"), 10);
       }
       else {
@@ -1152,7 +1149,7 @@ int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExt
         webserver_send_content(client, str, strlen(str));
       }
 
-      if (topic != 44) { //ERROR topic #44 is only one to be a string value
+      if ((topic != 44) && (topic != 92)) { //ERROR topic #44 and #92 are the only one to be a string value
         webserver_send_content_P(client, PSTR(",\"Description\":\""), 16);
       } else {
         webserver_send_content_P(client, PSTR("\",\"Description\":\""), 17);
@@ -1256,7 +1253,7 @@ int handleJsonOutput(struct webserver_t *client, char* actData, char* actDataExt
       webserver_send_content_P(client, PSTR("\",\"Description\":\""), 17);
 
       int maxvalue = atoi(opttopicDescription[topic][0]);
-      int value = actOptData[0] == '\0' ? 0 : getOptDataValue(actDataExtra, topic).toInt();
+      int value = actOptData[0] == '\0' ? 0 : getOptDataValue(actOptData, topic).toInt();
       if (maxvalue == 0) { //this takes the special case where the description is a real value description instead of a mode, so value should take first index (= 0 + 1)
         value = 0;
       }

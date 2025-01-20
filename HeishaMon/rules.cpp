@@ -348,6 +348,37 @@ static int8_t event_cb(struct rules_t *obj, char *name) {
   return 1;
 }
 
+static int8_t check_is_number(const char *str) {
+  uint16_t pos = 0, nrdot = 0;
+  size_t len = strlen(str);
+
+  if (len == 0) {
+    return -1;  // Empty string is not a number.
+  }
+
+  // Check the first character (optional '-' or a digit).
+  if (str[0] != '-' && !isdigit((unsigned char)str[0])) {
+    return -1;
+  }
+
+  // Traverse the rest of the string.
+  for (pos = 1; pos < len; pos++) {
+    char current = str[pos];
+
+    if (current == '.') {
+      nrdot++;
+      if (nrdot > 1) {
+        return -1;  // More than one dot.
+      }
+    } else if (!isdigit((unsigned char)current)) {
+      return -1;  // Non-digit, non-dot character.
+    }
+  }
+
+  // Valid number if all checks pass.
+  return 0;
+}
+
 static int8_t vm_value_get(struct rules_t *obj) {
   int16_t x = 0;
 
@@ -414,7 +445,7 @@ static int8_t vm_value_get(struct rules_t *obj) {
         char *str = (char *)dataValue.c_str();
         if(strlen(str) == 0) {
           rules_pushnil(obj);
-        } else {
+        } else if(check_is_number(str) == 0) {
           float var = atof(str);
           float nr = 0;
 
@@ -425,6 +456,8 @@ static int8_t vm_value_get(struct rules_t *obj) {
             rules_pushfloat(obj, var);
             return 0;
           }
+        } else {
+          rules_pushstring(obj, str);
         }
       }
     }
@@ -436,7 +469,7 @@ static int8_t vm_value_get(struct rules_t *obj) {
         char *str = (char *)dataValue.c_str();
         if(strlen(str) == 0) {
           rules_pushnil(obj);
-        } else {
+        } else if(check_is_number(str) == 0) {
           float var = atof(str);
           float nr = 0;
 
@@ -447,6 +480,8 @@ static int8_t vm_value_get(struct rules_t *obj) {
             rules_pushfloat(obj, var);
             return 0;
           }
+        } else {
+          rules_pushstring(obj, str);
         }
       }
     }
@@ -458,7 +493,7 @@ static int8_t vm_value_get(struct rules_t *obj) {
         char *str = (char *)dataValue.c_str();
         if(strlen(str) == 0) {
           rules_pushnil(obj);
-        } else {
+        } else if(check_is_number(str) == 0) {
           float var = atof(str);
           float nr = 0;
 
@@ -469,6 +504,8 @@ static int8_t vm_value_get(struct rules_t *obj) {
             rules_pushfloat(obj, var);
             return 0;
           }
+        } else {
+          rules_pushstring(obj, str);
         }
       }
     }

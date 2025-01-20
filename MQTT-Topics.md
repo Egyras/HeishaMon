@@ -135,8 +135,26 @@ TOP115 | main/Water_Pressure | Water Pressure in bar (K/L series)
 TOP116 | main/Second_Inlet_Temp | Water Inlet 2 Temperature(K/L series)
 TOP117 | main/Economizer_Outlet_Temp | Economizer Outlet Temperature (K/L series)
 TOP118 | main/Second_Room_Thermostat_Temp | Remote control 2 thermostat temp (°C)
-
-
+TOP119 | main/External_Control | Is the external control switch enabled
+TOP120 | main/External_Heat_Cool_Control | Is the heat/cool control switch enabled (optional pcb setting)
+TOP121 | main/External_Error_Signal | Is the external error signal enabled
+TOP122 | main/External_Compressor_Control | Is the external compressor control enabled (optional pcb setting)
+TOP123 | main/Z1_Pump_State | Zone 1 Pump State
+TOP124 | main/Z2_Pump_State | Zone 2 Pump State
+TOP125 | main/TwoWay_Valve_State | 2-Way Valve State
+TOP126 | main/ThreeWay_Valve_State2 | 3-Way Valve State (2nd definition)
+TOP127 | main/Z1_Valve_PID | PID Value for Zone 1 mixing valve
+TOP128 | main/Z2_Valve_PID | PID Value for Zone 2 mixing valve
+TOP129 | main/Bivalent_Control | Bivalent control (0=disable, 1=enable)
+TOP130 | main/Bivalent_Mode	 | Bivalent mode (0=Alternative, 1=Parallel, 2=Advanced Parallel)
+TOP131 | main/Bivalent_Start_Temp		 | Bivalent start temperature
+TOP132 | main/Bivalent_Advanced_Heat	 | Bivalent adv. par. heat control (disable/enable)
+TOP133 | main/Bivalent_Advanced_DHW	 	 | Bivalent adv. par. DHW control (disable/enable)
+TOP134 | main/Bivalent_Advanced_Start_Temp	 | Bivalent adv. par. heat start temp
+TOP135 | main/Bivalent_Advanced_Stop_Temp	 | Bivalent adv. par. heat stop temp
+TOP136 | main/Bivalent_Advanced_Start_Delay	 | Bivalent adv. par. heat start delay
+TOP137 | main/Bivalent_Advanced_Stop_Delay	 | Bivalent adv. par. heat stop delay
+TOP138 | main/Bivalent_Advanced_DHW_Delay	 | Bivalent adv. par. DHW delay
 
 
 
@@ -195,6 +213,16 @@ SET26 | SetExternalPadHeater | Set the external pad heater | 0=disabled, 1=type-
 SET27 | SetBufferDelta | Set buffer tank delta | 0 - 10
 SET28 | SetBuffer | Set buffer installed | 0=not installed, 1=installed
 SET29 | SetHeatingOffOutdoorTemp | Set Outdoor Temperature to stop heating | 5 to 35
+SET30 | SetExternalControl | Set external control switch | 0=disabled, 1=enabled
+SET31 | SetExternalError | Set external error signal| 0=disabled, 1=enabled
+SET32 | SetExternalCompressorControl | Set external compressor control switch | 0=disabled, 1=enabled
+SET33 | SetExternalHeatCoolControl | Set external heat/cool control switch | 0=disabled, 1=enabled
+SET34 | SetBivalentControl | Set bivalent control switch | 0=disabled, 1=enabled
+SET35 | SetBivalentMode | Set bivalent mode | 0=alternative, 1=parallel, 2=advanced parallel
+SET36 | SetBivalentStartTemp | Set bivalent start temp | -15 to 35
+SET37 | SetBivalentAPStartTemp | Set bivalent adv. par. start temp | -15 to 35
+SET38 | SetBivalentAPStopTemp | Set bivalent adv. par. stop temp | -15 to 35
+
 
 *If you operate your heatpump in water mode with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature.*
 
