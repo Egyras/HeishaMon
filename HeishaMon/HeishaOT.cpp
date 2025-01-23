@@ -330,7 +330,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
       } break;
     case OpenThermMessageID::CHPressure: {
         log_message(_F("OpenTherm: Received read water pressure"));
-        if (getOTStructMember(_F("outsideTemp"))->value.f > -99) {
+        if (getOTStructMember(_F("chPressure"))->value.f > -99) {
           unsigned long data = ot.temperatureToData(getOTStructMember(_F("chPressure"))->value.f);
           otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::CHPressure, data);
 
@@ -586,12 +586,12 @@ void openthermJsonOutput(struct webserver_t *client) {
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("},"), 2);
   //chPressure
-  webserver_send_content_P(client, PSTR("\"chPressure\":{\"type\": \"W\",\"value\":"), 34);
+  webserver_send_content_P(client, PSTR("\"chPressure\":{\"type\": \"R\",\"value\":"), 34);
   dtostrf( getOTStructMember(_F("chPressure"))->value.f, 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("},"), 2);  
   //outsideTemp
-  webserver_send_content_P(client, PSTR("\"outsideTemp\":{\"type\": \"W\",\"value\":"), 35);
+  webserver_send_content_P(client, PSTR("\"outsideTemp\":{\"type\": \"R\",\"value\":"), 35);
   dtostrf( getOTStructMember(_F("outsideTemp"))->value.f, 0, 2, str);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("},"), 2);
