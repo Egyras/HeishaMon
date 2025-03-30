@@ -127,8 +127,8 @@ TOP107 | main/Liquid_Type | Type of liquid in settings (Water / Glycol)
 TOP108 | main/Alt_External_Sensor | If external outdoor sensor is selected
 TOP109 | main/Anti_Freeze_Mode | Is anti freeze mode enabled or disabled
 TOP110 | main/Optional_PCB | If the optional PCB is enabled (if installed)
-TOP111 | main/Z2_Sensor_Settings | Setting of the sensor for zone 2 (0=water, 1=ext thermostat, 2=int. thermostat or thermistor)
-TOP112 | main/Z1_Sensor_Settings | Setting of the sensor for zone 1 (0=water, 1=ext thermostat, 2=int. thermostat or thermistor)
+TOP111 | main/Z1_Sensor_Settings | Setting of the sensor for zone 1 (0=water, 1=ext thermostat, 2=int. thermostat or thermistor)
+TOP112 | main/Z2_Sensor_Settings | Setting of the sensor for zone 2 (0=water, 1=ext thermostat, 2=int. thermostat or thermistor)
 TOP113 | main/Buffer_Tank_Delta | Delta of buffer tank setting in Kelvin
 TOP114 | main/External_Pad_Heater | If the external pad heater is enabled (if installed)
 TOP115 | main/Water_Pressure | Water Pressure in bar (K/L series)
