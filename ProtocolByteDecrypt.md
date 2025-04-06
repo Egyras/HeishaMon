@@ -114,7 +114,7 @@
 |  TOP | 109 | 00 |   | 0 byte |
 |  TOP | 110 | 55 | 1st & 2nd bit - Quiet mode <br/> 3rd&4th bit -  Powerful   <br/> 5th & 6th bit - Heat-Cool SW b10 - Cool   <br/> 7th & 8th bit - External SW b10-Open  | Actual/Real states of <br/> Quiet   <br/> Powerful   <br/> Heat-Cool SW   <br/> External SW |
 |  TOP20+TOP26 | 111 | 56 |  right 2 bits: 0b10=DHW 0b01=Room 3-Way Valve. Next 2 bits (from right) is defrosting state (0b01 = defrosting not active, 0b10 = defrosting active) | 3 way valve + Defrost status |
-|  TOP60+TOP61 | 112 | 55 | 1st & 2nd bit - Boiler Contact  <br/> 5th & 6th bit - External Heater <br/> 7th & 8th bit - Internal Heater (room or DHW)  <br/> ( b01 - OFF, b10 - ON )| Real status of Bivalent Boiler contact and Heaters relays (Line under icons)  |
+|  TOP60+TOP61+TOP139 | 112 | 55 | 1st & 2nd bit - Boiler Contact  <br/> 5th & 6th bit - External Heater <br/> 7th & 8th bit - Internal Heater (room or DHW)  <br/> ( b01 - OFF, b10 - ON )| Real status of Bivalent Boiler contact and Heaters relays (Line under icons)  |
 |  TOP44 | 113 | 21 | Hex B1 - F type error, A1 - H type error. After H error reset value 21, F error reset 31  | Error code type |
 |  TOP44 | 114 | 53 | F45 error in HEX 56, calulation 45 treat as HEX and convert to DEC 69 + 17 = 86 (Hex 56) | Error code number |
 |  TOP | 115 | 15 |   | ? |
