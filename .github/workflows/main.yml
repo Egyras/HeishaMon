@@ -1,6 +1,6 @@
 name: Build binary
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 env:
   ARDUINO_BOARD_MANAGER_ADDITIONAL_URLS: "http://arduino.esp8266.com/stable/package_esp8266com_index.json https://espressif.github.io/arduino-esp32/package_esp32_dev_index.json"
@@ -22,13 +22,13 @@ jobs:
         uses: arduino/setup-arduino-cli@v2
 
       - name: Install platform
-        run:  |
+        run: |
           arduino-cli core update-index
           arduino-cli core install esp8266:esp8266
           arduino-cli core install esp32:esp32@3.0.7
 
       - name: Install dependencies
-        run:  arduino-cli lib install ringbuffer pubsubclient arduinojson dallastemperature onewire "Adafruit NeoPixel"
+        run: arduino-cli lib install ringbuffer pubsubclient arduinojson dallastemperature onewire "Adafruit NeoPixel"
 
       - name: Fix Onewire lib for ESP32-3.0.0
         run: |
