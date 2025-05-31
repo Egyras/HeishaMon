@@ -359,11 +359,11 @@ unsigned int set_powerful_mode(char *msg, unsigned char *cmd, char *log_msg) {
 
   String set_powerful_string(msg);
 
-  byte set_powerful = (set_powerful_string.toInt() ) + 73;
+  byte set_powerful = (set_powerful_string.toInt() + 1) & 0b111;
 
   {
     char tmp[256] = { 0 };
-    snprintf_P(tmp, 255, PSTR("set powerful mode to %d"), (set_powerful - 73) );
+    snprintf_P(tmp, 255, PSTR("set powerful mode to %d"), set_powerful - 1);
     memcpy(log_msg, tmp, sizeof(tmp));
   }
 
