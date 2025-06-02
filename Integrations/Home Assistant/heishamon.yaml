@@ -43,6 +43,10 @@
 ## 1.6.1 (3-11-2024)
 ##   Style
 ##   - Fix indentation and remove trailing spaces
+## 1.6.2 (2-6-2025)
+##   Added
+##   - Bring back the S0 readings as examples (they're more accurate and people might have other uses for them)
+
 
 # Automations #
 ###############
@@ -767,31 +771,31 @@ mqtt:
 
     # The following S0 topics are only available if S0 is enabled.
     #
-    #S0 kWh Meter 1 - Assumed to measure the heat pump consumption
-    - name: Aquarea Metered Power Consumption
-      state_topic: "panasonic_heat_pump/s0/Watt/1"
-      unit_of_measurement: "W"
-      state_class: "measurement"
+    #S0 kWh Meter 1 Example - Assumed to measure the heat pump consumption
+    #- name: Aquarea Metered Power Consumption
+    #  state_topic: "panasonic_heat_pump/s0/Watt/1"
+    #  unit_of_measurement: "W"
+    #  state_class: "measurement"
 
-    - name: Aquarea Metered Power Consumption Total
-      state_topic: "panasonic_heat_pump/s0/WatthourTotal/1"
-      unit_of_measurement: "kWh"
-      value_template: >-
-        {{ (value | int) / 1000}}
-      state_class: "measurement"
+    #- name: Aquarea Metered Power Consumption Total
+    #  state_topic: "panasonic_heat_pump/s0/WatthourTotal/1"
+    #  unit_of_measurement: "kWh"
+    #  value_template: >-
+    #    {{ (value | int) / 1000}}
+    #  state_class: "measurement"
 
-    #S0 kWh Meter 2 - Assumed to measure the backup heater consumption
-    - name: Aquarea Metered Backup Heater Power Consumption
-      state_topic: "panasonic_heat_pump/s0/Watt/2"
-      unit_of_measurement: "W"
-      state_class: "measurement"
+    #S0 kWh Meter 2 Example - Assumed to measure the backup heater consumption
+    #- name: Aquarea Metered Backup Heater Power Consumption
+    #  state_topic: "panasonic_heat_pump/s0/Watt/2"
+    #  unit_of_measurement: "W"
+    #  state_class: "measurement"
 
-    - name: Aquarea Metered Backup Heater Power Consumption Total
-      state_topic: "panasonic_heat_pump/s0/WatthourTotal/2"
-      unit_of_measurement: "kWh"
-      value_template: >-
-        {{ (value | int) / 1000}}
-      state_class: "measurement"
+    #- name: Aquarea Metered Backup Heater Power Consumption Total
+    #  state_topic: "panasonic_heat_pump/s0/WatthourTotal/2"
+    #  unit_of_measurement: "kWh"
+    #  value_template: >-
+    #    {{ (value | int) / 1000}}
+    #  state_class: "measurement"
 
   # switch #
   ##########
