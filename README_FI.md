@@ -1,19 +1,19 @@
 [![Join us on Slack chat room](https://img.shields.io/badge/Slack-Join%20the%20chat%20room-orange)](https://join.slack.com/t/panasonic-wemos/shared_invite/enQtODg2MDY0NjE1OTI3LTgzYjkwMzIwNTAwZTMyYzgwNDQ1Y2QxYjkwODg3NjMyN2MyM2ViMDM3Yjc3OGE3MGRiY2FkYzI4MzZiZDVkNGE)
 
 
-# Panasonic Aquarea H- ja J-sarjan vesi-ilmalämpöpumpun protokollaa lukeva IoT-laite
+# Panasonic Aquarea H-, J-, K- ja L-sarjan vesi-ilmalämpöpumpun protokollaa lukeva IoT-laite
 
-Tämä ESP8266-projekti mahdollistaa Panasonic Aquarea vesi-ilmalämpöpumppujen toimittamien tietojen raportoimisen MQTT-palvelimelle. Se tarjoaa myös JSON-muotoisen tiedon, jota voit pollata, jos et halua käyttää MQTT:tä.
+Tämä ESP8266-projekti mahdollistaa Panasonic Aquarea vesi-ilmalämpöpumppujen toimittamien tietojen raportoimisen MQTT-palvelimelle. Se tarjoaa myös JSON-muotoisen tiedon, jota voit pollata, jos et halua käyttää MQTT:tä. Myös ESP32 on tuettu.
 
 Ajantasainen, englanninkielinen [README.md](README.md) löytyy täältä.
 
 # Julkaistu versio
 
-Tämän hetkinen beta-versio on 0.9b. [Käännetty binääri](binaries/HeishaMon.ino.d1-v0.9b.bin) voidaan asentaa Wemos D1 minille tai luultavasti mille tahansa muulle ESP8266-pohjaiselle kehitysalustalle (ei takuita toimivuudesta, joidenkin Wemos-kopioiden kanssa ollut ongelmia). Voit myös ladata lähdekoodin ja kääntää omat binäärit (katso tarvittavat kirjastot alta).
+Viimeisin julkaistu versio on saatavilla [täältä](https://github.com/Egyras/HeishaMon/releases) Se voidaan asentaa Wemos D1 minille, Heishamon PCB:lle tai luultavasti mille tahansa muulle ESP8266-pohjaiselle kehitysalustalle (ei takuita toimivuudesta, joidenkin Wemos-kopioiden kanssa ollut ongelmia). Voit myös ladata lähdekoodin ja kääntää omat binäärit (katso tarvittavat kirjastot alta). ESP32-S3 binääri on tarkoitettu uudelle, hieman suuremmalle Heishamon PCB:lle.
 
 # Käyttö
 
-Nykyinen Arduino-softa pystyy kommunikoimaan Panasonicin Aquarea H- ja J-sarjan vesi-ilmalämpöpumppujen kanssa. \
+Nykyinen Arduino-softa pystyy kommunikoimaan Panasonicin Aquarea H/J/K/L-sarjan vesi-ilmalämpöpumppujen kanssa. \
 Jos haluat kääntää softan itse, niin lataa kaikki tarvittavat kirjastot ja muista myös filesystem-tuki ESP8266:lle Arduino IDE:ssä.
 
 Kun ensimmäisen kerran kytket virrat laitteeseen, kytkeydy HeishaMonin tarjoamaan avoimeen WiFi-hotspotiin, jota käytetään ensimmäisen käynnistyksen yhteydessä asetusten tekemiseen. Asetussivu löytyy osoitteesta http://192.168.4.1 ja sieltä voit määrittää WiFi-verkon ja MQTT-palvelimen asetukset.
@@ -58,6 +58,8 @@ CN-NMODE Pin-out (vasemmalta oikealle) \
 2 - 0-5V RX  \
 1 - GND
 
+Heishamon saa virtansa Aquarea-lämpöpumpulta, erillistä virtalähdettä ei tarvita.
+
 ## Mistä ostaa liittimiä 
 [RS-Online orders](Connectors_RSO.md)
 
@@ -72,13 +74,12 @@ The PCB's needed to connect to the heatpump are designed by project members and 
 [Picture ESP12-F](NewHeishamon.JPG)
 
 Jos haluat päästä helpolla, voit myös ostaa valmiin piirilevyn tai kaapelin, joita projektin jäsenet ovat tehneet: \
-[Tindie shop](https://www.tindie.com/stores/thehognl/) - Igor Ybema (aka TheHogNL) Hollannissa \
-[Trab.dk shop](https://www.trab.dk/en/search?controller=search&orderby=position&orderway=desc&search_query=panasonic&submit_search=) - Morten Trab Tanskassa
+[Tindie shop](https://www.tindie.com/stores/thehognl/) - Igor Ybema (aka TheHogNL) Hollannissa
 
 
 ## Arduino-imagen kääntäminen 
 boards: \
-esp8266 by esp8266 community version 2.6.3 [Arduino](https://github.com/esp8266/Arduino/releases/tag/2.6.3)
+esp8266 by esp8266 community version 3.0.2 [Arduino](https://github.com/esp8266/Arduino/releases/tag/3.0.2)
 
 [Käytetyt kirjastot](LIBSUSED.md)
 
