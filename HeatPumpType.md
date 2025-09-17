@@ -62,6 +62,7 @@ Assuming that bytes from #129 to #138 are unique for each model of Aquarea heat 
 |55 | 12 D7 0D 98 11 33 94 0C 83 10 | WH-ADC0316M9E8AN2 | WH-WXG09ME8 | Monoblock | 9 | 2ph | T-CAP - M-series DHW 185l |
 |56 | E2 D5 0B 08 95 02 D6 0F 67 95 | WH-SDC0309K3E5 | WH-UDZ07KE5 | KIT-SDC07KE5 | 7 | 1ph | HP - split K-series (sold in Poland) |
 
+
 All bytes are used for Heat Pump model identification in the code.
 
 Note: These are the heat pump types that users have verified and reported back the model. HeishaMon should work with all H and J generation Aquarea heat pumps.
