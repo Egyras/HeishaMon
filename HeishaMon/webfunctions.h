@@ -77,6 +77,7 @@ int getFreeMemory(void);
 void ntpReload(settingsStruct *heishamonSettings);
 
 void log_message(char *string);
+void escapeJsonString(const char* input, char* output, size_t outputSize);
 int8_t webserver_cb(struct webserver_t *client, void *data);
 void getWifiScanResults(int numSsid);
 int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconnects, settingsStruct *heishamonSettings);

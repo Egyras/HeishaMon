@@ -384,6 +384,76 @@ int handleReboot(struct webserver_t *client) {
   return 0;
 }
 
+// Helper function to escape JSON strings
+void escapeJsonString(const char* input, char* output, size_t outputSize) {
+  size_t inputLen = strlen(input);
+  size_t outputPos = 0;
+  
+  for (size_t i = 0; i < inputLen && outputPos < outputSize - 1; i++) {
+    char c = input[i];
+    switch (c) {
+      case '"':
+        if (outputPos < outputSize - 2) {
+          output[outputPos++] = '\\';
+          output[outputPos++] = '"';
+        }
+        break;
+      case '\\':
+        if (outputPos < outputSize - 2) {
+          output[outputPos++] = '\\';
+          output[outputPos++] = '\\';
+        }
+        break;
+      case '\b':
+        if (outputPos < outputSize - 2) {
+          output[outputPos++] = '\\';
+          output[outputPos++] = 'b';
+        }
+        break;
+      case '\f':
+        if (outputPos < outputSize - 2) {
+          output[outputPos++] = '\\';
+          output[outputPos++] = 'f';
+        }
+        break;
+      case '\n':
+        if (outputPos < outputSize - 2) {
+          output[outputPos++] = '\\';
+          output[outputPos++] = 'n';
+        }
+        break;
+      case '\r':
+        if (outputPos < outputSize - 2) {
+          output[outputPos++] = '\\';
+          output[outputPos++] = 'r';
+        }
+        break;
+      case '\t':
+        if (outputPos < outputSize - 2) {
+          output[outputPos++] = '\\';
+          output[outputPos++] = 't';
+        }
+        break;
+      default:
+        if (c >= 0 && c < 32) {
+          // Control characters - escape as \uXXXX
+          if (outputPos < outputSize - 6) {
+            output[outputPos++] = '\\';
+            output[outputPos++] = 'u';
+            output[outputPos++] = '0';
+            output[outputPos++] = '0';
+            output[outputPos++] = (c < 16) ? '0' : '1';
+            output[outputPos++] = (c % 16 < 10) ? ('0' + c % 16) : ('A' + c % 16 - 10);
+          }
+        } else {
+          output[outputPos++] = c;
+        }
+        break;
+    }
+  }
+  output[outputPos] = '\0';
+}
+
 void settingsToJson(JsonDocument &jsonDoc, settingsStruct *heishamonSettings) {
   //set jsonDoc with current settings
   jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
@@ -731,33 +801,51 @@ int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
     case 0: {
         webserver_send(client, 200, (char *)"application/json", 0);
         webserver_send_content_P(client, PSTR("{\"wifi_hostname\":\""), 18);
-        webserver_send_content(client, heishamonSettings->wifi_hostname, strlen(heishamonSettings->wifi_hostname));
+        char escaped_hostname[256];
+        escapeJsonString(heishamonSettings->wifi_hostname, escaped_hostname, sizeof(escaped_hostname));
+        webserver_send_content(client, escaped_hostname, strlen(escaped_hostname));
         webserver_send_content_P(client, PSTR("\",\"wifi_ssid\":\""), 15);
-        webserver_send_content(client, heishamonSettings->wifi_ssid, strlen(heishamonSettings->wifi_ssid));
+        char escaped_ssid[256];
+        escapeJsonString(heishamonSettings->wifi_ssid, escaped_ssid, sizeof(escaped_ssid));
+        webserver_send_content(client, escaped_ssid, strlen(escaped_ssid));
       } break;
     case 1: {
         webserver_send_content_P(client, PSTR("\",\"wifi_password\":\""), 19);
-        webserver_send_content(client, heishamonSettings->wifi_password, strlen(heishamonSettings->wifi_password));
+        char escaped_wifi_password[256];
+        escapeJsonString(heishamonSettings->wifi_password, escaped_wifi_password, sizeof(escaped_wifi_password));
+        webserver_send_content(client, escaped_wifi_password, strlen(escaped_wifi_password));
         webserver_send_content_P(client, PSTR("\",\"current_ota_password\":\""), 26);
         webserver_send_content_P(client, PSTR("\",\"new_ota_password\":\""), 22);
       } break;
     case 2: {
         webserver_send_content_P(client, PSTR("\",\"mqtt_topic_base\":\""), 21);
-        webserver_send_content(client, heishamonSettings->mqtt_topic_base, strlen(heishamonSettings->mqtt_topic_base));
+        char escaped_topic_base[256];
+        escapeJsonString(heishamonSettings->mqtt_topic_base, escaped_topic_base, sizeof(escaped_topic_base));
+        webserver_send_content(client, escaped_topic_base, strlen(escaped_topic_base));
         webserver_send_content_P(client, PSTR("\",\"mqtt_server\":\""), 17);
-        webserver_send_content(client, heishamonSettings->mqtt_server, strlen(heishamonSettings->mqtt_server));
+        char escaped_server[256];
+        escapeJsonString(heishamonSettings->mqtt_server, escaped_server, sizeof(escaped_server));
+        webserver_send_content(client, escaped_server, strlen(escaped_server));
       } break;
     case 3: {
         webserver_send_content_P(client, PSTR("\",\"mqtt_port\":\""), 15);
-        webserver_send_content(client, heishamonSettings->mqtt_port, strlen(heishamonSettings->mqtt_port));
+        char escaped_port[256];
+        escapeJsonString(heishamonSettings->mqtt_port, escaped_port, sizeof(escaped_port));
+        webserver_send_content(client, escaped_port, strlen(escaped_port));
         webserver_send_content_P(client, PSTR("\",\"mqtt_username\":\""), 19);
-        webserver_send_content(client, heishamonSettings->mqtt_username, strlen(heishamonSettings->mqtt_username));
+        char escaped_username[256];
+        escapeJsonString(heishamonSettings->mqtt_username, escaped_username, sizeof(escaped_username));
+        webserver_send_content(client, escaped_username, strlen(escaped_username));
       } break;
     case 4: {
         webserver_send_content_P(client, PSTR("\",\"mqtt_password\":\""), 19);
-        webserver_send_content(client, heishamonSettings->mqtt_password, strlen(heishamonSettings->mqtt_password));
+        char escaped_mqtt_password[256];
+        escapeJsonString(heishamonSettings->mqtt_password, escaped_mqtt_password, sizeof(escaped_mqtt_password));
+        webserver_send_content(client, escaped_mqtt_password, strlen(escaped_mqtt_password));
         webserver_send_content_P(client, PSTR("\",\"ntp_servers\":\""), 17);
-        webserver_send_content(client, heishamonSettings->ntp_servers, strlen(heishamonSettings->ntp_servers));
+        char escaped_ntp_servers[256];
+        escapeJsonString(heishamonSettings->ntp_servers, escaped_ntp_servers, sizeof(escaped_ntp_servers));
+        webserver_send_content(client, escaped_ntp_servers, strlen(escaped_ntp_servers));
         webserver_send_content_P(client, PSTR("\",\"timezone\":"), 13);
 
         {
