@@ -640,7 +640,7 @@ mqtt:
       unit_of_measurement: "°C"
       state_class: "measurement"
 
-    #TOP42 - Z2 water target temperature
+    #TOP43 - Z2 water target temperature
     - name: Aquarea Z2 Water Target Temperature
       state_topic: "panasonic_heat_pump/main/Z2_Water_Target_Temp"
       unit_of_measurement: "°C"
@@ -841,7 +841,7 @@ sensor:
             states('sensor.aquarea_cool_power_produced') | float
           }}
         availability_template: >-
-          {%- if is_number(states('sensor.aquarea_dhw_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) %}
+          {%- if is_number(states('sensor.aquarea_dhw_power_produced')) and is_number(states('sensor.aquarea_heat_power_produced')) and is_number(states('sensor.aquarea_cool_power_produced')) %}
             true
           {%- else %}
             false
@@ -857,7 +857,7 @@ sensor:
             states('sensor.aquarea_cool_power_consumed') | float
           }}
         availability_template: >-
-          {%- if is_number(states('sensor.aquarea_dhw_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) %}
+          {%- if is_number(states('sensor.aquarea_dhw_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) and is_number(states('sensor.aquarea_cool_power_consumed')) %}
             true
           {%- else %}
             false
