@@ -49,9 +49,9 @@ int8_t rule_function_round_callback(struct rules_t *obj) {
 
   if(modff(x, &z) == 0) {
 #ifdef DEBUG
-    printf("\tround = %d\n", (int)x);
+    printf("\tround = %d\n", round(x));
 #endif
-    rules_pushinteger(obj, x);
+    rules_pushinteger(obj, round(x));
   } else {
     if(y == 2) {
       uint8_t size = snprintf(NULL, 0, "%.*f", dec, x)+1;
@@ -63,9 +63,9 @@ int8_t rule_function_round_callback(struct rules_t *obj) {
       rules_pushfloat(obj, atof(buf));
     } else {
 #ifdef DEBUG
-      printf("\tround = %d\n", (int)x);
+      printf("\tround = %d\n", round(x));
 #endif
-      rules_pushinteger(obj, (int)x);
+      rules_pushinteger(obj, round(x));
     }
   }
 
