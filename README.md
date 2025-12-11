@@ -1,4 +1,4 @@
-[![Join us on Slack chat room](https://img.shields.io/badge/Slack-Join%20the%20chat%20room-orange)](https://join.slack.com/t/panasonic-wemos/shared_invite/enQtODg2MDY0NjE1OTI3LTgzYjkwMzIwNTAwZTMyYzgwNDQ1Y2QxYjkwODg3NjMyN2MyM2ViMDM3Yjc3OGE3MGRiY2FkYzI4MzZiZDVkNGE) 
+[![Join us on Slack chat room](https://img.shields.io/badge/Slack-Join%20the%20chat%20room-orange)](https://join.slack.com/t/panasonic-wemos/shared_invite/enQtODg2MDY0NjE1OTI3LTgzYjkwMzIwNTAwZTMyYzgwNDQ1Y2QxYjkwODg3NjMyN2MyM2ViMDM3Yjc3OGE3MGRiY2FkYzI4MzZiZDVkNGE)
 [![Build binary](https://github.com/the78mole/HeishaMon/actions/workflows/main.yml/badge.svg)](https://github.com/the78mole/HeishaMon/actions/workflows/main.yml)
 
 
@@ -330,6 +330,29 @@ All the [libs we use](LIBSUSED.md) necessary for compiling.
 ## MQTT topics
 [Current list of documented MQTT topics can be found here](MQTT-Topics.md)
 
+## Communication reliability
+Messages from HeishaMon to the heatpump will occasionally be dropped, especially if multiple settings are changed within a short time. It's not feasible for HeishaMon to retry all dropped messages, so users should implement their own retry logic.
+
+The suggested retry logic is as follows:
+1. After changing a heatpump setting via HeishaMon, you should wait for HeishaMon to report that the setting has been changed.
+2. If the setting isn't updated after 10 seconds, set it again.
+
+This can be implemented on the HeishaMon itself using Rules if you wish, as in this example:
+```
+on StopExternalControl then
+  if @External_Control != 0 then
+    @SetExternalControl = 0;
+    settimer(9,10);
+  end
+end
+
+on timer=9 then
+  if @External_Control != 0 then
+    @SetExternalControl = 0;
+  end
+end
+```
+
 ## EEPROM warning
 As until today we don't know how the commands sent to the heatpump are processed in the heatpump itself. Most probably a lot of commands are written to EEPROM to be stored and available after a power failure, like setting the DHW temp. An EEPROM can facility a lot of writes but there is a limit. And we don't know the limit either. So make sure you don't overload the heatpump with too many commands. Every second is way too much. Just a few per hour, per settings, should probably be fine. Anyway, an heatpump is a slow heating(cooling) device so making changes that often is probably not even going to make any sense either.
 
@@ -342,9 +365,9 @@ The newer, large, heishamon contains two onboard relays which can be switched on
 ## Opentherm support
 If your heishamon board supports opentherm the software can also be used to bridge opentherm information from a compatible thermostat to your home automation over MQTT or JSON and as mentioned above it can also be connected directly in the rules to connect opentherm information to the heatpump and back, for example to display the outside temperature from the heatpump on your opentherm thermostat. If you enable opentherm support in settings there will be a new tab visible in the web page. On that tab you will see opentherm values. Some are of type R(ead) and some are W(rite), and some are both. Read means that the thermostat can read that information from the heishamon. You provide that information over MQTT (or using the rules) by updating this value on the mqtt 'opentherm/read' topic, for example 'panasonic_heat_pump/opentherm/read/outsideTemp'. The write values are information from the thermostat, like 'roomTemp'. These are available on mqtt topic 'opentherm/write'. You can use these values to change the heatpump behaviour in anyway you want using your home automation and mqtt set-commands to heishamon on using the internal rules.
 
-The available opentherm variables are: 
+The available opentherm variables are:
 ### WRITE values
-- chEnable which is a boolean showing if central heating shoud be enabled. This is often used when the thermostat wants to heat up your house. 
+- chEnable which is a boolean showing if central heating shoud be enabled. This is often used when the thermostat wants to heat up your house.
 - dhwEnable which is a boolean showing if the dhw heating should be enabled. Often used as a user option on the thermostat to disable DHW heating during vacation
 - coolingEnable which is a boolean showing if  cooling should be enabled. Amount of cooling is request in 'coolingControl', see below.
 - roomTemp is the floating point value of the measured room temp by thermostat
@@ -383,5 +406,3 @@ The available opentherm variables are:
 [IOBroker Manual](Integrations/ioBroker_manual)
 
 [Domoticz](Integrations/Domoticz)
-
-
