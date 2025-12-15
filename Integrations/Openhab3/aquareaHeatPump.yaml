@@ -413,3 +413,11 @@ channels:
     configuration:
       stateTopic: panasonic_heat_pump/main/DHW_Energy_Consumption
       unit: Watt
+  - id: quietModeLevel
+    channelTypeUID: mqtt:number
+    label: Quiet Mode Level
+    configuration:
+      commandTopic: panasonic_heat_pump/commands/SetQuietMode
+      min: 0
+      stateTopic: panasonic_heat_pump/main/Quiet_Mode_Level
+      max: 3
