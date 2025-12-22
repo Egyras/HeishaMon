@@ -156,6 +156,7 @@ TOP136 | main/Bivalent_Advanced_Start_Delay	 | Bivalent adv. par. heat start del
 TOP137 | main/Bivalent_Advanced_Stop_Delay	 | Bivalent adv. par. heat stop delay
 TOP138 | main/Bivalent_Advanced_DHW_Delay	 | Bivalent adv. par. DHW delay
 TOP139 | main/Heating_Control | Heating Control
+TOP140 | main/Smart_DHW | Smart DHW
 
 
 
