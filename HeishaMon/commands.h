@@ -67,6 +67,7 @@ unsigned int set_bivalent_ap_stop_temp(char *msg, unsigned char *cmd, char *log_
 unsigned int set_external_control(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_external_error(char *msg, unsigned char *cmd, char *log_msg);
 unsigned int set_heatingcontrol(char *msg, unsigned char *cmd, char *log_msg);
+unsigned int set_smart_dhw(char *msg, unsigned char *cmd, char *log_msg);
 
 //optional pcb commands
 unsigned int set_heat_cool_mode(char *msg, char *log_msg);
@@ -155,6 +156,7 @@ const cmdStruct commands[] PROGMEM = {
   // bivalent AP stop temp -  set from -15C to 35C
   { "SetBivalentAPStopTemp", set_bivalent_ap_stop_temp },
   { "SetHeatingControl", set_heatingcontrol },
+  { "SetSmartDHW", set_smart_dhw },
 };
 
 struct optCmdStruct{
