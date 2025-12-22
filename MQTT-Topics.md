@@ -222,6 +222,7 @@ SET35 | SetBivalentMode | Set bivalent mode | 0=alternative, 1=parallel, 2=advan
 SET36 | SetBivalentStartTemp | Set bivalent start temp | -15 to 35
 SET37 | SetBivalentAPStartTemp | Set bivalent adv. par. start temp | -15 to 35
 SET38 | SetBivalentAPStopTemp | Set bivalent adv. par. stop temp | -15 to 35
+SET39 | SetHeatingControl | Set heating control | 0=comfort, 1=efficiency
 
 
 *If you operate your heatpump in water mode with direct temperature setup: topics ending xxxRequestTemperature will set the absolute target temperature.*

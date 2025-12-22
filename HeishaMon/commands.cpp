@@ -870,6 +870,29 @@ unsigned int set_external_error(char *msg, unsigned char *cmd, char *log_msg){
   return sizeof(panasonicSendQuery);
 }
 
+unsigned int set_heatingcontrol(char *msg, unsigned char *cmd, char *log_msg) {
+
+  const byte address=30;
+  byte value = 0b01;
+
+  if ( String(msg).toInt() == 1 ) {
+    value = 0b10;
+  }
+
+  {
+    char tmp[256] = { 0 };
+    snprintf_P(tmp, 255, PSTR("set heating control %d"), value - 1);
+    memcpy(log_msg, tmp, sizeof(tmp));
+  }
+
+  {
+    memcpy_P(cmd, panasonicSendQuery, sizeof(panasonicSendQuery));
+    cmd[address] = value << 2;
+  }
+
+  return sizeof(panasonicSendQuery);
+}
+
 unsigned int set_external_compressor_control(char *msg, unsigned char *cmd, char *log_msg){
   const byte off_state=64;
   const byte address=23;
