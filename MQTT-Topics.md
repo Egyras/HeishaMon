@@ -157,6 +157,7 @@ TOP137 | main/Bivalent_Advanced_Stop_Delay	 | Bivalent adv. par. heat stop delay
 TOP138 | main/Bivalent_Advanced_DHW_Delay	 | Bivalent adv. par. DHW delay
 TOP139 | main/Heating_Control | Heating Control
 TOP140 | main/Smart_DHW | Smart DHW
+TOP141 | main/Quiet_Mode_Priority | Quiet Mode Priority (0=sound, 1=capacity)
 
 
 

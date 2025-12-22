@@ -13,7 +13,7 @@
 |  TOP | 08 | 00 |   | 0 byte |
 |  TOP58+TOP59 | 09 | 05 | 3rd & 4th bit = b01 Standard, b10 - DHW Standard/Variable (J-series only)<br/>5th & 6th bit = b01 DHW heater off, b10 - DHW heater on<br/>7rd & 8th bit = b01 Water heater off, b10 - Water heater on | DHW capacity (J-series only)<br/>Heaters enable allowed status|
 |  TOP | 10 | 00 |   | 0 byte |
-|  TOP | 11 | 00 | 3rd & 4th bit = b01 - Sound , b10 - Capacity <br/> 7th & 8th bit = b01 - DHW Top sensor , b10 - DHW Center Sensor | Quiet Mode Priority (K/L series) <br/> Only All-In-One |
+|  TOP141 | 11 | 00 | 3rd & 4th bit = b01 - Sound , b10 - Capacity <br/> 7th & 8th bit = b01 - DHW Top sensor , b10 - DHW Center Sensor | Quiet Mode Priority (K/L series) <br/> Only All-In-One |
 |  TOP | 12 | 00 |   | 0 byte |
 |  TOP | 13 | 00 |   | 0 byte |
 |  TOP | 14 | 00 |   | 0 byte |
