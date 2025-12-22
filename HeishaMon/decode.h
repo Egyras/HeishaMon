@@ -42,7 +42,7 @@ static const char _unknown[] PROGMEM = "unknown";
 
 
 
-#define NUMBER_OF_TOPICS 139 //last topic number + 1
+#define NUMBER_OF_TOPICS 140 //last topic number + 1
 #define NUMBER_OF_TOPICS_EXTRA 6 //last topic number + 1
 #define NUMBER_OF_OPT_TOPICS 7 //last topic number + 1
 #define MAX_TOPIC_LEN 42 // max length + 1
@@ -215,6 +215,7 @@ static const char topics[][MAX_TOPIC_LEN] PROGMEM = {
   "Bivalent_Advanced_Start_Delay",//TOP136
   "Bivalent_Advanced_Stop_Delay",//TOP137
   "Bivalent_Advanced_DHW_Delay",//TOP138
+  "Heating_Control",         //TOP139
 };
 
 static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit unsigned humber) as there aren't more then 255 bytes (actually only 203 bytes) to decode
@@ -357,6 +358,7 @@ static const byte topicBytes[] PROGMEM = { //can store the index as byte (8-bit 
   67,    //TOP136
   69,    //TOP137
   70,    //TOP138
+  30,    //TOP139
 };
 
 
@@ -511,6 +513,7 @@ static const topicFP topicFunctions[] PROGMEM = {
   getIntMinus1,      //TOP136
   getIntMinus1,      //TOP137
   getIntMinus1,      //TOP138
+  getBit5and6,       //TOP139
 };
 
 static const char *DisabledEnabled[] PROGMEM = {"2", "Disabled", "Enabled"};
@@ -548,6 +551,7 @@ static const char *ExtPadHeaterType[] PROGMEM = {"3", "Disabled", "Type-A","Type
 static const char *Bivalent[] PROGMEM = {"3", "Alternative", "Parallel", "Advanced Parallel"};
 static const char *Percent[] PROGMEM = {"0", "%"};
 static const char *Model[] PROGMEM = {"0", "Model"};
+static const char *HeatingControl[] PROGMEM = {"2", "Comfort", "Efficiency"};
 
 static const char **opttopicDescription[] PROGMEM = {
   OffOn,          //OPT0
@@ -708,4 +712,5 @@ static const char **topicDescription[] PROGMEM = {
   Minutes,         //TOP136
   Minutes,         //TOP137
   Minutes,         //TOP138
+  HeatingControl,  //TOP139
 };
