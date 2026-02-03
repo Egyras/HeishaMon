@@ -52,7 +52,7 @@ Assuming that bytes from #129 to #138 are unique for each model of Aquarea heat 
 |45 | E2 CF 0B 82 05 12 D0 0D 91 05 | WH-SQC09H3E8 | WH-UQ09HE8 | KIT-WQC09H3E8 | 9 | 3ph | T-CAP - Super Quiet revised model |
 |46 | E2 D5 0D 99 94 02 D6 0D 68 95 | WH-ADC0309K3E5 | WH-UDZ09KE5 | KIT-ADC09K3E5 | 9 | 1ph | HP - K-series All-in-One R32 |
 |47 | E2 CF 0C 74 09 12 D0 0C 95 05 | WH-ADC0916H9E8 | WH-UX12HE8 | KIT-AXC12HE8 | 12 | 3ph | T-CAP - All-In-One |
-|48 | E2 D5 0B 34 99 83 92 0C 28 98 | WH-SDC0509L3E5 |  WH-WDG07LE5 | KIT-WC07L3E5 | 7 | 1 ph | HP - split L-series 3kW elec heating |
+|48 | E2 D5 0B 34 99 83 92 0C 28 98 | WH-SDC0509L3E5 |  WH-WDG07LE5 | KIT-WC07L3E5 | 7 | 1ph | HP - split L-series 3kW elec heating |
 |49 | E2 CF 0D 77 09 12 D0 0C 05 11 | WH-SXC09H3E5 | WH-UX09HE5 | KIT-WXC09H3E5 | 9 | 1ph | T-CAP |
 |50 | E2 CF 0B 44 34 12 D0 0C 34 35 | Monoblock | WH-MXC12H9E8 | Monoblock | 12 | 3ph | T-CAP |
 |51 | E2 D5 0C 67 00 83 92 0C 27 98 | WH-ADC0509L3E5AN | WH-WDG05LE5 | KIT-ADC05L3E5AN | 5 | 1ph | HP - split L-series 3kW elec heating - AN |
@@ -62,6 +62,13 @@ Assuming that bytes from #129 to #138 are unique for each model of Aquarea heat 
 |55 | 12 D7 0D 98 11 33 94 0C 83 10 | WH-ADC0316M9E8AN2 | WH-WXG09ME8 | Monoblock | 9 | 2ph | T-CAP - M-series DHW 185l |
 |56 | E2 D5 0B 08 95 02 D6 0F 67 95 | WH-SDC0309K3E5 | WH-UDZ07KE5 | KIT-SDC07KE5 | 7 | 1ph | HP - split K-series (sold in Poland) |
 |57 | E2 D5 0D 36 99 02 D6 10 66 95 | WH-ADC0309K3E5AN | WH-UDZ05KE5 | KIT-ADC05K3E5AN | 5 | 1ph | HP - All-In-One K-series - AN |
+|58 | E2 D5 0C 67 00 83 92 0C 28 98 | WH-ADC0509L3E5AN | WH-WDG07LE5 | KIT-ADC07L3E5AN | 7 | 1 ph | HP - All-In-One L-series - AN |
+|59 | E2 D5 0C 67 00 83 92 0D 29 98 | WH-ADC0509L3E5AN | WH-WDG09LE5 | KIT-ADC09L3E5AN | 9 | 1 ph | HP - All-In-One L-series - AN |
+|60 | E2 D5 0D 08 95 02 D6 10 67 95 | WH-SDC0309K3E5 | WH-UDZ07KE5 | KIT-SDC07KE5 | 7 | 1ph | HP - split K-series |
+|61 | E2 D5 0C 08 95 02 D6 0D 67 95 | WH-SDC0309K3E5 | WH-UDZ07KE5 | KIT-SDC07KE5 | 7 | 1ph | HP - split K-series |
+|62 | E2 D5 0C 08 95 02 D6 10 67 95 | WH-SDC0309K3E5 | WH-UDZ07KE5 | KIT-SDC07KE5 | 7 | 1ph | HP - split K-series |
+|63 | E2 D5 0C 08 95 02 D6 10 66 95 | WH-SDC0309K3E5 | WH-UDZ05KE5 | KIT-WC05K3E5 | 5 | 1ph | HP - split K-series |
+|64 | E2 D5 0B 08 95 02 D6 0E 68 95 | WH-SDC0309K3E5 | WH-UDZ09KE5 | KIT-WC09K3E5 | 7 | 1ph | HP - split K-series |
 
 All bytes are used for Heat Pump model identification in the code.
 
