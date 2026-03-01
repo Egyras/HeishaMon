@@ -826,108 +826,108 @@ mqtt:
       payload_off: "0"
       retain: false
 
-sensor:
-  #### SENSORS BELOW ARE NOT IN FIRMWARE ####
-  #Energy use/production
-  - platform: template
-    sensors:
-      heishamon_power_produced:
-        friendly_name: "Aquarea Power Produced"
-        unit_of_measurement: "W"
-        value_template: >-
-          {{
-            states('sensor.aquarea_dhw_power_produced') | float +
-            states('sensor.aquarea_heat_power_produced') | float +
-            states('sensor.aquarea_cool_power_produced') | float
-          }}
-        availability_template: >-
-          {%- if is_number(states('sensor.aquarea_dhw_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) %}
-            true
-          {%- else %}
-            false
-          {%- endif %}
+template:
+  - sensor: 
+      #### SENSORS BELOW ARE NOT IN FIRMWARE ####
+      #Energy use/production
+    - default_entity_id: sensor.heishamon_power_produced
+      name: "Aquarea Power Produced"
+      unit_of_measurement: "W"
+      state: >-
+        {{
+          states('sensor.aquarea_dhw_power_produced') | float +
+          states('sensor.aquarea_heat_power_produced') | float +
+          states('sensor.aquarea_cool_power_produced') | float
+        }}
+      availability: >-
+        {%- if is_number(states('sensor.aquarea_dhw_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) %}
+          true
+        {%- else %}
+          false
+        {%- endif %}
 
-      heishamon_power_consumed:
-        friendly_name: "Aquarea Power Consumed"
-        unit_of_measurement: "W"
-        value_template: >-
-          {{
-            states('sensor.aquarea_dhw_power_consumed') | float +
-            states('sensor.aquarea_heat_power_consumed') | float +
-            states('sensor.aquarea_cool_power_consumed') | float
-          }}
-        availability_template: >-
-          {%- if is_number(states('sensor.aquarea_dhw_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) %}
-            true
-          {%- else %}
-            false
-          {%- endif %}
+    - default_entity_id: sensor.heishamon_power_consumed
+      name: "Aquarea Power Consumed"
+      unit_of_measurement: "W"
+      state: >-
+        {{
+          states('sensor.aquarea_dhw_power_consumed') | float +
+          states('sensor.aquarea_heat_power_consumed') | float +
+          states('sensor.aquarea_cool_power_consumed') | float
+        }}
+      availability: >-
+        {%- if is_number(states('sensor.aquarea_dhw_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) and is_number(states('sensor.aquarea_heat_power_consumed')) %}
+          true
+        {%- else %}
+          false
+        {%- endif %}
 
       #COP Calculations
-      heishamon_cop:
-        friendly_name: "Aquarea COP"
-        unit_of_measurement: "x"
-        value_template: >-
-          {%- if states('sensor.heishamon_power_consumed') | float(0) > 0 -%}
-            {{ '%0.1f' % ((states('sensor.heishamon_power_produced') | float ) / (states('sensor.heishamon_power_consumed') | float )) }}
-          {%- else -%}
-            0.0
-          {%- endif -%}
-        availability_template: >-
-          {%- if is_number(states('sensor.heishamon_power_consumed')) and is_number(states('sensor.heishamon_power_produced')) %}
-            true
-          {%- else %}
-            false
-          {%- endif %}
+    - default_entity_id: sensor.heishamon_cop
+      name: "Aquarea COP"
+      unit_of_measurement: "x"
+      state: >-
+        {%- if states('sensor.heishamon_power_consumed') | float(0) > 0 -%}
+          {{ '%0.1f' % ((states('sensor.heishamon_power_produced') | float ) / (states('sensor.heishamon_power_consumed') | float )) }}
+        {%- else -%}
+          0.0
+        {%- endif -%}
+      availability: >-
+        {%- if is_number(states('sensor.heishamon_power_consumed')) and is_number(states('sensor.heishamon_power_produced')) %}
+          true
+        {%- else %}
+          false
+        {%- endif %}
 
-      heishamon_dhw_cop:
-        friendly_name: "Aquarea DHW COP"
-        unit_of_measurement: "x"
-        value_template: >-
-          {%- if states('sensor.aquarea_dhw_power_consumed') | float(0) > 0 -%}
-            {{ '%0.1f' % ((states('sensor.aquarea_dhw_power_produced') | float ) / (states('sensor.aquarea_dhw_power_consumed') | float )) }}
-          {%- else -%}
-            0.0
-          {%- endif -%}
-        availability_template: >-
-          {%- if is_number(states('sensor.aquarea_dhw_power_consumed')) and is_number(states('sensor.aquarea_dhw_power_produced')) %}
-            true
-          {%- else %}
-            false
-          {%- endif %}
+    - default_entity_id:  sensor.heishamon_dhw_cop
+      name: "Aquarea DHW COP"
+      unit_of_measurement: "x"
+      state: >-
+        {%- if states('sensor.aquarea_dhw_power_consumed') | float(0) > 0 -%}
+          {{ '%0.1f' % ((states('sensor.aquarea_dhw_power_produced') | float ) / (states('sensor.aquarea_dhw_power_consumed') | float )) }}
+        {%- else -%}
+          0.0
+        {%- endif -%}
+      availability: >-
+        {%- if is_number(states('sensor.aquarea_dhw_power_consumed')) and is_number(states('sensor.aquarea_dhw_power_produced')) %}
+          true
+        {%- else %}
+          false
+        {%- endif %}
 
-      heishamon_heat_cop:
-        friendly_name: "Aquarea HeaT COP"
-        unit_of_measurement: "x"
-        value_template: >-
-          {%- if states('sensor.aquarea_heat_power_consumed') | float(0) > 0 -%}
-            {{ '%0.1f' % ((states('sensor.aquarea_heat_power_produced') | float ) / (states('sensor.aquarea_heat_power_consumed') | float )) }}
-          {%- else -%}
-            0.0
-          {%- endif -%}
-        availability_template: >-
-          {%- if is_number(states('sensor.aquarea_heat_power_consumed')) and is_number(states('sensor.aquarea_heat_power_produced')) %}
-            true
-          {%- else %}
-            false
-          {%- endif %}
+    - default_entity_id: sensor.heishamon_heat_cop
+      name: "Aquarea HeaT COP"
+      unit_of_measurement: "x"
+      state: >-
+        {%- if states('sensor.aquarea_heat_power_consumed') | float(0) > 0 -%}
+          {{ '%0.1f' % ((states('sensor.aquarea_heat_power_produced') | float ) / (states('sensor.aquarea_heat_power_consumed') | float )) }}
+        {%- else -%}
+          0.0
+        {%- endif -%}
+      availability: >-
+        {%- if is_number(states('sensor.aquarea_heat_power_consumed')) and is_number(states('sensor.aquarea_heat_power_produced')) %}
+          true
+        {%- else %}
+          false
+        {%- endif %}
 
-      heishamon_cool_cop:
-        friendly_name: "Aquarea Cool COP"
-        unit_of_measurement: "x"
-        value_template: >-
-          {%- if states('sensor.aquarea_cool_power_consumed') | float(0) > 0 -%}
-            {{ '%0.1f' % ((states('sensor.aquarea_cool_power_produced') | float ) / (states('sensor.aquarea_cool_power_consumed') | float )) }}
-          {%- else -%}
-            0.0
-          {%- endif -%}
-        availability_template: >-
-          {%- if is_number(states('sensor.aquarea_cool_power_consumed')) and is_number(states('sensor.aquarea_cool_power_produced')) %}
-            true
-          {%- else %}
-            false
-          {%- endif %}
+    - default_entity_id: sensor.heishamon_cool_cop
+      name: "Aquarea Cool COP"
+      unit_of_measurement: "x"
+      state: >-
+        {%- if states('sensor.aquarea_cool_power_consumed') | float(0) > 0 -%}
+          {{ '%0.1f' % ((states('sensor.aquarea_cool_power_produced') | float ) / (states('sensor.aquarea_cool_power_consumed') | float )) }}
+        {%- else -%}
+          0.0
+        {%- endif -%}
+      availability: >-
+        {%- if is_number(states('sensor.aquarea_cool_power_consumed')) and is_number(states('sensor.aquarea_cool_power_produced')) %}
+          true
+        {%- else %}
+          false
+        {%- endif %}
 
+sensor:
   #Calculation Energy produced (kWh) - DHW
   - platform: integration
     source: sensor.aquarea_dhw_power_produced
