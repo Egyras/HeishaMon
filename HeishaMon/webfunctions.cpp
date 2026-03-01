@@ -63,9 +63,9 @@ void getWifiScanResults(int numSsid) {
         continue;
       }
       JsonObject wifiJsonObject = wifiJsonArray.add<JsonObject>();
-      wifiJsonObject["ssid"] = WiFi.SSID(indexes[i]);
+      wifiJsonObject[F("ssid")] = WiFi.SSID(indexes[i]);
       String quality = String(dBmToQuality(WiFi.RSSI(indexes[i]))) + "%";
-      wifiJsonObject["rssi"] = quality;
+      wifiJsonObject[F("rssi")] = quality;
     }
     saveJsonToFile(wifiJsonDoc,"/wifiscan.json");
     WiFi.scanDelete();
@@ -205,53 +205,53 @@ void loadSettings(settingsStruct *heishamonSettings) {
         if (!error) {
           log_message(_F("parsed json"));
           //read updated parameters, make sure no overflow
-          if ( jsonDoc["wifi_ssid"] ) strlcpy(heishamonSettings->wifi_ssid, jsonDoc["wifi_ssid"], sizeof(heishamonSettings->wifi_ssid));
-          if ( jsonDoc["wifi_password"] ) strlcpy(heishamonSettings->wifi_password, jsonDoc["wifi_password"], sizeof(heishamonSettings->wifi_password));
-          if ( jsonDoc["wifi_hostname"] ) strlcpy(heishamonSettings->wifi_hostname, jsonDoc["wifi_hostname"], sizeof(heishamonSettings->wifi_hostname));
-          if ( jsonDoc["ota_password"] ) strlcpy(heishamonSettings->ota_password, jsonDoc["ota_password"], sizeof(heishamonSettings->ota_password));
-          if ( jsonDoc["mqtt_topic_base"] ) strlcpy(heishamonSettings->mqtt_topic_base, jsonDoc["mqtt_topic_base"], sizeof(heishamonSettings->mqtt_topic_base));
-          if ( jsonDoc["mqtt_server"] ) strlcpy(heishamonSettings->mqtt_server, jsonDoc["mqtt_server"], sizeof(heishamonSettings->mqtt_server));
-          if ( jsonDoc["mqtt_port"] ) strlcpy(heishamonSettings->mqtt_port, jsonDoc["mqtt_port"], sizeof(heishamonSettings->mqtt_port));
-          if ( jsonDoc["mqtt_username"] ) strlcpy(heishamonSettings->mqtt_username, jsonDoc["mqtt_username"], sizeof(heishamonSettings->mqtt_username));
-          if ( jsonDoc["mqtt_password"] ) strlcpy(heishamonSettings->mqtt_password, jsonDoc["mqtt_password"], sizeof(heishamonSettings->mqtt_password));
-          if ( jsonDoc["ntp_servers"] ) strlcpy(heishamonSettings->ntp_servers, jsonDoc["ntp_servers"], sizeof(heishamonSettings->ntp_servers));
-          if ( jsonDoc["timezone"]) heishamonSettings->timezone = jsonDoc["timezone"];
+          if ( jsonDoc[F("wifi_ssid")] ) strlcpy(heishamonSettings->wifi_ssid, jsonDoc[F("wifi_ssid")], sizeof(heishamonSettings->wifi_ssid));
+          if ( jsonDoc[F("wifi_password")] ) strlcpy(heishamonSettings->wifi_password, jsonDoc[F("wifi_password")], sizeof(heishamonSettings->wifi_password));
+          if ( jsonDoc[F("wifi_hostname")] ) strlcpy(heishamonSettings->wifi_hostname, jsonDoc[F("wifi_hostname")], sizeof(heishamonSettings->wifi_hostname));
+          if ( jsonDoc[F("ota_password")] ) strlcpy(heishamonSettings->ota_password, jsonDoc[F("ota_password")], sizeof(heishamonSettings->ota_password));
+          if ( jsonDoc[F("mqtt_topic_base")] ) strlcpy(heishamonSettings->mqtt_topic_base, jsonDoc[F("mqtt_topic_base")], sizeof(heishamonSettings->mqtt_topic_base));
+          if ( jsonDoc[F("mqtt_server")] ) strlcpy(heishamonSettings->mqtt_server, jsonDoc[F("mqtt_server")], sizeof(heishamonSettings->mqtt_server));
+          if ( jsonDoc[F("mqtt_port")] ) strlcpy(heishamonSettings->mqtt_port, jsonDoc[F("mqtt_port")], sizeof(heishamonSettings->mqtt_port));
+          if ( jsonDoc[F("mqtt_username")] ) strlcpy(heishamonSettings->mqtt_username, jsonDoc[F("mqtt_username")], sizeof(heishamonSettings->mqtt_username));
+          if ( jsonDoc[F("mqtt_password")] ) strlcpy(heishamonSettings->mqtt_password, jsonDoc[F("mqtt_password")], sizeof(heishamonSettings->mqtt_password));
+          if ( jsonDoc[F("ntp_servers")] ) strlcpy(heishamonSettings->ntp_servers, jsonDoc[F("ntp_servers")], sizeof(heishamonSettings->ntp_servers));
+          if ( jsonDoc[F("timezone")]) heishamonSettings->timezone = jsonDoc[F("timezone")];
 #ifdef TLS_SUPPORT
-          heishamonSettings->mqtt_tls_enabled = ( jsonDoc["mqtt_tls_enabled"] == "enabled" ) ? true : false; 
+          heishamonSettings->mqtt_tls_enabled = ( jsonDoc[F("mqtt_tls_enabled")] == "enabled" ) ? true : false; 
 #endif
-          heishamonSettings->force_rules = ( jsonDoc["force_rules"] == "enabled" ) ? true : false;
-          heishamonSettings->use_1wire = ( jsonDoc["use_1wire"] == "enabled" ) ? true : false;
-          heishamonSettings->use_s0 = ( jsonDoc["use_s0"] == "enabled" ) ? true : false;
-          heishamonSettings->hotspot = ( jsonDoc["hotspot"] == "disabled" ) ? false : true; //default to true if not found in settings
-          heishamonSettings->listenonly = ( jsonDoc["listenonly"] == "enabled" ) ? true : false;
-          heishamonSettings->logMqtt = ( jsonDoc["logMqtt"] == "enabled" ) ? true : false;
-          heishamonSettings->logHexdump = ( jsonDoc["logHexdump"] == "enabled" ) ? true : false;
-          heishamonSettings->logSerial1 = ( jsonDoc["logSerial1"] == "enabled" ) ? true : false;
-          heishamonSettings->optionalPCB = ( jsonDoc["optionalPCB"] == "enabled" ) ? true : false;
-          heishamonSettings->opentherm = ( jsonDoc["opentherm"] == "enabled" ) ? true : false;
+          heishamonSettings->force_rules = ( jsonDoc[F("force_rules")] == "enabled" ) ? true : false;
+          heishamonSettings->use_1wire = ( jsonDoc[F("use_1wire")] == "enabled" ) ? true : false;
+          heishamonSettings->use_s0 = ( jsonDoc[F("use_s0")] == "enabled" ) ? true : false;
+          heishamonSettings->hotspot = ( jsonDoc[F("hotspot")] == "disabled" ) ? false : true; //default to true if not found in settings
+          heishamonSettings->listenonly = ( jsonDoc[F("listenonly")] == "enabled" ) ? true : false;
+          heishamonSettings->logMqtt = ( jsonDoc[F("logMqtt")] == "enabled" ) ? true : false;
+          heishamonSettings->logHexdump = ( jsonDoc[F("logHexdump")] == "enabled" ) ? true : false;
+          heishamonSettings->logSerial1 = ( jsonDoc[F("logSerial1")] == "enabled" ) ? true : false;
+          heishamonSettings->optionalPCB = ( jsonDoc[F("optionalPCB")] == "enabled" ) ? true : false;
+          heishamonSettings->opentherm = ( jsonDoc[F("opentherm")] == "enabled" ) ? true : false;
 #ifdef ESP32          
-          heishamonSettings->proxy = ( jsonDoc["proxy"] == "enabled" ) ? true : false;
+          heishamonSettings->proxy = ( jsonDoc[F("proxy")] == "enabled" ) ? true : false;
 #endif          
-          if ( jsonDoc["waitTime"]) heishamonSettings->waitTime = jsonDoc["waitTime"];
+          if ( jsonDoc[F("waitTime")]) heishamonSettings->waitTime = jsonDoc[F("waitTime")];
           if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
-          if ( jsonDoc["waitDallasTime"]) heishamonSettings->waitDallasTime = jsonDoc["waitDallasTime"];
+          if ( jsonDoc[F("waitDallasTime")]) heishamonSettings->waitDallasTime = jsonDoc[F("waitDallasTime")];
           if (heishamonSettings->waitDallasTime < 5) heishamonSettings->waitDallasTime = 5;
-          if ( jsonDoc["dallasResolution"]) heishamonSettings->dallasResolution = jsonDoc["dallasResolution"];
+          if ( jsonDoc[F("dallasResolution")]) heishamonSettings->dallasResolution = jsonDoc[F("dallasResolution")];
           if ((heishamonSettings->dallasResolution < 9) || (heishamonSettings->dallasResolution > 12) ) heishamonSettings->dallasResolution = 12;
-          if ( jsonDoc["updateAllTime"]) heishamonSettings->updateAllTime = jsonDoc["updateAllTime"];
+          if ( jsonDoc[F("updateAllTime")]) heishamonSettings->updateAllTime = jsonDoc[F("updateAllTime")];
           if (heishamonSettings->updateAllTime < heishamonSettings->waitTime) heishamonSettings->updateAllTime = heishamonSettings->waitTime;
-          if ( jsonDoc["updataAllDallasTime"]) heishamonSettings->updataAllDallasTime = jsonDoc["updataAllDallasTime"];
+          if ( jsonDoc[F("updataAllDallasTime")]) heishamonSettings->updataAllDallasTime = jsonDoc[F("updataAllDallasTime")];
           if (heishamonSettings->updataAllDallasTime < heishamonSettings->waitDallasTime) heishamonSettings->updataAllDallasTime = heishamonSettings->waitDallasTime;
-          //if (jsonDoc["s0_1_gpio"]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc["s0_1_gpio"];
-          if (jsonDoc["s0_1_ppkwh"]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc["s0_1_ppkwh"];
-          if (jsonDoc["s0_1_interval"]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc["s0_1_interval"];
-          if (jsonDoc["s0_1_minpulsewidth"]) heishamonSettings->s0Settings[0].minimalPulseWidth = jsonDoc["s0_1_minpulsewidth"];
-          if (jsonDoc["s0_1_maxpulsewidth"]) heishamonSettings->s0Settings[0].maximalPulseWidth = jsonDoc["s0_1_maxpulsewidth"];
-          //if (jsonDoc["s0_2_gpio"]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc["s0_2_gpio"];
-          if (jsonDoc["s0_2_ppkwh"]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc["s0_2_ppkwh"];
-          if (jsonDoc["s0_2_interval"] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc["s0_2_interval"];
-          if (jsonDoc["s0_2_minpulsewidth"]) heishamonSettings->s0Settings[1].minimalPulseWidth = jsonDoc["s0_2_minpulsewidth"];
-          if (jsonDoc["s0_2_maxpulsewidth"]) heishamonSettings->s0Settings[1].maximalPulseWidth = jsonDoc["s0_2_maxpulsewidth"];
+          //if (jsonDoc[F("s0_1_gpio")]) heishamonSettings->s0Settings[0].gpiopin = jsonDoc[F("s0_1_gpio")];
+          if (jsonDoc[F("s0_1_ppkwh")]) heishamonSettings->s0Settings[0].ppkwh = jsonDoc[F("s0_1_ppkwh")];
+          if (jsonDoc[F("s0_1_interval")]) heishamonSettings->s0Settings[0].lowerPowerInterval = jsonDoc[F("s0_1_interval")];
+          if (jsonDoc[F("s0_1_minpulsewidth")]) heishamonSettings->s0Settings[0].minimalPulseWidth = jsonDoc[F("s0_1_minpulsewidth")];
+          if (jsonDoc[F("s0_1_maxpulsewidth")]) heishamonSettings->s0Settings[0].maximalPulseWidth = jsonDoc[F("s0_1_maxpulsewidth")];
+          //if (jsonDoc[F("s0_2_gpio")]) heishamonSettings->s0Settings[1].gpiopin = jsonDoc[F("s0_2_gpio")];
+          if (jsonDoc[F("s0_2_ppkwh")]) heishamonSettings->s0Settings[1].ppkwh = jsonDoc[F("s0_2_ppkwh")];
+          if (jsonDoc[F("s0_2_interval")] ) heishamonSettings->s0Settings[1].lowerPowerInterval = jsonDoc[F("s0_2_interval")];
+          if (jsonDoc[F("s0_2_minpulsewidth")]) heishamonSettings->s0Settings[1].minimalPulseWidth = jsonDoc[F("s0_2_minpulsewidth")];
+          if (jsonDoc[F("s0_2_maxpulsewidth")]) heishamonSettings->s0Settings[1].maximalPulseWidth = jsonDoc[F("s0_2_maxpulsewidth")];
           ntpReload(heishamonSettings);
         } else {
           log_message(_F("Failed to load json config, forcing config reset."));
@@ -389,83 +389,93 @@ int handleReboot(struct webserver_t *client) {
 
 void settingsToJson(JsonDocument &jsonDoc, settingsStruct *heishamonSettings) {
   //set jsonDoc with current settings
-  jsonDoc["wifi_hostname"] = heishamonSettings->wifi_hostname;
-  jsonDoc["wifi_password"] = heishamonSettings->wifi_password;
-  jsonDoc["wifi_ssid"] = heishamonSettings->wifi_ssid;
-  jsonDoc["ota_password"] = heishamonSettings->ota_password;
-  jsonDoc["mqtt_topic_base"] = heishamonSettings->mqtt_topic_base;
-  jsonDoc["mqtt_server"] = heishamonSettings->mqtt_server;
-  jsonDoc["mqtt_port"] = heishamonSettings->mqtt_port;
-  jsonDoc["mqtt_username"] = heishamonSettings->mqtt_username;
-  jsonDoc["mqtt_password"] = heishamonSettings->mqtt_password;
+  jsonDoc[F("wifi_hostname")] = heishamonSettings->wifi_hostname;
+  jsonDoc[F("wifi_password")] = heishamonSettings->wifi_password;
+  jsonDoc[F("wifi_ssid")] = heishamonSettings->wifi_ssid;
+  jsonDoc[F("ota_password")] = heishamonSettings->ota_password;
+  jsonDoc[F("mqtt_topic_base")] = heishamonSettings->mqtt_topic_base;
+  jsonDoc[F("mqtt_server")] = heishamonSettings->mqtt_server;
+  jsonDoc[F("mqtt_port")] = heishamonSettings->mqtt_port;
+  jsonDoc[F("mqtt_username")] = heishamonSettings->mqtt_username;
+  jsonDoc[F("mqtt_password")] = heishamonSettings->mqtt_password;
+  jsonDoc[F("ntp_servers")] = heishamonSettings->ntp_servers;
+  jsonDoc[F("timezone")] = heishamonSettings->timezone;
 #ifdef TLS_SUPPORT
   if (heishamonSettings->mqtt_tls_enabled) {
-    jsonDoc["mqtt_tls_enabled"] = "enabled";
+    jsonDoc[F("mqtt_tls_enabled")] = "enabled";
   } else {
-    jsonDoc["mqtt_tls_enabled"] = "disabled";
+    jsonDoc[F("mqtt_tls_enabled")] = "disabled";
   }
 #endif
   if (heishamonSettings->use_1wire) {
-    jsonDoc["use_1wire"] = "enabled";
+    jsonDoc[F("use_1wire")] = "enabled";
   } else {
-    jsonDoc["use_1wire"] = "disabled";
+    jsonDoc[F("use_1wire")] = "disabled";
   }
   if (heishamonSettings->use_s0) {
-    jsonDoc["use_s0"] = "enabled";
+    jsonDoc[F("use_s0")] = "enabled";
   } else {
-    jsonDoc["use_s0"] = "disabled";
+    jsonDoc[F("use_s0")] = "disabled";
   }
   if (heishamonSettings->hotspot) {
-    jsonDoc["hotspot"] = "enabled";
+    jsonDoc[F("hotspot")] = "enabled";
   } else {
-    jsonDoc["hotspot"] = "disabled";
+    jsonDoc[F("hotspot")] = "disabled";
   }
   if (heishamonSettings->listenonly) {
-    jsonDoc["listenonly"] = "enabled";
+    jsonDoc[F("listenonly")] = "enabled";
   } else {
-    jsonDoc["listenonly"] = "disabled";
+    jsonDoc[F("listenonly")] = "disabled";
   }  if (heishamonSettings->force_rules) {
-    jsonDoc["force_rules"] = "enabled";
+    jsonDoc[F("force_rules")] = "enabled";
   } else {
-    jsonDoc["force_rules"] = "disabled";
+    jsonDoc[F("force_rules")] = "disabled";
   }
   if (heishamonSettings->logMqtt) {
-    jsonDoc["logMqtt"] = "enabled";
+    jsonDoc[F("logMqtt")] = "enabled";
   } else {
-    jsonDoc["logMqtt"] = "disabled";
+    jsonDoc[F("logMqtt")] = "disabled";
   }
   if (heishamonSettings->logHexdump) {
-    jsonDoc["logHexdump"] = "enabled";
+    jsonDoc[F("logHexdump")] = "enabled";
   } else {
-    jsonDoc["logHexdump"] = "disabled";
+    jsonDoc[F("logHexdump")] = "disabled";
   }
   if (heishamonSettings->logSerial1) {
-    jsonDoc["logSerial1"] = "enabled";
+    jsonDoc[F("logSerial1")] = "enabled";
   } else {
-    jsonDoc["logSerial1"] = "disabled";
+    jsonDoc[F("logSerial1")] = "disabled";
   }
   if (heishamonSettings->optionalPCB) {
-    jsonDoc["optionalPCB"] = "enabled";
+    jsonDoc[F("optionalPCB")] = "enabled";
   } else {
-    jsonDoc["optionalPCB"] = "disabled";
+    jsonDoc[F("optionalPCB")] = "disabled";
   }
   if (heishamonSettings->opentherm) {
-    jsonDoc["opentherm"] = "enabled";
+    jsonDoc[F("opentherm")] = "enabled";
   } else {
-    jsonDoc["opentherm"] = "disabled";
+    jsonDoc[F("opentherm")] = "disabled";
   }
 #ifdef ESP32  
   if (heishamonSettings->proxy) {
-    jsonDoc["proxy"] = "enabled";
+    jsonDoc[F("proxy")] = "enabled";
   } else {
-    jsonDoc["proxy"] = "disabled";
+    jsonDoc[F("proxy")] = "disabled";
   }
 #endif 
-  jsonDoc["waitTime"] = heishamonSettings->waitTime;
-  jsonDoc["waitDallasTime"] = heishamonSettings->waitDallasTime;
-  jsonDoc["dallasResolution"] = heishamonSettings->dallasResolution;
-  jsonDoc["updateAllTime"] = heishamonSettings->updateAllTime;
-  jsonDoc["updataAllDallasTime"] = heishamonSettings->updataAllDallasTime;
+  jsonDoc[F("waitTime")] = heishamonSettings->waitTime;
+  jsonDoc[F("waitDallasTime")] = heishamonSettings->waitDallasTime;
+  jsonDoc[F("dallasResolution")] = heishamonSettings->dallasResolution;
+  jsonDoc[F("updateAllTime")] = heishamonSettings->updateAllTime;
+  jsonDoc[F("updataAllDallasTime")] = heishamonSettings->updataAllDallasTime;
+  jsonDoc[F("s0_1_ppkwh")] = heishamonSettings->s0Settings[0].ppkwh;
+  jsonDoc[F("s0_1_interval")] = heishamonSettings->s0Settings[0].lowerPowerInterval;
+  jsonDoc[F("s0_1_minpulsewidth")] = heishamonSettings->s0Settings[0].minimalPulseWidth;
+  jsonDoc[F("s0_1_maxpulsewidth")] = heishamonSettings->s0Settings[0].maximalPulseWidth;
+  jsonDoc[F("s0_2_ppkwh")] = heishamonSettings->s0Settings[1].ppkwh;
+  jsonDoc[F("s0_2_interval")] = heishamonSettings->s0Settings[1].lowerPowerInterval;
+  jsonDoc[F("s0_2_minpulsewidth")] = heishamonSettings->s0Settings[1].minimalPulseWidth;
+  jsonDoc[F("s0_2_maxpulsewidth")] = heishamonSettings->s0Settings[1].maximalPulseWidth;  
 }
 
 void saveJsonToFile(JsonDocument &jsonDoc, const char* filename) {
@@ -562,12 +572,19 @@ static bool processCAtmp_to_CAPEM(String &outMsg) {
 }
 #endif
 
+bool passwordWasChanged(const char *returned) {
+    for (size_t i = 0; i < strlen(returned); i++) {
+        if (returned[i] != '*') return true;
+    }
+    return false;
+}
+
 int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
   const char *wifi_ssid = NULL;
   const char *wifi_password = NULL;
+  const char *mqtt_password = NULL;
   const char *new_ota_password = NULL;
   const char *current_ota_password = NULL;
-  const char *use_s0 = NULL;
 
   bool reconnectWiFi = false;
   bool wrongPassword = false;
@@ -575,80 +592,77 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 
   settingsToJson(jsonDoc, heishamonSettings); //stores current settings in a json document
 
-  jsonDoc["force_rules"] = String("disabled");
-  jsonDoc["hotspot"] = String("disabled");
-  jsonDoc["listenonly"] = String("disabled");
-  jsonDoc["logMqtt"] = String("disabled");
-  jsonDoc["logHexdump"] = String("disabled");
-  jsonDoc["logSerial1"] = String("disabled");
-  jsonDoc["optionalPCB"] = String("disabled");
-  jsonDoc["opentherm"] = String("disabled");
+  jsonDoc[F("force_rules")] = String("disabled");
+  jsonDoc[F("hotspot")] = String("disabled");
+  jsonDoc[F("listenonly")] = String("disabled");
+  jsonDoc[F("logMqtt")] = String("disabled");
+  jsonDoc[F("logHexdump")] = String("disabled");
+  jsonDoc[F("logSerial1")] = String("disabled");
+  jsonDoc[F("optionalPCB")] = String("disabled");
+  jsonDoc[F("opentherm")] = String("disabled");
 
 #ifdef ESP32  
-  jsonDoc["proxy"] = String("disabled");
+  jsonDoc[F("proxy")] = String("disabled");
 #endif  
-  jsonDoc["use_1wire"] = String("disabled");
-  jsonDoc["use_s0"] = String("disabled");
+  jsonDoc[F("use_1wire")] = String("disabled");
+  jsonDoc[F("use_s0")] = String("disabled");
 
   struct websettings_t *tmp = (struct websettings_t *)client->userdata;
   while (tmp) {
     if (strcmp(tmp->name.c_str(), "wifi_hostname") == 0) {
-      jsonDoc["wifi_hostname"] = tmp->value;
+      jsonDoc[F("wifi_hostname")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_topic_base") == 0) {
-      jsonDoc["mqtt_topic_base"] = tmp->value;
+      jsonDoc[F("mqtt_topic_base")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_server") == 0) {
-      jsonDoc["mqtt_server"] = tmp->value;
+      jsonDoc[F("mqtt_server")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_port") == 0) {
-      jsonDoc["mqtt_port"] = tmp->value;
+      jsonDoc[F("mqtt_port")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_username") == 0) {
-      jsonDoc["mqtt_username"] = tmp->value;
+      jsonDoc[F("mqtt_username")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "mqtt_password") == 0) {
-      jsonDoc["mqtt_password"] = tmp->value;
+      mqtt_password = tmp->value.c_str();
     } else if (strcmp(tmp->name.c_str(), "use_1wire") == 0) {
-      jsonDoc["use_1wire"] = tmp->value;
+      jsonDoc[F("use_1wire")] = tmp->value;
 #ifdef TLS_SUPPORT
     } else if (strcmp(tmp->name.c_str(), "mqtt_tls_enabled") == 0) {
-    jsonDoc["mqtt_tls_enabled"] = tmp->value;
+    jsonDoc[F("mqtt_tls_enabled")] = tmp->value;
 #endif
     } else if (strcmp(tmp->name.c_str(), "use_s0") == 0) {
-      jsonDoc["use_s0"] = tmp->value;
-      if (strcmp(tmp->value.c_str(), "enabled") == 0) {
-        use_s0 = tmp->value.c_str();
-      }
+      jsonDoc[F("use_s0")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "hotspot") == 0) {
-      jsonDoc["hotspot"] = tmp->value;
+      jsonDoc[F("hotspot")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "listenonly") == 0) {
-      jsonDoc["listenonly"] = tmp->value;
+      jsonDoc[F("listenonly")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "force_rules") == 0) {
-      jsonDoc["force_rules"] = tmp->value;
+      jsonDoc[F("force_rules")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "logMqtt") == 0) {
-      jsonDoc["logMqtt"] = tmp->value;
+      jsonDoc[F("logMqtt")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "logHexdump") == 0) {
-      jsonDoc["logHexdump"] = tmp->value;
+      jsonDoc[F("logHexdump")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "logSerial1") == 0) {
-      jsonDoc["logSerial1"] = tmp->value;
+      jsonDoc[F("logSerial1")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "optionalPCB") == 0) {
-      jsonDoc["optionalPCB"] = tmp->value;
+      jsonDoc[F("optionalPCB")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "opentherm") == 0) {
-      jsonDoc["opentherm"] = tmp->value;
+      jsonDoc[F("opentherm")] = tmp->value;
 #ifdef ESP32      
     } else if (strcmp(tmp->name.c_str(), "proxy") == 0) {
-      jsonDoc["proxy"] = tmp->value;
+      jsonDoc[F("proxy")] = tmp->value;
 #endif      
     } else if (strcmp(tmp->name.c_str(), "ntp_servers") == 0) {
-      jsonDoc["ntp_servers"] = tmp->value;
+      jsonDoc[F("ntp_servers")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "timezone") == 0) {
-      jsonDoc["timezone"] = tmp->value;
+      jsonDoc[F("timezone")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "waitTime") == 0) {
-      jsonDoc["waitTime"] = tmp->value;
+      jsonDoc[F("waitTime")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "waitDallasTime") == 0) {
-      jsonDoc["waitDallasTime"] = tmp->value;
+      jsonDoc[F("waitDallasTime")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "updateAllTime") == 0) {
-      jsonDoc["updateAllTime"] = tmp->value;
+      jsonDoc[F("updateAllTime")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "dallasResolution") == 0) {
-      jsonDoc["dallasResolution"] = tmp->value;
+      jsonDoc[F("dallasResolution")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "updataAllDallasTime") == 0) {
-      jsonDoc["updataAllDallasTime"] = tmp->value;
+      jsonDoc[F("updataAllDallasTime")] = tmp->value;
     } else if (strcmp(tmp->name.c_str(), "wifi_ssid") == 0) {
       wifi_ssid = tmp->value.c_str();
     } else if (strcmp(tmp->name.c_str(), "wifi_password") == 0) {
@@ -657,57 +671,48 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
       new_ota_password = tmp->value.c_str();
     } else if (strcmp(tmp->name.c_str(), "current_ota_password") == 0) {
       current_ota_password = tmp->value.c_str();
-    }
-    tmp = tmp->next;
-  }
-
-  tmp = (struct websettings_t *)client->userdata;
-  while (tmp) {
-    //if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_gpio") == 0) {
-    // jsonDoc["s0_1_gpio"] = tmp->value;
-    //} else
-    if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_ppkwh") == 0) {
-      jsonDoc["s0_1_ppkwh"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_interval") == 0) {
-      jsonDoc["s0_1_interval"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_minpulsewidth") == 0) {
-      jsonDoc["s0_1_minpulsewidth"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_1_maxpulsewidth") == 0) {
-      jsonDoc["s0_1_maxpulsewidth"] = tmp->value;
-    //} else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_gpio") == 0) {
-    //  jsonDoc["s0_2_gpio"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
-      jsonDoc["s0_2_ppkwh"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
-      jsonDoc["s0_2_ppkwh"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_interval") == 0) {
-      jsonDoc["s0_2_interval"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_minpulsewidth") == 0) {
-      jsonDoc["s0_2_minpulsewidth"] = tmp->value;
-    } else if (use_s0 != NULL && strcmp(tmp->name.c_str(), "s0_2_maxpulsewidth") == 0) {
-      jsonDoc["s0_2_maxpulsewidth"] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "s0_1_ppkwh") == 0) {
+      jsonDoc[F("s0_1_ppkwh")] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "s0_1_interval") == 0) {
+      jsonDoc[F("s0_1_interval")] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "s0_1_minpulsewidth") == 0) {
+      jsonDoc[F("s0_1_minpulsewidth")] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "s0_1_maxpulsewidth") == 0) {
+      jsonDoc[F("s0_1_maxpulsewidth")] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
+      jsonDoc[F("s0_2_ppkwh")] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "s0_2_ppkwh") == 0) {
+      jsonDoc[F("s0_2_ppkwh")] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "s0_2_interval") == 0) {
+      jsonDoc[F("s0_2_interval")] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "s0_2_minpulsewidth") == 0) {
+      jsonDoc[F("s0_2_minpulsewidth")] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "s0_2_maxpulsewidth") == 0) {
+      jsonDoc[F("s0_2_maxpulsewidth")] = tmp->value;
     }
     tmp = tmp->next;
   }
 
   if (new_ota_password != NULL && strlen(new_ota_password) > 0 && current_ota_password != NULL && strlen(current_ota_password) > 0) {
     if (strcmp(heishamonSettings->ota_password, current_ota_password) == 0) {
-      jsonDoc["ota_password"] = new_ota_password;
+      jsonDoc[F("ota_password")] = new_ota_password;
     } else {
       wrongPassword = true;
     }
   }
 
-  if (wifi_password != NULL && wifi_ssid != NULL && strlen(wifi_ssid) > 0 && strlen(wifi_password) > 0) {
-    if (strcmp(jsonDoc["wifi_ssid"], wifi_ssid) != 0 || strcmp(jsonDoc["wifi_password"], wifi_password) != 0) {
-      reconnectWiFi = true;
-    }
+  if (wifi_ssid != NULL && strlen(wifi_ssid) > 0) {
+    if (strcmp(jsonDoc[F("wifi_ssid")], wifi_ssid) != 0) reconnectWiFi = true;
+    jsonDoc[F("wifi_ssid")] = wifi_ssid; 
   }
-  if (wifi_ssid != NULL) {
-    jsonDoc["wifi_ssid"] = String(wifi_ssid);
+
+  if (wifi_password != NULL && passwordWasChanged(wifi_password)) {
+    reconnectWiFi = true;
+    jsonDoc[F("wifi_password")] = wifi_password;
   }
-  if (wifi_password != NULL) {
-    jsonDoc["wifi_password"] = String(wifi_password);
+
+  if (mqtt_password != NULL && passwordWasChanged(mqtt_password) ) {
+    jsonDoc[F("mqtt_password")] = mqtt_password;
   }
 
   saveJsonToFile(jsonDoc, "/config.json"); //save to config file
@@ -824,230 +829,40 @@ int settingsReconnectWifi(struct webserver_t *client, settingsStruct *heishamonS
   return 0;
 }
 
+void maskPassword(const char *input, char *output) {
+    size_t len = strlen(input);
+    memset(output, '*', len);
+    output[len] = '\0';
+}
+
 int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings) {
-  switch (client->content) {
+    switch (client->content) {
     case 0: {
-        webserver_send(client, 200, (char *)"application/json", 0);
-        webserver_send_content_P(client, PSTR("{\"wifi_hostname\":\""), 18);
-        webserver_send_content(client, heishamonSettings->wifi_hostname, strlen(heishamonSettings->wifi_hostname));
-        webserver_send_content_P(client, PSTR("\",\"wifi_ssid\":\""), 15);
-        webserver_send_content(client, heishamonSettings->wifi_ssid, strlen(heishamonSettings->wifi_ssid));
-      } break;
-    case 1: {
-        webserver_send_content_P(client, PSTR("\",\"wifi_password\":\""), 19);
-        webserver_send_content(client, heishamonSettings->wifi_password, strlen(heishamonSettings->wifi_password));
-        webserver_send_content_P(client, PSTR("\",\"current_ota_password\":\""), 26);
-        webserver_send_content_P(client, PSTR("\",\"new_ota_password\":\""), 22);
-      } break;
-    case 2: {
-        webserver_send_content_P(client, PSTR("\",\"mqtt_topic_base\":\""), 21);
-        webserver_send_content(client, heishamonSettings->mqtt_topic_base, strlen(heishamonSettings->mqtt_topic_base));
-        webserver_send_content_P(client, PSTR("\",\"mqtt_server\":\""), 17);
-        webserver_send_content(client, heishamonSettings->mqtt_server, strlen(heishamonSettings->mqtt_server));
-      } break;
-    case 3: {
-        webserver_send_content_P(client, PSTR("\",\"mqtt_port\":\""), 15);
-        webserver_send_content(client, heishamonSettings->mqtt_port, strlen(heishamonSettings->mqtt_port));
-        webserver_send_content_P(client, PSTR("\",\"mqtt_username\":\""), 19);
-        webserver_send_content(client, heishamonSettings->mqtt_username, strlen(heishamonSettings->mqtt_username));
-      } break;
-    case 4: {
-        webserver_send_content_P(client, PSTR("\",\"mqtt_password\":\""), 19);
-        webserver_send_content(client, heishamonSettings->mqtt_password, strlen(heishamonSettings->mqtt_password));
-        webserver_send_content_P(client, PSTR("\",\"ntp_servers\":\""), 17);
-        webserver_send_content(client, heishamonSettings->ntp_servers, strlen(heishamonSettings->ntp_servers));
-        webserver_send_content_P(client, PSTR("\",\"timezone\":"), 13);
-
-        {
-          char str[20];
-          itoa(heishamonSettings->timezone, str, 10);
-          webserver_send_content(client, str, strlen(str));
-        }
-
-        webserver_send_content_P(client, PSTR(",\"waitTime\":"), 12);
-
-        {
-          char str[20];
-          itoa(heishamonSettings->waitTime, str, 10);
-          webserver_send_content(client, str, strlen(str));
-        }
-      } break;
-    case 5: {
-        char str[20];
-        webserver_send_content_P(client, PSTR(",\"updateAllTime\":"), 17);
-
-        itoa(heishamonSettings->updateAllTime, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"hotspot\":"), 11);
-
-        itoa(heishamonSettings->hotspot, str, 10);
-        webserver_send_content(client, str, strlen(str));
-        
-      } break;
-    case 6: {
-        char str[20];
-        webserver_send_content_P(client, PSTR(",\"listenonly\":"), 14);
-
-        itoa(heishamonSettings->listenonly, str, 10);
-        webserver_send_content(client, str, strlen(str));
-        webserver_send_content_P(client, PSTR(",\"force_rules\":"), 15);
-
-        itoa(heishamonSettings->force_rules, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-      } break;
-    case 7: {
-        char str[20];
-        webserver_send_content_P(client, PSTR(",\"logMqtt\":"), 11);
-
-        itoa(heishamonSettings->logMqtt, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"logHexdump\":"), 14);
-
-        itoa(heishamonSettings->logHexdump, str, 10);
-        webserver_send_content(client, str, strlen(str));
-      } break;
-    case 8: {
-        char str[20];
-        webserver_send_content_P(client, PSTR(",\"logSerial1\":"), 14);
-        itoa(heishamonSettings->logSerial1, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"optionalPCB\":"), 15);
-        itoa(heishamonSettings->optionalPCB, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"opentherm\":"), 13);
-        itoa(heishamonSettings->opentherm, str, 10);
-        webserver_send_content(client, str, strlen(str));
-      } break;
-    case 9: {
-        char str[20];
-#ifdef ESP32        
-        webserver_send_content_P(client, PSTR(",\"proxy\":"), 9);
-        itoa(heishamonSettings->proxy, str, 10);
-        webserver_send_content(client, str, strlen(str));
-#endif      
+        JsonDocument jsonDoc;
+        settingsToJson(jsonDoc, heishamonSettings); //stores current settings in a json document  
+        //overwrite passwords with placeholder string
+        char masked_wifi_password[PASSWORD_LENGTH];
+        maskPassword(jsonDoc[F("wifi_password")], masked_wifi_password);
+        jsonDoc[F("wifi_password")] = masked_wifi_password;
+        char masked_mqtt_password[PASSWORD_LENGTH];
+        maskPassword(jsonDoc[F("mqtt_password")], masked_mqtt_password);
+        jsonDoc[F("mqtt_password")] = masked_mqtt_password;
 #ifdef TLS_SUPPORT
-        webserver_send_content_P(client, PSTR(",\"mqtt_tls_enabled\":"), 20); 
-        itoa(heishamonSettings->mqtt_tls_enabled, str, 10);
-        webserver_send_content(client, str, strlen(str));
-        webserver_send_content_P(client, PSTR(",\"mqtt_ca_cert\":\""), 17);
-        if (LittleFS.exists("/ca.pem")) {
-            webserver_send_content_P(
-              client,
-              PSTR("CA certificate stored in filesystem"),
-              strlen_P(PSTR("CA certificate stored in filesystem"))
-            );
-          } else {
-            webserver_send_content_P(
-              client,
-              PSTR("No CA certificate found"),
-              strlen_P(PSTR("No CA certificate found"))
-            );
-          }
-        webserver_send_content_P(client, PSTR("\""), 1);
-#endif
-        webserver_send_content_P(client, PSTR(",\"use_1wire\":"), 13);
-        itoa(heishamonSettings->use_1wire, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"waitDallasTime\":"), 18);
-        itoa(heishamonSettings->waitDallasTime, str, 10);
-        webserver_send_content(client, str, strlen(str));
-      } break;
-    case 10: {
-        char str[20];
-        webserver_send_content_P(client, PSTR(",\"updataAllDallasTime\":"), 23);
-
-        itoa(heishamonSettings->updataAllDallasTime, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"dallasResolution\":"), 20);
-
-        itoa(heishamonSettings->dallasResolution , str, 10);
-        webserver_send_content(client, str, strlen(str));
-      } break;
-    case 11: {
-        char str[20];
-        webserver_send_content_P(client, PSTR(",\"use_s0\":"), 10);
-
-        itoa(heishamonSettings->use_s0, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        //webserver_send_content_P(client, PSTR(",\"s0_1_gpio\":"), 13);
-
-        int i = 0;
-
-        //if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_1;  //dirty hack
-        //itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
-        //webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"s0_1_ppkwh\":"), 14);
-
-        itoa(heishamonSettings->s0Settings[i].ppkwh, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"s0_1_interval\":"), 17);
-
-        itoa(heishamonSettings->s0Settings[i].lowerPowerInterval, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"s0_1_minpulsewidth\":"), 22);
-
-        itoa(heishamonSettings->s0Settings[i].minimalPulseWidth, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"s0_1_maxpulsewidth\":"), 22);
-
-        itoa(heishamonSettings->s0Settings[i].maximalPulseWidth, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"s0_1_minwatt\":"), 16);
-
-        itoa((int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval), str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        //webserver_send_content_P(client, PSTR(",\"s0_2_gpio\":"), 13);
-      } break;
-    case 12: {
-        char str[20];
-        int i = 1;
-
-        //if (heishamonSettings->s0Settings[i].gpiopin == 255) heishamonSettings->s0Settings[i].gpiopin = DEFAULT_S0_PIN_2;  //dirty hack
-        //itoa(heishamonSettings->s0Settings[i].gpiopin, str, 10);
-        //webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"s0_2_ppkwh\":"), 14);
-
-        itoa(heishamonSettings->s0Settings[i].ppkwh, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"s0_2_interval\":"), 17);
-
-        itoa(heishamonSettings->s0Settings[i].lowerPowerInterval, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"s0_2_minpulsewidth\":"), 22);
-
-        itoa(heishamonSettings->s0Settings[i].minimalPulseWidth, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"s0_2_maxpulsewidth\":"), 22);
-
-        itoa(heishamonSettings->s0Settings[i].maximalPulseWidth, str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR(",\"s0_2_minwatt\":"), 16);
-
-        itoa((int) round((3600 * 1000 / heishamonSettings->s0Settings[i].ppkwh) / heishamonSettings->s0Settings[i].lowerPowerInterval), str, 10);
-        webserver_send_content(client, str, strlen(str));
-
-        webserver_send_content_P(client, PSTR("}"), 1);
-      } break;
-  }
+        jsonDoc[F("mqtt_ca_cert")] = LittleFS.exists("/ca.pem") ? F("CA certificate stored in filesystem") : F("No CA certificate found");
+#endif   
+        int size = measureJson(jsonDoc);
+        char* buffer = (char*)malloc(size+1);
+        if (buffer == nullptr) {
+            //alloc failed
+            log_message(_F("Failed to initialize buffer for getsettings serialize json"));
+            return -1;
+        }
+        serializeJson(jsonDoc, buffer, size);
+        webserver_send(client, 200, (char *)"application/json", 0);
+        webserver_send_content(client, buffer, size);
+        free(buffer);
+      }  break;
+    }
   return 0;
 }
 
@@ -1177,6 +992,7 @@ int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconne
     case 1: {
         webserver_send_content_P(client, heishamon_version, strlen_P(heishamon_version));
         webserver_send_content_P(client, webBodyRoot2, strlen_P(webBodyRoot2));
+        webserver_send_content_P(client, webTabnavOpen, strlen_P(webTabnavOpen));
         if (heishamonSettings->use_1wire) {
           webserver_send_content_P(client, webBodyRootDallasTab, strlen_P(webBodyRootDallasTab));
         }
@@ -1186,76 +1002,36 @@ int handleRoot(struct webserver_t *client, float readpercentage, int mqttReconne
         if (heishamonSettings->opentherm) {
           webserver_send_content_P(client, webBodyRootOpenthermTab, strlen_P(webBodyRootOpenthermTab));
         }
-        webserver_send_content_P(client, webBodyRootConsoleTab, strlen_P(webBodyRootConsoleTab));
-      } break;
-    case 2: {
-        webserver_send_content_P(client, webBodyEndDiv, strlen_P(webBodyEndDiv));
-        webserver_send_content_P(client, webBodyRootStatusWifi, strlen_P(webBodyRootStatusWifi));
-        char str[200];
-        itoa(getWifiQuality(), str, 10);
-        webserver_send_content(client, (char *)str, strlen(str));
-#ifdef ESP32
-        webserver_send_content_P(client, webBodyRootStatusEthernet, strlen_P(webBodyRootStatusEthernet));
-        if (ETH.phyAddr() != 0) {        
-          if (ETH.connected()) {
-            if (ETH.hasIP()) {
-              webserver_send_content_P(client, PSTR("connected - IP: "), 16);
-              char ipaddress[30];
-              ETH.localIP().toString().toCharArray(ipaddress,30);
-              webserver_send_content(client, ipaddress, strlen(ipaddress));              
-              
-            } else {
-              webserver_send_content_P(client, PSTR("connected - no IP"), 17);
-            }
-          } 
-          else {
-            webserver_send_content_P(client, PSTR("not connected"), 13);
-          }
-        } else {
-          webserver_send_content_P(client, PSTR("not installed"), 13);
-        }
-#endif
-      } break;
-    case 3: {
-        webserver_send_content_P(client, webBodyRootStatusMemory, strlen_P(webBodyRootStatusMemory));
-        char str[200];
-        itoa(getFreeMemory(), str, 10);
-        webserver_send_content(client, (char *)str, strlen(str));
-        webserver_send_content_P(client, webBodyRootStatusReceived, strlen_P(webBodyRootStatusReceived));
-        str[200];
-        itoa(readpercentage, str, 10);
-        webserver_send_content(client, (char *)str, strlen(str));
-      } break;
-    case 4: {
-        webserver_send_content_P(client, webBodyRootStatusReconnects, strlen_P(webBodyRootStatusReconnects));
-        char str[200];
-        itoa(mqttReconnects, str, 10);
-        webserver_send_content(client, (char *)str, strlen(str));
-        webserver_send_content_P(client, webBodyRootStatusUptime, strlen_P(webBodyRootStatusUptime));
-        char *up = getUptime();
-        webserver_send_content(client, up, strlen(up));
-        free(up);
+        webserver_send_content_P(client, webTabnavClose, strlen_P(webTabnavClose));
         if (heishamonSettings->listenonly) {
           webserver_send_content_P(client, webBodyRootStatusListenOnly, strlen_P(webBodyRootStatusListenOnly));
         }
-      } break;
-    case 5: {
         webserver_send_content_P(client, webBodyEndDiv, strlen_P(webBodyEndDiv));
+      } break;
+    case 2: {
         webserver_send_content_P(client, webBodyRootHeatpumpValues, strlen_P(webBodyRootHeatpumpValues));
         if (heishamonSettings->use_1wire) {
           webserver_send_content_P(client, webBodyRootDallasValues, strlen_P(webBodyRootDallasValues));
         }
+        if (heishamonSettings->opentherm) {
+          webserver_send_content_P(client, webBodyRootOpenthermValues, strlen_P(webBodyRootOpenthermValues));
+        }        
         if (heishamonSettings->use_s0) {
           webserver_send_content_P(client, webBodyRootS0Values, strlen_P(webBodyRootS0Values));
         }
-        if (heishamonSettings->opentherm) {
-          webserver_send_content_P(client, webBodyRootOpenthermValues, strlen_P(webBodyRootOpenthermValues));
-        }
+      } break;
+    case 3: {
         webserver_send_content_P(client, webBodyRootConsole, strlen_P(webBodyRootConsole));
+      } break;
+    case 4: {
         webserver_send_content_P(client, menuJS, strlen_P(menuJS));
       } break;
-    case 6: {
+    case 5: {
         webserver_send_content_P(client, refreshJS, strlen_P(refreshJS));
+        webserver_send_content_P(client, consoleTogglesJS, strlen_P(consoleTogglesJS));
+
+      } break;
+    case 6: {
         webserver_send_content_P(client, selectJS, strlen_P(selectJS));
         webserver_send_content_P(client, websocketJS, strlen_P(websocketJS));
         webserver_send_content_P(client, webFooter, strlen_P(webFooter));
@@ -1486,6 +1262,7 @@ int showRules(struct webserver_t *client) {
           }
           client->userdata = NULL;
           webserver_send_content_P(client, showRulesPage2, strlen_P(showRulesPage2));
+          webserver_send_content_P(client, rulesJS, strlen_P(rulesJS));
           webserver_send_content_P(client, menuJS, strlen_P(menuJS));
           webserver_send_content_P(client, webFooter, strlen_P(webFooter));
         }
@@ -1498,6 +1275,7 @@ int showRules(struct webserver_t *client) {
         }
         client->userdata = NULL;
         webserver_send_content_P(client, showRulesPage2, strlen_P(showRulesPage2));
+        webserver_send_content_P(client, rulesJS, strlen_P(rulesJS));
         webserver_send_content_P(client, menuJS, strlen_P(menuJS));
         webserver_send_content_P(client, webFooter, strlen_P(webFooter));
       }
@@ -1510,11 +1288,13 @@ int showRules(struct webserver_t *client) {
       }
       client->userdata = NULL;
       webserver_send_content_P(client, showRulesPage2, strlen_P(showRulesPage2));
+      webserver_send_content_P(client, rulesJS, strlen_P(rulesJS));
       webserver_send_content_P(client, menuJS, strlen_P(menuJS));
       webserver_send_content_P(client, webFooter, strlen_P(webFooter));
     }
   } else if (client->content == 1) {
     webserver_send_content_P(client, showRulesPage2, strlen_P(showRulesPage2));
+    webserver_send_content_P(client, rulesJS, strlen_P(rulesJS));
     webserver_send_content_P(client, menuJS, strlen_P(menuJS));
     webserver_send_content_P(client, webFooter, strlen_P(webFooter));
   }

@@ -1,1488 +1,2401 @@
-static const char webHeader[] PROGMEM  =
-  "<!DOCTYPE html>"
-  "<html>"
-  "<title>Heisha monitor</title>"
-  "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
-  "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
+#if defined(ESP8266)
+  #define FLASHPROG PROGMEM
+#else
+  #define FLASHPROG  // ESP32 ignores FLASHPROG, makes sure compiler uses the .rodata instead of .data for consts when confusing for PROGMEM
+#endif
 
-static const char refreshMeta[] PROGMEM = "<meta http-equiv=\"refresh\" content=\"5; url=/\" />";
-static const char webBodyStart[] PROGMEM =
-  "<body>"
-  "<button class=\"w3-button w3-red w3-xlarge w3-left\" onclick=\"openLeftMenu()\">&#9776;</button>"
-  "<header class=\"w3-container w3-card w3-theme\"><h1>Heisha monitor</h1></header>";
+// ─────────────────────────────────────────────────────────────────────────────
+// SHARED CSS
+// ─────────────────────────────────────────────────────────────────────────────
+static const char webCSS[] FLASHPROG = R"====(
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap');
 
-static const char webFooter[] PROGMEM  = "</body></html>";
-static const char menuJS[] PROGMEM =
-  "<script>"
-  "  function openLeftMenu() {"
-  "   var x = document.getElementById(\"leftMenu\");"
-  "   if (x.style.display === \"none\") {"
-  "     x.style.display = \"block\";"
-  "   } else {"
-  "     x.style.display = \"none\";"
-  "   }"
-  " }"
-  "</script>";
+/* ═══════════════════════════════════════════════════════════════════════
+   LIGHT MODE (DEFAULT)
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  --bg-base:#f8f9fa;
+  --bg-surface:#ffffff;
+  --bg-elevated:#f1f3f5;
+  --bg-hover:#e9ecef;
+  --border:#dee2e6;
+  --border-focus:#3a7bd5;
+  --text-primary:#212529;
+  --text-secondary:#495057;
+  --text-muted:#6c757d;
+  --accent:#3a7bd5;
+  --accent-glow:rgba(58,123,213,0.15);
+  --accent-hover:#5a9be8;
+  --red:#dc3545;
+  --red-glow:rgba(220,53,69,0.15);
+  --green:#28a745;
+  --green-glow:rgba(40,167,69,0.15);
+  --orange:#fd7e14;
+  --radius:8px;
+  --radius-sm:5px;
+  --radius-lg:12px;
+}
 
-static const char websocketJS[] PROGMEM =
-  "<script>"
-  "  var bConnected = false;"
-  "  var inactivityTimeout = 5000;"
-  "  var lastActivityTime = Date.now();"
-  "  function monitorWebSocket() {"
-  "      setInterval(() => {"
-  "          if (Date.now() - lastActivityTime > inactivityTimeout && oWebsocket.readyState === WebSocket.OPEN) {"
-  "              console.log('Detected inactivity, reconnecting...');"
-  "              oWebsocket.close();"
-  "          }"
-  "      }, inactivityTimeout);"
-  "  }  "
-  "  function attemptReconnect() {" 
-  "     if (!bConnected) {" 
-  "         console.log('Attempting to reconnect... ');" 
-  "         startWebsockets();" 
-  "     }" 
-  "  }" 
-  "  function startWebsockets() {"
-  "    if(typeof MozWebSocket != \"undefined\") {"
-  "      oWebsocket = new MozWebSocket(\"ws://\" + location.host);"
-  "    } else if(typeof WebSocket != \"undefined\") {"
-  "      /* The characters after the trailing slash are needed for a wierd IE 10 bug */"
-  "      oWebsocket = new WebSocket(\"ws://\" + location.host + \"/ws\");"
-  "    }"
-  ""
-  "    if(oWebsocket) {"
-  "      oWebsocket.onopen = function(evt) {"
-  "        bConnected = true;"
-  "      };"
-  ""
-  "      oWebsocket.onclose = function(evt) {"
-  "        bConnected = false;"  
-  "        attemptReconnect();"
-  "      };"
-  ""
-  "      oWebsocket.onerror = function(evt) {"
-  "        console.log('onerror: ' + evt);"
-  "      };"
-  ""
-  "      oWebsocket.onmessage = function(evt) {"
-  "        lastActivityTime = Date.now();"
-  "        if (evt.data.startsWith('{')) {"
-  "          const jsonObject = JSON.parse(evt.data);"
-  "          if (jsonObject.hasOwnProperty('logMsg')) {"
-  "            let obj = document.getElementById(\"cli\");"
-  "            let chk = document.getElementById(\"autoscroll\");"
-  "            obj.value += jsonObject['logMsg'] + \"\\n\";"
-  "            if(chk.checked) {"
-  "              obj.scrollTop = obj.scrollHeight;"
-  "            }"
-  "          } else if (jsonObject.hasOwnProperty('data')) {"
-  "             if (jsonObject.data.hasOwnProperty('stats')) {"
-  "              const elementwifi = document.getElementById(`wifi`);"
-  "              if (elementwifi) {"
-  "                elementwifi.textContent = jsonObject.data.stats.wifi;"
-  "              }"
-  "              const elementeth = document.getElementById(`ethernet`);"
-  "              if (elementeth) {"
-  "                elementeth.textContent = jsonObject.data.stats.ethernet;"
-  "              }"
-  "              const elementmemory = document.getElementById(`memory`);"
-  "              if (elementmemory) {"
-  "                elementmemory.textContent = jsonObject.data.stats.memory;"
-  "              }"
-  "              const elementcorrect = document.getElementById(`correct`);"
-  "              if (elementcorrect) {"
-  "                elementcorrect.textContent = jsonObject.data.stats.correct;"
-  "              }"
-  "              const elementmqtt = document.getElementById(`mqtt`);"
-  "              if (elementmqtt) {"
-  "                elementmqtt.textContent = jsonObject.data.stats.mqtt;"
-  "              }"
-  "              const elementuptime = document.getElementById(`uptime`);"
-  "              if (elementuptime) {"
-  "                elementuptime.textContent = jsonObject.data.stats.uptime;"
-  "              }"              
-  "             } else if (jsonObject.data.hasOwnProperty('heishavalues')) {"
-  "              const valueelement = document.getElementById(`${jsonObject.data.heishavalues.topic}-Value`);"
-  "              if ((valueelement) && (valueelement.textContent !== jsonObject.data.heishavalues.value)) {"
-  "                valueelement.classList.remove(\"update-effect\");"
-  "                void valueelement.offsetWidth;" 
-  "                valueelement.textContent = jsonObject.data.heishavalues.value;"
-  "                valueelement.classList.add(\"update-effect\");"
-  "              }"
-  "              const descelement = document.getElementById(`${jsonObject.data.heishavalues.topic}-Description`);"
-  "              if ((descelement) && (descelement.textContent !== jsonObject.data.heishavalues.description)) {"
-  "                descelement.classList.remove(\"update-effect\");"
-  "                void descelement.offsetWidth;" 
-  "                descelement.textContent = jsonObject.data.heishavalues.description;"
-  "                descelement.classList.add(\"update-effect\");"
-  "              }"  
-  "            } else if (jsonObject.data.hasOwnProperty('dallasvalues')) {"
-  "              const element = document.getElementById(`SensorID-${jsonObject.data.dallasvalues.sensorID}-Temperature`);"
-  "              if ((element) && (element.textContent !== jsonObject.data.dallasvalues.value)) {"
-  "                element.classList.remove(\"update-effect\");"
-  "                void element.offsetWidth;" 
-  "                element.textContent = jsonObject.data.dallasvalues.value;"
-  "                element.classList.add(\"update-effect\");"
-  "              }"
-  "            } else if (jsonObject.data.hasOwnProperty('s0values')) {"
-  "              const wattelement = document.getElementById(`s0port-${jsonObject.data.s0values.s0port}-Watt`);"
-  "              if ((wattelement) && (wattelement.textContent !== jsonObject.data.s0values.Watt)) {"
-  "                wattelement.classList.remove(\"update-effect\");"
-  "                void wattelement.offsetWidth;" 
-  "                wattelement.textContent = jsonObject.data.s0values.Watt;"
-  "                wattelement.classList.add(\"update-effect\");"
-  "              }"
-  "              const watthourelement = document.getElementById(`s0port-${jsonObject.data.s0values.s0port}-Watthour`);"
-  "              if ((watthourelement) && (watthourelement.textContent !== jsonObject.data.s0values.Watthour)) {"
-  "                watthourelement.classList.remove(\"update-effect\");"
-  "                void watthourelement.offsetWidth;" 
-  "                watthourelement.textContent = jsonObject.data.s0values.Watthour;"
-  "                watthourelement.classList.add(\"update-effect\");"
-  "              }" 
-  "              const watthourtotalelement = document.getElementById(`s0port-${jsonObject.data.s0values.s0port}-WatthourTotal`);"
-  "              if ((watthourtotalelement) && (watthourtotalelement.textContent !== jsonObject.data.s0values.WatthourTotal)) {"
-  "                watthourtotalelement.classList.remove(\"update-effect\");"
-  "                void watthourtotalelement.offsetWidth;" 
-  "                watthourtotalelement.textContent = jsonObject.data.s0values.WatthourTotal;"
-  "                watthourtotalelement.classList.add(\"update-effect\");"
-  "              }"          
-  "            } else if (jsonObject.data.hasOwnProperty('opentherm')) {"
-  "              const element = document.getElementById(`${jsonObject.data.opentherm.name}-value`);"
-  "              if ((element) && (element.textContent !== jsonObject.data.opentherm.value)) {"
-  "                element.classList.remove(\"update-effect\");"
-  "                void element.offsetWidth;" 
-  "                element.textContent = jsonObject.data.opentherm.value;"
-  "                element.classList.add(\"update-effect\");"
-  "              }"      
-  "            }"
-  "          }"
-  "        } else {"
-  "          let obj = document.getElementById(\"cli\");"
-  "          let chk = document.getElementById(\"autoscroll\");"
-  "          obj.value += evt.data + \"\\n\";"
-  "          if(chk.checked) {"
-  "            obj.scrollTop = obj.scrollHeight;"
-  "          }"
-  "        }"
-  "      }"
-  "    }"
-  "  }"
-  "</script>";
+/* ═══════════════════════════════════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════════════════════════════════ */
+html.dark-mode {
+  --bg-base:#0f1117;
+  --bg-surface:#161922;
+  --bg-elevated:#1e2230;
+  --bg-hover:#262b3a;
+  --border:#2a3040;
+  --border-focus:#3a7bd5;
+  --text-primary:#eef0f4;
+  --text-secondary:#7b8597;
+  --text-muted:#7b8597;
+  --accent:#3a7bd5;
+  --accent-glow:rgba(58,123,213,0.25);
+  --accent-hover:#5a9be8;
+  --red:#e74c5e;
+  --red-glow:rgba(231,76,94,0.25);
+  --green:#2ecc94;
+  --green-glow:rgba(46,204,148,0.2);
+  --orange:#f0a500;
+}
 
-static const char refreshJS[] PROGMEM =
-  "<script>"
-  " let timeout;"
-  " let isEditing = false;"
-  " document.body.onload=function() {"
-  "    openTable('Heatpump');"
-  "    document.getElementById(\"cli\").value = \"\";"
-  "    startWebsockets();"
-  "    monitorWebSocket();"
-  "    refreshTable();"
-  " };"
-  " var dallasAliasEdit = function() {"
-  "   isEditing = false;"
-  "   var address = this.getAttribute(\"data-address\");"
-  "   var alias = this.innerText.substring(0,30);"
-  "   var xhr = new XMLHttpRequest();"
-  "   var url = \"/dallasalias?\"+address+\"=\"+alias;"
-  "   xhr.open('GET', url, true);"
-  "   xhr.send();"
-  " };"
-  " async function refreshTable(tableName){"
-  "   try {"
-  "     if (isEditing) {"
-  "       return;"
-  "     }"
-  "     const response = await fetch('/json');"  
-  "     const jsonData = await response.json();"  
-  "     if (jsonData?.heatpump && Array.isArray(jsonData.heatpump)) {"  
-  "       const tableBody = document.getElementById('heishavalues');"  
-  "       tableBody.innerHTML = '';"  
-  "       jsonData.heatpump.forEach(item => {"
-  "         const row = document.createElement('tr');"
-  "         const topic = item['Topic'];"
-  "         for (const key in item) {"
-  "           if (Object.hasOwn(item,key)) {"
-  "             const cell = document.createElement('td');"
-  "             cell.id = `${topic}-${key}`;"
-  "             cell.textContent = item[key];"
-  "             row.appendChild(cell);"
-  "           }"
-  "         }"
-  "         tableBody.appendChild(row);"
-  "       });"  
-  "     }"
-  "     if (jsonData?.['heatpump extra'] && Array.isArray(jsonData['heatpump extra'])) {"  
-  "       const tableBody = document.getElementById('heishavalues');"  
-  "       jsonData['heatpump extra'].forEach(item => {"
-  "         const row = document.createElement('tr');"
-  "         const topic = item['Topic'];"  
-  "         for (const key in item) {"
-  "           if (Object.hasOwn(item,key)) {"
-  "             const cell = document.createElement('td');"
-  "             cell.id = `${topic}-${key}`;"
-  "             cell.textContent = item[key];"
-  "             row.appendChild(cell);"
-  "           }"
-  "         }"
-  "         tableBody.appendChild(row);"
-  "       });"  
-  "     }"
-  "     if (jsonData?.['heatpump optional'] && Array.isArray(jsonData['heatpump optional'])) {"  
-  "       const tableBody = document.getElementById('heishavalues');"  
-  "       jsonData['heatpump optional'].forEach(item => {"
-  "         const row = document.createElement('tr');"
-  "         const topic = item['Topic'];"  
-  "         for (const key in item) {"
-  "           if (Object.hasOwn(item,key)) {"
-  "             const cell = document.createElement('td');"
-  "             cell.id = `${topic}-${key}`;"
-  "             cell.textContent = item[key];"
-  "             row.appendChild(cell);"
-  "           }"
-  "         }"
-  "         tableBody.appendChild(row);"
-  "       });"  
-  "     }"
-  "     if (jsonData?.['1wire'] && Array.isArray(jsonData['1wire'])) {"  
-  "       const tableBody = document.getElementById('dallasvalues');"  
-  "       tableBody.innerHTML = '';"  
-  "       jsonData['1wire'].forEach(item => {"  
-  "         const row = document.createElement('tr');"
-  "         const sensorID = item['Sensor'];"  
-  "         for (const key in item) {"
-  "           if (Object.hasOwn(item,key)) {"
-  "             const cell = document.createElement('td');"
-  "             cell.id = `SensorID-${sensorID}-${key}`;"  
-  "             if (key === 'Alias') {"
-  "               const div = document.createElement('div');"
-  "               div.textContent = item[key];"
-  "               div.classList.add('w3-border','w3-border-light-grey','w3-hover-border-black');"
-  "               div.contentEditable = 'true';"
-  "               div.setAttribute('data-address', item.Sensor);"
-  "               div.addEventListener('focus', () => {isEditing = true;});"
-  "               div.addEventListener('blur',dallasAliasEdit);"
-  "               cell.appendChild(div);"
-  "             } else {"
-  "               cell.textContent = item[key];"
-  "             }"
-  "             row.appendChild(cell);"
-  "           }"
-  "         }"
-  "         tableBody.appendChild(row);"
-  "       });" 
-  "     }"
-  "     if (jsonData?.s0 && Array.isArray(jsonData.s0)) {"  
-  "       const tableBody = document.getElementById('s0values');"  
-  "       tableBody.innerHTML = '';"  
-  "       jsonData.s0.forEach(item => {"  
-  "         const row = document.createElement('tr');"  
-  "         const s0Port = item['S0 port'];"
-  "         for (const key in item) {"
-  "           if (Object.hasOwn(item,key)) {"
-  "             const cell = document.createElement('td');"
-  "             cell.textContent = item[key];"
-  "             cell.id = `s0port-${s0Port}-${key}`;"  
-  "             row.appendChild(cell);"
-  "           }"
-  "         }"
-  "         tableBody.appendChild(row);"
-  "       });" 
-  "     }"
-  "     if (jsonData?.opentherm && typeof jsonData.opentherm === 'object') {"  
-  "       const tableBody = document.getElementById('openthermvalues');"  
-  "       tableBody.innerHTML = '';"  
-  "       for (const [key, { type, value }] of Object.entries(jsonData.opentherm)) {"  
-  "         const row = document.createElement('tr');"  
-  "         const nameCell = document.createElement('td');"
-  "         const typeCell = document.createElement('td');"
-  "         const valueCell = document.createElement('td');"
-  "         nameCell.id = key;"
-  "         typeCell.id = `${key}-type`;"
-  "         valueCell.id = `${key}-value`;"
-  "         nameCell.textContent = key;"
-  "         typeCell.textContent = type;"
-  "         valueCell.textContent = value;"
-  "         row.appendChild(nameCell);"
-  "         row.appendChild(typeCell);"
-  "         row.appendChild(valueCell);"
-  "         tableBody.appendChild(row);"
-  "       };"  
-  "     }"
-  "   } catch (error) {"
-  "   }"
-  "}"
-  "</script>";
+/* ═══════════════════════════════════════════════════════════════════════
+   BASE STYLES (remain unchanged)
+   ═══════════════════════════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Sora',sans-serif;
+  background:var(--bg-base);
+  color:var(--text-primary);
+  min-height:100vh;
+  line-height:1.5;
+  overflow-x:hidden;
+  transition:background 0.3s, color 0.3s;
+}
 
-static const char selectJS[] PROGMEM =
-  "<script>"
-  "function openTable(tableName) {"
-  "  var i;"
-  "  var x = document.getElementsByClassName(\"heishatable\");"
-  "  for (i = 0; i < x.length; i++) {"
-  "    x[i].style.display = \"none\";"
-  "  }"
-  "  document.getElementById(tableName).style.display = \"block\";"
-  "}"
-  "</script>";
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:var(--bg-surface);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+  height:56px;
+  position:sticky;
+  top:0;z-index:100;
+}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar-logo{
+  font-family:'JetBrains Mono',monospace;
+  font-size:18px;font-weight:500;
+  color:var(--accent);
+  letter-spacing:-0.5px;
+  text-decoration:none;
+}
+.topbar-logo span{color:var(--text-secondary);font-weight:400}
+.hamburger{
+  background:none;border:none;
+  color:var(--text-secondary);
+  font-size:20px;cursor:pointer;
+  padding:6px;border-radius:var(--radius-sm);
+  transition:background .2s,color .2s;
+}
+.hamburger:hover{background:var(--bg-elevated);color:var(--text-primary)}
+.sidemenu{
+  position:fixed;top:0;left:-240px;width:240px;height:100%;
+  background:var(--bg-surface);
+  border-right:1px solid var(--border);
+  z-index:200;
+  transition:left .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+}
+.sidemenu.open{left:0}
+.sidemenu-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.45);z-index:199;
+}
+.sidemenu-overlay.open{display:block}
+.sidemenu-header{
+  padding:24px 20px 16px;
+  border-bottom:1px solid var(--border);
+}
+.sidemenu-header h2{
+  font-family:'JetBrains Mono',monospace;
+  font-size:15px;color:var(--accent);font-weight:500;
+}
+.sidemenu-header p{font-size:11px;color:var(--text-muted);margin-top:2px}
+.sidemenu-nav{padding:8px 12px;flex:1}
+.sidemenu-nav a{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;
+  color:var(--text-secondary);
+  text-decoration:none;border-radius:var(--radius);
+  font-size:13px;font-weight:400;
+  transition:background .18s,color .18s;
+  margin-bottom:2px;
+}
+.sidemenu-nav a:hover{background:var(--bg-elevated);color:var(--text-primary)}
+.sidemenu-nav a.danger{color:var(--red)}
+.sidemenu-nav a.danger:hover{background:var(--red-glow)}
+.sidemenu-nav .nav-icon{width:16px;text-align:center;opacity:.7}
+.sidemenu-footer{
+  padding:16px 20px;
+  border-top:1px solid var(--border);
+  font-size:11px;color:var(--text-muted);
+}
+.sidemenu-footer a{color:var(--accent);text-decoration:none}
+.sidemenu-footer a:hover{text-decoration:underline}
+.tabnav{
+  display:flex;gap:4px;
+  padding:12px 24px 0;
+  background:var(--bg-base);
+  flex-wrap:wrap;
+}
+.tabnav button{
+  background:none;border:none;
+  color:var(--text-muted);
+  font-family:'Sora',sans-serif;
+  font-size:14px;font-weight:500;
+  padding:10px 20px;
+  border-radius:var(--radius-sm) var(--radius-sm) 0 0;
+  cursor:pointer;
+  transition:color .2s,background .2s;
+  letter-spacing:.3px;text-transform:uppercase;
+  position:relative;
+}
+.tabnav button::after{
+  content:'';position:absolute;
+  bottom:0;left:16px;right:16px;height:2px;
+  background:transparent;
+  border-radius:1px;
+  transition:background .25s;
+}
+.tabnav button:hover{color:var(--text-secondary);background:var(--bg-elevated)}
+.tabnav button.active{color:var(--accent)}
+.tabnav button.active::after{background:var(--accent)}
+.main-content{padding:20px 24px 40px}
+.statusbar{
+  display:flex;flex-wrap:wrap;gap:12px;
+  margin-bottom:20px;
+}
+.status-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg-surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:6px 14px;
+  font-size:12px;color:var(--text-secondary);
+}
+.status-chip .chip-label{color:var(--text-muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px}
+.status-chip .chip-value{color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500}
+.status-chip.listen-only{border-color:var(--orange);background:rgba(240,165,0,.08)}
+.status-chip.listen-only .chip-value{color:var(--orange)}
+.status-chip.rules-active {background:linear-gradient(135deg,rgba(33,150,243,0.08),rgba(33,150,243,0.12));border-color:rgba(33,150,243,0.2);}
+.status-chip.rules-active .chip-value {color:#2196F3;font-weight:600;}
+.status-chip.rules-inactive {background:linear-gradient(135deg,rgba(158,158,158,0.05),rgba(158,158,158,0.08));border-color:rgba(158,158,158,0.15);}
+.status-chip.rules-inactive .chip-value {color:#9e9e9e;font-weight:500;}
+.status-dot{width:8px;height:8px;border-radius:50%;margin-right:8px;transition:background 0.3s;}
+.status-dot.excellent{background:#2ecc94;}
+.status-dot.good{background:#3a7bd5;}
+.status-dot.fair{background:#f0a500;}
+.status-dot.poor{background:#e74c5e;}
+.status-dot.disconnected{background:#6b7280;}
+.panel{
+  background:var(--bg-surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+}
+.panel-header{
+  padding:14px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-header h3{font-size:13px;font-weight:500;color:var(--text-primary);letter-spacing:.2px}
+.panel-header .panel-meta{font-size:11px;color:var(--text-muted)}
+table{
+  width:100%;border-collapse:collapse;
+  font-size:12.5px;
+}
+thead th{
+  text-align:left;
+  padding:10px 16px;
+  color:var(--text-muted);
+  font-size:10.5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.7px;
+  background:var(--bg-base);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:56px;
+}
+tbody tr{
+  border-bottom:1px solid rgba(42,48,64,.5);
+  transition:background .15s;
+}
+tbody tr:hover{background:var(--bg-elevated)}
+tbody tr:last-child{border-bottom:none}
+tbody td{
+  padding:9px 16px;
+  color:var(--text-secondary);
+}
+tbody td:first-child{color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:11.5px}
+.update-effect{
+  animation:flash-update 1.2s ease-out;
+}
+@keyframes flash-update {
+  0% {color: var(--accent);text-shadow: 0 0 10px var(--accent-glow), 0 0 24px var(--accent-glow);transform: scale(1.08);}
+  50% {transform: scale(1);}:
+  100% {color: var(--text-secondary);text-shadow: none;}
+}
+#cli{
+  width:100%;
+  background:#0a0c0f;
+  color:#6ee7b7;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;
+  resize:none;  /* Changed from vertical to none since we're auto-sizing */
+  outline:none;
+  line-height:1.6;
+}
 
-static const char settingsJS[] PROGMEM =
-  "<script type=\"text/javascript\">"
-  "    function ShowHideDallasTable(dallasEnabled) {"
-  "        var dallassettings = document.getElementById(\"dallassettings\");"
-  "        dallassettings.style.display = dallasEnabled.checked ? \"table\" : \"none\";"
-  "    }"
-  "    function ShowHideS0Table(s0enabled) {"
-  "        var s0settings = document.getElementById(\"s0settings\");"
-  "        s0settings.style.display = s0enabled.checked ? \"table\" : \"none\";"
-  "    }"
-  "    function changeMinWatt(port) {"
-  "        var ppkwh = document.getElementById('s0_ppkwh_'+port).value;"
-  "        var interval = document.getElementById('s0_interval_'+port).value;"
-  "        document.getElementById('s0_minwatt_'+port).innerHTML = Math.round((3600 * 1000 / ppkwh) / interval);"
-  "    }"
-  "</script>";
+#cli:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px var(--accent-glow)}
+
+.console-toggle-compact {
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.console-toggle-label-compact {
+  font-size:11px;
+  color:var(--text-muted);
+  font-weight:400;
+  text-transform:uppercase;
+  letter-spacing:0.3px;
+}
+.theme-switch-compact {
+  position:relative;
+  width:32px;
+  height:18px;
+}
+.theme-switch-compact input {
+  opacity:0;
+  width:0;
+  height:0;
+}
+.theme-slider-compact {
+  position:absolute;
+  cursor:pointer;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:var(--border);
+  transition:0.3s;
+  border-radius:18px;
+}
+.theme-slider-compact:before {
+  position:absolute;
+  content:"";
+  height:14px;
+  width:14px;
+  left:2px;
+  bottom:2px;
+  background:white;
+  transition:0.3s;
+  border-radius:50%;
+}
+input:checked + .theme-slider-compact {
+  background:var(--accent);
+}
+input:checked + .theme-slider-compact:before {
+  transform:translateX(14px);
+}
+input:disabled + .theme-slider-compact {
+  opacity:0.4;
+  cursor:not-allowed;
+}
+
+.alias-edit{
+  outline:none;
+  border:1px solid transparent;
+  border-radius:var(--radius-sm);
+  padding:3px 6px;
+  min-width:80px;
+  font-size:12.5px;
+  color:var(--text-secondary);
+  background:transparent;
+  transition:border-color .2s,background .2s;
+}
+.alias-edit:hover,.alias-edit:focus{
+  border-color:var(--border);
+  background:var(--bg-elevated);
+}
+.alias-edit:focus{border-color:var(--border-focus);box-shadow:0 0 0 2px var(--accent-glow)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.settings-grid{
+  display:grid;
+  gap:0;
+}
+.setting-row{
+  display:grid;
+  grid-template-columns:280px 1fr;
+  align-items:center;
+  padding:12px 20px;
+  border-bottom:1px solid rgba(42,48,64,.4);
+  gap:16px;
+}
+.setting-row:last-child{border-bottom:none}
+.setting-row:hover{background:rgba(30,34,48,.4)}
+.setting-label{
+  font-size:12.5px;
+  color:var(--text-secondary);
+  text-align:right;
+  font-weight:400;
+}
+.setting-input{
+  background:var(--bg-base);
+  border:1px solid var(--border);
+  color:var(--text-primary);
+  font-family:'Sora',sans-serif;
+  font-size:12.5px;
+  padding:7px 10px;
+  border-radius:var(--radius-sm);
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  width:100%;max-width:320px;
+}
+.setting-input:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px var(--accent-glow)}
+.setting-input[type=password]{letter-spacing:2px}
+select.setting-input{appearance:auto}
+.setting-hint{font-size:11px;color:var(--text-muted);margin-left:8px}
+.setting-row .checkbox-wrap{display:flex;align-items:center;gap:8px}
+.checkbox-wrap input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+.radio-group{display:flex;gap:16px;flex-wrap:wrap}
+.radio-group label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer}
+.radio-group input[type=radio]{accent-color:var(--accent)}
+.section-divider{
+  padding:10px 20px 4px;
+  font-size:10.5px;font-weight:600;
+  color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.8px;
+  background:var(--bg-base);
+}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:8px 20px;
+  border-radius:var(--radius-sm);
+  font-family:'Sora',sans-serif;
+  font-size:12.5px;font-weight:500;
+  cursor:pointer;border:none;
+  transition:background .2s,box-shadow .2s,transform .1s;
+  text-decoration:none;
+  letter-spacing:.3px;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-hover);box-shadow:0 4px 14px var(--accent-glow)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#d63a4d;box-shadow:0 4px 14px var(--red-glow)}
+.btn-ghost{
+  background:transparent;
+  color:var(--text-secondary);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover{background:var(--bg-elevated);color:var(--text-primary)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.form-actions{padding:20px;display:flex;gap:12px;align-items:center}
+.loading-overlay{
+  display:flex;align-items:center;justify-content:center;
+  padding:60px 20px;
+  color:var(--text-muted);
+  font-size:13px;
+}
+.spinner{
+  width:20px;height:20px;
+  border:2px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  margin-right:10px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.firmware-container{max-width:620px;margin:0 auto;padding:40px 24px}
+.firmware-warning{
+  background:rgba(231,76,94,.08);
+  border:1px solid rgba(231,76,94,.25);
+  border-radius:var(--radius);
+  padding:14px 18px;
+  font-size:12px;
+  color:var(--red);
+  margin-top:20px;line-height:1.6;
+}
+.firmware-warning strong{color:var(--text-primary)}
+progress{
+  width:100%;height:6px;
+  appearance:none;
+  border-radius:3px;
+  background:var(--bg-elevated);
+  margin-top:12px;
+  overflow:hidden;
+}
+progress::-webkit-progress-bar{background:var(--bg-elevated);border-radius:3px}
+progress::-webkit-progress-value{background:var(--accent);border-radius:3px;transition:width .2s}
+#status{font-size:12px;color:var(--text-muted);margin-top:8px;min-height:18px}
+.file-input-wrap{position:relative;margin-top:12px}
+.file-input-wrap input[type=file]{
+  font-size:12px;color:var(--text-secondary);
+  font-family:'Sora',sans-serif;
+}
+.rules-editor{background:#0f1117;color:#e4e7eb;padding:12px;border:1px solid #2d3748;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.5;min-height:400px;white-space:pre;overflow:auto;}
+.rules-editor:focus{outline:none;border-color:#3a7bd5;}
+.keyword{color:#c792ea;}
+.operator{color:#89ddff;}
+.number{color:#f78c6c;}
+.string{color:#c3e88d;}
+.comment{color:#546e7a;font-style:italic;}
+.variable{color:#82aaff;}
+.function{color:#ffcb6b;}
+.at-param{color:#f07178;}
+.percent-param{color:#c3e88d;}
+.question-param{color:#89ddff;}
+.ds18b20{color:#ff5370;}
+.rules-error{border:2px solid #e74c5e!important;box-shadow:0 0 0 3px rgba(231,76,94,0.2)!important;}
+.rules-valid{border:2px solid #2ecc94!important;box-shadow:0 0 0 3px rgba(46,204,148,0.2)!important;}
+.validation-feedback{margin-top:8px;padding:10px 14px;border-radius:6px;font-size:13px;line-height:1.4;}
+.validation-feedback.error{background:rgba(231,76,94,0.1);border:1px solid #e74c5e;color:#ff9999;}
+.validation-feedback.success{background:rgba(46,204,148,0.1);border:1px solid #2ecc94;color:#6ee7b7;}
+.validation-feedback.warning{background:rgba(240,165,0,0.1);border:1px solid #f0a500;color:#ffd54f;}
+.line-numbers{background:#0a0c10;color:#4a5568;padding:12px 8px;border:1px solid #2d3748;border-right:none;border-radius:6px 0 0 6px;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.5;text-align:right;user-select:none;min-width:40px;white-space:pre;}
+.rules-editor{flex:1;background:#0f1117;color:#e4e7eb;padding:12px;border:1px solid #2d3748;border-radius:0 6px 6px 0;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.5;min-height:400px;white-space:pre;overflow:auto;}
+.msg-box{
+  max-width:520px;margin:80px auto;text-align:center;
+  padding:48px 32px;
+  background:var(--bg-surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+}
+.msg-box h2{font-size:18px;color:var(--text-primary);margin-bottom:10px;font-weight:500}
+.msg-box p{font-size:13px;color:var(--text-muted);line-height:1.7}
+.msg-box.warning h2{color:var(--orange)}
+.msg-box.danger h2{color:var(--red)}
+.msg-box.success h2{color:var(--green)}
+@media(max-width:600px){
+  .setting-row{grid-template-columns:1fr;gap:4px}
+  .setting-label{text-align:left}
+  .tabnav{padding:10px 12px 0;gap:2px}
+  .tabnav button{padding:9px 14px;font-size:13px}
+  .main-content{padding:16px 12px 32px}
+  .topbar{padding:0 12px}
+  thead th,tbody td{padding:8px 10px;font-size:11.5px}
+  .panel-header {
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .panel-header > div {
+    flex-wrap:wrap;
+  }  
+}
+select#wifi_ssid_select{
+  display:none;
+  background:var(--bg-base);
+  border:1px solid var(--border);
+  color:var(--text-primary);
+  font-family:'Sora',sans-serif;
+  font-size:12px;
+  padding:7px 10px;
+  border-radius:var(--radius-sm);
+  max-width:320px;width:100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DARK MODE TOGGLE SWITCH
+   ═══════════════════════════════════════════════════════════════════════ */
+.theme-toggle {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 12px;
+  margin:8px 12px;
+  background:var(--bg-elevated);
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+}
+.theme-toggle-label {
+  font-size:13px;
+  color:var(--text-secondary);
+  font-weight:400;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.theme-toggle-label .nav-icon {
+  width:16px;
+  text-align:center;
+  opacity:0.7;
+}
+.theme-switch {
+  position:relative;
+  width:44px;
+  height:24px;
+}
+.theme-switch input {
+  opacity:0;
+  width:0;
+  height:0;
+}
+.theme-slider {
+  position:absolute;
+  cursor:pointer;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:var(--border);
+  transition:0.3s;
+  border-radius:24px;
+}
+.theme-slider:before {
+  position:absolute;
+  content:"";
+  height:18px;
+  width:18px;
+  left:3px;
+  bottom:3px;
+  background:white;
+  transition:0.3s;
+  border-radius:50%;
+}
+input:checked + .theme-slider {
+  background:var(--accent);
+}
+input:checked + .theme-slider:before {
+  transform:translateX(20px);
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DARK MODE SPECIFIC OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════ */
+html.dark-mode #cli {
+  background:#0a0c0f;
+  color:#6ee7b7;
+}
+
+html.dark-mode .rules-editor {
+  background:#0f1117;
+  color:#e4e7eb;
+  border-color:#2d3748;
+}
+
+html.dark-mode .line-numbers {
+  background:#0a0c10;
+  color:#4a5568;
+  border-color:#2d3748;
+}
+
+</style>
+)====";
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HTML HEAD
+// ─────────────────────────────────────────────────────────────────────────────
+static const char webHeader[] FLASHPROG = R"====(
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Heisha Monitor</title>
+<script>
+(function(){
+  function getCookie(name){
+    var nameEQ=name+"=";
+    var ca=document.cookie.split(';');
+    for(var i=0;i<ca.length;i++){
+      var c=ca[i];
+      while(c.charAt(0)==' ')c=c.substring(1,c.length);
+      if(c.indexOf(nameEQ)==0)return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+  }
+  if(getCookie('darkMode')==='true'){
+    document.documentElement.classList.add('dark-mode-loading');
+  }
+})();
+</script>
+<style>
+html.dark-mode-loading {
+  background:#0f1117 !important;
+  color:#eef0f4 !important;
+}
+html.dark-mode-loading body {
+  background:#0f1117 !important;
+  color:#eef0f4 !important;
+  transition:none !important;
+}
+html.dark-mode-loading .topbar,
+html.dark-mode-loading .panel,
+html.dark-mode-loading .sidemenu,
+html.dark-mode-loading .status-chip,
+html.dark-mode-loading .msg-box {
+  background:#161922 !important;
+  border-color:#2a3040 !important;
+}
+html.dark-mode-loading .theme-toggle {
+  background:#1e2230 !important;
+  border-color:#2a3040 !important;
+}
+html.dark-mode-loading .tabnav {
+  background:#0f1117 !important;
+}
+html.dark-mode-loading .setting-input,
+html.dark-mode-loading input[type=text],
+html.dark-mode-loading input[type=number],
+html.dark-mode-loading input[type=password],
+html.dark-mode-loading select {
+  background:#0f1117 !important;
+  color:#eef0f4 !important;
+  border-color:#2a3040 !important;
+}
+html.dark-mode-loading thead th {
+  background:#0f1117 !important;
+  color:#7b8597 !important;
+  border-color:#2a3040 !important;
+}
+html.dark-mode-loading progress {
+  background:#1e2230 !important;
+}
+html.dark-mode-loading progress::-webkit-progress-bar {
+  background:#1e2230 !important;
+}
+html.dark-mode-loading progress::-webkit-progress-value {
+  background:#3a7bd5 !important;
+}
+html.dark-mode-loading .panel-header {
+  border-color:#2a3040 !important;
+}
+</style>
+)====";
+
+static const char refreshMeta[] FLASHPROG = R"====(
+<meta http-equiv='refresh' content='5; url=/' />
+)====";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BODY START (shared top bar structure — version injected server-side)
+// ─────────────────────────────────────────────────────────────────────────────
+static const char webBodyStart[] FLASHPROG = R"====(
+</head>
+<body>
+<div class='sidemenu-overlay' id='menuOverlay' onclick='closeMenu()'></div>
+<aside class='sidemenu' id='sideMenu'>
+  <div class='sidemenu-header'>
+    <h2>HeishaMon</h2>
+    <p id='sideVersion'></p>
+  </div>
+  
+  <!-- DARK MODE TOGGLE -->
+  <div class='theme-toggle'>
+    <label class='theme-toggle-label'>
+      <span class='nav-icon'>☀</span>
+      Dark Mode
+    </label>
+    <label class='theme-switch'>
+      <input type='checkbox' id='darkModeToggle' onchange='toggleDarkMode()'>
+      <span class='theme-slider'></span>
+    </label>
+  </div>
+  
+  <nav class='sidemenu-nav' id='sideNav'></nav>
+  <div class='sidemenu-footer'>
+    <a href='https://github.com/Egyras/HeishaMon' target='_blank'>GitHub</a>
+  </div>
+</aside>
+<header class='topbar'>
+  <div class='topbar-left'>
+    <button class='hamburger' onclick='toggleMenu()'>&#9776;</button>
+    <a class='topbar-logo' href='/'>Heisha<span>Mon</span></a>
+  </div>
+  <div class='topbar-right'></div>
+</header>
+)====";
+
+static const char webFooter[] FLASHPROG = "</body></html>";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MENU & WEBSOCKET JS (shared across pages)
+// ─────────────────────────────────────────────────────────────────────────────
+static const char menuJS[] FLASHPROG = R"====(
+<script>
+function toggleMenu(){
+  var m=document.getElementById('sideMenu');
+  var o=document.getElementById('menuOverlay');
+  m.classList.toggle('open');
+  o.classList.toggle('open');
+}
+function closeMenu(){
+  document.getElementById('sideMenu').classList.remove('open');
+  document.getElementById('menuOverlay').classList.remove('open');
+}
+
+function setCookie(name, value, days) {
+  var expires = "";
+  if (days) {
+    var date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    expires = "; expires=" + date.toUTCString();
+  }
+  document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+
+function getCookie(name) {
+  var nameEQ = name + "=";
+  var ca = document.cookie.split(';');
+  for(var i = 0; i < ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
+
+function toggleDarkMode() {
+  var toggle = document.getElementById('darkModeToggle');
+  var html = document.documentElement;
+  
+  if (toggle.checked) {
+    html.classList.add('dark-mode');
+    setCookie('darkMode', 'true', 365);
+  } else {
+    html.classList.remove('dark-mode');
+    setCookie('darkMode', 'false', 365);
+  }
+}
+
+function initDarkMode() {
+  var darkMode = getCookie('darkMode');
+  var toggle = document.getElementById('darkModeToggle');
+  var html = document.documentElement;
+  
+  // Remove the temporary loading class
+  html.classList.remove('dark-mode-loading');
+  
+  // Apply proper dark mode
+  if (darkMode === 'true') {
+    html.classList.add('dark-mode');
+    if (toggle) toggle.checked = true;
+  } else {
+    html.classList.remove('dark-mode');
+    if (toggle) toggle.checked = false;
+  }
+}
+
+// Initialize immediately when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initDarkMode);
+} else {
+  initDarkMode();
+}
+</script>
+)====";
+
+static const char websocketJS[] FLASHPROG = R"====(
+<script>
+var bConnected=false;
+var inactivityTimeout=5000;
+var lastActivityTime=Date.now();
+function monitorWebSocket(){
+  setInterval(function(){
+    if(Date.now()-lastActivityTime>inactivityTimeout&&oWebsocket.readyState===WebSocket.OPEN){
+      console.log('Inactivity detected, reconnecting...');
+      oWebsocket.close();
+    }
+  },inactivityTimeout);
+}
+function attemptReconnect(){
+  if(!bConnected){console.log('Reconnecting...');startWebsockets();}
+}
+function startWebsockets(){
+  if(typeof MozWebSocket!='undefined'){
+    oWebsocket=new MozWebSocket('ws://'+location.host);
+  } else if(typeof WebSocket!='undefined'){
+    oWebsocket=new WebSocket('ws://'+location.host+'/ws');
+  }
+  if(oWebsocket){
+    oWebsocket.onopen=function(){bConnected=true;};
+    oWebsocket.onclose=function(){bConnected=false;attemptReconnect();};
+    oWebsocket.onerror=function(e){console.log('WS error:',e);};
+    oWebsocket.onmessage=function(evt){
+      lastActivityTime=Date.now();
+      if(evt.data.startsWith('{')){
+        var j=JSON.parse(evt.data);
+        if(j.logMsg!=null){
+          var obj=document.getElementById('cli');
+          if(!obj)return;
+          var chk=document.getElementById('autoscroll');
+          obj.value+=j.logMsg+'\n';
+          if(chk&&chk.checked)obj.scrollTop=obj.scrollHeight;
+        } else if(j.data){
+          if(j.data.stats){
+            updStat('wifi',j.data.stats.wifi);
+            updStat('ethernet',j.data.stats.ethernet);
+            updStat('memory',j.data.stats.memory);
+            updStat('correct',j.data.stats.correct);
+            updStat('mqtt',j.data.stats.mqtt);
+            updStat('uptime',j.data.stats.uptime);
+            updStat('rules',j.data.stats.rules);
+          } else if(j.data.heishavalues){
+            updCell(j.data.heishavalues.topic+'-Value',j.data.heishavalues.value);
+            updCell(j.data.heishavalues.topic+'-Description',j.data.heishavalues.description);
+          } else if(j.data.dallasvalues){
+            updCell('SensorID-'+j.data.dallasvalues.sensorID+'-Temperature',j.data.dallasvalues.value);
+          } else if(j.data.s0values){
+            updCell('s0port-'+j.data.s0values.s0port+'-Watt',j.data.s0values.Watt);
+            updCell('s0port-'+j.data.s0values.s0port+'-Watthour',j.data.s0values.Watthour);
+            updCell('s0port-'+j.data.s0values.s0port+'-WatthourTotal',j.data.s0values.WatthourTotal);
+          } else if(j.data.opentherm){
+            updCell(j.data.opentherm.name+'-value',j.data.opentherm.value);
+          }
+        }
+      } else {
+        var obj=document.getElementById('cli');
+        if(!obj)return;
+        var chk=document.getElementById('autoscroll');
+        obj.value+=evt.data+'\n';
+        if(chk&&chk.checked)obj.scrollTop=obj.scrollHeight;
+      }
+    };
+  }
+}
+function updStat(id,val){
+  var el=document.getElementById(id);
+  if(el){
+    // Special handling for WiFi disconnected state
+    if(id === 'wifi' && (val === -1 || val === '-1' || parseInt(val) < 0)){
+      el.textContent = 'not connected';
+      // Remove the % symbol that follows
+      var percentSpan = el.nextElementSibling;
+      if(percentSpan && percentSpan.textContent === '%'){
+        percentSpan.style.display = 'none';
+      }
+    } else {
+      el.textContent = val != null ? val : '';
+      // Show % symbol again if it was hidden
+      var percentSpan = el.nextElementSibling;
+      if(percentSpan && percentSpan.textContent === '%'){
+        percentSpan.style.display = '';
+      }
+    }
+  }
+  
+  if ((el) && (id == 'wifi') && (val!==undefined)){
+    var w=parseInt(val);
+    var label=el.previousElementSibling;
+    var dot=label.previousElementSibling;
+    if(dot&&dot.classList.contains('status-dot')){
+      dot.className='status-dot';
+      if(w===-1||w<0)dot.classList.add('disconnected');
+      else if(w>=75)dot.classList.add('excellent');
+      else if(w>=50)dot.classList.add('good');
+      else if(w>=25)dot.classList.add('fair');
+      else dot.classList.add('poor');
+    }
+  }
+
+  if (id === 'rules') {
+    var chip = document.getElementById('rulesChip');
+    if (chip) {
+      var count = parseInt(val);
+      var valueEl = chip.querySelector('.chip-value');
+      if (count > 0) {
+        chip.className = 'status-chip rules-active';
+        valueEl.textContent = 'ACTIVE';
+      } else {
+        chip.className = 'status-chip rules-inactive';
+        valueEl.textContent = 'INACTIVE';
+      }
+    }
+    return;
+  }
+}
+
+function updCell(id,val){
+  var el=document.getElementById(id);
+  if(el&&el.textContent!==val){
+    el.classList.remove('update-effect');
+    void el.offsetWidth;
+    el.textContent=val;
+    el.classList.add('update-effect');
+  }
+}
+</script>
+)====";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROOT PAGE: tab switching + data refresh JS
+// ─────────────────────────────────────────────────────────────────────────────
+static const char selectJS[] FLASHPROG = R"====(
+<script>
+function openTable(name){
+  var panes=document.getElementsByClassName('tab-pane');
+  for(var i=0;i<panes.length;i++)panes[i].classList.remove('active');
+  var target=document.getElementById(name);
+  if(target)target.classList.add('active');
+  var tabs=document.querySelectorAll('.tabnav button');
+  tabs.forEach(function(b){b.classList.toggle('active',b.dataset.tab===name);});
+}
+</script>
+)====";
+
+static const char refreshJS[] FLASHPROG = R"====(
+<script>
+var isEditing=false;
+document.body.onload=function(){
+  openTable('Heatpump');
+  document.getElementById('cli').value='';
+  startWebsockets();
+  monitorWebSocket();
+  refreshTable();
+};
+var dallasAliasEdit=function(){
+  isEditing=false;
+  var addr=this.getAttribute('data-address');
+  var alias=this.innerText.substring(0,30);
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET','/dallasalias?'+addr+'='+alias,true);
+  xhr.send();
+};
+async function refreshTable(){
+  try{
+    if(isEditing)return;
+    var res=await fetch('/json');
+    var d=await res.json();
+    if(d&&d.heatpump&&Array.isArray(d.heatpump)){
+      var tb=document.getElementById('heishavalues');tb.innerHTML='';
+      d.heatpump.forEach(function(item){tb.appendChild(buildRow(item,'Topic'));});
+    }
+    if(d&&d['heatpump extra']&&Array.isArray(d['heatpump extra'])){
+      var tb=document.getElementById('heishavalues');
+      d['heatpump extra'].forEach(function(item){tb.appendChild(buildRow(item,'Topic'));});
+    }
+    if(d&&d['heatpump optional']&&Array.isArray(d['heatpump optional'])){
+      var tb=document.getElementById('heishavalues');
+      d['heatpump optional'].forEach(function(item){tb.appendChild(buildRow(item,'Topic'));});
+    }
+    if(d&&d['1wire']&&Array.isArray(d['1wire'])){
+      var tb=document.getElementById('dallasvalues');tb.innerHTML='';
+      d['1wire'].forEach(function(item){
+        var row=document.createElement('tr');
+        var sID=item['Sensor'];
+        for(var k in item){if(Object.hasOwn(item,k)){
+          var cell=document.createElement('td');
+          cell.id='SensorID-'+sID+'-'+k;
+          if(k==='Alias'){
+            var div=document.createElement('div');
+            div.textContent=item[k];
+            div.classList.add('alias-edit');
+            div.contentEditable='true';
+            div.setAttribute('data-address',item.Sensor);
+            div.addEventListener('focus',function(){isEditing=true;});
+            div.addEventListener('blur',dallasAliasEdit);
+            cell.appendChild(div);
+          } else {cell.textContent=item[k];}
+          row.appendChild(cell);
+        }}
+        tb.appendChild(row);
+      });
+    }
+    if(d&&d.s0&&Array.isArray(d.s0)){
+      var tb=document.getElementById('s0values');tb.innerHTML='';
+      d.s0.forEach(function(item){
+        var row=document.createElement('tr');
+        var port=item['S0 port'];
+        for(var k in item){if(Object.hasOwn(item,k)){
+          var cell=document.createElement('td');
+          cell.id='s0port-'+port+'-'+k;
+          cell.textContent=item[k];
+          row.appendChild(cell);
+        }}
+        tb.appendChild(row);
+      });
+    }
+    if(d&&d.opentherm&&typeof d.opentherm==='object'){
+      var tb=document.getElementById('openthermvalues');tb.innerHTML='';
+      for(var key in d.opentherm){if(Object.hasOwn(d.opentherm,key)){
+        var row=document.createElement('tr');
+        var nc=document.createElement('td');nc.id=key;nc.textContent=key;
+        var tc=document.createElement('td');tc.id=key+'-type';tc.textContent=d.opentherm[key].type;
+        var vc=document.createElement('td');vc.id=key+'-value';vc.textContent=d.opentherm[key].value;
+        row.appendChild(nc);row.appendChild(tc);row.appendChild(vc);
+        tb.appendChild(row);
+      }}
+    }
+  } catch(e){console.error(e);}
+}
+function buildRow(item,idKey){
+  var row=document.createElement('tr');
+  var topic=item[idKey];
+  for(var k in item){if(Object.hasOwn(item,k)){
+    var cell=document.createElement('td');
+    cell.id=topic+'-'+k;
+    cell.textContent=item[k];
+    row.appendChild(cell);
+  }}
+  return row;
+}
+</script>
+)====";
+
+static const char consoleTogglesJS[] FLASHPROG = R"====(
+<script>
+// Session cookie helpers
+function setSessionCookie(name, value) {
+  document.cookie = name + "=" + value + "; path=/; SameSite=Strict";
+}
+
+function getSessionCookie(name) {
+  var nameEQ = name + "=";
+  var ca = document.cookie.split(';');
+  for(var i = 0; i < ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
+
+// Initialize console toggles from session cookies or fetch from server
+function initConsoleToggles() {
+  var mqttLogState = getSessionCookie('mqttLog');
+  var hexdumpState = getSessionCookie('hexdump');
+  
+  if (mqttLogState !== null && hexdumpState !== null) {
+    // Use cached session state
+    document.getElementById('mqttLogToggle').checked = (mqttLogState === 'true');
+    document.getElementById('hexdumpToggle').checked = (hexdumpState === 'true');
+  } else {
+    // First visit in session - fetch from server
+    fetch('/getsettings')
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        var mqttEnabled = (data.logMqtt === 'enabled' || data.logMqtt === 1);
+        var hexdumpEnabled = (data.logHexdump === 'enabled' || data.logHexdump === 1);
+        
+        document.getElementById('mqttLogToggle').checked = mqttEnabled;
+        document.getElementById('hexdumpToggle').checked = hexdumpEnabled;
+        
+        // Store in session cookies
+        setSessionCookie('mqttLog', mqttEnabled);
+        setSessionCookie('hexdump', hexdumpEnabled);
+      })
+      .catch(function(err) {
+        console.error('Failed to fetch settings:', err);
+      });
+  }
+}
+
+// Toggle MQTT log
+function toggleMqttLog() {
+  var toggle = document.getElementById('mqttLogToggle');
+  var enabled = toggle.checked;
+  
+  // Update session cookie
+  setSessionCookie('mqttLog', enabled);
+  
+  // Call server endpoint
+  fetch('/togglelog')
+    .then(function(response) {
+      if (!response.ok) {
+        console.error('Failed to toggle MQTT log');
+        // Revert toggle on error
+        toggle.checked = !enabled;
+        setSessionCookie('mqttLog', !enabled);
+      }
+    })
+    .catch(function(err) {
+      console.error('Error toggling MQTT log:', err);
+      // Revert toggle on error
+      toggle.checked = !enabled;
+      setSessionCookie('mqttLog', !enabled);
+    });
+}
+
+// Toggle Hexdump log
+function toggleHexdump() {
+  var toggle = document.getElementById('hexdumpToggle');
+  var enabled = toggle.checked;
+  
+  // Update session cookie
+  setSessionCookie('hexdump', enabled);
+  
+  // Call server endpoint
+  fetch('/togglehexdump')
+    .then(function(response) {
+      if (!response.ok) {
+        console.error('Failed to toggle hexdump');
+        // Revert toggle on error
+        toggle.checked = !enabled;
+        setSessionCookie('hexdump', !enabled);
+      }
+    })
+    .catch(function(err) {
+      console.error('Error toggling hexdump:', err);
+      // Revert toggle on error
+      toggle.checked = !enabled;
+      setSessionCookie('hexdump', !enabled);
+    });
+}
+
+function downloadConsole() {
+  var text = document.getElementById('cli').value;
+  if (!text) return;
+  var blob = new Blob([text], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var now = new Date();
+  var ts = now.getFullYear()
+    + '-' + String(now.getMonth()+1).padStart(2,'0')
+    + '-' + String(now.getDate()).padStart(2,'0')
+    + '_' + String(now.getHours()).padStart(2,'0')
+    + String(now.getMinutes()).padStart(2,'0')
+    + String(now.getSeconds()).padStart(2,'0');
+  a.href = url;
+  a.download = 'heishamon-console-' + ts + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('mqttLogToggle')) {
+    initConsoleToggles();
+  }
+});
+</script>
+)====";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROOT PAGE BODY FRAGMENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Side nav links for root page (injected via JS on load below)
+// We build the nav + status bar in one block, then the tab panes.
+
+// Part 1: inject side-nav items & version via inline script, then status bar
+static const char webBodyRoot1[] FLASHPROG = R"====(
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var nav=document.getElementById('sideNav');
+  nav.innerHTML=`
+<a href="/firmware"><span class="nav-icon">&#8679;</span> Firmware</a>
+<a href="/reboot"><span class="nav-icon">&#8635;</span> Reboot</a>
+<a href="/rules"><span class="nav-icon">&#8881;</span> Rules</a>
+<a href="/settings"><span class="nav-icon">&#9881;</span> Settings</a>
+`;
+  document.getElementById('sideVersion').textContent=`v
+)====";
+
+// server inserts version string here, then webBodyRoot2 follows
+static const char webBodyRoot2[] FLASHPROG = R"====(
+`;
+});
+</script>
+<div class='main-content'>
+<div class='statusbar' id='statusBar'>
+  <div class='status-chip'><span class='status-dot'></span><span class='chip-label'>WiFi</span><span class='chip-value' id='wifi'>—</span><span style='color:var(--text-muted);font-size:11px'>%</span></div>
+  <div class='status-chip'><span class='chip-label'>Memory</span><span class='chip-value' id='memory'>—</span><span style='color:var(--text-muted);font-size:11px'>%</span></div>
+)===="
+#ifdef ESP32
+R"====(
+  <div class='status-chip'><span class='chip-label'>Ethernet</span><span class='chip-value' id='ethernet'>—</span></div>
+)===="
+#endif
+R"====(
+  <div class='status-chip'><span class='chip-label'>Correct</span><span class='chip-value' id='correct'>—</span><span style='color:var(--text-muted);font-size:11px'>%</span></div>
+  <div class='status-chip'><span class='chip-label'>MQTT reconnects</span><span class='chip-value' id='mqtt'>—</span></div>
+  <div class='status-chip'><span class='chip-label'>Uptime</span><span class='chip-value' id='uptime'>—</span></div>
+  <div class='status-chip rules-inactive' id='rulesChip'><span class='chip-label'>Rules</span><span class='chip-value' id='rules_value'>—</span></div>
+</div>
+)====";
+
+// listen-only badge (conditionally appended server-side before tabs)
+static const char webBodyRootStatusListenOnly[] FLASHPROG = R"====(
+<script>document.addEventListener('DOMContentLoaded',function(){
+  var bar=document.getElementById('statusBar');
+  var chip=document.createElement('div');
+  chip.className='status-chip listen-only';
+  chip.innerHTML='<span class="chip-label">Listen Only</span><span class="chip-value">ACTIVE</span>';
+  bar.appendChild(chip);
+});</script>
+)====";
+
+// Tab navigation bar
+static const char webTabnavOpen[] FLASHPROG = R"====(
+<nav class='tabnav'>
+  <button class='tabnav-btn active' data-tab='Heatpump' onclick="openTable('Heatpump')">Heatpump</button>
+)====";
+static const char webBodyRootDallasTab[] FLASHPROG = R"====(
+<button class='tabnav-btn' data-tab='Dallas' onclick="openTable('Dallas')">Dallas 1-Wire</button>
+)====";
+static const char webBodyRootS0Tab[] FLASHPROG = R"====(
+<button class='tabnav-btn' data-tab='S0' onclick="openTable('S0')">S0 kWh</button>
+)====";
+static const char webBodyRootOpenthermTab[] FLASHPROG = R"====(
+<button class='tabnav-btn' data-tab='Opentherm' onclick="openTable('Opentherm')">Opentherm</button>
+)====";
+static const char webTabnavClose[] FLASHPROG = R"====(
+  <button class='tabnav-btn' data-tab='Console' onclick="openTable('Console')">Console</button>
+</nav>
+)====";
+// These are injected by the server between tabnav wrappers:
+static const char webBodyEndDiv[] FLASHPROG = "</div>";
+
+// ─── TAB PANES ───
+static const char webBodyRootHeatpumpValues[] FLASHPROG = R"====(
+<div id='Heatpump' class='tab-pane active'>
+<div class='panel'>
+  <div class='panel-header'><h3>Heatpump Values</h3><span class='panel-meta' id='hpMeta'>Live</span></div>
+  <table><thead><tr>
+    <th>Topic</th><th>Name</th><th>Value</th><th>Description</th>
+  </tr></thead><tbody id='heishavalues'>
+    <tr><td colspan='4' style='color:var(--text-muted);padding:24px;text-align:center'>Loading…</td></tr>
+  </tbody></table>
+</div></div>
+)====";
+
+static const char webBodyRootDallasValues[] FLASHPROG = R"====(
+<div id='Dallas' class='tab-pane'>
+<div class='panel'>
+  <div class='panel-header'><h3>Dallas 1-Wire Sensors</h3><span class='panel-meta'>Live</span></div>
+  <table><thead><tr>
+    <th>Sensor</th><th>Temperature</th><th>Alias</th>
+  </tr></thead><tbody id='dallasvalues'>
+    <tr><td colspan='3' style='color:var(--text-muted);padding:24px;text-align:center'>Loading…</td></tr>
+  </tbody></table>
+</div></div>
+)====";
+
+static const char webBodyRootS0Values[] FLASHPROG = R"====(
+<div id='S0' class='tab-pane'>
+<div class='panel'>
+  <div class='panel-header'><h3>S0 kWh Meters</h3><span class='panel-meta'>Live</span></div>
+  <table><thead><tr>
+    <th>Port</th><th>Watt</th><th>Wh</th><th>Wh Total</th><th>Pulse Quality</th><th>Avg Pulse Width</th>
+  </tr></thead><tbody id='s0values'>
+    <tr><td colspan='6' style='color:var(--text-muted);padding:24px;text-align:center'>Loading…</td></tr>
+  </tbody></table>
+</div></div>
+)====";
+
+static const char webBodyRootOpenthermValues[] FLASHPROG = R"====(
+<div id='Opentherm' class='tab-pane'>
+<div class='panel'>
+  <div class='panel-header'><h3>Opentherm Values</h3><span class='panel-meta'>Live</span></div>
+  <table><thead><tr>
+    <th>Name</th><th>Type</th><th>Value</th>
+  </tr></thead><tbody id='openthermvalues'>
+    <tr><td colspan='3' style='color:var(--text-muted);padding:24px;text-align:center'>Loading…</td></tr>
+  </tbody></table>
+</div></div>
+)====";
+
+static const char webBodyRootConsole[] FLASHPROG = R"====(
+<div id='Console' class='tab-pane'>
+<div class='panel' style='display:flex;flex-direction:column;height:calc(100vh - 180px)'>
+  <div class='panel-header'>
+    <h3>Console Output</h3>
+    <div style='display:flex;gap:16px;align-items:center'>
+      <div class='console-toggle-compact'>
+        <span class='console-toggle-label-compact'>Log to MQTT</span>
+        <label class='theme-switch-compact'>
+          <input type='checkbox' id='mqttLogToggle' onchange='toggleMqttLog()'>
+          <span class='theme-slider-compact'></span>
+        </label>
+      </div>
+      <div class='console-toggle-compact'>
+        <span class='console-toggle-label-compact'>Hexdump</span>
+        <label class='theme-switch-compact'>
+          <input type='checkbox' id='hexdumpToggle' onchange='toggleHexdump()'>
+          <span class='theme-slider-compact'></span>
+        </label>
+      </div>
+      <div class='console-toggle-compact'>
+        <span class='console-toggle-label-compact'>Autoscroll</span>
+        <label class='theme-switch-compact'>
+          <input type='checkbox' id='autoscroll' checked>
+          <span class='theme-slider-compact'></span>
+        </label>
+      </div>
+      <button onclick='downloadConsole()' class='btn btn-ghost' style='padding:4px 10px;font-size:11px;height:24px;'>&#8681; Download</button>
+    </div>
+  </div>
+  <div style='flex:1;padding:16px;display:flex;flex-direction:column'>
+    <textarea id='cli' disabled style='flex:1;height:auto;min-height:300px'></textarea>
+  </div>
+</div></div>
+)====";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SETTINGS PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+static const char settingsJS[] FLASHPROG = R"====(
+<script>
+function ShowHideDallasTable(cb){
+  document.getElementById('dallassettings').style.display=cb.checked?'block':'none';
+}
+function ShowHideS0Table(cb){
+  document.getElementById('s0settings').style.display=cb.checked?'block':'none';
+}
+function changeMinWatt(port){
+  var ppkwh=document.getElementById('s0_ppkwh_'+port).value;
+  var interval=document.getElementById('s0_interval_'+port).value;
+  document.getElementById('s0_minwatt_'+port).innerHTML=Math.round((3600*1000/ppkwh)/interval);
+}
+</script>
+)====";
 
 #ifdef TLS_SUPPORT 
-static const char caUploadJS[] PROGMEM =
-  "<script>"
-  "  (function(){"
-  "    function uploadCA(){"
-  "      var f = document.getElementById('mqtt_ca_cert_file').files[0];"
-  "      var btn = document.getElementById('ca_upload_btn');"
-  "      var st  = document.getElementById('ca_status');"
-  "      if (!f) { st.innerText = 'Please choose a file first.'; return; }"
-  "      btn.disabled = true;"
-  "      st.innerText = 'Uploading...';"
-  "      var fd = new FormData();"
-  "      fd.append('cacert', f, f.name);"
-  "      var xhr = new XMLHttpRequest();"
-  "      xhr.onreadystatechange = function(){"
-  "        if (xhr.readyState === 4) {"
-  "          st.innerText = xhr.responseText || 'No response';"
-  "          btn.disabled = false;"
-  "          if (xhr.status === 200 && /success/i.test(st.innerText)) {"
-  "            if (typeof getSettings === 'function') { getSettings(); }"
-  "          }"
-  "        }"
-  "      };"
-  "      xhr.open('POST', '/cacert');"
-  "      xhr.send(fd);"
-  "    }"
-  "    window.uploadCA = uploadCA;"
-  "  })();"
-  "</script>";
+static const char caUploadJS[] PROGMEM = R"====(
+  <script>
+    (function(){
+      function uploadCA(){
+        var f = document.getElementById('mqtt_ca_cert_file').files[0];
+        var btn = document.getElementById('ca_upload_btn');
+        var st  = document.getElementById('ca_status');
+        if (!f) { st.innerText = 'Please choose a file first.'; return; }
+        btn.disabled = true;
+        st.innerText = 'Uploading...';
+        var fd = new FormData();
+        fd.append('cacert', f, f.name);
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(){
+          if (xhr.readyState === 4) {
+            st.innerText = xhr.responseText || 'No response';
+            btn.disabled = false;
+            if (xhr.status === 200 && /success/i.test(st.innerText)) {
+              if (typeof getSettings === 'function') { getSettings(); }
+            }
+          }
+        };
+        xhr.open('POST', '/cacert');
+        xhr.send(fd);
+      }
+      window.uploadCA = uploadCA;
+    })();
+  </script>;
+)====";
 #endif
 
-/*static const char heatingCurveJS[] PROGMEM =
-  "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js\"></script>"
-  "<script>"
-  " $( document ).ready(function() {"
-  "    $('#hcoh,#hcol,#hcth,#hctl').change(ChangeHeatingCurve);"
-  "    ChangeHeatingCurve();"
-  " });"
-  " function ChangeHeatingCurve(){"
-  "    var inputHcthValue = $('#hcth').val();"
-  "    var inputHctlValue = $('#hctl').val();"
-  "    var inputHcohValue = $('#hcoh').val();"
-  "    var inputHcolValue = $('#hcol').val();"
-  "    "
-  "    $('#graph-hcth').text(inputHcthValue);"
-  "    $('#graph-hctl').text(inputHctlValue);"
-  "    $('#graph-hcoh').text(inputHcohValue);"
-  "    $('#graph-hcol').text(inputHcolValue);"
-  "    "
-  "    var tableHTML = '';"
-  "    for (i = 15; i > -21; i--) {"
-  "        tableHTML += '<tr><td>';"
-  "        tableHTML += i;"
-  "        tableHTML += '</td><td>';"
-  "        if (i > inputHcohValue) {"
-  "            tableHTML += '<input class=\"w3-input w3-border-0\" type=\"text\" name=\"lookup'+(i+20)+'\" value=\"'+inputHctlValue+'\" readonly>';"
-  "        } else if (i < inputHcolValue) {"
-  "            tableHTML += '<input class=\"w3-input w3-border-0\" type=\"text\" name=\"lookup'+(i+20)+'\" value=\"'+inputHcthValue+'\" readonly>';"
-  "        } else {"
-  "            var temperature = ((inputHctlValue * 1.0) + (((inputHcthValue - inputHctlValue) / (inputHcohValue - inputHcolValue)) * (inputHcohValue - i)));"
-  "            temperature = temperature.toFixed(0);"
-  "            tableHTML += '<input class=\"w3-input w3-border-0\" type=\"text\" name=\"lookup'+(i+20)+'\" value=\"'+temperature+'\" readonly>';"
-  "        }"
-  "        tableHTML += '</td></tr>';"
-  "    }"
-  "    $(\"#heatcurvevalues\").html(tableHTML);"
-  " }"
-  "</script>";*/
+static const char webBodySettings1[] FLASHPROG = R"====(
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var nav=document.getElementById('sideNav');
+  nav.innerHTML=`
+<a href="/"><span class="nav-icon">&#8634;</span> Home</a>
+<a href="/firmware"><span class="nav-icon">&#8679;</span> Firmware</a>
+<a href="/reboot"><span class="nav-icon">&#8635;</span> Reboot</a>
+<a href="/rules"><span class="nav-icon">&#8881;</span> Rules</a>
+`;
+});
+</script>
+)====";
 
-static const char webBodyRoot1[] PROGMEM =
-  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
-  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
-  "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
-  "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
-  "<a href=\"/rules\" class=\"w3-bar-item w3-button\">Rules</a>"
-  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
-  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
-  "<hr><div class=\"w3-text-grey\">Version: ";
+static const char settingsForm1[] FLASHPROG = R"====(
+<div class='main-content' style='max-width:780px;margin:0 auto'>
+<div id='loading_settings' class='loading-overlay'>
+  <div class='spinner'></div> Loading settings…
+</div>
+<div id='settings_form' style='display:none'>
+  <form accept-charset='UTF-8' action='/savesettings' method='POST'>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>Network</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'>
+      <label class='setting-label'>Hostname</label>
+      <input type='text' name='wifi_hostname' maxlength='39' class='setting-input' value=''>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>WiFi SSID</label>
+      <div>
+        <input type='text' name='wifi_ssid' id='wifi_ssid_id' class='setting-input' value=''>
+        <select id='wifi_ssid_select' onchange='changewifissid()'>
+          <option hidden selected value=''>Select SSID</option>
+        </select>
+      </div>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>WiFi Password</label>
+      <input type='password' name='wifi_password' maxlength='64' class='setting-input' value=''>
+    </div>
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>Update Authentication</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'>
+      <label class='setting-label'>Update Username</label>
+      <span style='font-size:12.5px;color:var(--text-muted)'>admin</span>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>Current Password</label>
+      <div style='display:flex;align-items:center;gap:10px'>
+        <input type='password' name='current_ota_password' maxlength='39' class='setting-input' value=''>
+        <span class='setting-hint'>default: "heisha"</span>
+      </div>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>New Password</label>
+      <input type='password' name='new_ota_password' maxlength='39' class='setting-input' value=''>
+    </div>
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>MQTT</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'>
+      <label class='setting-label'>Topic Base</label>
+      <input type='text' name='mqtt_topic_base' maxlength='127' class='setting-input' value=''>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>Server</label>
+      <input type='text' name='mqtt_server' maxlength='64' class='setting-input' value=''>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>Port</label>
+      <input type='number' name='mqtt_port' maxlength='5' class='setting-input' value=''>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>Username</label>
+      <input type='text' name='mqtt_username' maxlength='64' class='setting-input' value=''>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>Password</label>
+      <input type='password' name='mqtt_password' maxlength='64' class='setting-input' value=''>
+    </div>
+  )===="  
+  
+  #ifdef TLS_SUPPORT
+  R"====(
+<div class='setting-row'>
+  <label class='setting-label'>Use TLS (port 8883)</label>
+  <div class='checkbox-wrap'>
+    <input type='checkbox' id='mqtt_tls_enabled' name='mqtt_tls_enabled' value='enabled'>
+  </div>
+</div>
 
-static const char webBodyRoot2[] PROGMEM =
-  "<br><a href=\"https://github.com/Egyras/HeishaMon\">Heishamon software</a></div><hr></div>"
-  "<div class=\"w3-bar w3-red\">"
-  "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Heatpump')\">Heatpump</button>";
+<div class='setting-row'>
+  <label class='setting-label'>Root CA Certificate (PEM)</label>
+  <div>
+    <div class='file-input-wrap'>
+      <input type='file' id='mqtt_ca_cert_file' accept='.pem,.crt,.cer'
+             onchange="document.getElementById('ca_file_name').innerText=this.files&&this.files[0]?this.files[0].name:'No file selected'">
+    </div>
+    <div id='ca_file_name' style='margin-top:4px;font-size:11px;color:var(--text-muted)'>No file selected</div>
+  </div>
+</div>
 
-static const char webBodyRootDallasTab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Dallas')\">Dallas 1-wire</button>";
-static const char webBodyRootS0Tab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('S0')\">S0 kWh meters</button>";
-static const char webBodyRootOpenthermTab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Opentherm')\">Opentherm</button>";
-static const char webBodyRootConsoleTab[] PROGMEM = "<button class=\"w3-bar-item w3-button\" onclick=\"openTable('Console')\">Console</button>";
-
-static const char webBodyEndDiv[] PROGMEM = "</div>";
-
-static const char webBodyRootStatusWifi[] PROGMEM =   "<div class=\"w3-container w3-left\"><br>Wifi signal: <span id=\"wifi\">";
-#ifdef ESP8266
-static const char webBodyRootStatusMemory[] PROGMEM =   "</span>%<br>Memory free: <span id=\"memory\">";
-#else
-static const char webBodyRootStatusEthernet[] PROGMEM =   "</span>%<br>Ethernet status: <span id=\"ethernet\">";
-static const char webBodyRootStatusMemory[] PROGMEM =   "</span><br>Memory free: <span id=\"memory\">";
+<div class='setting-row'>
+  <label class='setting-label'>CA Certificate Actions</label>
+  <div style='display:flex;align-items:center;gap:8px;flex-wrap:wrap'>
+    <button type='button' id='ca_upload_btn' onclick='uploadCA()' class='btn btn-primary'>Upload CA</button>
+    <button type='button' onclick="window.open('/cacert','_blank')" class='btn btn-ghost'>View / Download CA</button>
+    <span id='ca_status' style='font-size:11px;color:var(--text-muted);font-style:italic'>No upload yet</span>
+  </div>
+</div>
+)===="
 #endif
-static const char webBodyRootStatusReceived[] PROGMEM =  "</span>%<br>Correct received data: <span id=\"correct\">";
-static const char webBodyRootStatusReconnects[] PROGMEM =  "</span>%<br>MQTT reconnects: <span id=\"mqtt\">";
-static const char webBodyRootStatusUptime[] PROGMEM =   "</span><br>Uptime: <span id=\"uptime\">";
-static const char webBodyRootStatusEndSpan[] PROGMEM =   "</span>";
-static const char webBodyRootStatusListenOnly[] PROGMEM =   "</span><br><b>Listen only mode active</b>";
 
-static const char webBodyRootHeatpumpValues[] PROGMEM =
-  "<div id=\"Heatpump\" class=\"w3-container w3-center heishatable\">"
-  "<h2>Current heatpump values</h2>"
-  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Topic</th><th>Name</th><th>Value</th><th>Description</th></tr></thead><tbody id=\"heishavalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
+R"====(
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>Time</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'>
+      <label class='setting-label'>NTP Servers</label>
+      <input type='text' name='ntp_servers' maxlength='253' class='setting-input' value='' placeholder='Comma separated'>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>Timezone</label>
+      <select name='timezone' class='setting-input'>
+)====";
 
-static const char webBodyRootDallasValues[] PROGMEM =
-  "<div id=\"Dallas\" class=\"w3-container w3-center heishatable\" style=\"display:none\">"
-  "<h2>Current Dallas 1-wire values</h2>"
-  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Sensor</th><th>Temperature</th><th>Alias</th></tr></thead><tbody id=\"dallasvalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
-
-static const char webBodyRootS0Values[] PROGMEM =
-  "<div id=\"S0\" class=\"w3-container w3-center heishatable\" style=\"display:none\">"
-  "<h2>Current S0 kWh meters values</h2>"
-  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>S0 port</th><th>Watt</th><th>Watthour</th><th>WatthourTotal</th><th>Pulse quality</th><th>Average pulse width</th></tr></thead><tbody id=\"s0values\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
-
-static const char webBodyRootOpenthermValues[] PROGMEM =
-  "<div id=\"Opentherm\" class=\"w3-container w3-center heishatable\" style=\"display:none\">"
-  "<h2>Current opentherm values</h2>"
-  "<table class=\"w3-table-all\"><thead><tr class=\"w3-red\"><th>Name</th><th>Type</th><th>Value</th></tr></thead><tbody id=\"openthermvalues\"><tr><td>...Loading...</td><td></td></tr></tbody></table></div>";
-
-
-static const char webBodyRootConsole[] PROGMEM =
-  "<div id=\"Console\" class=\"w3-container w3-center heishatable\">"
-  "<h2>Console output</h2>"
-  "<textarea id=\"cli\" disabled></textarea><br /><input type=\"checkbox\" id=\"autoscroll\" checked=\"checked\">Enable autoscroll</div>";
-
-static const char showRulesPage1[] PROGMEM =
-  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
-  "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
-  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
-  "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
-  "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
-  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
-  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
-  "</div>"
-  "<div class=\"w3-container w3-center\">"
-  "  <h2>Rules</h2>"
-  "  <form accept-charset=\"UTF-8\" action=\"/saverules\" enctype=\"multipart/form-data\" method=\"POST\">"
-  "    <textarea name=\"rules\" cols=\"75\" rows=\"15\">";
-
-static const char showRulesPage2[] PROGMEM =
-  "</textarea><br />"
-  "    <input class=\"w3-green w3-button\" type=\"submit\" value=\"Save\">"
-  "  </form>"
-  "</div>";
-
-static const char webBodyFactoryResetWarning[] PROGMEM =
-  "<div class=\"w3-container w3-center\">"
-  "<p>Removing configuration. To reconfigure please connect to WiFi hotspot after reset.</p>"
-  "</div>";
-
-static const char webBodyRebootWarning[] PROGMEM =
-  "<div class=\"w3-container w3-center\">"
-  "<p>Rebooting</p>"
-  "</div>";
-
-static const char webBodySettingsNewWifiWarning[] PROGMEM =
-  "<div class=\"w3-container w3-center\">"
-  "<p><b>Reconfiguring WiFi</b><br /><br />"
-  "Trying to connect to the new AP<br /><br />"
-  "The Heishamon-Setup hotspot will<br />automatically be brought<br />down when this succeeds<br /><br />"
-  "This page automatically<br />redirect to home in a few seconds</p>"
-  "</div>";
-
-static const char webBodySettingsResetPasswordWarning[] PROGMEM =
-  "<div class=\"w3-container w3-center\">"
-  "<p><b>Wrong password</b><br /><br />"
-  "Do a factory reset to reset it to<br />the its default password: heisha</p>"
-  "</div>";
-
-static const char webBodySettingsSaveMessage[] PROGMEM =
-  "<div class=\"w3-container w3-center\">"
-  "<p><b>Configuration saved</b><br /><br />"
-  "Rebooting</p>"
-  "</div>";
-
-static const char webBodySettings1[] PROGMEM =
-  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
-  "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
-  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
-  "<a href=\"/firmware\" class=\"w3-bar-item w3-button\">Firmware</a>"
-  "<a href=\"/rules\" class=\"w3-bar-item w3-button\">Rules</a>"
-  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
-  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
-  "</div>";
-
-static const char webCSS[] PROGMEM =
-  "<style>"
-  "/* W3.CSS 4.15 December 2020 by Jan Egil and Borge Refsnes */"
-  "html{box-sizing:border-box}*,*:before,*:after{box-sizing:inherit}"
-  "/* Extract from normalize.css by Nicolas Gallagher and Jonathan Neal git.io/normalize */"
-  "html{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}"
-  "article,aside,details,figcaption,figure,footer,header,main,menu,nav,section{display:block}summary{display:list-item}"
-  "audio,canvas,progress,video{display:inline-block}progress{vertical-align:baseline}"
-  "audio:not([controls]){display:none;height:0}[hidden],template{display:none}"
-  "a{background-color:transparent}a:active,a:hover{outline-width:0}"
-  "abbr[title]{border-bottom:none;text-decoration:underline;text-decoration:underline dotted}"
-  "b,strong{font-weight:bolder}dfn{font-style:italic}mark{background:#ff0;color:#000}"
-  "small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}"
-  "sub{bottom:-0.25em}sup{top:-0.5em}figure{margin:1em 40px}img{border-style:none}"
-  "code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}hr{box-sizing:content-box;height:0;overflow:visible}"
-  "button,input,select,textarea,optgroup{font:inherit;margin:0}optgroup{font-weight:bold}"
-  "button,input{overflow:visible}button,select{text-transform:none}"
-  "button,[type=button],[type=reset],[type=submit]{-webkit-appearance:button}"
-  "button::-moz-focus-inner,[type=button]::-moz-focus-inner,[type=reset]::-moz-focus-inner,[type=submit]::-moz-focus-inner{border-style:none;padding:0}"
-  "button:-moz-focusring,[type=button]:-moz-focusring,[type=reset]:-moz-focusring,[type=submit]:-moz-focusring{outline:1px dotted ButtonText}"
-  "fieldset{border:1px solid #c0c0c0;margin:0 2px;padding:.35em .625em .75em}"
-  "legend{color:inherit;display:table;max-width:100%;padding:0;white-space:normal}textarea{overflow:auto}"
-  "[type=checkbox],[type=radio]{padding:0}"
-  "[type=number]::-webkit-inner-spin-button,[type=number]::-webkit-outer-spin-button{height:auto}"
-  "[type=search]{-webkit-appearance:textfield;outline-offset:-2px}"
-  "[type=search]::-webkit-search-decoration{-webkit-appearance:none}"
-  "::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}"
-  "/* End extract */"
-  "html,body{font-family:Verdana,sans-serif;font-size:15px;line-height:1.5}html{overflow-x:hidden}"
-  "h1{font-size:36px}h2{font-size:30px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}"
-  ".w3-serif{font-family:serif}.w3-sans-serif{font-family:sans-serif}.w3-cursive{font-family:cursive}.w3-monospace{font-family:monospace}"
-  "h1,h2,h3,h4,h5,h6{font-family:\"Segoe UI\",Arial,sans-serif;font-weight:400;margin:10px 0}.w3-wide{letter-spacing:4px}"
-  "hr{border:0;border-top:1px solid #eee;margin:20px 0}"
-  ".w3-image{max-width:100%;height:auto}img{vertical-align:middle}a{color:inherit}"
-  ".w3-table,.w3-table-all{border-collapse:collapse;border-spacing:0;width:100%;display:table}.w3-table-all{border:1px solid #ccc}"
-  ".w3-bordered tr,.w3-table-all tr{border-bottom:1px solid #ddd}.w3-striped tbody tr:nth-child(even){background-color:#f1f1f1}"
-  ".w3-table-all tr:nth-child(odd){background-color:#fff}.w3-table-all tr:nth-child(even){background-color:#f1f1f1}"
-  ".w3-hoverable tbody tr:hover,.w3-ul.w3-hoverable li:hover{background-color:#ccc}.w3-centered tr th,.w3-centered tr td{text-align:center}"
-  ".w3-table td,.w3-table th,.w3-table-all td,.w3-table-all th{padding:8px 8px;display:table-cell;text-align:left;vertical-align:top}"
-  ".w3-table th:first-child,.w3-table td:first-child,.w3-table-all th:first-child,.w3-table-all td:first-child{padding-left:16px}"
-  ".w3-btn,.w3-button{border:none;display:inline-block;padding:8px 16px;vertical-align:middle;overflow:hidden;text-decoration:none;color:inherit;background-color:inherit;text-align:center;cursor:pointer;white-space:nowrap}"
-  ".w3-btn:hover{box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)}"
-  ".w3-btn,.w3-button{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}   "
-  ".w3-disabled,.w3-btn:disabled,.w3-button:disabled{cursor:not-allowed;opacity:0.3}.w3-disabled *,:disabled *{pointer-events:none}"
-  ".w3-btn.w3-disabled:hover,.w3-btn:disabled:hover{box-shadow:none}"
-  ".w3-badge,.w3-tag{background-color:#000;color:#fff;display:inline-block;padding-left:8px;padding-right:8px;text-align:center}.w3-badge{border-radius:50%}"
-  ".w3-ul{list-style-type:none;padding:0;margin:0}.w3-ul li{padding:8px 16px;border-bottom:1px solid #ddd}.w3-ul li:last-child{border-bottom:none}"
-  ".w3-tooltip,.w3-display-container{position:relative}.w3-tooltip .w3-text{display:none}.w3-tooltip:hover .w3-text{display:inline-block}"
-  ".w3-ripple:active{opacity:0.5}.w3-ripple{transition:opacity 0s}"
-  ".w3-input{padding:8px;display:block;border:none;border-bottom:1px solid #ccc;width:100%}"
-  ".w3-select{padding:9px 0;width:100%;border:none;border-bottom:1px solid #ccc}"
-  ".w3-dropdown-click,.w3-dropdown-hover{position:relative;display:inline-block;cursor:pointer}"
-  ".w3-dropdown-hover:hover .w3-dropdown-content{display:block}"
-  ".w3-dropdown-hover:first-child,.w3-dropdown-click:hover{background-color:#ccc;color:#000}"
-  ".w3-dropdown-hover:hover > .w3-button:first-child,.w3-dropdown-click:hover > .w3-button:first-child{background-color:#ccc;color:#000}"
-  ".w3-dropdown-content{cursor:auto;color:#000;background-color:#fff;display:none;position:absolute;min-width:160px;margin:0;padding:0;z-index:1}"
-  ".w3-check,.w3-radio{width:24px;height:24px;position:relative;top:6px}"
-  ".w3-sidebar{height:100%;width:200px;background-color:#fff;position:fixed!important;z-index:1;overflow:auto}"
-  ".w3-bar-block .w3-dropdown-hover,.w3-bar-block .w3-dropdown-click{width:100%}"
-  ".w3-bar-block .w3-dropdown-hover .w3-dropdown-content,.w3-bar-block .w3-dropdown-click .w3-dropdown-content{min-width:100%}"
-  ".w3-bar-block .w3-dropdown-hover .w3-button,.w3-bar-block .w3-dropdown-click .w3-button{width:100%;text-align:left;padding:8px 16px}"
-  ".w3-main,#main{transition:margin-left .4s}"
-  ".w3-modal{z-index:3;display:none;padding-top:100px;position:fixed;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgb(0,0,0);background-color:rgba(0,0,0,0.4)}"
-  ".w3-modal-content{margin:auto;background-color:#fff;position:relative;padding:0;outline:0;width:600px}"
-  ".w3-bar{width:100%;overflow:hidden}.w3-center .w3-bar{display:inline-block;width:auto}"
-  ".w3-bar .w3-bar-item{padding:8px 16px;float:left;width:auto;border:none;display:block;outline:0}"
-  ".w3-bar .w3-dropdown-hover,.w3-bar .w3-dropdown-click{position:static;float:left}"
-  ".w3-bar .w3-button{white-space:normal}"
-  ".w3-bar-block .w3-bar-item{width:100%;display:block;padding:8px 16px;text-align:left;border:none;white-space:normal;float:none;outline:0}"
-  ".w3-bar-block.w3-center .w3-bar-item{text-align:center}.w3-block{display:block;width:100%}"
-  ".w3-responsive{display:block;overflow-x:auto}"
-  ".w3-container:after,.w3-container:before,.w3-panel:after,.w3-panel:before,.w3-row:after,.w3-row:before,.w3-row-padding:after,.w3-row-padding:before,"
-  ".w3-cell-row:before,.w3-cell-row:after,.w3-clear:after,.w3-clear:before,.w3-bar:before,.w3-bar:after{content:"";display:table;clear:both}"
-  ".w3-col,.w3-half,.w3-third,.w3-twothird,.w3-threequarter,.w3-quarter{float:left;width:100%}"
-  ".w3-col.s1{width:8.33333%}.w3-col.s2{width:16.66666%}.w3-col.s3{width:24.99999%}.w3-col.s4{width:33.33333%}"
-  ".w3-col.s5{width:41.66666%}.w3-col.s6{width:49.99999%}.w3-col.s7{width:58.33333%}.w3-col.s8{width:66.66666%}"
-  ".w3-col.s9{width:74.99999%}.w3-col.s10{width:83.33333%}.w3-col.s11{width:91.66666%}.w3-col.s12{width:99.99999%}"
-  "@media (min-width:601px){.w3-col.m1{width:8.33333%}.w3-col.m2{width:16.66666%}.w3-col.m3,.w3-quarter{width:24.99999%}.w3-col.m4,.w3-third{width:33.33333%}"
-  ".w3-col.m5{width:41.66666%}.w3-col.m6,.w3-half{width:49.99999%}.w3-col.m7{width:58.33333%}.w3-col.m8,.w3-twothird{width:66.66666%}"
-  ".w3-col.m9,.w3-threequarter{width:74.99999%}.w3-col.m10{width:83.33333%}.w3-col.m11{width:91.66666%}.w3-col.m12{width:99.99999%}}"
-  "@media (min-width:993px){.w3-col.l1{width:8.33333%}.w3-col.l2{width:16.66666%}.w3-col.l3{width:24.99999%}.w3-col.l4{width:33.33333%}"
-  ".w3-col.l5{width:41.66666%}.w3-col.l6{width:49.99999%}.w3-col.l7{width:58.33333%}.w3-col.l8{width:66.66666%}"
-  ".w3-col.l9{width:74.99999%}.w3-col.l10{width:83.33333%}.w3-col.l11{width:91.66666%}.w3-col.l12{width:99.99999%}}"
-  ".w3-rest{overflow:hidden}.w3-stretch{margin-left:-16px;margin-right:-16px}"
-  ".w3-content,.w3-auto{margin-left:auto;margin-right:auto}.w3-content{max-width:980px}.w3-auto{max-width:1140px}"
-  ".w3-cell-row{display:table;width:100%}.w3-cell{display:table-cell}"
-  ".w3-cell-top{vertical-align:top}.w3-cell-middle{vertical-align:middle}.w3-cell-bottom{vertical-align:bottom}"
-  ".w3-hide{display:none!important}.w3-show-block,.w3-show{display:block!important}.w3-show-inline-block{display:inline-block!important}"
-  "@media (max-width:1205px){.w3-auto{max-width:95%}}"
-  "@media (max-width:600px){.w3-modal-content{margin:0 10px;width:auto!important}.w3-modal{padding-top:30px}"
-  ".w3-dropdown-hover.w3-mobile .w3-dropdown-content,.w3-dropdown-click.w3-mobile .w3-dropdown-content{position:relative}	"
-  ".w3-hide-small{display:none!important}.w3-mobile{display:block;width:100%!important}.w3-bar-item.w3-mobile,.w3-dropdown-hover.w3-mobile,.w3-dropdown-click.w3-mobile{text-align:center}"
-  ".w3-dropdown-hover.w3-mobile,.w3-dropdown-hover.w3-mobile .w3-btn,.w3-dropdown-hover.w3-mobile .w3-button,.w3-dropdown-click.w3-mobile,.w3-dropdown-click.w3-mobile .w3-btn,.w3-dropdown-click.w3-mobile .w3-button{width:100%}}"
-  "@media (max-width:768px){.w3-modal-content{width:500px}.w3-modal{padding-top:50px}}"
-  "@media (min-width:993px){.w3-modal-content{width:900px}.w3-hide-large{display:none!important}.w3-sidebar.w3-collapse{display:block!important}}"
-  "@media (max-width:992px) and (min-width:601px){.w3-hide-medium{display:none!important}}"
-  "@media (max-width:992px){.w3-sidebar.w3-collapse{display:none}.w3-main{margin-left:0!important;margin-right:0!important}.w3-auto{max-width:100%}}"
-  ".w3-top,.w3-bottom{position:fixed;width:100%;z-index:1}.w3-top{top:0}.w3-bottom{bottom:0}"
-  ".w3-overlay{position:fixed;display:none;width:100%;height:100%;top:0;left:0;right:0;bottom:0;background-color:rgba(0,0,0,0.5);z-index:2}"
-  ".w3-display-topleft{position:absolute;left:0;top:0}.w3-display-topright{position:absolute;right:0;top:0}"
-  ".w3-display-bottomleft{position:absolute;left:0;bottom:0}.w3-display-bottomright{position:absolute;right:0;bottom:0}"
-  ".w3-display-middle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);-ms-transform:translate(-50%,-50%)}"
-  ".w3-display-left{position:absolute;top:50%;left:0%;transform:translate(0%,-50%);-ms-transform:translate(-0%,-50%)}"
-  ".w3-display-right{position:absolute;top:50%;right:0%;transform:translate(0%,-50%);-ms-transform:translate(0%,-50%)}"
-  ".w3-display-topmiddle{position:absolute;left:50%;top:0;transform:translate(-50%,0%);-ms-transform:translate(-50%,0%)}"
-  ".w3-display-bottommiddle{position:absolute;left:50%;bottom:0;transform:translate(-50%,0%);-ms-transform:translate(-50%,0%)}"
-  ".w3-display-container:hover .w3-display-hover{display:block}.w3-display-container:hover span.w3-display-hover{display:inline-block}.w3-display-hover{display:none}"
-  ".w3-display-position{position:absolute}"
-  ".w3-circle{border-radius:50%}"
-  ".w3-round-small{border-radius:2px}.w3-round,.w3-round-medium{border-radius:4px}.w3-round-large{border-radius:8px}.w3-round-xlarge{border-radius:16px}.w3-round-xxlarge{border-radius:32px}"
-  ".w3-row-padding,.w3-row-padding>.w3-half,.w3-row-padding>.w3-third,.w3-row-padding>.w3-twothird,.w3-row-padding>.w3-threequarter,.w3-row-padding>.w3-quarter,.w3-row-padding>.w3-col{padding:0 8px}"
-  ".w3-container,.w3-panel{padding:0.01em 16px}.w3-panel{margin-top:16px;margin-bottom:16px}"
-  ".w3-code,.w3-codespan{font-family:Consolas,\"courier new\";font-size:16px}"
-  ".w3-code{width:auto;background-color:#fff;padding:8px 12px;border-left:4px solid #4CAF50;word-wrap:break-word}"
-  ".w3-codespan{color:crimson;background-color:#f1f1f1;padding-left:4px;padding-right:4px;font-size:110%}"
-  ".w3-card,.w3-card-2{box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12)}"
-  ".w3-card-4,.w3-hover-shadow:hover{box-shadow:0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19)}"
-  ".w3-spin{animation:w3-spin 2s infinite linear}@keyframes w3-spin{0%{transform:rotate(0deg)}100%{transform:rotate(359deg)}}"
-  ".w3-animate-fading{animation:fading 10s infinite}@keyframes fading{0%{opacity:0}50%{opacity:1}100%{opacity:0}}"
-  ".w3-animate-opacity{animation:opac 0.8s}@keyframes opac{from{opacity:0} to{opacity:1}}"
-  ".w3-animate-top{position:relative;animation:animatetop 0.4s}@keyframes animatetop{from{top:-300px;opacity:0} to{top:0;opacity:1}}"
-  ".w3-animate-left{position:relative;animation:animateleft 0.4s}@keyframes animateleft{from{left:-300px;opacity:0} to{left:0;opacity:1}}"
-  ".w3-animate-right{position:relative;animation:animateright 0.4s}@keyframes animateright{from{right:-300px;opacity:0} to{right:0;opacity:1}}"
-  ".w3-animate-bottom{position:relative;animation:animatebottom 0.4s}@keyframes animatebottom{from{bottom:-300px;opacity:0} to{bottom:0;opacity:1}}"
-  ".w3-animate-zoom {animation:animatezoom 0.6s}@keyframes animatezoom{from{transform:scale(0)} to{transform:scale(1)}}"
-  ".w3-animate-input{transition:width 0.4s ease-in-out}.w3-animate-input:focus{width:100%!important}"
-  ".w3-opacity,.w3-hover-opacity:hover{opacity:0.60}.w3-opacity-off,.w3-hover-opacity-off:hover{opacity:1}"
-  ".w3-opacity-max{opacity:0.25}.w3-opacity-min{opacity:0.75}"
-  ".w3-greyscale-max,.w3-grayscale-max,.w3-hover-greyscale:hover,.w3-hover-grayscale:hover{filter:grayscale(100%)}"
-  ".w3-greyscale,.w3-grayscale{filter:grayscale(75%)}.w3-greyscale-min,.w3-grayscale-min{filter:grayscale(50%)}"
-  ".w3-sepia{filter:sepia(75%)}.w3-sepia-max,.w3-hover-sepia:hover{filter:sepia(100%)}.w3-sepia-min{filter:sepia(50%)}"
-  ".w3-tiny{font-size:10px!important}.w3-small{font-size:12px!important}.w3-medium{font-size:15px!important}.w3-large{font-size:18px!important}"
-  ".w3-xlarge{font-size:24px!important}.w3-xxlarge{font-size:36px!important}.w3-xxxlarge{font-size:48px!important}.w3-jumbo{font-size:64px!important}"
-  ".w3-left-align{text-align:left!important}.w3-right-align{text-align:right!important}.w3-justify{text-align:justify!important}.w3-center{text-align:center!important}"
-  ".w3-border-0{border:0!important}.w3-border{border:1px solid #ccc!important}"
-  ".w3-border-top{border-top:1px solid #ccc!important}.w3-border-bottom{border-bottom:1px solid #ccc!important}"
-  ".w3-border-left{border-left:1px solid #ccc!important}.w3-border-right{border-right:1px solid #ccc!important}"
-  ".w3-topbar{border-top:6px solid #ccc!important}.w3-bottombar{border-bottom:6px solid #ccc!important}"
-  ".w3-leftbar{border-left:6px solid #ccc!important}.w3-rightbar{border-right:6px solid #ccc!important}"
-  ".w3-section,.w3-code{margin-top:16px!important;margin-bottom:16px!important}"
-  ".w3-margin{margin:16px!important}.w3-margin-top{margin-top:16px!important}.w3-margin-bottom{margin-bottom:16px!important}"
-  ".w3-margin-left{margin-left:16px!important}.w3-margin-right{margin-right:16px!important}"
-  ".w3-padding-small{padding:4px 8px!important}.w3-padding{padding:8px 16px!important}.w3-padding-large{padding:12px 24px!important}"
-  ".w3-padding-16{padding-top:16px!important;padding-bottom:16px!important}.w3-padding-24{padding-top:24px!important;padding-bottom:24px!important}"
-  ".w3-padding-32{padding-top:32px!important;padding-bottom:32px!important}.w3-padding-48{padding-top:48px!important;padding-bottom:48px!important}"
-  ".w3-padding-64{padding-top:64px!important;padding-bottom:64px!important}"
-  ".w3-padding-top-64{padding-top:64px!important}.w3-padding-top-48{padding-top:48px!important}"
-  ".w3-padding-top-32{padding-top:32px!important}.w3-padding-top-24{padding-top:24px!important}"
-  ".w3-left{float:left!important}.w3-right{float:right!important}"
-  ".w3-button:hover{color:#000!important;background-color:#ccc!important}"
-  ".w3-transparent,.w3-hover-none:hover{background-color:transparent!important}"
-  ".w3-hover-none:hover{box-shadow:none!important}"
-  "/* Colors */"
-  ".w3-amber,.w3-hover-amber:hover{color:#000!important;background-color:#ffc107!important}"
-  ".w3-aqua,.w3-hover-aqua:hover{color:#000!important;background-color:#00ffff!important}"
-  ".w3-blue,.w3-hover-blue:hover{color:#fff!important;background-color:#2196F3!important}"
-  ".w3-light-blue,.w3-hover-light-blue:hover{color:#000!important;background-color:#87CEEB!important}"
-  ".w3-brown,.w3-hover-brown:hover{color:#fff!important;background-color:#795548!important}"
-  ".w3-cyan,.w3-hover-cyan:hover{color:#000!important;background-color:#00bcd4!important}"
-  ".w3-blue-grey,.w3-hover-blue-grey:hover,.w3-blue-gray,.w3-hover-blue-gray:hover{color:#fff!important;background-color:#607d8b!important}"
-  ".w3-green,.w3-hover-green:hover{color:#fff!important;background-color:#4CAF50!important}"
-  ".w3-light-green,.w3-hover-light-green:hover{color:#000!important;background-color:#8bc34a!important}"
-  ".w3-indigo,.w3-hover-indigo:hover{color:#fff!important;background-color:#3f51b5!important}"
-  ".w3-khaki,.w3-hover-khaki:hover{color:#000!important;background-color:#f0e68c!important}"
-  ".w3-lime,.w3-hover-lime:hover{color:#000!important;background-color:#cddc39!important}"
-  ".w3-orange,.w3-hover-orange:hover{color:#000!important;background-color:#ff9800!important}"
-  ".w3-deep-orange,.w3-hover-deep-orange:hover{color:#fff!important;background-color:#ff5722!important}"
-  ".w3-pink,.w3-hover-pink:hover{color:#fff!important;background-color:#e91e63!important}"
-  ".w3-purple,.w3-hover-purple:hover{color:#fff!important;background-color:#9c27b0!important}"
-  ".w3-deep-purple,.w3-hover-deep-purple:hover{color:#fff!important;background-color:#673ab7!important}"
-  ".w3-red,.w3-hover-red:hover{color:#fff!important;background-color:#f44336!important}"
-  ".w3-sand,.w3-hover-sand:hover{color:#000!important;background-color:#fdf5e6!important}"
-  ".w3-teal,.w3-hover-teal:hover{color:#fff!important;background-color:#009688!important}"
-  ".w3-yellow,.w3-hover-yellow:hover{color:#000!important;background-color:#ffeb3b!important}"
-  ".w3-white,.w3-hover-white:hover{color:#000!important;background-color:#fff!important}"
-  ".w3-black,.w3-hover-black:hover{color:#fff!important;background-color:#000!important}"
-  ".w3-grey,.w3-hover-grey:hover,.w3-gray,.w3-hover-gray:hover{color:#000!important;background-color:#9e9e9e!important}"
-  ".w3-light-grey,.w3-hover-light-grey:hover,.w3-light-gray,.w3-hover-light-gray:hover{color:#000!important;background-color:#f1f1f1!important}"
-  ".w3-dark-grey,.w3-hover-dark-grey:hover,.w3-dark-gray,.w3-hover-dark-gray:hover{color:#fff!important;background-color:#616161!important}"
-  ".w3-pale-red,.w3-hover-pale-red:hover{color:#000!important;background-color:#ffdddd!important}"
-  ".w3-pale-green,.w3-hover-pale-green:hover{color:#000!important;background-color:#ddffdd!important}"
-  ".w3-pale-yellow,.w3-hover-pale-yellow:hover{color:#000!important;background-color:#ffffcc!important}"
-  ".w3-pale-blue,.w3-hover-pale-blue:hover{color:#000!important;background-color:#ddffff!important}"
-  ".w3-text-amber,.w3-hover-text-amber:hover{color:#ffc107!important}"
-  ".w3-text-aqua,.w3-hover-text-aqua:hover{color:#00ffff!important}"
-  ".w3-text-blue,.w3-hover-text-blue:hover{color:#2196F3!important}"
-  ".w3-text-light-blue,.w3-hover-text-light-blue:hover{color:#87CEEB!important}"
-  ".w3-text-brown,.w3-hover-text-brown:hover{color:#795548!important}"
-  ".w3-text-cyan,.w3-hover-text-cyan:hover{color:#00bcd4!important}"
-  ".w3-text-blue-grey,.w3-hover-text-blue-grey:hover,.w3-text-blue-gray,.w3-hover-text-blue-gray:hover{color:#607d8b!important}"
-  ".w3-text-green,.w3-hover-text-green:hover{color:#4CAF50!important}"
-  ".w3-text-light-green,.w3-hover-text-light-green:hover{color:#8bc34a!important}"
-  ".w3-text-indigo,.w3-hover-text-indigo:hover{color:#3f51b5!important}"
-  ".w3-text-khaki,.w3-hover-text-khaki:hover{color:#b4aa50!important}"
-  ".w3-text-lime,.w3-hover-text-lime:hover{color:#cddc39!important}"
-  ".w3-text-orange,.w3-hover-text-orange:hover{color:#ff9800!important}"
-  ".w3-text-deep-orange,.w3-hover-text-deep-orange:hover{color:#ff5722!important}"
-  ".w3-text-pink,.w3-hover-text-pink:hover{color:#e91e63!important}"
-  ".w3-text-purple,.w3-hover-text-purple:hover{color:#9c27b0!important}"
-  ".w3-text-deep-purple,.w3-hover-text-deep-purple:hover{color:#673ab7!important}"
-  ".w3-text-red,.w3-hover-text-red:hover{color:#f44336!important}"
-  ".w3-text-sand,.w3-hover-text-sand:hover{color:#fdf5e6!important}"
-  ".w3-text-teal,.w3-hover-text-teal:hover{color:#009688!important}"
-  ".w3-text-yellow,.w3-hover-text-yellow:hover{color:#d2be0e!important}"
-  ".w3-text-white,.w3-hover-text-white:hover{color:#fff!important}"
-  ".w3-text-black,.w3-hover-text-black:hover{color:#000!important}"
-  ".w3-text-grey,.w3-hover-text-grey:hover,.w3-text-gray,.w3-hover-text-gray:hover{color:#757575!important}"
-  ".w3-text-light-grey,.w3-hover-text-light-grey:hover,.w3-text-light-gray,.w3-hover-text-light-gray:hover{color:#f1f1f1!important}"
-  ".w3-text-dark-grey,.w3-hover-text-dark-grey:hover,.w3-text-dark-gray,.w3-hover-text-dark-gray:hover{color:#3a3a3a!important}"
-  ".w3-border-amber,.w3-hover-border-amber:hover{border-color:#ffc107!important}"
-  ".w3-border-aqua,.w3-hover-border-aqua:hover{border-color:#00ffff!important}"
-  ".w3-border-blue,.w3-hover-border-blue:hover{border-color:#2196F3!important}"
-  ".w3-border-light-blue,.w3-hover-border-light-blue:hover{border-color:#87CEEB!important}"
-  ".w3-border-brown,.w3-hover-border-brown:hover{border-color:#795548!important}"
-  ".w3-border-cyan,.w3-hover-border-cyan:hover{border-color:#00bcd4!important}"
-  ".w3-border-blue-grey,.w3-hover-border-blue-grey:hover,.w3-border-blue-gray,.w3-hover-border-blue-gray:hover{border-color:#607d8b!important}"
-  ".w3-border-green,.w3-hover-border-green:hover{border-color:#4CAF50!important}"
-  ".w3-border-light-green,.w3-hover-border-light-green:hover{border-color:#8bc34a!important}"
-  ".w3-border-indigo,.w3-hover-border-indigo:hover{border-color:#3f51b5!important}"
-  ".w3-border-khaki,.w3-hover-border-khaki:hover{border-color:#f0e68c!important}"
-  ".w3-border-lime,.w3-hover-border-lime:hover{border-color:#cddc39!important}"
-  ".w3-border-orange,.w3-hover-border-orange:hover{border-color:#ff9800!important}"
-  ".w3-border-deep-orange,.w3-hover-border-deep-orange:hover{border-color:#ff5722!important}"
-  ".w3-border-pink,.w3-hover-border-pink:hover{border-color:#e91e63!important}"
-  ".w3-border-purple,.w3-hover-border-purple:hover{border-color:#9c27b0!important}"
-  ".w3-border-deep-purple,.w3-hover-border-deep-purple:hover{border-color:#673ab7!important}"
-  ".w3-border-red,.w3-hover-border-red:hover{border-color:#f44336!important}"
-  ".w3-border-sand,.w3-hover-border-sand:hover{border-color:#fdf5e6!important}"
-  ".w3-border-teal,.w3-hover-border-teal:hover{border-color:#009688!important}"
-  ".w3-border-yellow,.w3-hover-border-yellow:hover{border-color:#ffeb3b!important}"
-  ".w3-border-white,.w3-hover-border-white:hover{border-color:#fff!important}"
-  ".w3-border-black,.w3-hover-border-black:hover{border-color:#000!important}"
-  ".w3-border-grey,.w3-hover-border-grey:hover,.w3-border-gray,.w3-hover-border-gray:hover{border-color:#9e9e9e!important}"
-  ".w3-border-light-grey,.w3-hover-border-light-grey:hover,.w3-border-light-gray,.w3-hover-border-light-gray:hover{border-color:#f1f1f1!important}"
-  ".w3-border-dark-grey,.w3-hover-border-dark-grey:hover,.w3-border-dark-gray,.w3-hover-border-dark-gray:hover{border-color:#616161!important}"
-  ".w3-border-pale-red,.w3-hover-border-pale-red:hover{border-color:#ffe7e7!important}.w3-border-pale-green,.w3-hover-border-pale-green:hover{border-color:#e7ffe7!important}"
-  ".w3-border-pale-yellow,.w3-hover-border-pale-yellow:hover{border-color:#ffffcc!important}.w3-border-pale-blue,.w3-hover-border-pale-blue:hover{border-color:#e7ffff!important}"
-  ".w3-theme {color:#fff !important; background-color:#f44336 !important}"
-  ".w3-btn { margin-bottom:10px; }"
-  ".heishatable { display: none; }"
-  "#cli{ background: black; color: white; width: 100%; height: 400px!important; }"
-  ".update-effect {  animation: flash 1.5s ease-in-out;}"
-  "@keyframes flash {  0% {    border: 2px solid orange;  }  100% {     border: none; }}"
-  "</style>";
-
-
-static const char changewifissidJS[] PROGMEM =
-  "<script>"
-  "function changewifissid() {"
-  " var x = document.getElementById(\"wifi_ssid_select\").value;"
-  " document.getElementById(\"wifi_ssid_id\").value = x;"
-  "}"
-  "</script>";
-
-static const char populatescanwifiJS[] PROGMEM =
-  "<script>"
-  "var refreshWifiScan = function () {"
-  " var selectList = document.getElementById('wifi_ssid_select');"
-  " var request = new XMLHttpRequest();"
-  " request.onreadystatechange = function(response) {"
-  "  if (request.readyState === 4) {"
-  "   if (request.status === 200) {"
-  "      var jsonOptions = JSON.parse(request.responseText);"
-  "      document.getElementById('wifi_ssid_select').innerText = null;"
-  "      var defaultoption = document.createElement('option');"
-  "      defaultoption.value = '';"
-  "      defaultoption.text = 'Select SSID';"
-  "      defaultoption.selected = true;"
-  "      defaultoption.hidden = true;"
-  "      selectList.appendChild(defaultoption);"
-  "      jsonOptions.forEach(function(item) {"
-  "        var option = document.createElement('option');"
-  "        option.value = item.ssid;"
-  "        option.text = item.ssid + \" - \" + item.rssi;"
-  "        selectList.appendChild(option);"
-  "      });"
-  "       selectList.style.display = \"block\";"
-  "     };"
-  "  };"
-  " };"
-  " request.open('GET', '/wifiscan', true);"
-  " request.send();"
-  " setTimeout(refreshWifiScan,30000);"
-  "};"
-  "setTimeout(refreshWifiScan,500);"
-  "</script>";
-
-
-static const char settingsForm1[] PROGMEM =
-  "<div class=\"w3-container w3-center\" id=\"loading_settings\">"
-  "       <h2>Please wait, loading saved settings...</h2>"
-  "</div>"
-  "<div class=\"w3-container w3-center\" id=\"settings_form\" style=\"display:none\">"
-  "  <h2>Settings</h2>"
-  "  <form accept-charset=\"UTF-8\" action=\"/savesettings\" method=\"POST\">"
-  "    <table style=\"width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Hostname:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"text\" name=\"wifi_hostname\" maxlength=\"39\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Wifi SSID:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input list=\"available_ssid\" name=\"wifi_ssid\" id=\"wifi_ssid_id\" value=\"\">"
-  "          <select id=\"wifi_ssid_select\" style=\"display:none\" onchange=\"changewifissid()\">"
-  "            <option hidden selected value=\"\">Select SSID</option>"
-  "          </select>"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Wifi password:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"password\" name=\"wifi_password\" maxlength=\"64\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Update username:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <label name=\"username\">admin</label>"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Current update password:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"password\" name=\"current_ota_password\" maxlength=\"39\" value=\"\"> default password: \"heisha\""
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          New update password:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"password\" name=\"new_ota_password\" maxlength=\"39\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Mqtt topic base:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"text\" name=\"mqtt_topic_base\" maxlength=\"127\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Mqtt server:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"text\" name=\"mqtt_server\" maxlength=\"64\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Mqtt port:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" name=\"mqtt_port\" maxlength=\"5\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Mqtt username:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"text\" name=\"mqtt_username\" maxlength=\"64\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Mqtt password:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"password\" name=\"mqtt_password\" maxlength=\"64\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-#ifdef TLS_SUPPORT
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Use TLS (use port 8883):</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" id=\"mqtt_tls_enabled\" name=\"mqtt_tls_enabled\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Root CA Certificate (PEM) - only required for TLS:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"file\" id=\"mqtt_ca_cert_file\" accept=\".pem,.crt,.cer\""
-  "                 onchange=\"document.getElementById('ca_file_name').innerText=this.files&&this.files[0]?this.files[0].name:'No file selected'\">"
-  "          <div id=\"ca_file_name\" style=\"margin-top:4px; font-size:12px; color:#666;\">No file selected</div>"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td></td>"
-  "        <td style=\"text-align:left\">"
-  "          <div style=\"display:flex; align-items:center; gap:8px; flex-wrap:wrap;\">"
-  "            <button type=\"button\" id=\"ca_upload_btn\" onclick=\"uploadCA()\">Upload CA</button>"
-  "            <button type=\"button\" onclick=\"window.open('/cacert','_blank')\">View / Download CA</button>"
-  "            <span id=\"ca_status\" style=\"font-style: italic; color: #555; margin-left:8px;\">No upload yet</span>"
-  "          </div>"
-  "        </td>"
-  "      </tr>"
-#endif
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          NTP servers (comma separated):</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"text\" name=\"ntp_servers\" maxlength=\"253\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Timezone:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <select name=\"timezone\">";
+// server inserts tzDataOptions here, then settingsForm2 continues
 
 #ifdef ESP8266
-static const char settingsForm2[] PROGMEM =
-  "          </select>"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          How often new values are collected from heatpump:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" name=\"waitTime\" value=\"\"> seconds (min 5 sec)"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          How often all heatpump values are retransmitted to MQTT broker:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" name=\"updateAllTime\" value=\"\"> seconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Enable WiFi hotspot when not connected:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"hotspot\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Debug log to MQTT topic from start:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"logMqtt\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Debug log hexdump enable from start:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"logHexdump\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Debug log to serial1 (GPIO2):</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"logSerial1\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Emulate optional PCB (does not work in listen only mode):</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Enable opentherm processing (requires opentherm pcb):</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"opentherm\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Force loading rules on boot (despite crash conditions):</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"force_rules\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <table style=\"width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Listen only (parallel CZ-TAW1):</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <table style=\"width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Use 1wire DS18b20:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <table id=\"dallassettings\" style=\"display: none; width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          How often new values are collected from 1wire:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" name=\"waitDallasTime\" value=\"\"> seconds (min 5 sec)"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          How often all 1wire values are retransmitted to MQTT broker:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" name=\"updataAllDallasTime\" value=\"\"> seconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          DS18b20 temperature resolution:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"radio\" id=\"9-bit\" name=\"dallasResolution\" value=\"9\"><label for=\"9-bit\"> 9-bit </label>"
-  "          <input type=\"radio\" id=\"10-bit\" name=\"dallasResolution\" value=\"10\"><label for=\"10-bit\"> 10-bit </label>"
-  "          <input type=\"radio\" id=\"11-bit\" name=\"dallasResolution\" value=\"11\"><label for=\"11-bit\"> 11-bit </label>"
-  "          <input type=\"radio\" id=\"12-bit\" name=\"dallasResolution\" value=\"12\"><label for=\"12-bit\"> 12-bit </label>"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <table style=\"width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Use s0 kWh metering:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" onclick=\"ShowHideS0Table(this)\" name=\"use_s0\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <table id=\"s0settings\" style=\"display: none; width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 1 imp/kwh:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_ppkwh_1\" onchange=\"changeMinWatt(1)\" name=\"s0_1_ppkwh\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 1 reporting interval during standby/low power usage:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_interval_1\" onchange=\"changeMinWatt(1)\" name=\"s0_1_interval\" value=\"\"> seconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 1 minimal pulse width:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_minpulsewidth_1\" name=\"s0_1_minpulsewidth\" value=\"\"> milliseconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 1 maximal pulse width:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_maxpulsewidth_1\" name=\"s0_1_maxpulsewidth\" value=\"\"> milliseconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 1 standby/low power usage threshold:</td>"
-  "        <td style=\"text-align:left\"><label id=\"s0_minwatt_1\"></label> Watt"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 2 imp/kwh:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_ppkwh_2\" onchange=\"changeMinWatt(2)\" name=\"s0_2_ppkwh\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 2 reporting interval during standby/low power usage:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_interval_2\" onchange=\"changeMinWatt(2)\" name=\"s0_2_interval\" value=\"\"> seconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 2 minimal pulse width:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_minpulsewidth_2\" name=\"s0_2_minpulsewidth\" value=\"\"> milliseconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 2 maximal pulse width:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_maxpulsewidth_2\" name=\"s0_2_maxpulsewidth\" value=\"\"> milliseconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 2 standby/low power usage threshold:</td>"
-  "        <td style=\"text-align:left\"><label id=\"s0_minwatt_2\"></label> Watt"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <br><br>"
-  "    <input class=\"w3-green w3-button\" type=\"submit\" id=\"save_settings\" value=\"Save\">"
-  "  </form>"
-  "  <br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\">Factory reset</a>"
-  "</div>";
+static const char settingsForm2[] FLASHPROG = R"====(
+      </select>
+    </div>
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>Polling</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'>
+      <label class='setting-label'>Heatpump poll interval</label>
+      <div style='display:flex;align-items:center;gap:8px'>
+        <input type='number' name='waitTime' class='setting-input' value='' style='width:80px'>
+        <span class='setting-hint'>seconds (min 5)</span>
+      </div>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>MQTT retransmit interval</label>
+      <div style='display:flex;align-items:center;gap:8px'>
+        <input type='number' name='updateAllTime' class='setting-input' value='' style='width:80px'>
+        <span class='setting-hint'>seconds</span>
+      </div>
+    </div>
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>Behavior</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'><label class='setting-label'>WiFi hotspot when disconnected</label><div class='checkbox-wrap'><input type='checkbox' name='hotspot' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Debug log to MQTT from start</label><div class='checkbox-wrap'><input type='checkbox' name='logMqtt' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Debug hexdump from start</label><div class='checkbox-wrap'><input type='checkbox' name='logHexdump' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Debug log to serial1 (GPIO2)</label><div class='checkbox-wrap'><input type='checkbox' name='logSerial1' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Emulate optional PCB</label><div class='checkbox-wrap'><input type='checkbox' name='optionalPCB' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Enable Opentherm processing</label><div class='checkbox-wrap'><input type='checkbox' name='opentherm' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Force load rules on boot</label><div style='display:flex;align-items:center;gap:10px'><div class='checkbox-wrap'><input type='checkbox' name='force_rules' value='enabled'></div><span class='setting-hint' style='display:block;margin-top:4px'>Rules load normally, but skip after crashes to prevent boot loops. Enable to override.</span></div></div>
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>Listen Only</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'><label class='setting-label'>Listen only (parallel CZ-TAW1)</label><div class='checkbox-wrap'><input type='checkbox' name='listenonly' value='enabled'></div></div>
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>1-Wire DS18B20</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'><label class='setting-label'>Use 1-Wire DS18B20</label><div class='checkbox-wrap'><input type='checkbox' onclick='ShowHideDallasTable(this)' name='use_1wire' value='enabled'></div></div>
+  </div>
+  <div id='dallassettings' style='display:none'>
+  <div class='settings-grid'>
+    <div class='setting-row'>
+      <label class='setting-label'>1-Wire poll interval</label>
+      <div style='display:flex;align-items:center;gap:8px'>
+        <input type='number' name='waitDallasTime' class='setting-input' value='' style='width:80px'>
+        <span class='setting-hint'>seconds (min 5)</span>
+      </div>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>1-Wire MQTT retransmit</label>
+      <div style='display:flex;align-items:center;gap:8px'>
+        <input type='number' name='updataAllDallasTime' class='setting-input' value='' style='width:80px'>
+        <span class='setting-hint'>seconds</span>
+      </div>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>Temperature resolution</label>
+      <div class='radio-group'>
+        <label><input type='radio' id='9-bit' name='dallasResolution' value='9'> 9-bit</label>
+        <label><input type='radio' id='10-bit' name='dallasResolution' value='10'> 10-bit</label>
+        <label><input type='radio' id='11-bit' name='dallasResolution' value='11'> 11-bit</label>
+        <label><input type='radio' id='12-bit' name='dallasResolution' value='12'> 12-bit</label>
+      </div>
+    </div>
+  </div></div>
+  </div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>S0 kWh Metering</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'><label class='setting-label'>Use S0 kWh metering</label><div class='checkbox-wrap'><input type='checkbox' onclick='ShowHideS0Table(this)' name='use_s0' value='enabled'></div></div>
+  </div>
+  <div id='s0settings' style='display:none'>
+  <div class='settings-grid'>
+    <div class='setting-row'><label class='setting-label'>Port 1 imp/kWh</label><input type='number' id='s0_ppkwh_1' onchange='changeMinWatt(1)' name='s0_1_ppkwh' class='setting-input' value=''></div>
+    <div class='setting-row'><label class='setting-label'>Port 1 standby interval</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_interval_1' onchange='changeMinWatt(1)' name='s0_1_interval' class='setting-input' value='' style='width:80px'><span class='setting-hint'>seconds</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 1 min pulse width</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_minpulsewidth_1' name='s0_1_minpulsewidth' class='setting-input' value='' style='width:80px'><span class='setting-hint'>ms</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 1 max pulse width</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_maxpulsewidth_1' name='s0_1_maxpulsewidth' class='setting-input' value='' style='width:80px'><span class='setting-hint'>ms</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 1 standby threshold</label><span style='font-size:12px;color:var(--text-muted)'><span id='s0_minwatt_1'>—</span> W</span></div>
+    <div class='setting-row'><label class='setting-label'>Port 2 imp/kWh</label><input type='number' id='s0_ppkwh_2' onchange='changeMinWatt(2)' name='s0_2_ppkwh' class='setting-input' value=''></div>
+    <div class='setting-row'><label class='setting-label'>Port 2 standby interval</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_interval_2' onchange='changeMinWatt(2)' name='s0_2_interval' class='setting-input' value='' style='width:80px'><span class='setting-hint'>seconds</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 2 min pulse width</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_minpulsewidth_2' name='s0_2_minpulsewidth' class='setting-input' value='' style='width:80px'><span class='setting-hint'>ms</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 2 max pulse width</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_maxpulsewidth_2' name='s0_2_maxpulsewidth' class='setting-input' value='' style='width:80px'><span class='setting-hint'>ms</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 2 standby threshold</label><span style='font-size:12px;color:var(--text-muted)'><span id='s0_minwatt_2'>—</span> W</span></div>
+  </div></div>
+  </div>
+  <div class='form-actions'>
+    <button type='submit' class='btn btn-primary'>Save Settings</button>
+  </div>
+  </form>
+  <div style='padding:0 20px 24px'>
+    <a href='/factoryreset' class='btn btn-danger' onclick="return confirm('Are you sure? This will erase all configuration.')">Factory Reset</a>
+  </div>
+</div></div>
+)====";
+
 #else
-static const char settingsForm2[] PROGMEM =
-  "          </select>"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          How often new values are collected from heatpump:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" name=\"waitTime\" value=\"\"> seconds (min 5 sec)"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          How often all heatpump values are retransmitted to MQTT broker:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" name=\"updateAllTime\" value=\"\"> seconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Enable WiFi hotspot when not connected:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"hotspot\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Debug log to MQTT topic from start:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"logMqtt\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Debug log hexdump enable from start:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"logHexdump\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Debug log USB:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"logSerial1\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Emulate optional PCB (does not work in listen only mode):</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"optionalPCB\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Enable opentherm processing:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"opentherm\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Enable cztaw proxy port:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"proxy\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Force loading rules on boot (despite crash conditions):</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"force_rules\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"  
-  "    </table>"
-  "    <table style=\"width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Listen only (parallel CZ-TAW1):</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" name=\"listenonly\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <table style=\"width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Use 1wire DS18b20:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" onclick=\"ShowHideDallasTable(this)\" name=\"use_1wire\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <table id=\"dallassettings\" style=\"display: none; width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          How often new values are collected from 1wire:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" name=\"waitDallasTime\" value=\"\"> seconds (min 5 sec)"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          How often all 1wire values are retransmitted to MQTT broker:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" name=\"updataAllDallasTime\" value=\"\"> seconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          DS18b20 temperature resolution:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"radio\" id=\"9-bit\" name=\"dallasResolution\" value=\"9\"><label for=\"9-bit\"> 9-bit </label>"
-  "          <input type=\"radio\" id=\"10-bit\" name=\"dallasResolution\" value=\"10\"><label for=\"10-bit\"> 10-bit </label>"
-  "          <input type=\"radio\" id=\"11-bit\" name=\"dallasResolution\" value=\"11\"><label for=\"11-bit\"> 11-bit </label>"
-  "          <input type=\"radio\" id=\"12-bit\" name=\"dallasResolution\" value=\"12\"><label for=\"12-bit\"> 12-bit </label>"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <table style=\"width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">"
-  "          Use s0 kWh metering:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"checkbox\" onclick=\"ShowHideS0Table(this)\" name=\"use_s0\" value=\"enabled\">"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <table id=\"s0settings\" style=\"display: none; width:100%\">"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 1 imp/kwh:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_ppkwh_1\" onchange=\"changeMinWatt(1)\" name=\"s0_1_ppkwh\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 1 reporting interval during standby/low power usage:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_interval_1\" onchange=\"changeMinWatt(1)\" name=\"s0_1_interval\" value=\"\"> seconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 1 minimal pulse width:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_minpulsewidth_1\" name=\"s0_1_minpulsewidth\" value=\"\"> milliseconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 1 maximal pulse width:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_maxpulsewidth_1\" name=\"s0_1_maxpulsewidth\" value=\"\"> milliseconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 1 standby/low power usage threshold:</td>"
-  "        <td style=\"text-align:left\"><label id=\"s0_minwatt_1\"></label> Watt"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 2 imp/kwh:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_ppkwh_2\" onchange=\"changeMinWatt(2)\" name=\"s0_2_ppkwh\" value=\"\">"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 2 reporting interval during standby/low power usage:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_interval_2\" onchange=\"changeMinWatt(2)\" name=\"s0_2_interval\" value=\"\"> seconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 2 minimal pulse width:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_minpulsewidth_2\" name=\"s0_2_minpulsewidth\" value=\"\"> milliseconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 2 maximal pulse width:</td>"
-  "        <td style=\"text-align:left\">"
-  "          <input type=\"number\" id=\"s0_maxpulsewidth_2\" name=\"s0_2_maxpulsewidth\" value=\"\"> milliseconds"
-  "        </td>"
-  "      </tr>"
-  "      <tr>"
-  "        <td style=\"text-align:right; width: 50%\">S0 port 2 standby/low power usage threshold:</td>"
-  "        <td style=\"text-align:left\"><label id=\"s0_minwatt_2\"></label> Watt"
-  "        </td>"
-  "      </tr>"
-  "    </table>"
-  "    <br><br>"
-  "    <input class=\"w3-green w3-button\" type=\"submit\" id=\"save_settings\" value=\"Save\">"
-  "  </form>"
-  "  <br><a href=\"/factoryreset\" class=\"w3-red w3-button\" onclick=\"return confirm('Are you sure?')\">Factory reset</a>"
-  "</div>";
+// ESP32 version of settingsForm2
+static const char settingsForm2[] FLASHPROG = R"====(
+      </select>
+    </div>
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>Polling</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'>
+      <label class='setting-label'>Heatpump poll interval</label>
+      <div style='display:flex;align-items:center;gap:8px'>
+        <input type='number' name='waitTime' class='setting-input' value='' style='width:80px'>
+        <span class='setting-hint'>seconds (min 5)</span>
+      </div>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>MQTT retransmit interval</label>
+      <div style='display:flex;align-items:center;gap:8px'>
+        <input type='number' name='updateAllTime' class='setting-input' value='' style='width:80px'>
+        <span class='setting-hint'>seconds</span>
+      </div>
+    </div>
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>Behavior</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'><label class='setting-label'>WiFi hotspot when disconnected</label><div class='checkbox-wrap'><input type='checkbox' name='hotspot' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Debug log to MQTT from start</label><div class='checkbox-wrap'><input type='checkbox' name='logMqtt' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Debug hexdump from start</label><div class='checkbox-wrap'><input type='checkbox' name='logHexdump' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Debug log USB</label><div class='checkbox-wrap'><input type='checkbox' name='logSerial1' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Emulate optional PCB</label><div class='checkbox-wrap'><input type='checkbox' name='optionalPCB' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Enable Opentherm processing</label><div class='checkbox-wrap'><input type='checkbox' name='opentherm' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Enable CZ-TAW1 proxy port</label><div class='checkbox-wrap'><input type='checkbox' name='proxy' value='enabled'></div></div>
+    <div class='setting-row'><label class='setting-label'>Force rules on boot</label><div class='checkbox-wrap'><input type='checkbox' name='force_rules' value='enabled'></div></div>
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>Listen Only</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'><label class='setting-label'>Listen only (parallel CZ-TAW1)</label><div class='checkbox-wrap'><input type='checkbox' name='listenonly' value='enabled'></div></div>
+  </div></div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>1-Wire DS18B20</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'><label class='setting-label'>Use 1-Wire DS18B20</label><div class='checkbox-wrap'><input type='checkbox' onclick='ShowHideDallasTable(this)' name='use_1wire' value='enabled'></div></div>
+  </div>
+  <div id='dallassettings' style='display:none'>
+  <div class='settings-grid'>
+    <div class='setting-row'>
+      <label class='setting-label'>1-Wire poll interval</label>
+      <div style='display:flex;align-items:center;gap:8px'>
+        <input type='number' name='waitDallasTime' class='setting-input' value='' style='width:80px'>
+        <span class='setting-hint'>seconds (min 5)</span>
+      </div>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>1-Wire MQTT retransmit</label>
+      <div style='display:flex;align-items:center;gap:8px'>
+        <input type='number' name='updataAllDallasTime' class='setting-input' value='' style='width:80px'>
+        <span class='setting-hint'>seconds</span>
+      </div>
+    </div>
+    <div class='setting-row'>
+      <label class='setting-label'>Temperature resolution</label>
+      <div class='radio-group'>
+        <label><input type='radio' id='9-bit' name='dallasResolution' value='9'> 9-bit</label>
+        <label><input type='radio' id='10-bit' name='dallasResolution' value='10'> 10-bit</label>
+        <label><input type='radio' id='11-bit' name='dallasResolution' value='11'> 11-bit</label>
+        <label><input type='radio' id='12-bit' name='dallasResolution' value='12'> 12-bit</label>
+      </div>
+    </div>
+  </div></div>
+  </div>
+  <div class='panel' style='margin-bottom:16px'>
+  <div class='panel-header'><h3>S0 kWh Metering</h3></div>
+  <div class='settings-grid'>
+    <div class='setting-row'><label class='setting-label'>Use S0 kWh metering</label><div class='checkbox-wrap'><input type='checkbox' onclick='ShowHideS0Table(this)' name='use_s0' value='enabled'></div></div>
+  </div>
+  <div id='s0settings' style='display:none'>
+  <div class='settings-grid'>
+    <div class='setting-row'><label class='setting-label'>Port 1 imp/kWh</label><input type='number' id='s0_ppkwh_1' onchange='changeMinWatt(1)' name='s0_1_ppkwh' class='setting-input' value=''></div>
+    <div class='setting-row'><label class='setting-label'>Port 1 standby interval</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_interval_1' onchange='changeMinWatt(1)' name='s0_1_interval' class='setting-input' value='' style='width:80px'><span class='setting-hint'>seconds</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 1 min pulse width</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_minpulsewidth_1' name='s0_1_minpulsewidth' class='setting-input' value='' style='width:80px'><span class='setting-hint'>ms</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 1 max pulse width</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_maxpulsewidth_1' name='s0_1_maxpulsewidth' class='setting-input' value='' style='width:80px'><span class='setting-hint'>ms</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 1 standby threshold</label><span style='font-size:12px;color:var(--text-muted)'><span id='s0_minwatt_1'>—</span> W</span></div>
+    <div class='setting-row'><label class='setting-label'>Port 2 imp/kWh</label><input type='number' id='s0_ppkwh_2' onchange='changeMinWatt(2)' name='s0_2_ppkwh' class='setting-input' value=''></div>
+    <div class='setting-row'><label class='setting-label'>Port 2 standby interval</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_interval_2' onchange='changeMinWatt(2)' name='s0_2_interval' class='setting-input' value='' style='width:80px'><span class='setting-hint'>seconds</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 2 min pulse width</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_minpulsewidth_2' name='s0_2_minpulsewidth' class='setting-input' value='' style='width:80px'><span class='setting-hint'>ms</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 2 max pulse width</label><div style='display:flex;align-items:center;gap:8px'><input type='number' id='s0_maxpulsewidth_2' name='s0_2_maxpulsewidth' class='setting-input' value='' style='width:80px'><span class='setting-hint'>ms</span></div></div>
+    <div class='setting-row'><label class='setting-label'>Port 2 standby threshold</label><span style='font-size:12px;color:var(--text-muted)'><span id='s0_minwatt_2'>—</span> W</span></div>
+  </div></div>
+  </div>
+  <div class='form-actions'>
+    <button type='submit' class='btn btn-primary'>Save Settings</button>
+  </div>
+  </form>
+  <div style='padding:0 20px 24px'>
+    <a href='/factoryreset' class='btn btn-danger' onclick="return confirm('Are you sure? This will erase all configuration.')">Factory Reset</a>
+  </div>
+</div></div>
+)====";
 #endif
-const char populategetsettingsJS[] PROGMEM =
-  "<script>"
-  "var getSettings = function() {"
-  "  var request = new XMLHttpRequest();"
-  "  request.onreadystatechange = function(response) {"
-  "    if(request.readyState === 4) {"
-  "      if(request.status === 200) {"
-  "        try {"
-  "        var jsonOptions = JSON.parse(request.responseText);"
+
+// Populate settings form via /getsettings (unchanged logic)
+static const char populategetsettingsJS[] FLASHPROG = R"====(
+<script>
+var getSettings=function(){
+  var req=new XMLHttpRequest();
+  req.onreadystatechange=function(){
+    if(req.readyState===4&&req.status===200){
+      var j=JSON.parse(req.responseText);
+)===="
 #ifdef TLS_SUPPORT
-  "        if (jsonOptions.mqtt_ca_cert) {"
-  "          document.getElementById('ca_status').innerText = jsonOptions.mqtt_ca_cert;"
-  "        } else {"
-  "          document.getElementById('ca_status').innerText = 'Unknown CA status';"
-  "        }"
+R"====(
+      if (j.mqtt_ca_cert) {
+        document.getElementById('ca_status').innerText = j.mqtt_ca_cert;
+      } else {
+        document.getElementById('ca_status').innerText = 'Unknown CA status';
+      }
+)===="
 #endif
-  "        for(var key in jsonOptions) {"
-  "          var el = document.getElementsByName(key);"
-  "          if(el.length > 0) {"
-  "            if(Array(\"text\", \"number\", \"password\").indexOf(el[0].type) > -1) {"
-  "              el[0].value = jsonOptions[key];"
-  "            };"
-  "            if(el[0].type == \"checkbox\" && jsonOptions[key] == 1) {"
-  "              el[0].checked = true;"
-  "              if(key.indexOf(\"1wire\") > -1) {"
-  "                ShowHideDallasTable(el[0]);"
-  "              };"
-  "              if(key.indexOf(\"s0\") > -1) {"
-  "                ShowHideS0Table(el[0]);"
-  "              };"
-  "            };"
-  "            if(el[0].type == \"radio\") {"
-  "              for(var x = 0; x < el.length; x++) {"
-  "                if(el[x].value == jsonOptions[key]) {"
-  "                  el[x].checked = true;"
-  "                };"
-  "              };"
-  "            };"
-  "            if(el[0].type.indexOf(\"select\") > -1) {"
-  "              var children = el[0].childNodes;"
-  "              for(var x = 0; x < children.length; x++) {"
-  "                if(children[x].value == jsonOptions[key]) {"
-  "                  children[x].selected = true;"
-  "                };"
-  "              };"
-  "            };"
-  "          };"
-  "        };"
-  "        } catch (e) {"
-  "          try { console.log('populate settings error:', e); } catch (_) {}"
-  "        } finally {"
-  "          var ls = document.getElementById('loading_settings');"
-  "          var sf = document.getElementById('settings_form');"
-  "          if (ls) ls.style.display = 'none';"
-  "          if (sf) sf.style.display = 'block';"
-  "          if (typeof changeMinWatt === 'function') {"
-  "            try { changeMinWatt(1); } catch (_) {}"
-  "            try { changeMinWatt(2); } catch (_) {}"
-  "          }"
-  "        }"
-  "        document.getElementById(\"loading_settings\").style.display = \"none\";"
-  "        document.getElementById(\"settings_form\").style.display = \"block\";"
-  "        changeMinWatt(1);"
-  "        changeMinWatt(2);"
-  "      };"
-  "    };"
-  "  };"
-  "  request.open('GET', '/getsettings', true);"
-  "  request.send();"
-  "};"
-  "getSettings();"
-  "</script>";
+R"====(
+      for(var k in j){
+        var el=document.getElementsByName(k);
+        if(el.length>0){
+          if(['text','number','password'].indexOf(el[0].type)>-1){el[0].value=j[k];}
+          if(el[0].type=='checkbox'&&(j[k] === 'enabled' || j[k] === 1)){
+            el[0].checked=true;
+            if(k.indexOf('1wire')>-1)ShowHideDallasTable(el[0]);
+            if(k.indexOf('s0')>-1)ShowHideS0Table(el[0]);
+          }
+          if(el[0].type=='radio'){for(var x=0;x<el.length;x++){if(el[x].value==j[k])el[x].checked=true;}}
+          if(el[0].type.indexOf('select')>-1){var ch=el[0].childNodes;for(var x=0;x<ch.length;x++){if(ch[x].value==j[k])ch[x].selected=true;}}
+        }
+      }
+      document.getElementById('loading_settings').style.display='none';
+      document.getElementById('settings_form').style.display='block';
+      changeMinWatt(1);changeMinWatt(2);
+    }
+  };
+  req.open('GET','/getsettings',true);
+  req.send();
+};
+getSettings();
+</script>
+)====";
 
-static const char showFirmwarePage[] PROGMEM =
-  "<script>"
-  "  function getMD5(){"
-  "    var filename = document.getElementById(\"firmware\").value;"
-  "    var splitstr = filename.split('-')[2];"
-  "    if (splitstr) {"
-  "      var md5 = splitstr.split('.')[0];"
-  "      if (md5.length == 32) {"
-  "        document.getElementById(\"md5\").value = md5;"
-  "      }"
-  "    }"
-  "  }"
-  "  function reloadHome() {"
-  "    setTimeout(function() {window.location.href = \"/\";}, 15000);"
-  "  }"
-  "  function _(el) {  "
-  "    return document.getElementById(el);  "
-  "  }  "
-  "  "
-  "  function uploadFile() {  "
-  "    _(\"updatebutton\").disabled = true;"
-  "    _(\"status\").innerText = \"\";"
-  "    var file = _(\"firmware\").files[0];  "
-  "    var formdata = new FormData();  "
-  "    formdata.append(\"firmware\", file);  "
-  "    var md5 = document.getElementById(\"md5\").value;"
-  "    formdata.append(\"md5\", md5);"
-  "    var request = new XMLHttpRequest();  "
-  "    request.upload.addEventListener(\"progress\", progressHandler, false);"
-  "    request.onreadystatechange = function(response) {"
-  "      if (request.readyState === 4) {"
-  "        _(\"status\").innerText = request.responseText;"
-  "        if (request.responseText.includes(\"success\")) { "
-  "          reloadHome();"
-  "        } else {"
-  "          _(\"updatebutton\").disabled = false;"
-  "        };"
-  "      };"
-  "    };"
-  "    request.open(\"POST\", \"/firmware\");"
-  "    request.send(formdata);"
-  "  }  "
-  "  "
-  "  function progressHandler(event) {  "
-  "    var percent = (event.loaded / event.total) * 100;  "
-  "    _(\"progressBar\").value = Math.round(percent);  "
-  "  }  "
-  "</script>"
-  "<div class=\"w3-sidebar w3-bar-block w3-card w3-animate-left\" style=\"display:none\" id=\"leftMenu\">"
-  "<a href=\"/\" class=\"w3-bar-item w3-button\">Home</a>"
-  "<a href=\"/reboot\" class=\"w3-bar-item w3-button\">Reboot</a>"
-  "<a href=\"/settings\" class=\"w3-bar-item w3-button\">Settings</a>"
-  "<a href=\"/togglelog\" class=\"w3-bar-item w3-button\">Toggle mqtt log</a>"
-  "<a href=\"/togglehexdump\" class=\"w3-bar-item w3-button\">Toggle hexdump log</a>"
-  "</div>"
-  "<div class=\"w3-container w3-center\">"
-  "   <form method=\"POST\" action=\"\" enctype=\"multipart/form-data\">"
-  "       <h2>Firmware:</h2>"
-  "       <input type=\"file\" accept=\".bin,.bin.gz\" id=\"firmware\" name=\"firmware\" onchange=\"getMD5();\"><br><br>"
-  "       <label for=\"md5\">MD5 checksum:</label><input type=\"text\" id=\"md5\" name=\"md5\" value=\"\" size=\"32\" minlength=\"32\" maxlength=\"32\"><br><br><b>Warning</b><br>If you leave the MD5 checksum empty there will be no check on the uploaded firmware which could cause a bricked HeishaMon!<br>In this case but also other unforseen errors during update requires you to be able to restore the firmware using a TTL cable!<br><br>"
-  "   </form>"
-  "   <button id=\"updatebutton\" onclick=\"uploadFile()\">Update Firmware</button><br><progress id=\"progressBar\" value=\"0\" max=\"100\" style=\"width:300px;\"></progress><p id=\"status\"></p>"
-  "</div>";
+static const char changewifissidJS[] FLASHPROG = R"====(
+<script>
+function changewifissid(){
+  document.getElementById('wifi_ssid_id').value=document.getElementById('wifi_ssid_select').value;
+}
+</script>
+)====";
 
-static const char firmwareSuccessResponse[] PROGMEM =
-  "Update success! Rebooting. This page will refresh afterwards.";
+static const char populatescanwifiJS[] FLASHPROG = R"====(
+<script>
+var refreshWifiScan=function(){
+  var sel=document.getElementById('wifi_ssid_select');
+  var req=new XMLHttpRequest();
+  req.onreadystatechange=function(){
+    if(req.readyState===4&&req.status===200){
+      var list=JSON.parse(req.responseText);
+      sel.innerHTML='';
+      var def=document.createElement('option');
+      def.value='';def.text='Select SSID';def.selected=true;def.hidden=true;
+      sel.appendChild(def);
+      list.forEach(function(item){
+        var opt=document.createElement('option');
+        opt.value=item.ssid;
+        opt.text=item.ssid+' ('+item.rssi+' dBm)';
+        sel.appendChild(opt);
+      });
+      sel.style.display='block';
+    }
+  };
+  req.open('GET','/wifiscan',true);
+  req.send();
+  setTimeout(refreshWifiScan,30000);
+};
+setTimeout(refreshWifiScan,500);
+</script>
+)====";
 
-static const char firmwareFailResponse[] PROGMEM =
-  "Update failed! Please try again...";
+// ─────────────────────────────────────────────────────────────────────────────
+// RULES PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+static const char showRulesPage1[] FLASHPROG = R"====(
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var nav=document.getElementById('sideNav');
+  nav.innerHTML=`
+<a href="/"><span class="nav-icon">&#8634;</span> Home</a>
+<a href="/firmware"><span class="nav-icon">&#8679;</span> Firmware</a>
+<a href="/reboot"><span class="nav-icon">&#8635;</span> Reboot</a>
+<a href="/settings"><span class="nav-icon">&#9881;</span> Settings</a>
+`;
+});
+</script>
+  <div style='display:flex;'>
+    <div id='line-numbers' class='line-numbers'></div>
+    <div id='rules' contenteditable='true' spellcheck='false' class='rules-editor'>)====";
 
+
+
+static const char showRulesPage2[] FLASHPROG = R"====(</div>
+  </div>
+  <div style='margin-top:12px;'>
+    <button type='button' onclick='validateRules()' style='background:#3a7bd5;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;margin-right:8px;'>Validate</button>
+    <button type='button' onclick='saveRules()' style='background:#2ecc94;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;'>Save Rules</button>
+    <button type='button' onclick="clearRules()" style='background:#f44336;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;'>Erase Rules</button>
+  </div>
+  <div id='validation-result'></div>
+)====";
+
+static const char rulesJS[] FLASHPROG = R"=====(
+<script>
+const KEYWORDS = ['on','then','end','if','else','elseif','NULL'];
+const OPERATORS = ['&&','||','==','>=','<=','!=','>','<','+','-','*','/','%','^','='];
+const FUNCTIONS = ['coalesce','max','min','isset','round','floor','ceil','setTimer','print','concat','gpio'];
+
+function highlightRules() {
+  const editor = document.getElementById('rules');
+  const cursorPos = saveCursorPosition(editor);
+  
+  let text = editor.textContent;
+  let html = '';
+  let i = 0;
+  
+  while(i < text.length) {
+    let matched = false;
+    
+    // Comments
+    if(text.substr(i,2) === '//') {
+      let end = text.indexOf('\n', i);
+      if(end === -1) end = text.length;
+      html += '<span class="comment">' + escapeHtml(text.substring(i,end)) + '</span>';
+      i = end;
+      matched = true;
+    }
+    
+    // Strings
+    if(!matched && (text[i] === "'" || text[i] === '"')) {
+      const quote = text[i];
+      let end = i + 1;
+      while(end < text.length && text[end] !== quote) {
+        if(text[end] === '\\') end++;
+        end++;
+      }
+      if(end < text.length) end++;
+      html += '<span class="string">' + escapeHtml(text.substring(i,end)) + '</span>';
+      i = end;
+      matched = true;
+    }
+    
+    // Numbers
+    if(!matched && /\d/.test(text[i])) {
+      let end = i;
+      while(end < text.length && /[\d.]/.test(text[end])) end++;
+      html += '<span class="number">' + text.substring(i,end) + '</span>';
+      i = end;
+      matched = true;
+    }
+    
+    // Keywords
+    if(!matched && /[a-zA-Z]/.test(text[i])) {
+      for(let k of KEYWORDS) {
+        if(text.substr(i,k.length) === k && (i===0 || !/\w/.test(text[i-1])) && (i+k.length>=text.length || !/\w/.test(text[i+k.length]))) {
+          html += '<span class="keyword">' + k + '</span>';
+          i += k.length;
+          matched = true;
+          break;
+        }
+      }
+    }
+    
+    // Functions
+    if(!matched && /[a-zA-Z]/.test(text[i])) {
+      for(let f of FUNCTIONS) {
+        if(text.substr(i,f.length+1) === f+'(' && (i===0 || !/\w/.test(text[i-1]))) {
+          html += '<span class="function">' + f + '</span>(';
+          i += f.length + 1;
+          matched = true;
+          break;
+        }
+      }
+    }
+    
+    // Heatpump params (@)
+    if(!matched && text[i] === '@') {
+      let end = i + 1;
+      while(end < text.length && /\w/.test(text[end])) end++;
+      html += '<span class="at-param">' + text.substring(i,end) + '</span>';
+      i = end;
+      matched = true;
+    }
+    
+    // DateTime params (%)
+    if(!matched && text[i] === '%') {
+      let end = i + 1;
+      while(end < text.length && /\w/.test(text[end])) end++;
+      html += '<span class="percent-param">' + text.substring(i,end) + '</span>';
+      i = end;
+      matched = true;
+    }
+    
+    // Thermostat params (?)
+    if(!matched && text[i] === '?') {
+      let end = i + 1;
+      while(end < text.length && /\w/.test(text[end])) end++;
+      html += '<span class="question-param">' + text.substring(i,end) + '</span>';
+      i = end;
+      matched = true;
+    }
+    
+    // Dallas sensors
+    if(!matched && text.substr(i,8) === 'ds18b20#') {
+      let end = i + 8;
+      while(end < text.length && /[0-9A-Fa-f]/.test(text[end])) end++;
+      html += '<span class="ds18b20">' + text.substring(i,end) + '</span>';
+      i = end;
+      matched = true;
+    }
+    
+    // Variables (# and $)
+    if(!matched && (text[i] === '#' || text[i] === '$')) {
+      let end = i + 1;
+      while(end < text.length && /\w/.test(text[end])) end++;
+      html += '<span class="variable">' + text.substring(i,end) + '</span>';
+      i = end;
+      matched = true;
+    }
+    
+    // Operators (check longer ones first)
+    if(!matched) {
+      const sortedOps = OPERATORS.slice().sort((a,b) => b.length - a.length);
+      for(let o of sortedOps) {
+        if(text.substr(i,o.length) === o) {
+          html += '<span class="operator">' + escapeHtml(o) + '</span>';
+          i += o.length;
+          matched = true;
+          break;
+        }
+      }
+    }
+    
+    // Default character
+    if(!matched) {
+      html += escapeHtml(text[i]);
+      i++;
+    }
+  }
+  
+  editor.innerHTML = html;
+  restoreCursorPosition(editor, cursorPos);
+}
+
+function escapeHtml(text) {
+  return text.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+}
+
+function saveCursorPosition(el) {
+  const sel = window.getSelection();
+  if(sel.rangeCount === 0) return null;
+  const range = sel.getRangeAt(0);
+  const preCaretRange = range.cloneRange();
+  preCaretRange.selectNodeContents(el);
+  preCaretRange.setEnd(range.endContainer, range.endOffset);
+  return preCaretRange.toString().length;
+}
+
+function restoreCursorPosition(el, pos) {
+  if(pos === null) return;
+  const sel = window.getSelection();
+  let charCount = 0;
+  const nodeStack = [el];
+  let node, foundStart = false;
+  const range = document.createRange();
+  range.setStart(el, 0);
+  range.collapse(true);
+  
+  while(!foundStart && (node = nodeStack.pop())) {
+    if(node.nodeType === 3) {
+      const nextCharCount = charCount + node.length;
+      if(pos <= nextCharCount) {
+        range.setStart(node, pos - charCount);
+        foundStart = true;
+      }
+      charCount = nextCharCount;
+    } else {
+      let i = node.childNodes.length;
+      while(i--) {
+        nodeStack.push(node.childNodes[i]);
+      }
+    }
+  }
+  
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function updateLineNumbers() {
+  const editor = document.getElementById('rules');
+  const lineNumbers = document.getElementById('line-numbers');
+  const lines = editor.textContent.split('\n');
+  const lineCount = lines.length;
+  
+  let html = '';
+  for(let i = 1; i <= lineCount; i++) {
+    html += i + '\n';
+  }
+  
+  lineNumbers.textContent = html;
+}
+
+function validateRules() {
+  const editor = document.getElementById('rules');
+  const result = document.getElementById('validation-result');
+  const code = editor.textContent.trim();
+  
+  if(!code) {
+    result.innerHTML = '<div class="validation-feedback warning">Rules are empty.</div>';
+    return;
+  }
+  
+  const errors = [];
+  const warnings = [];
+  const blockStack = [];
+  
+  let cleanCode = code.replace(/\/\/.*$/gm, '');
+  cleanCode = cleanCode.replace(/'[^']*'/g, '""').replace(/"[^"]*"/g, '""');
+  
+  const lines = cleanCode.split('\n');
+  
+  for(let lineNum = 0; lineNum < lines.length; lineNum++) {
+    const line = lines[lineNum];
+    const trimmed = line.trim();
+    
+    if(!trimmed) continue;
+    
+    const statements = trimmed.split(/;|\bthen\b/).map(s => s.trim()).filter(s => s);
+    
+    for(let stmt of statements) {
+      if(/^on\s+/.test(stmt)) {
+        blockStack.push({type: 'on', line: lineNum + 1});
+      }
+      else if(/^if\s+/.test(stmt)) {
+        blockStack.push({type: 'if', line: lineNum + 1, hasElse: false});
+      }
+      else if(/^elseif\s+/.test(stmt)) {
+        if(blockStack.length === 0 || blockStack[blockStack.length-1].type !== 'if') {
+          errors.push('Line ' + (lineNum+1) + ': "elseif" without matching "if"');
+        } else if(blockStack[blockStack.length-1].hasElse) {
+          errors.push('Line ' + (lineNum+1) + ': "elseif" after "else"');
+        }
+      }
+      else if(/^else$/.test(stmt)) {
+        if(blockStack.length === 0 || blockStack[blockStack.length-1].type !== 'if') {
+          errors.push('Line ' + (lineNum+1) + ': "else" without matching "if"');
+        } else if(blockStack[blockStack.length-1].hasElse) {
+          errors.push('Line ' + (lineNum+1) + ': Multiple "else" for same "if"');
+        } else {
+          blockStack[blockStack.length-1].hasElse = true;
+        }
+      }
+      else if(/^end$/.test(stmt)) {
+        if(blockStack.length === 0) {
+          errors.push('Line ' + (lineNum+1) + ': "end" without matching block');
+        } else {
+          blockStack.pop();
+        }
+      }
+    }
+    
+    // Check for missing semicolons - CORRECTED VERSION
+    const origTrimmed = code.split('\n')[lineNum].trim();
+    if(origTrimmed && !origTrimmed.startsWith('//')) {
+      const needsSemicolon = !origTrimmed.endsWith(';') && 
+                             !origTrimmed.endsWith('then') && 
+                             !origTrimmed.endsWith('end') &&
+                             origTrimmed !== 'else' &&
+                             origTrimmed !== 'end' &&
+                             !/^(on|if|elseif)\s/.test(origTrimmed);
+      
+      if(needsSemicolon) {
+        warnings.push('Line ' + (lineNum+1) + ': Missing semicolon');
+      }
+    }
+  }
+  
+  if(blockStack.length > 0) {
+    const unclosed = blockStack.map(b => b.type + ' (line ' + b.line + ')');
+    errors.push('Unclosed block(s): ' + unclosed.join(', '));
+  }
+  
+  editor.classList.remove('rules-error', 'rules-valid');
+  
+  if(errors.length > 0) {
+    editor.classList.add('rules-error');
+    result.innerHTML = '<div class="validation-feedback error"><strong>Errors:</strong><br>' + errors.join('<br>') + '</div>';
+  } else if(warnings.length > 0) {
+    editor.classList.add('rules-valid');
+    result.innerHTML = '<div class="validation-feedback warning"><strong>Warnings:</strong><br>' + warnings.join('<br>') + '</div>';
+  } else {
+    editor.classList.add('rules-valid');
+    result.innerHTML = '<div class="validation-feedback success"><strong>✓ Rules are valid!</strong><br>No syntax errors detected.</div>';
+  }
+}
+
+function saveRules() {
+  const editor = document.getElementById('rules');
+  const rulesText = editor.textContent.trim();
+  
+  // Use fetch with explicit body control
+  fetch('/saverules', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'rules=' + encodeURIComponent(rulesText)
+  })
+  .then(function(response) {
+    if (response.ok) {
+      // Reload the page to show saved rules
+      window.location.href = '/rules';
+    } else {
+      alert('Failed to save rules');
+    }
+  })
+  .catch(function(err) {
+    console.error('Error saving rules:', err);
+    alert('Error saving rules');
+  });
+}
+
+function clearRules() {
+  if(confirm('Are you sure you want to clear all rules? This cannot be undone.')) {
+    const editor = document.getElementById('rules');
+    editor.textContent = '';
+    
+    // Save the empty rules
+    const formData = new FormData();
+    formData.append('rules', '');
+    
+    fetch('/saverules', {
+      method: 'POST',
+      body: formData
+    })
+    .then(function(response) {
+      if (response.ok) {
+        window.location.href = '/rules';
+      } else {
+        alert('Failed to clear rules');
+      }
+    })
+    .catch(function(err) {
+      console.error('Error clearing rules:', err);
+      alert('Error clearing rules');
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const editor = document.getElementById('rules');
+  if(editor) {
+    editor.textContent = editor.textContent.trim();
+    editor.addEventListener('keydown', function(e) {
+      if(e.key === 'Enter') {
+        e.preventDefault();
+        const sel = window.getSelection();
+        const range = sel.getRangeAt(0);
+        const lines = editor.textContent.substring(0, getCursorPosition()).split('\n');
+        const currentLine = lines[lines.length - 1];
+        const indentMatch = currentLine.match(/^[\t ]*/);
+        let indent = indentMatch ? indentMatch[0] : '';
+        const trimmedLine = currentLine.trim();
+        if(trimmedLine.endsWith('then')) {
+          indent += '\t';
+        }
+        range.deleteContents();
+        const textNode = document.createTextNode('\n' + indent);
+        range.insertNode(textNode);
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        highlightRules();
+        updateLineNumbers();
+      }
+      if(e.key === 'Tab') {
+        e.preventDefault();
+        const sel = window.getSelection();
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        const textNode = document.createTextNode('\t');
+        range.insertNode(textNode);
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        highlightRules();
+        updateLineNumbers();
+      }
+      if(e.key === 'Backspace') {
+        const sel = window.getSelection();
+        if(sel.rangeCount === 0) return;
+        const range = sel.getRangeAt(0);
+        const textBeforeCursor = editor.textContent.substring(0, getCursorPosition());
+        const lines = textBeforeCursor.split('\n');
+        const currentLine = lines[lines.length - 1];
+        if(currentLine.match(/^[\t ]+$/) && range.collapsed) {
+          e.preventDefault();
+          const newIndent = currentLine.substring(0, currentLine.length - 1);
+          const lineStart = textBeforeCursor.length - currentLine.length;
+          const beforeLine = editor.textContent.substring(0, lineStart);
+          const afterLine = editor.textContent.substring(textBeforeCursor.length);
+          editor.textContent = beforeLine + newIndent + afterLine;
+          restoreCursorPosition(editor, lineStart + newIndent.length);
+          highlightRules();
+          updateLineNumbers();
+        }
+      }
+    });
+    
+    editor.addEventListener('input', highlightRules);
+    highlightRules();
+    updateLineNumbers();
+  }
+});
+
+function getCursorPosition() {
+  const sel = window.getSelection();
+  if(sel.rangeCount === 0) return 0;
+  const range = sel.getRangeAt(0);
+  const preCaretRange = range.cloneRange();
+  preCaretRange.selectNodeContents(document.getElementById('rules'));
+  preCaretRange.setEnd(range.endContainer, range.endOffset);
+  return preCaretRange.toString().length;
+}
+
+</script>
+)=====";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FIRMWARE PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+static const char showFirmwarePage[] FLASHPROG = R"====(
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var nav=document.getElementById('sideNav');
+  nav.innerHTML=`
+<a href="/"><span class="nav-icon">&#8634;</span> Home</a>
+<a href="/reboot"><span class="nav-icon">&#8635;</span> Reboot</a>
+<a href="/rules"><span class="nav-icon">&#8881;</span> Rules</a>
+<a href="/settings"><span class="nav-icon">&#9881;</span> Settings</a>
+`;
+});
+</script>
+<script>
+function getMD5(){
+  var fn=document.getElementById('firmware').value;
+  var sp=fn.split('-')[2];
+  if(sp){var md5=sp.split('.')[0];if(md5.length==32)document.getElementById('md5').value=md5;}
+}
+function reloadHome(){setTimeout(function(){window.location.href='/';},15000);}
+function uploadFile(){
+  document.getElementById('updatebutton').disabled=true;
+  document.getElementById('status').innerText='';
+  var file=document.getElementById('firmware').files[0];
+  var fd=new FormData();
+  fd.append('firmware',file);
+  fd.append('md5',document.getElementById('md5').value);
+  var req=new XMLHttpRequest();
+  req.upload.addEventListener('progress',function(e){document.getElementById('progressBar').value=Math.round((e.loaded/e.total)*100);},false);
+  req.onreadystatechange=function(){
+    if(req.readyState===4){
+      document.getElementById('status').innerText=req.responseText;
+      if(req.responseText.includes('success'))reloadHome();
+      else document.getElementById('updatebutton').disabled=false;
+    }
+  };
+  req.open('POST','/firmware');
+  req.send(fd);
+}
+</script>
+<div class='firmware-container'>
+  <div class='panel'>
+    <div class='panel-header'><h3>Firmware Update</h3></div>
+    <div style='padding:24px'>
+      <div class='file-input-wrap'>
+        <input type='file' accept='.bin,.bin.gz' id='firmware' name='firmware' onchange='getMD5();'>
+      </div>
+      <div style='margin-top:20px'>
+        <label style='font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px'>MD5 Checksum</label>
+        <input type='text' id='md5' name='md5' value='' size='32' minlength='32' maxlength='32' class='setting-input' placeholder='Auto-detected from filename'>
+      </div>
+      <div class='firmware-warning'>
+        <strong>Warning:</strong> Leaving the MD5 checksum empty disables integrity verification, which could brick your HeishaMon. A TTL cable will be required to recover in that case.
+      </div>
+      <div style='margin-top:24px'>
+        <button id='updatebutton' class='btn btn-primary' onclick='uploadFile()'>Upload &amp; Update</button>
+      </div>
+      <progress id='progressBar' value='0' max='100'></progress>
+      <p id='status'></p>
+    </div>
+  </div>
+</div>
+)====";
+
+static const char firmwareSuccessResponse[] FLASHPROG = R"====(
+Update success! Rebooting. This page will refresh afterwards.
+)====";
+
+static const char firmwareFailResponse[] FLASHPROG = R"====(
+Update failed! Please try again...
+)====";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MESSAGE PAGES (reboot, factory reset, wifi change, password error, save ok)
+// ─────────────────────────────────────────────────────────────────────────────
+static const char webBodyFactoryResetWarning[] FLASHPROG = R"====(
+<div class='msg-box danger'>
+  <h2>Factory Reset</h2>
+  <p>All configuration has been erased.<br>Connect to the <strong style='color:var(--text-primary)'>Heishamon-Setup</strong> WiFi hotspot to reconfigure.</p>
+</div>
+)====";
+
+static const char webBodyRebootWarning[] FLASHPROG = R"====(
+<div class='msg-box'>
+  <h2>Rebooting…</h2>
+  <p>The device is restarting. Please wait.</p>
+</div>
+)====";
+
+static const char webBodySettingsNewWifiWarning[] FLASHPROG = R"====(
+<div class='msg-box'>
+  <h2>Reconfiguring WiFi</h2>
+  <p>Attempting to connect to the new access point.<br><br>
+  The <strong style='color:var(--text-primary)'>Heishamon-Setup</strong> hotspot will be brought down automatically on success.<br><br>
+  This page will redirect to home shortly.</p>
+</div>
+)====";
+
+static const char webBodySettingsResetPasswordWarning[] FLASHPROG = R"====(
+<div class='msg-box warning'>
+  <h2>Wrong Password</h2>
+  <p>The current password you entered is incorrect.<br><br>
+  Perform a factory reset to restore the default password: <strong style='color:var(--text-primary)'>heisha</strong></p>
+</div>
+)====";
+
+static const char webBodySettingsSaveMessage[] FLASHPROG = R"====(
+<div class='msg-box success'>
+  <h2>Settings Saved</h2>
+  <p>Configuration has been saved. The device is rebooting…</p>
+</div>
+)====";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TIMEZONE DATA (unchanged — referenced by server)
+// ─────────────────────────────────────────────────────────────────────────────
 // https://github.com/nayarsystems/posix_tz_db
 struct tzStruct {
   char name[32];
   char value[46];
 };
-const tzStruct tzdata[] PROGMEM = {
+const tzStruct tzdata[] FLASHPROG = {
+
   { "ETC/GMT", "GMT0" },
   { "Africa/Abidjan", "GMT0" },
   { "Africa/Accra", "GMT0" },
@@ -1946,465 +2859,467 @@ const tzStruct tzdata[] PROGMEM = {
   { "Etc/Zulu", "UTC0" },
 };
 
-static const char tzDataOptions[] PROGMEM =
-  "<option value=\"0\">ETC/GMT</option>"
-  "<option value=\"1\">Africa/Abidjan</option>"
-  "<option value=\"2\">Africa/Accra</option>"
-  "<option value=\"3\">Africa/Addis_Ababa</option>"
-  "<option value=\"4\">Africa/Algiers</option>"
-  "<option value=\"5\">Africa/Asmara</option>"
-  "<option value=\"6\">Africa/Bamako</option>"
-  "<option value=\"7\">Africa/Bangui</option>"
-  "<option value=\"8\">Africa/Banjul</option>"
-  "<option value=\"9\">Africa/Bissau</option>"
-  "<option value=\"10\">Africa/Blantyre</option>"
-  "<option value=\"11\">Africa/Brazzaville</option>"
-  "<option value=\"12\">Africa/Bujumbura</option>"
-  "<option value=\"13\">Africa/Cairo</option>"
-  "<option value=\"14\">Africa/Casablanca</option>"
-  "<option value=\"15\">Africa/Ceuta</option>"
-  "<option value=\"16\">Africa/Conakry</option>"
-  "<option value=\"17\">Africa/Dakar</option>"
-  "<option value=\"18\">Africa/Dar_es_Salaam</option>"
-  "<option value=\"19\">Africa/Djibouti</option>"
-  "<option value=\"20\">Africa/Douala</option>"
-  "<option value=\"21\">Africa/El_Aaiun</option>"
-  "<option value=\"22\">Africa/Freetown</option>"
-  "<option value=\"23\">Africa/Gaborone</option>"
-  "<option value=\"24\">Africa/Harare</option>"
-  "<option value=\"25\">Africa/Johannesburg</option>"
-  "<option value=\"26\">Africa/Juba</option>"
-  "<option value=\"27\">Africa/Kampala</option>"
-  "<option value=\"28\">Africa/Khartoum</option>"
-  "<option value=\"29\">Africa/Kigali</option>"
-  "<option value=\"30\">Africa/Kinshasa</option>"
-  "<option value=\"31\">Africa/Lagos</option>"
-  "<option value=\"32\">Africa/Libreville</option>"
-  "<option value=\"33\">Africa/Lome</option>"
-  "<option value=\"34\">Africa/Luanda</option>"
-  "<option value=\"35\">Africa/Lubumbashi</option>"
-  "<option value=\"36\">Africa/Lusaka</option>"
-  "<option value=\"37\">Africa/Malabo</option>"
-  "<option value=\"38\">Africa/Maputo</option>"
-  "<option value=\"39\">Africa/Maseru</option>"
-  "<option value=\"40\">Africa/Mbabane</option>"
-  "<option value=\"41\">Africa/Mogadishu</option>"
-  "<option value=\"42\">Africa/Monrovia</option>"
-  "<option value=\"43\">Africa/Nairobi</option>"
-  "<option value=\"44\">Africa/Ndjamena</option>"
-  "<option value=\"45\">Africa/Niamey</option>"
-  "<option value=\"46\">Africa/Nouakchott</option>"
-  "<option value=\"47\">Africa/Ouagadougou</option>"
-  "<option value=\"48\">Africa/Porto-Novo</option>"
-  "<option value=\"49\">Africa/Sao_Tome</option>"
-  "<option value=\"50\">Africa/Tripoli</option>"
-  "<option value=\"51\">Africa/Tunis</option>"
-  "<option value=\"52\">Africa/Windhoek</option>"
-  "<option value=\"53\">America/Adak</option>"
-  "<option value=\"54\">America/Anchorage</option>"
-  "<option value=\"55\">America/Anguilla</option>"
-  "<option value=\"56\">America/Antigua</option>"
-  "<option value=\"57\">America/Araguaina</option>"
-  "<option value=\"58\">America/Argentina/Buenos_Aires</option>"
-  "<option value=\"59\">America/Argentina/Catamarca</option>"
-  "<option value=\"60\">America/Argentina/Cordoba</option>"
-  "<option value=\"61\">America/Argentina/Jujuy</option>"
-  "<option value=\"62\">America/Argentina/La_Rioja</option>"
-  "<option value=\"63\">America/Argentina/Mendoza</option>"
-  "<option value=\"64\">America/Argentina/Rio_Gallegos</option>"
-  "<option value=\"65\">America/Argentina/Salta</option>"
-  "<option value=\"66\">America/Argentina/San_Juan</option>"
-  "<option value=\"67\">America/Argentina/San_Luis</option>"
-  "<option value=\"68\">America/Argentina/Tucuman</option>"
-  "<option value=\"69\">America/Argentina/Ushuaia</option>"
-  "<option value=\"70\">America/Aruba</option>"
-  "<option value=\"71\">America/Asuncion</option>"
-  "<option value=\"72\">America/Atikokan</option>"
-  "<option value=\"73\">America/Bahia</option>"
-  "<option value=\"74\">America/Bahia_Banderas</option>"
-  "<option value=\"75\">America/Barbados</option>"
-  "<option value=\"76\">America/Belem</option>"
-  "<option value=\"77\">America/Belize</option>"
-  "<option value=\"78\">America/Blanc-Sablon</option>"
-  "<option value=\"79\">America/Boa_Vista</option>"
-  "<option value=\"80\">America/Bogota</option>"
-  "<option value=\"81\">America/Boise</option>"
-  "<option value=\"82\">America/Cambridge_Bay</option>"
-  "<option value=\"83\">America/Campo_Grande</option>"
-  "<option value=\"84\">America/Cancun</option>"
-  "<option value=\"85\">America/Caracas</option>"
-  "<option value=\"86\">America/Cayenne</option>"
-  "<option value=\"87\">America/Cayman</option>"
-  "<option value=\"88\">America/Chicago</option>"
-  "<option value=\"89\">America/Chihuahua</option>"
-  "<option value=\"90\">America/Costa_Rica</option>"
-  "<option value=\"91\">America/Creston</option>"
-  "<option value=\"92\">America/Cuiaba</option>"
-  "<option value=\"93\">America/Curacao</option>"
-  "<option value=\"94\">America/Danmarkshavn</option>"
-  "<option value=\"95\">America/Dawson</option>"
-  "<option value=\"96\">America/Dawson_Creek</option>"
-  "<option value=\"97\">America/Denver</option>"
-  "<option value=\"98\">America/Detroit</option>"
-  "<option value=\"99\">America/Dominica</option>"
-  "<option value=\"100\">America/Edmonton</option>"
-  "<option value=\"101\">America/Eirunepe</option>"
-  "<option value=\"102\">America/El_Salvador</option>"
-  "<option value=\"103\">America/Fortaleza</option>"
-  "<option value=\"104\">America/Fort_Nelson</option>"
-  "<option value=\"105\">America/Glace_Bay</option>"
-  "<option value=\"106\">America/Godthab</option>"
-  "<option value=\"107\">America/Goose_Bay</option>"
-  "<option value=\"108\">America/Grand_Turk</option>"
-  "<option value=\"109\">America/Grenada</option>"
-  "<option value=\"110\">America/Guadeloupe</option>"
-  "<option value=\"111\">America/Guatemala</option>"
-  "<option value=\"112\">America/Guayaquil</option>"
-  "<option value=\"113\">America/Guyana</option>"
-  "<option value=\"114\">America/Halifax</option>"
-  "<option value=\"115\">America/Havana</option>"
-  "<option value=\"116\">America/Hermosillo</option>"
-  "<option value=\"117\">America/Indiana/Indianapolis</option>"
-  "<option value=\"118\">America/Indiana/Knox</option>"
-  "<option value=\"119\">America/Indiana/Marengo</option>"
-  "<option value=\"120\">America/Indiana/Petersburg</option>"
-  "<option value=\"121\">America/Indiana/Tell_City</option>"
-  "<option value=\"122\">America/Indiana/Vevay</option>"
-  "<option value=\"123\">America/Indiana/Vincennes</option>"
-  "<option value=\"124\">America/Indiana/Winamac</option>"
-  "<option value=\"125\">America/Inuvik</option>"
-  "<option value=\"126\">America/Iqaluit</option>"
-  "<option value=\"127\">America/Jamaica</option>"
-  "<option value=\"128\">America/Juneau</option>"
-  "<option value=\"129\">America/Kentucky/Louisville</option>"
-  "<option value=\"130\">America/Kentucky/Monticello</option>"
-  "<option value=\"131\">America/Kralendijk</option>"
-  "<option value=\"132\">America/La_Paz</option>"
-  "<option value=\"133\">America/Lima</option>"
-  "<option value=\"134\">America/Los_Angeles</option>"
-  "<option value=\"135\">America/Lower_Princes</option>"
-  "<option value=\"136\">America/Maceio</option>"
-  "<option value=\"137\">America/Managua</option>"
-  "<option value=\"138\">America/Manaus</option>"
-  "<option value=\"139\">America/Marigot</option>"
-  "<option value=\"140\">America/Martinique</option>"
-  "<option value=\"141\">America/Matamoros</option>"
-  "<option value=\"142\">America/Mazatlan</option>"
-  "<option value=\"143\">America/Menominee</option>"
-  "<option value=\"144\">America/Merida</option>"
-  "<option value=\"145\">America/Metlakatla</option>"
-  "<option value=\"146\">America/Mexico_City</option>"
-  "<option value=\"147\">America/Miquelon</option>"
-  "<option value=\"148\">America/Moncton</option>"
-  "<option value=\"149\">America/Monterrey</option>"
-  "<option value=\"150\">America/Montevideo</option>"
-  "<option value=\"151\">America/Montreal</option>"
-  "<option value=\"152\">America/Montserrat</option>"
-  "<option value=\"153\">America/Nassau</option>"
-  "<option value=\"154\">America/New_York</option>"
-  "<option value=\"155\">America/Nipigon</option>"
-  "<option value=\"156\">America/Nome</option>"
-  "<option value=\"157\">America/Noronha</option>"
-  "<option value=\"158\">America/North_Dakota/Beulah</option>"
-  "<option value=\"159\">America/North_Dakota/Center</option>"
-  "<option value=\"160\">America/North_Dakota/New_Salem</option>"
-  "<option value=\"161\">America/Nuuk</option>"
-  "<option value=\"162\">America/Ojinaga</option>"
-  "<option value=\"163\">America/Panama</option>"
-  "<option value=\"164\">America/Pangnirtung</option>"
-  "<option value=\"165\">America/Paramaribo</option>"
-  "<option value=\"166\">America/Phoenix</option>"
-  "<option value=\"167\">America/Port-au-Prince</option>"
-  "<option value=\"168\">America/Port_of_Spain</option>"
-  "<option value=\"169\">America/Porto_Velho</option>"
-  "<option value=\"170\">America/Puerto_Rico</option>"
-  "<option value=\"171\">America/Punta_Arenas</option>"
-  "<option value=\"172\">America/Rainy_River</option>"
-  "<option value=\"173\">America/Rankin_Inlet</option>"
-  "<option value=\"174\">America/Recife</option>"
-  "<option value=\"175\">America/Regina</option>"
-  "<option value=\"176\">America/Resolute</option>"
-  "<option value=\"177\">America/Rio_Branco</option>"
-  "<option value=\"178\">America/Santarem</option>"
-  "<option value=\"179\">America/Santiago</option>"
-  "<option value=\"180\">America/Santo_Domingo</option>"
-  "<option value=\"181\">America/Sao_Paulo</option>"
-  "<option value=\"182\">America/Scoresbysund</option>"
-  "<option value=\"183\">America/Sitka</option>"
-  "<option value=\"184\">America/St_Barthelemy</option>"
-  "<option value=\"185\">America/St_Johns</option>"
-  "<option value=\"186\">America/St_Kitts</option>"
-  "<option value=\"187\">America/St_Lucia</option>"
-  "<option value=\"188\">America/St_Thomas</option>"
-  "<option value=\"189\">America/St_Vincent</option>"
-  "<option value=\"190\">America/Swift_Current</option>"
-  "<option value=\"191\">America/Tegucigalpa</option>"
-  "<option value=\"192\">America/Thule</option>"
-  "<option value=\"193\">America/Thunder_Bay</option>"
-  "<option value=\"194\">America/Tijuana</option>"
-  "<option value=\"195\">America/Toronto</option>"
-  "<option value=\"196\">America/Tortola</option>"
-  "<option value=\"197\">America/Vancouver</option>"
-  "<option value=\"198\">America/Whitehorse</option>"
-  "<option value=\"199\">America/Winnipeg</option>"
-  "<option value=\"200\">America/Yakutat</option>"
-  "<option value=\"201\">America/Yellowknife</option>"
-  "<option value=\"202\">Antarctica/Casey</option>"
-  "<option value=\"203\">Antarctica/Davis</option>"
-  "<option value=\"204\">Antarctica/DumontDUrville</option>"
-  "<option value=\"205\">Antarctica/Macquarie</option>"
-  "<option value=\"206\">Antarctica/Mawson</option>"
-  "<option value=\"207\">Antarctica/McMurdo</option>"
-  "<option value=\"208\">Antarctica/Palmer</option>"
-  "<option value=\"209\">Antarctica/Rothera</option>"
-  "<option value=\"210\">Antarctica/Syowa</option>"
-  "<option value=\"211\">Antarctica/Troll</option>"
-  "<option value=\"212\">Antarctica/Vostok</option>"
-  "<option value=\"213\">Arctic/Longyearbyen</option>"
-  "<option value=\"214\">Asia/Aden</option>"
-  "<option value=\"215\">Asia/Almaty</option>"
-  "<option value=\"216\">Asia/Amman</option>"
-  "<option value=\"217\">Asia/Anadyr</option>"
-  "<option value=\"218\">Asia/Aqtau</option>"
-  "<option value=\"219\">Asia/Aqtobe</option>"
-  "<option value=\"220\">Asia/Ashgabat</option>"
-  "<option value=\"221\">Asia/Atyrau</option>"
-  "<option value=\"222\">Asia/Baghdad</option>"
-  "<option value=\"223\">Asia/Bahrain</option>"
-  "<option value=\"224\">Asia/Baku</option>"
-  "<option value=\"225\">Asia/Bangkok</option>"
-  "<option value=\"226\">Asia/Barnaul</option>"
-  "<option value=\"227\">Asia/Beirut</option>"
-  "<option value=\"228\">Asia/Bishkek</option>"
-  "<option value=\"229\">Asia/Brunei</option>"
-  "<option value=\"230\">Asia/Chita</option>"
-  "<option value=\"231\">Asia/Choibalsan</option>"
-  "<option value=\"232\">Asia/Colombo</option>"
-  "<option value=\"233\">Asia/Damascus</option>"
-  "<option value=\"234\">Asia/Dhaka</option>"
-  "<option value=\"235\">Asia/Dili</option>"
-  "<option value=\"236\">Asia/Dubai</option>"
-  "<option value=\"237\">Asia/Dushanbe</option>"
-  "<option value=\"238\">Asia/Famagusta</option>"
-  "<option value=\"239\">Asia/Gaza</option>"
-  "<option value=\"240\">Asia/Hebron</option>"
-  "<option value=\"241\">Asia/Ho_Chi_Minh</option>"
-  "<option value=\"242\">Asia/Hong_Kong</option>"
-  "<option value=\"243\">Asia/Hovd</option>"
-  "<option value=\"244\">Asia/Irkutsk</option>"
-  "<option value=\"245\">Asia/Jakarta</option>"
-  "<option value=\"246\">Asia/Jayapura</option>"
-  "<option value=\"247\">Asia/Jerusalem</option>"
-  "<option value=\"248\">Asia/Kabul</option>"
-  "<option value=\"249\">Asia/Kamchatka</option>"
-  "<option value=\"250\">Asia/Karachi</option>"
-  "<option value=\"251\">Asia/Kathmandu</option>"
-  "<option value=\"252\">Asia/Khandyga</option>"
-  "<option value=\"253\">Asia/Kolkata</option>"
-  "<option value=\"254\">Asia/Krasnoyarsk</option>"
-  "<option value=\"255\">Asia/Kuala_Lumpur</option>"
-  "<option value=\"256\">Asia/Kuching</option>"
-  "<option value=\"257\">Asia/Kuwait</option>"
-  "<option value=\"258\">Asia/Macau</option>"
-  "<option value=\"259\">Asia/Magadan</option>"
-  "<option value=\"260\">Asia/Makassar</option>"
-  "<option value=\"261\">Asia/Manila</option>"
-  "<option value=\"262\">Asia/Muscat</option>"
-  "<option value=\"263\">Asia/Nicosia</option>"
-  "<option value=\"264\">Asia/Novokuznetsk</option>"
-  "<option value=\"265\">Asia/Novosibirsk</option>"
-  "<option value=\"266\">Asia/Omsk</option>"
-  "<option value=\"267\">Asia/Oral</option>"
-  "<option value=\"268\">Asia/Phnom_Penh</option>"
-  "<option value=\"269\">Asia/Pontianak</option>"
-  "<option value=\"270\">Asia/Pyongyang</option>"
-  "<option value=\"271\">Asia/Qatar</option>"
-  "<option value=\"272\">Asia/Qyzylorda</option>"
-  "<option value=\"273\">Asia/Riyadh</option>"
-  "<option value=\"274\">Asia/Sakhalin</option>"
-  "<option value=\"275\">Asia/Samarkand</option>"
-  "<option value=\"276\">Asia/Seoul</option>"
-  "<option value=\"277\">Asia/Shanghai</option>"
-  "<option value=\"278\">Asia/Singapore</option>"
-  "<option value=\"279\">Asia/Srednekolymsk</option>"
-  "<option value=\"280\">Asia/Taipei</option>"
-  "<option value=\"281\">Asia/Tashkent</option>"
-  "<option value=\"282\">Asia/Tbilisi</option>"
-  "<option value=\"283\">Asia/Tehran</option>"
-  "<option value=\"284\">Asia/Thimphu</option>"
-  "<option value=\"285\">Asia/Tokyo</option>"
-  "<option value=\"286\">Asia/Tomsk</option>"
-  "<option value=\"287\">Asia/Ulaanbaatar</option>"
-  "<option value=\"288\">Asia/Urumqi</option>"
-  "<option value=\"289\">Asia/Ust-Nera</option>"
-  "<option value=\"290\">Asia/Vientiane</option>"
-  "<option value=\"291\">Asia/Vladivostok</option>"
-  "<option value=\"292\">Asia/Yakutsk</option>"
-  "<option value=\"293\">Asia/Yangon</option>"
-  "<option value=\"294\">Asia/Yekaterinburg</option>"
-  "<option value=\"295\">Asia/Yerevan</option>"
-  "<option value=\"296\">Atlantic/Azores</option>"
-  "<option value=\"297\">Atlantic/Bermuda</option>"
-  "<option value=\"298\">Atlantic/Canary</option>"
-  "<option value=\"299\">Atlantic/Cape_Verde</option>"
-  "<option value=\"300\">Atlantic/Faroe</option>"
-  "<option value=\"301\">Atlantic/Madeira</option>"
-  "<option value=\"302\">Atlantic/Reykjavik</option>"
-  "<option value=\"303\">Atlantic/South_Georgia</option>"
-  "<option value=\"304\">Atlantic/Stanley</option>"
-  "<option value=\"305\">Atlantic/St_Helena</option>"
-  "<option value=\"306\">Australia/Adelaide</option>"
-  "<option value=\"307\">Australia/Brisbane</option>"
-  "<option value=\"308\">Australia/Broken_Hill</option>"
-  "<option value=\"309\">Australia/Currie</option>"
-  "<option value=\"310\">Australia/Darwin</option>"
-  "<option value=\"311\">Australia/Eucla</option>"
-  "<option value=\"312\">Australia/Hobart</option>"
-  "<option value=\"313\">Australia/Lindeman</option>"
-  "<option value=\"314\">Australia/Lord_Howe</option>"
-  "<option value=\"315\">Australia/Melbourne</option>"
-  "<option value=\"316\">Australia/Perth</option>"
-  "<option value=\"317\">Australia/Sydney</option>"
-  "<option value=\"318\">Europe/Amsterdam</option>"
-  "<option value=\"319\">Europe/Andorra</option>"
-  "<option value=\"320\">Europe/Astrakhan</option>"
-  "<option value=\"321\">Europe/Athens</option>"
-  "<option value=\"322\">Europe/Belgrade</option>"
-  "<option value=\"323\">Europe/Berlin</option>"
-  "<option value=\"324\">Europe/Bratislava</option>"
-  "<option value=\"325\">Europe/Brussels</option>"
-  "<option value=\"326\">Europe/Bucharest</option>"
-  "<option value=\"327\">Europe/Budapest</option>"
-  "<option value=\"328\">Europe/Busingen</option>"
-  "<option value=\"329\">Europe/Chisinau</option>"
-  "<option value=\"330\">Europe/Copenhagen</option>"
-  "<option value=\"331\">Europe/Dublin</option>"
-  "<option value=\"332\">Europe/Gibraltar</option>"
-  "<option value=\"333\">Europe/Guernsey</option>"
-  "<option value=\"334\">Europe/Helsinki</option>"
-  "<option value=\"335\">Europe/Isle_of_Man</option>"
-  "<option value=\"336\">Europe/Istanbul</option>"
-  "<option value=\"337\">Europe/Jersey</option>"
-  "<option value=\"338\">Europe/Kaliningrad</option>"
-  "<option value=\"339\">Europe/Kiev</option>"
-  "<option value=\"340\">Europe/Kirov</option>"
-  "<option value=\"341\">Europe/Lisbon</option>"
-  "<option value=\"342\">Europe/Ljubljana</option>"
-  "<option value=\"343\">Europe/London</option>"
-  "<option value=\"344\">Europe/Luxembourg</option>"
-  "<option value=\"345\">Europe/Madrid</option>"
-  "<option value=\"346\">Europe/Malta</option>"
-  "<option value=\"347\">Europe/Mariehamn</option>"
-  "<option value=\"348\">Europe/Minsk</option>"
-  "<option value=\"349\">Europe/Monaco</option>"
-  "<option value=\"350\">Europe/Moscow</option>"
-  "<option value=\"351\">Europe/Oslo</option>"
-  "<option value=\"352\">Europe/Paris</option>"
-  "<option value=\"353\">Europe/Podgorica</option>"
-  "<option value=\"354\">Europe/Prague</option>"
-  "<option value=\"355\">Europe/Riga</option>"
-  "<option value=\"356\">Europe/Rome</option>"
-  "<option value=\"357\">Europe/Samara</option>"
-  "<option value=\"358\">Europe/San_Marino</option>"
-  "<option value=\"359\">Europe/Sarajevo</option>"
-  "<option value=\"360\">Europe/Saratov</option>"
-  "<option value=\"361\">Europe/Simferopol</option>"
-  "<option value=\"362\">Europe/Skopje</option>"
-  "<option value=\"363\">Europe/Sofia</option>"
-  "<option value=\"364\">Europe/Stockholm</option>"
-  "<option value=\"365\">Europe/Tallinn</option>"
-  "<option value=\"366\">Europe/Tirane</option>"
-  "<option value=\"367\">Europe/Ulyanovsk</option>"
-  "<option value=\"368\">Europe/Uzhgorod</option>"
-  "<option value=\"369\">Europe/Vaduz</option>"
-  "<option value=\"370\">Europe/Vatican</option>"
-  "<option value=\"371\">Europe/Vienna</option>"
-  "<option value=\"372\">Europe/Vilnius</option>"
-  "<option value=\"373\">Europe/Volgograd</option>"
-  "<option value=\"374\">Europe/Warsaw</option>"
-  "<option value=\"375\">Europe/Zagreb</option>"
-  "<option value=\"376\">Europe/Zaporozhye</option>"
-  "<option value=\"377\">Europe/Zurich</option>"
-  "<option value=\"378\">Indian/Antananarivo</option>"
-  "<option value=\"379\">Indian/Chagos</option>"
-  "<option value=\"380\">Indian/Christmas</option>"
-  "<option value=\"381\">Indian/Cocos</option>"
-  "<option value=\"382\">Indian/Comoro</option>"
-  "<option value=\"383\">Indian/Kerguelen</option>"
-  "<option value=\"384\">Indian/Mahe</option>"
-  "<option value=\"385\">Indian/Maldives</option>"
-  "<option value=\"386\">Indian/Mauritius</option>"
-  "<option value=\"387\">Indian/Mayotte</option>"
-  "<option value=\"388\">Indian/Reunion</option>"
-  "<option value=\"389\">Pacific/Apia</option>"
-  "<option value=\"390\">Pacific/Auckland</option>"
-  "<option value=\"391\">Pacific/Bougainville</option>"
-  "<option value=\"392\">Pacific/Chatham</option>"
-  "<option value=\"393\">Pacific/Chuuk</option>"
-  "<option value=\"394\">Pacific/Easter</option>"
-  "<option value=\"395\">Pacific/Efate</option>"
-  "<option value=\"396\">Pacific/Enderbury</option>"
-  "<option value=\"397\">Pacific/Fakaofo</option>"
-  "<option value=\"398\">Pacific/Fiji</option>"
-  "<option value=\"399\">Pacific/Funafuti</option>"
-  "<option value=\"400\">Pacific/Galapagos</option>"
-  "<option value=\"401\">Pacific/Gambier</option>"
-  "<option value=\"402\">Pacific/Guadalcanal</option>"
-  "<option value=\"403\">Pacific/Guam</option>"
-  "<option value=\"404\">Pacific/Honolulu</option>"
-  "<option value=\"405\">Pacific/Kiritimati</option>"
-  "<option value=\"406\">Pacific/Kosrae</option>"
-  "<option value=\"407\">Pacific/Kwajalein</option>"
-  "<option value=\"408\">Pacific/Majuro</option>"
-  "<option value=\"409\">Pacific/Marquesas</option>"
-  "<option value=\"410\">Pacific/Midway</option>"
-  "<option value=\"411\">Pacific/Nauru</option>"
-  "<option value=\"412\">Pacific/Niue</option>"
-  "<option value=\"413\">Pacific/Norfolk</option>"
-  "<option value=\"414\">Pacific/Noumea</option>"
-  "<option value=\"415\">Pacific/Pago_Pago</option>"
-  "<option value=\"416\">Pacific/Palau</option>"
-  "<option value=\"417\">Pacific/Pitcairn</option>"
-  "<option value=\"418\">Pacific/Pohnpei</option>"
-  "<option value=\"419\">Pacific/Port_Moresby</option>"
-  "<option value=\"420\">Pacific/Rarotonga</option>"
-  "<option value=\"421\">Pacific/Saipan</option>"
-  "<option value=\"422\">Pacific/Tahiti</option>"
-  "<option value=\"423\">Pacific/Tarawa</option>"
-  "<option value=\"424\">Pacific/Tongatapu</option>"
-  "<option value=\"425\">Pacific/Wake</option>"
-  "<option value=\"426\">Pacific/Wallis</option>"
-  "<option value=\"427\">Etc/GMT-0</option>"
-  "<option value=\"428\">Etc/GMT-1</option>"
-  "<option value=\"429\">Etc/GMT-2</option>"
-  "<option value=\"430\">Etc/GMT-3</option>"
-  "<option value=\"431\">Etc/GMT-4</option>"
-  "<option value=\"432\">Etc/GMT-5</option>"
-  "<option value=\"433\">Etc/GMT-6</option>"
-  "<option value=\"434\">Etc/GMT-7</option>"
-  "<option value=\"435\">Etc/GMT-8</option>"
-  "<option value=\"436\">Etc/GMT-9</option>"
-  "<option value=\"437\">Etc/GMT-10</option>"
-  "<option value=\"438\">Etc/GMT-11</option>"
-  "<option value=\"439\">Etc/GMT-12</option>"
-  "<option value=\"440\">Etc/GMT-13</option>"
-  "<option value=\"441\">Etc/GMT-14</option>"
-  "<option value=\"442\">Etc/GMT0</option>"
-  "<option value=\"443\">Etc/GMT+0</option>"
-  "<option value=\"444\">Etc/GMT+1</option>"
-  "<option value=\"445\">Etc/GMT+2</option>"
-  "<option value=\"446\">Etc/GMT+3</option>"
-  "<option value=\"447\">Etc/GMT+4</option>"
-  "<option value=\"448\">Etc/GMT+5</option>"
-  "<option value=\"449\">Etc/GMT+6</option>"
-  "<option value=\"450\">Etc/GMT+7</option>"
-  "<option value=\"451\">Etc/GMT+8</option>"
-  "<option value=\"452\">Etc/GMT+9</option>"
-  "<option value=\"453\">Etc/GMT+10</option>"
-  "<option value=\"454\">Etc/GMT+11</option>"
-  "<option value=\"455\">Etc/GMT+12</option>"
-  "<option value=\"456\">Etc/UCT</option>"
-  "<option value=\"457\">Etc/UTC</option>"
-  "<option value=\"458\">Etc/Greenwich</option>"
-  "<option value=\"459\">Etc/Universal</option>"
-  "<option value=\"460\">Etc/Zulu</option>";
+// tzDataOptions unchanged — large option block for <select>
+static const char tzDataOptions[] FLASHPROG = R"====(
+<option value="0">ETC/GMT</option>
+<option value="1">Africa/Abidjan</option>
+<option value="2">Africa/Accra</option>
+<option value="3">Africa/Addis_Ababa</option>
+<option value="4">Africa/Algiers</option>
+<option value="5">Africa/Asmara</option>
+<option value="6">Africa/Bamako</option>
+<option value="7">Africa/Bangui</option>
+<option value="8">Africa/Banjul</option>
+<option value="9">Africa/Bissau</option>
+<option value="10">Africa/Blantyre</option>
+<option value="11">Africa/Brazzaville</option>
+<option value="12">Africa/Bujumbura</option>
+<option value="13">Africa/Cairo</option>
+<option value="14">Africa/Casablanca</option>
+<option value="15">Africa/Ceuta</option>
+<option value="16">Africa/Conakry</option>
+<option value="17">Africa/Dakar</option>
+<option value="18">Africa/Dar_es_Salaam</option>
+<option value="19">Africa/Djibouti</option>
+<option value="20">Africa/Douala</option>
+<option value="21">Africa/El_Aaiun</option>
+<option value="22">Africa/Freetown</option>
+<option value="23">Africa/Gaborone</option>
+<option value="24">Africa/Harare</option>
+<option value="25">Africa/Johannesburg</option>
+<option value="26">Africa/Juba</option>
+<option value="27">Africa/Kampala</option>
+<option value="28">Africa/Khartoum</option>
+<option value="29">Africa/Kigali</option>
+<option value="30">Africa/Kinshasa</option>
+<option value="31">Africa/Lagos</option>
+<option value="32">Africa/Libreville</option>
+<option value="33">Africa/Lome</option>
+<option value="34">Africa/Luanda</option>
+<option value="35">Africa/Lubumbashi</option>
+<option value="36">Africa/Lusaka</option>
+<option value="37">Africa/Malabo</option>
+<option value="38">Africa/Maputo</option>
+<option value="39">Africa/Maseru</option>
+<option value="40">Africa/Mbabane</option>
+<option value="41">Africa/Mogadishu</option>
+<option value="42">Africa/Monrovia</option>
+<option value="43">Africa/Nairobi</option>
+<option value="44">Africa/Ndjamena</option>
+<option value="45">Africa/Niamey</option>
+<option value="46">Africa/Nouakchott</option>
+<option value="47">Africa/Ouagadougou</option>
+<option value="48">Africa/Porto-Novo</option>
+<option value="49">Africa/Sao_Tome</option>
+<option value="50">Africa/Tripoli</option>
+<option value="51">Africa/Tunis</option>
+<option value="52">Africa/Windhoek</option>
+<option value="53">America/Adak</option>
+<option value="54">America/Anchorage</option>
+<option value="55">America/Anguilla</option>
+<option value="56">America/Antigua</option>
+<option value="57">America/Araguaina</option>
+<option value="58">America/Argentina/Buenos_Aires</option>
+<option value="59">America/Argentina/Catamarca</option>
+<option value="60">America/Argentina/Cordoba</option>
+<option value="61">America/Argentina/Jujuy</option>
+<option value="62">America/Argentina/La_Rioja</option>
+<option value="63">America/Argentina/Mendoza</option>
+<option value="64">America/Argentina/Rio_Gallegos</option>
+<option value="65">America/Argentina/Salta</option>
+<option value="66">America/Argentina/San_Juan</option>
+<option value="67">America/Argentina/San_Luis</option>
+<option value="68">America/Argentina/Tucuman</option>
+<option value="69">America/Argentina/Ushuaia</option>
+<option value="70">America/Aruba</option>
+<option value="71">America/Asuncion</option>
+<option value="72">America/Atikokan</option>
+<option value="73">America/Bahia</option>
+<option value="74">America/Bahia_Banderas</option>
+<option value="75">America/Barbados</option>
+<option value="76">America/Belem</option>
+<option value="77">America/Belize</option>
+<option value="78">America/Blanc-Sablon</option>
+<option value="79">America/Boa_Vista</option>
+<option value="80">America/Bogota</option>
+<option value="81">America/Boise</option>
+<option value="82">America/Cambridge_Bay</option>
+<option value="83">America/Campo_Grande</option>
+<option value="84">America/Cancun</option>
+<option value="85">America/Caracas</option>
+<option value="86">America/Cayenne</option>
+<option value="87">America/Cayman</option>
+<option value="88">America/Chicago</option>
+<option value="89">America/Chihuahua</option>
+<option value="90">America/Costa_Rica</option>
+<option value="91">America/Creston</option>
+<option value="92">America/Cuiaba</option>
+<option value="93">America/Curacao</option>
+<option value="94">America/Danmarkshavn</option>
+<option value="95">America/Dawson</option>
+<option value="96">America/Dawson_Creek</option>
+<option value="97">America/Denver</option>
+<option value="98">America/Detroit</option>
+<option value="99">America/Dominica</option>
+<option value="100">America/Edmonton</option>
+<option value="101">America/Eirunepe</option>
+<option value="102">America/El_Salvador</option>
+<option value="103">America/Fortaleza</option>
+<option value="104">America/Fort_Nelson</option>
+<option value="105">America/Glace_Bay</option>
+<option value="106">America/Godthab</option>
+<option value="107">America/Goose_Bay</option>
+<option value="108">America/Grand_Turk</option>
+<option value="109">America/Grenada</option>
+<option value="110">America/Guadeloupe</option>
+<option value="111">America/Guatemala</option>
+<option value="112">America/Guayaquil</option>
+<option value="113">America/Guyana</option>
+<option value="114">America/Halifax</option>
+<option value="115">America/Havana</option>
+<option value="116">America/Hermosillo</option>
+<option value="117">America/Indiana/Indianapolis</option>
+<option value="118">America/Indiana/Knox</option>
+<option value="119">America/Indiana/Marengo</option>
+<option value="120">America/Indiana/Petersburg</option>
+<option value="121">America/Indiana/Tell_City</option>
+<option value="122">America/Indiana/Vevay</option>
+<option value="123">America/Indiana/Vincennes</option>
+<option value="124">America/Indiana/Winamac</option>
+<option value="125">America/Inuvik</option>
+<option value="126">America/Iqaluit</option>
+<option value="127">America/Jamaica</option>
+<option value="128">America/Juneau</option>
+<option value="129">America/Kentucky/Louisville</option>
+<option value="130">America/Kentucky/Monticello</option>
+<option value="131">America/Kralendijk</option>
+<option value="132">America/La_Paz</option>
+<option value="133">America/Lima</option>
+<option value="134">America/Los_Angeles</option>
+<option value="135">America/Lower_Princes</option>
+<option value="136">America/Maceio</option>
+<option value="137">America/Managua</option>
+<option value="138">America/Manaus</option>
+<option value="139">America/Marigot</option>
+<option value="140">America/Martinique</option>
+<option value="141">America/Matamoros</option>
+<option value="142">America/Mazatlan</option>
+<option value="143">America/Menominee</option>
+<option value="144">America/Merida</option>
+<option value="145">America/Metlakatla</option>
+<option value="146">America/Mexico_City</option>
+<option value="147">America/Miquelon</option>
+<option value="148">America/Moncton</option>
+<option value="149">America/Monterrey</option>
+<option value="150">America/Montevideo</option>
+<option value="151">America/Montreal</option>
+<option value="152">America/Montserrat</option>
+<option value="153">America/Nassau</option>
+<option value="154">America/New_York</option>
+<option value="155">America/Nipigon</option>
+<option value="156">America/Nome</option>
+<option value="157">America/Noronha</option>
+<option value="158">America/North_Dakota/Beulah</option>
+<option value="159">America/North_Dakota/Center</option>
+<option value="160">America/North_Dakota/New_Salem</option>
+<option value="161">America/Nuuk</option>
+<option value="162">America/Ojinaga</option>
+<option value="163">America/Panama</option>
+<option value="164">America/Pangnirtung</option>
+<option value="165">America/Paramaribo</option>
+<option value="166">America/Phoenix</option>
+<option value="167">America/Port-au-Prince</option>
+<option value="168">America/Port_of_Spain</option>
+<option value="169">America/Porto_Velho</option>
+<option value="170">America/Puerto_Rico</option>
+<option value="171">America/Punta_Arenas</option>
+<option value="172">America/Rainy_River</option>
+<option value="173">America/Rankin_Inlet</option>
+<option value="174">America/Recife</option>
+<option value="175">America/Regina</option>
+<option value="176">America/Resolute</option>
+<option value="177">America/Rio_Branco</option>
+<option value="178">America/Santarem</option>
+<option value="179">America/Santiago</option>
+<option value="180">America/Santo_Domingo</option>
+<option value="181">America/Sao_Paulo</option>
+<option value="182">America/Scoresbysund</option>
+<option value="183">America/Sitka</option>
+<option value="184">America/St_Barthelemy</option>
+<option value="185">America/St_Johns</option>
+<option value="186">America/St_Kitts</option>
+<option value="187">America/St_Lucia</option>
+<option value="188">America/St_Thomas</option>
+<option value="189">America/St_Vincent</option>
+<option value="190">America/Swift_Current</option>
+<option value="191">America/Tegucigalpa</option>
+<option value="192">America/Thule</option>
+<option value="193">America/Thunder_Bay</option>
+<option value="194">America/Tijuana</option>
+<option value="195">America/Toronto</option>
+<option value="196">America/Tortola</option>
+<option value="197">America/Vancouver</option>
+<option value="198">America/Whitehorse</option>
+<option value="199">America/Winnipeg</option>
+<option value="200">America/Yakutat</option>
+<option value="201">America/Yellowknife</option>
+<option value="202">Antarctica/Casey</option>
+<option value="203">Antarctica/Davis</option>
+<option value="204">Antarctica/DumontDUrville</option>
+<option value="205">Antarctica/Macquarie</option>
+<option value="206">Antarctica/Mawson</option>
+<option value="207">Antarctica/McMurdo</option>
+<option value="208">Antarctica/Palmer</option>
+<option value="209">Antarctica/Rothera</option>
+<option value="210">Antarctica/Syowa</option>
+<option value="211">Antarctica/Troll</option>
+<option value="212">Antarctica/Vostok</option>
+<option value="213">Arctic/Longyearbyen</option>
+<option value="214">Asia/Aden</option>
+<option value="215">Asia/Almaty</option>
+<option value="216">Asia/Amman</option>
+<option value="217">Asia/Anadyr</option>
+<option value="218">Asia/Aqtau</option>
+<option value="219">Asia/Aqtobe</option>
+<option value="220">Asia/Ashgabat</option>
+<option value="221">Asia/Atyrau</option>
+<option value="222">Asia/Baghdad</option>
+<option value="223">Asia/Bahrain</option>
+<option value="224">Asia/Baku</option>
+<option value="225">Asia/Bangkok</option>
+<option value="226">Asia/Barnaul</option>
+<option value="227">Asia/Beirut</option>
+<option value="228">Asia/Bishkek</option>
+<option value="229">Asia/Brunei</option>
+<option value="230">Asia/Chita</option>
+<option value="231">Asia/Choibalsan</option>
+<option value="232">Asia/Colombo</option>
+<option value="233">Asia/Damascus</option>
+<option value="234">Asia/Dhaka</option>
+<option value="235">Asia/Dili</option>
+<option value="236">Asia/Dubai</option>
+<option value="237">Asia/Dushanbe</option>
+<option value="238">Asia/Famagusta</option>
+<option value="239">Asia/Gaza</option>
+<option value="240">Asia/Hebron</option>
+<option value="241">Asia/Ho_Chi_Minh</option>
+<option value="242">Asia/Hong_Kong</option>
+<option value="243">Asia/Hovd</option>
+<option value="244">Asia/Irkutsk</option>
+<option value="245">Asia/Jakarta</option>
+<option value="246">Asia/Jayapura</option>
+<option value="247">Asia/Jerusalem</option>
+<option value="248">Asia/Kabul</option>
+<option value="249">Asia/Kamchatka</option>
+<option value="250">Asia/Karachi</option>
+<option value="251">Asia/Kathmandu</option>
+<option value="252">Asia/Khandyga</option>
+<option value="253">Asia/Kolkata</option>
+<option value="254">Asia/Krasnoyarsk</option>
+<option value="255">Asia/Kuala_Lumpur</option>
+<option value="256">Asia/Kuching</option>
+<option value="257">Asia/Kuwait</option>
+<option value="258">Asia/Macau</option>
+<option value="259">Asia/Magadan</option>
+<option value="260">Asia/Makassar</option>
+<option value="261">Asia/Manila</option>
+<option value="262">Asia/Muscat</option>
+<option value="263">Asia/Nicosia</option>
+<option value="264">Asia/Novokuznetsk</option>
+<option value="265">Asia/Novosibirsk</option>
+<option value="266">Asia/Omsk</option>
+<option value="267">Asia/Oral</option>
+<option value="268">Asia/Phnom_Penh</option>
+<option value="269">Asia/Pontianak</option>
+<option value="270">Asia/Pyongyang</option>
+<option value="271">Asia/Qatar</option>
+<option value="272">Asia/Qyzylorda</option>
+<option value="273">Asia/Riyadh</option>
+<option value="274">Asia/Sakhalin</option>
+<option value="275">Asia/Samarkand</option>
+<option value="276">Asia/Seoul</option>
+<option value="277">Asia/Shanghai</option>
+<option value="278">Asia/Singapore</option>
+<option value="279">Asia/Srednekolymsk</option>
+<option value="280">Asia/Taipei</option>
+<option value="281">Asia/Tashkent</option>
+<option value="282">Asia/Tbilisi</option>
+<option value="283">Asia/Tehran</option>
+<option value="284">Asia/Thimphu</option>
+<option value="285">Asia/Tokyo</option>
+<option value="286">Asia/Tomsk</option>
+<option value="287">Asia/Ulaanbaatar</option>
+<option value="288">Asia/Urumqi</option>
+<option value="289">Asia/Ust-Nera</option>
+<option value="290">Asia/Vientiane</option>
+<option value="291">Asia/Vladivostok</option>
+<option value="292">Asia/Yakutsk</option>
+<option value="293">Asia/Yangon</option>
+<option value="294">Asia/Yekaterinburg</option>
+<option value="295">Asia/Yerevan</option>
+<option value="296">Atlantic/Azores</option>
+<option value="297">Atlantic/Bermuda</option>
+<option value="298">Atlantic/Canary</option>
+<option value="299">Atlantic/Cape_Verde</option>
+<option value="300">Atlantic/Faroe</option>
+<option value="301">Atlantic/Madeira</option>
+<option value="302">Atlantic/Reykjavik</option>
+<option value="303">Atlantic/South_Georgia</option>
+<option value="304">Atlantic/Stanley</option>
+<option value="305">Atlantic/St_Helena</option>
+<option value="306">Australia/Adelaide</option>
+<option value="307">Australia/Brisbane</option>
+<option value="308">Australia/Broken_Hill</option>
+<option value="309">Australia/Currie</option>
+<option value="310">Australia/Darwin</option>
+<option value="311">Australia/Eucla</option>
+<option value="312">Australia/Hobart</option>
+<option value="313">Australia/Lindeman</option>
+<option value="314">Australia/Lord_Howe</option>
+<option value="315">Australia/Melbourne</option>
+<option value="316">Australia/Perth</option>
+<option value="317">Australia/Sydney</option>
+<option value="318">Europe/Amsterdam</option>
+<option value="319">Europe/Andorra</option>
+<option value="320">Europe/Astrakhan</option>
+<option value="321">Europe/Athens</option>
+<option value="322">Europe/Belgrade</option>
+<option value="323">Europe/Berlin</option>
+<option value="324">Europe/Bratislava</option>
+<option value="325">Europe/Brussels</option>
+<option value="326">Europe/Bucharest</option>
+<option value="327">Europe/Budapest</option>
+<option value="328">Europe/Busingen</option>
+<option value="329">Europe/Chisinau</option>
+<option value="330">Europe/Copenhagen</option>
+<option value="331">Europe/Dublin</option>
+<option value="332">Europe/Gibraltar</option>
+<option value="333">Europe/Guernsey</option>
+<option value="334">Europe/Helsinki</option>
+<option value="335">Europe/Isle_of_Man</option>
+<option value="336">Europe/Istanbul</option>
+<option value="337">Europe/Jersey</option>
+<option value="338">Europe/Kaliningrad</option>
+<option value="339">Europe/Kiev</option>
+<option value="340">Europe/Kirov</option>
+<option value="341">Europe/Lisbon</option>
+<option value="342">Europe/Ljubljana</option>
+<option value="343">Europe/London</option>
+<option value="344">Europe/Luxembourg</option>
+<option value="345">Europe/Madrid</option>
+<option value="346">Europe/Malta</option>
+<option value="347">Europe/Mariehamn</option>
+<option value="348">Europe/Minsk</option>
+<option value="349">Europe/Monaco</option>
+<option value="350">Europe/Moscow</option>
+<option value="351">Europe/Oslo</option>
+<option value="352">Europe/Paris</option>
+<option value="353">Europe/Podgorica</option>
+<option value="354">Europe/Prague</option>
+<option value="355">Europe/Riga</option>
+<option value="356">Europe/Rome</option>
+<option value="357">Europe/Samara</option>
+<option value="358">Europe/San_Marino</option>
+<option value="359">Europe/Sarajevo</option>
+<option value="360">Europe/Saratov</option>
+<option value="361">Europe/Simferopol</option>
+<option value="362">Europe/Skopje</option>
+<option value="363">Europe/Sofia</option>
+<option value="364">Europe/Stockholm</option>
+<option value="365">Europe/Tallinn</option>
+<option value="366">Europe/Tirane</option>
+<option value="367">Europe/Ulyanovsk</option>
+<option value="368">Europe/Uzhgorod</option>
+<option value="369">Europe/Vaduz</option>
+<option value="370">Europe/Vatican</option>
+<option value="371">Europe/Vienna</option>
+<option value="372">Europe/Vilnius</option>
+<option value="373">Europe/Volgograd</option>
+<option value="374">Europe/Warsaw</option>
+<option value="375">Europe/Zagreb</option>
+<option value="376">Europe/Zaporozhye</option>
+<option value="377">Europe/Zurich</option>
+<option value="378">Indian/Antananarivo</option>
+<option value="379">Indian/Chagos</option>
+<option value="380">Indian/Christmas</option>
+<option value="381">Indian/Cocos</option>
+<option value="382">Indian/Comoro</option>
+<option value="383">Indian/Kerguelen</option>
+<option value="384">Indian/Mahe</option>
+<option value="385">Indian/Maldives</option>
+<option value="386">Indian/Mauritius</option>
+<option value="387">Indian/Mayotte</option>
+<option value="388">Indian/Reunion</option>
+<option value="389">Pacific/Apia</option>
+<option value="390">Pacific/Auckland</option>
+<option value="391">Pacific/Bougainville</option>
+<option value="392">Pacific/Chatham</option>
+<option value="393">Pacific/Chuuk</option>
+<option value="394">Pacific/Easter</option>
+<option value="395">Pacific/Efate</option>
+<option value="396">Pacific/Enderbury</option>
+<option value="397">Pacific/Fakaofo</option>
+<option value="398">Pacific/Fiji</option>
+<option value="399">Pacific/Funafuti</option>
+<option value="400">Pacific/Galapagos</option>
+<option value="401">Pacific/Gambier</option>
+<option value="402">Pacific/Guadalcanal</option>
+<option value="403">Pacific/Guam</option>
+<option value="404">Pacific/Honolulu</option>
+<option value="405">Pacific/Kiritimati</option>
+<option value="406">Pacific/Kosrae</option>
+<option value="407">Pacific/Kwajalein</option>
+<option value="408">Pacific/Majuro</option>
+<option value="409">Pacific/Marquesas</option>
+<option value="410">Pacific/Midway</option>
+<option value="411">Pacific/Nauru</option>
+<option value="412">Pacific/Niue</option>
+<option value="413">Pacific/Norfolk</option>
+<option value="414">Pacific/Noumea</option>
+<option value="415">Pacific/Pago_Pago</option>
+<option value="416">Pacific/Palau</option>
+<option value="417">Pacific/Pitcairn</option>
+<option value="418">Pacific/Pohnpei</option>
+<option value="419">Pacific/Port_Moresby</option>
+<option value="420">Pacific/Rarotonga</option>
+<option value="421">Pacific/Saipan</option>
+<option value="422">Pacific/Tahiti</option>
+<option value="423">Pacific/Tarawa</option>
+<option value="424">Pacific/Tongatapu</option>
+<option value="425">Pacific/Wake</option>
+<option value="426">Pacific/Wallis</option>
+<option value="427">Etc/GMT-0</option>
+<option value="428">Etc/GMT-1</option>
+<option value="429">Etc/GMT-2</option>
+<option value="430">Etc/GMT-3</option>
+<option value="431">Etc/GMT-4</option>
+<option value="432">Etc/GMT-5</option>
+<option value="433">Etc/GMT-6</option>
+<option value="434">Etc/GMT-7</option>
+<option value="435">Etc/GMT-8</option>
+<option value="436">Etc/GMT-9</option>
+<option value="437">Etc/GMT-10</option>
+<option value="438">Etc/GMT-11</option>
+<option value="439">Etc/GMT-12</option>
+<option value="440">Etc/GMT-13</option>
+<option value="441">Etc/GMT-14</option>
+<option value="442">Etc/GMT0</option>
+<option value="443">Etc/GMT+0</option>
+<option value="444">Etc/GMT+1</option>
+<option value="445">Etc/GMT+2</option>
+<option value="446">Etc/GMT+3</option>
+<option value="447">Etc/GMT+4</option>
+<option value="448">Etc/GMT+5</option>
+<option value="449">Etc/GMT+6</option>
+<option value="450">Etc/GMT+7</option>
+<option value="451">Etc/GMT+8</option>
+<option value="452">Etc/GMT+9</option>
+<option value="453">Etc/GMT+10</option>
+<option value="454">Etc/GMT+11</option>
+<option value="455">Etc/GMT+12</option>
+<option value="456">Etc/UCT</option>
+<option value="457">Etc/UTC</option>
+<option value="458">Etc/Greenwich</option>
+<option value="459">Etc/Universal</option>
+<option value="460">Etc/Zulu</option>
+)====";

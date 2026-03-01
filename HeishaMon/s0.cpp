@@ -1,6 +1,7 @@
 #include <PubSubClient.h>
 #include "commands.h"
 #include "s0.h"
+#include "rules.h"
 
 #define MQTT_RETAIN_VALUES 1 // do we retain 1wire values?
 
@@ -96,7 +97,7 @@ void initS0Sensors(s0SettingsStruct s0Settings[]) {
 
 void restore_s0_Watthour(int s0Port, float watthour) {
   if ((s0Port == 1) || (s0Port == 2)) {
-    unsigned int newTotal = int(watthour * (actS0Settings[s0Port - 1].ppkwh / 1000.0));
+    unsigned long newTotal = (unsigned long)(watthour * (actS0Settings[s0Port - 1].ppkwh / 1000.0));
     if (newTotal > actS0Data[s0Port - 1].pulsesTotal) {
       noInterrupts();
       actS0Data[s0Port - 1].pulsesTotal = newTotal;
@@ -182,6 +183,14 @@ void s0Loop(PubSubClient &mqtt_client, void (*log_message)(char*), char* mqtt_to
       //update GUI over websocket
       sprintf_P(log_msg, PSTR("{\"data\": {\"s0values\": {\"s0port\": %d, \"Watt\": %u, \"Watthour\": %.2f, \"WatthourTotal\": %.2f}}}"), i+1, actS0Data[i].watt,Watthour,WatthourTotal);
       websocket_write_all(log_msg, strlen(log_msg));         
+      //send rules events
+      char s0_event[32];
+      snprintf_P(s0_event, sizeof(s0_event), PSTR("s0#watt_%d"), i + 1);
+      rules_event_cb("", s0_event);
+      snprintf_P(s0_event, sizeof(s0_event), PSTR("s0#watthour_%d"), i + 1);
+      rules_event_cb("", s0_event);
+      snprintf_P(s0_event, sizeof(s0_event), PSTR("s0#watthourtotal_%d"), i + 1);
+      rules_event_cb("", s0_event);
     }
   }
 }

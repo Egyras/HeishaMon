@@ -123,49 +123,29 @@ int Base64decode_len(const char *bufcoded)
     return nbytesdecoded + 1;
 }
 
-int Base64decode(char *bufplain, const char *bufcoded)
+int Base64decode(unsigned char *output, size_t bufsize, const char *input)
 {
-    int nbytesdecoded;
-    register const unsigned char *bufin;
-    register unsigned char *bufout;
-    register int nprbytes;
+  size_t i = 0, j = 0;
+  unsigned char a, b, c, d;
 
-    bufin = (const unsigned char *) bufcoded;
-    while (pr2six[*(bufin++)] <= 63);
-    nprbytes = (bufin - (const unsigned char *) bufcoded) - 1;
-    nbytesdecoded = ((nprbytes + 3) / 4) * 3;
+  if (!input || !output) {
+    return -1;
+  }
 
-    bufout = (unsigned char *) bufplain;
-    bufin = (const unsigned char *) bufcoded;
+  while (input[i] && input[i] != '=') {
+    a = pr2six[(unsigned char)input[i++]];
+    b = pr2six[(unsigned char)input[i++]];
+    c = pr2six[(unsigned char)input[i++]];
+    d = pr2six[(unsigned char)input[i++]];
 
-    while (nprbytes > 4) {
-    *(bufout++) =
-        (unsigned char) (pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
-    *(bufout++) =
-        (unsigned char) (pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
-    *(bufout++) =
-        (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
-    bufin += 4;
-    nprbytes -= 4;
-    }
+    if (a > 63 || b > 63 || c > 63 || d > 63) break; // invalid char
 
-    /* Note: (nprbytes == 1) would be an error, so just ingore that case */
-    if (nprbytes > 1) {
-    *(bufout++) =
-        (unsigned char) (pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
-    }
-    if (nprbytes > 2) {
-    *(bufout++) =
-        (unsigned char) (pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
-    }
-    if (nprbytes > 3) {
-    *(bufout++) =
-        (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
-    }
+    if (j < bufsize) output[j++] = (a << 2) | (b >> 4);
+    if (input[i-2] != '=' && j < bufsize) output[j++] = ((b & 0xF) << 4) | (c >> 2);
+    if (input[i-1] != '=' && j < bufsize) output[j++] = ((c & 0x3) << 6) | d;
+  }
 
-    *(bufout++) = '\0';
-    nbytesdecoded -= (4 - nprbytes) & 3;
-    return nbytesdecoded;
+  return (int)j;
 }
 
 static const char basis_64[] =
@@ -176,34 +156,31 @@ int Base64encode_len(int len)
     return ((len + 2) / 3 * 4) + 1;
 }
 
-int Base64encode(char *encoded, const char *string, int len)
+int Base64encode(char *encoded, const unsigned char *input, int len)
 {
-    int i;
-    char *p;
+  int i = 0, j = 0;
 
-    p = encoded;
-    for (i = 0; i < len - 2; i += 3) {
-    *p++ = basis_64[(string[i] >> 2) & 0x3F];
-    *p++ = basis_64[((string[i] & 0x3) << 4) |
-                    ((int) (string[i + 1] & 0xF0) >> 4)];
-    *p++ = basis_64[((string[i + 1] & 0xF) << 2) |
-                    ((int) (string[i + 2] & 0xC0) >> 6)];
-    *p++ = basis_64[string[i + 2] & 0x3F];
-    }
-    if (i < len) {
-    *p++ = basis_64[(string[i] >> 2) & 0x3F];
-    if (i == (len - 1)) {
-        *p++ = basis_64[((string[i] & 0x3) << 4)];
-        *p++ = '=';
-    }
-    else {
-        *p++ = basis_64[((string[i] & 0x3) << 4) |
-                        ((int) (string[i + 1] & 0xF0) >> 4)];
-        *p++ = basis_64[((string[i + 1] & 0xF) << 2)];
-    }
-    *p++ = '=';
-    }
+  while (i < len) {
+    unsigned char octet_a = i < len ? input[i++] : 0;
+    unsigned char octet_b = i < len ? input[i++] : 0;
+    unsigned char octet_c = i < len ? input[i++] : 0;
 
-    *p++ = '\0';
-    return p - encoded;
+    unsigned int triple = (octet_a << 16) | (octet_b << 8) | octet_c;
+
+    encoded[j++] = basis_64[(triple >> 18) & 0x3F];
+    encoded[j++] = basis_64[(triple >> 12) & 0x3F];
+    encoded[j++] = basis_64[(triple >> 6) & 0x3F];
+    encoded[j++] = basis_64[triple & 0x3F];
+  }
+
+  int mod = len % 3;
+  if (mod) {
+    encoded[j - 1] = '=';
+    if (mod == 1) {
+      encoded[j - 2] = '=';
+    }
+  }
+
+  encoded[j] = '\0';
+  return j;
 }

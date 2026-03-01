@@ -1843,41 +1843,42 @@ err_t webserver_sent(void *arg, tcp_pcb *pcb, uint16_t len) {
 }
 #endif
 
+
 static void send_websocket_handshake(struct webserver_t *client, const char *key) {
-  char cpy[61] = { 0 };
-  char input[20] = { 0 };
-  char encoded[20] = { 0 };
+  char cpy[61] = { 0 }; // key length = 24, magic = 36, + 1
+  unsigned char input[SHA1_DIGEST_SIZE] = { 0 };
+  char encoded[Base64encode_len(SHA1_DIGEST_SIZE)] = { 0 };
 
   const char *magic = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+  if(strlen(key) + strlen(magic) >= sizeof(cpy)) {
+    return; // of error
+  }
 
   snprintf(cpy, sizeof(cpy), "%s%s", key, magic);
 
-  sha1digest((uint8_t *)input, NULL, (uint8_t *)cpy, strlen(cpy));
+  sha1digest(input, NULL, (uint8_t *)cpy, strlen(cpy));
 
-  if(Base64encode(encoded, input, 20) > 0) {
-    uint16_t len = snprintf(NULL, 0,
-      "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
-      "Connection: Upgrade\r\n"
-      "Upgrade: websocket\r\n"
-      "Sec-WebSocket-Accept: %s\r\n\r\n", encoded);
+  if(Base64encode(encoded, input, SHA1_DIGEST_SIZE) <= 0) {
+    return;
+  }
 
-    char buf[len+1];
-    memset(&buf, 0, len+1);
-    len = snprintf((char *)&buf, len+1,
-      "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
-      "Connection: Upgrade\r\n"
-      "Upgrade: websocket\r\n"
-      "Sec-WebSocket-Accept: %s\r\n\r\n", encoded);
+  unsigned char buf[256];
+  int len = snprintf((char *)buf, sizeof(buf),
+    "HTTP/1.1 101 Switching Protocols\r\n"
+    "Connection: Upgrade\r\n"
+    "Upgrade: websocket\r\n"
+    "Sec-WebSocket-Accept: %s\r\n\r\n", encoded);
 
-    if(client->async == 1) {
-      tcp_write(client->pcb, &buf, len, 0);
-      tcp_output(client->pcb);
-    } else {
-      if(client->client->write((unsigned char *)buf, len) > 0) {
-        if(client->is_websocket == 0) {
-          client->lastseen = millis();
-        }
-      }
+  if(len < 0 || len >= (int)sizeof(buf)) {
+    return;
+  }
+
+  if(client->async == 1) {
+    tcp_write(client->pcb, buf, len, 0);
+    tcp_output(client->pcb);
+  } else {
+    if(client->client->write(buf, len) > 0 && client->is_websocket == 0) {
+      client->lastseen = millis();
     }
   }
 }

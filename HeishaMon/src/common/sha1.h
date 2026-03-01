@@ -14,5 +14,6 @@
  * project source code file or include this file in a project and put
  * the declaration (example below) in the sources files where needed.
  ******************************************************************************/
-
+ 
+#define SHA1_DIGEST_SIZE 20
 int sha1digest(uint8_t *digest, char *hexdigest, const uint8_t *data, size_t databytes);

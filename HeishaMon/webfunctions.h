@@ -38,16 +38,18 @@ struct settingsStruct {
   uint16_t updataAllDallasTime = 300; //how often all 1wire data is resent to mqtt
   uint16_t timezone = 0;
 
+  #define PASSWORD_LENGTH 65
+
   const char* update_path = "/firmware";
   const char* update_username = "admin";
   char wifi_ssid[33] = "";
-  char wifi_password[65] = "";
+  char wifi_password[PASSWORD_LENGTH] = "";
   char wifi_hostname[40] = "HeishaMon";
   char ota_password[40] = "heisha";
   char mqtt_server[65];
   char mqtt_port[6] = "1883";
   char mqtt_username[65];
-  char mqtt_password[65];
+  char mqtt_password[PASSWORD_LENGTH];
   char mqtt_topic_base[128] = "panasonic_heat_pump";
   char ntp_servers[254] = "pool.ntp.org";
 #ifdef TLS_SUPPORT
@@ -97,6 +99,8 @@ void settingsToJson(JsonDocument  &jsonDoc, settingsStruct *heishamonSettings);
 void saveJsonToFile(JsonDocument  &jsonDoc, const char *filename);
 void loadSettings(settingsStruct *heishamonSettings);
 int getSettings(struct webserver_t *client, settingsStruct *heishamonSettings);
+int getSettingsJson(struct webserver_t *client, settingsStruct *heishamonSettings);
+
 int handleSettings(struct webserver_t *client);
 int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings);
 int settingsReconnectWifi(struct webserver_t *client, settingsStruct *heishamonSettings);

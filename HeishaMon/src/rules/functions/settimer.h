@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include "../rules.h"
 
-int8_t rule_function_set_timer_callback(struct rules_t *obj);
+int8_t rule_function_set_timer_callback(void);
 void inline timer_cb(void);
 
 #endif

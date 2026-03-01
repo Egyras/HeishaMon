@@ -61,7 +61,7 @@ settingsStruct heishamonSettings;
 
 uint32_t neoPixelState = 0; //running neoPixelState
 bool inSetup; //bool to check if still booting
-bool sending = false; // mutex for sending data
+volatile bool sending = false; // mutex for sending data
 bool mqttcallbackinprogress = false; // mutex for processing mqtt callback
 
 bool extraDataBlockAvailable = false; // this will be set to true if, during boot, heishamon detects this heatpump has extra data block (like K and L series do)
@@ -76,10 +76,13 @@ unsigned long lastWifiRetryTimer = 0;
 bool doInitialWifiScan = true; //we want an initial wifi scan to fill in the dropbox on the wifi settings page
 
 unsigned long lastRunTime = 0;
+
+#ifdef ESP8266
 unsigned long lastOptionalPCBRunTime = 0;
 unsigned long lastOptionalPCBSave = 0;
+#endif
+volatile unsigned long sendCommandReadTime = 0; //set to millis value during send, allow to wait millis for answer
 
-unsigned long sendCommandReadTime = 0; //set to millis value during send, allow to wait millis for answer
 unsigned long goodreads = 0;
 unsigned long totalreads = 0;
 unsigned long badcrcread = 0;
@@ -101,6 +104,10 @@ char proxydata[MAXDATASIZE] = { '\0' };
 byte proxydata_length = 0;
 //for the neopixel
 Adafruit_NeoPixel pixels(1, LEDPIN);
+//for the vTask
+QueueHandle_t pcbQueue = NULL;
+QueueHandle_t cmdQueue = NULL;
+QueueHandle_t logQueue = NULL;
 #endif
 
 // store actual data
@@ -109,7 +116,8 @@ char actDataExtra[DATASIZE] = { '\0' };
 char actOptData[OPTDATASIZE]  = { '\0' };
 
 // log message to sprintf to
-char log_msg[256];
+#define LOG_MSG_SIZE 256
+char log_msg[LOG_MSG_SIZE];
 
 // mqtt topic to sprintf and then publish to
 char mqtt_topic[256];
@@ -180,16 +188,13 @@ void setupETH() {
 /*
     check_wifi will process wifi reconnecting managing
 */
+#if defined(ESP8266)
 void check_wifi() {
   int wifistatus = WiFi.status();
   if ((wifistatus != WL_CONNECTED) && (WiFi.localIP())) {
     // special case where it seems that we are not connect but we do have working IP (causing the -1% wifi signal), do a reset.
-#ifdef ESP8266
     log_message(_F("Weird case, WiFi seems disconnected but is not. Resetting WiFi!"));
     setupWifi(&heishamonSettings);
-#else
-    log_message(_F("WiFi just got disconnected, still have IP addres."));
-#endif
   } else if ((wifistatus != WL_CONNECTED) || (!WiFi.localIP())) {
     /*
         if we are not connected to an AP
@@ -197,32 +202,21 @@ void check_wifi() {
     */
     if (heishamonSettings.hotspot) {
       dnsServer.processNextRequest();
-#ifdef ESP32
-      neoPixelState = pixels.Color(16, 16, 0);  //set neopixel to yellow to indicate lost wifi
-#endif
     }
 
     /* we need to stop reconnecting to a configured wifi network if there is a hotspot user connected
         also, do not disconnect if wifi network scan is active
     */
-#ifdef ESP8266
     if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_DISCONNECTED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0)) {
       log_message(_F("WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid..."));
       WiFi.disconnect(true);
     }
-#else
-    if ((heishamonSettings.wifi_ssid[0] != '\0') && (wifistatus != WL_STOPPED) && (WiFi.scanComplete() != -1) && (WiFi.softAPgetStationNum() > 0)) {
-      log_message(_F("WiFi lost, but softAP station connecting, so stop trying to connect to configured ssid..."));
-      WiFi.mode(WIFI_AP);
-    }
-#endif
 
     /*  only start this routine if timeout on
         reconnecting to AP and SSID is set
     */
     if ((heishamonSettings.wifi_ssid[0] != '\0') && ((unsigned long)(millis() - lastWifiRetryTimer) > WIFIRETRYTIMER)) {
       lastWifiRetryTimer = millis();
-#ifdef ESP8266
       if ((WiFi.softAPSSID() == "") && (heishamonSettings.hotspot)) {
         log_message(_F("WiFi lost, starting setup hotspot..."));
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
@@ -230,45 +224,23 @@ void check_wifi() {
       }
       if ((wifistatus == WL_DISCONNECTED) && (WiFi.softAPgetStationNum() == 0)) {
         log_message(_F("Retrying configured WiFi, ..."));
-#else
-      if (((WiFi.getMode() & WIFI_MODE_AP) == 0) && (heishamonSettings.hotspot)) {
-        log_message(_F("WiFi lost, starting setup hotspot..."));
-        WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-        WiFi.softAP(_F("HeishaMon-Setup"));
-      }
-      if ((wifistatus == WL_STOPPED  ) && (WiFi.softAPgetStationNum() == 0)) { //make sure we start STA again if it was stopped
-        log_message(_F("Retrying configured WiFi, ..."));
-        WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN); //select best AP with same SSID
-#endif
         if (heishamonSettings.wifi_password[0] == '\0') {
           WiFi.begin(heishamonSettings.wifi_ssid);
         } else {
           WiFi.begin(heishamonSettings.wifi_ssid, heishamonSettings.wifi_password);
         }
-#ifdef ESP8266        
       } else {
         log_message(_F("Reconnecting to WiFi failed. Waiting a few seconds before trying again."));
         WiFi.disconnect(true);
-#endif        
       }
     }
   }
-#ifdef ESP8266
   if (WiFi.localIP()) {  //WiFi connected
     if (WiFi.softAPSSID() != "") {
       log_message(_F("WiFi (re)connected, shutting down hotspot..."));
       WiFi.softAPdisconnect(true);
       MDNS.notifyAPChange();
     }
-#else
-  if (WiFi.localIP() || ETH.hasIP()) {      //WiFi or ETH connected and IP>0  check if active AP and disable if yes
-    neoPixelState = pixels.Color(0, 0, 0);  //neopixel should be black again to indicate normale working      
-    if (((WiFi.getMode() & WIFI_MODE_AP) != 0) && ((heishamonSettings.wifi_ssid[0] != '\0') || (!heishamonSettings.hotspot)) ) { //shutdown hotspot if it is running with configured SSID or if hotspot config is disabled
-      log_message(_F("WiFi or ETH (re)connected, shutting down hotspot..."));
-      WiFi.softAP("");
-      WiFi.softAPdisconnect(true);
-    }
-#endif
 
     if (firstConnectSinceBoot) {  // this should start only when softap is down or else it will not work properly so run after the routine to disable softap
       firstConnectSinceBoot = false;
@@ -276,9 +248,7 @@ void check_wifi() {
       setupOTA();
       MDNS.begin(heishamonSettings.wifi_hostname);
       MDNS.addService("http", "tcp", 80);
-#ifdef ESP8266
       experimental::ESP8266WiFiGratuitous::stationKeepAliveSetIntervalMs(5000);  //necessary for some users with bad wifi routers
-#endif
 
       if (heishamonSettings.wifi_ssid[0] == '\0') {
         log_message(_F("WiFi connected without SSID and password in settings. Must come from persistent memory. Storing in settings."));
@@ -300,22 +270,128 @@ void check_wifi() {
     */
     lastWifiRetryTimer = millis();
 
-#ifdef ESP8266
     // Allow MDNS processing
     MDNS.update();
-#endif
   }
   if (doInitialWifiScan && (millis() > 15000)) {  //do a wifi scan a boot after 15 seconds
     doInitialWifiScan = false;
     log_message(_F("Starting initial wifi scan ..."));
-#if defined(ESP8266)
     WiFi.scanNetworksAsync(getWifiScanResults);
-#elif defined(ESP32)
-    WiFi.scanNetworks(true);
-#endif
   }
 }
+#elif defined(ESP32)
+void check_wifi() {
+  wl_status_t wifistatus = WiFi.status();
+  bool ethUp = ETH.hasIP();
+  bool wifiUp = (wifistatus == WL_CONNECTED);
 
+  /* ---------- Fast path: network is up ---------- */
+  if (wifiUp || ethUp) {
+
+    neoPixelState = pixels.Color(0, 0, 0); // normal operation
+    lastWifiRetryTimer = millis();
+
+    // Shut down hotspot if no longer needed
+    if ((WiFi.getMode() & WIFI_MODE_AP) &&
+        ((heishamonSettings.wifi_ssid[0] != '\0') || !heishamonSettings.hotspot)) {
+
+      log_message(_F("WiFi or ETH connected, shutting down hotspot"));
+      WiFi.softAPdisconnect(true);
+      WiFi.mode(WIFI_STA);
+      if (wifistatus != WL_CONNECTED) { //it must be that ETH reconnected, so keep trying WiFi in the background
+        WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+        if (heishamonSettings.wifi_password[0] == '\0') {
+          WiFi.begin(heishamonSettings.wifi_ssid);
+        } else {
+          WiFi.begin(heishamonSettings.wifi_ssid, heishamonSettings.wifi_password);
+        }
+      }
+    }
+
+    if (firstConnectSinceBoot) {
+      firstConnectSinceBoot = false;
+
+      lastMqttReconnectAttempt = 0;
+      setupOTA();
+
+      MDNS.begin(heishamonSettings.wifi_hostname);
+      MDNS.addService("http", "tcp", 80);
+
+      if (heishamonSettings.wifi_ssid[0] == '\0') {
+        log_message(_F("Storing WiFi credentials from persistent memory"));
+        WiFi.SSID().toCharArray(heishamonSettings.wifi_ssid, 40);
+        WiFi.psk().toCharArray(heishamonSettings.wifi_password, 40);
+        JsonDocument jsonDoc;
+        settingsToJson(jsonDoc, &heishamonSettings);
+        saveJsonToFile(jsonDoc, "config.json");
+      }
+
+      ntpReload(&heishamonSettings);
+      logprintln_P(F("NTP sync scheduled"));
+      timerqueue_insert(300, 0, -6);
+    }
+
+    return;
+  }
+
+  /* ---------- Network is DOWN ---------- */
+
+  neoPixelState = pixels.Color(16, 16, 0); // yellow: degraded
+
+  if (heishamonSettings.hotspot) {
+    dnsServer.processNextRequest();
+  }
+
+  // If AP client is connected, STA must back off
+  if (WiFi.softAPgetStationNum() > 0) {
+    if (WiFi.getMode() != WIFI_AP) {
+      log_message(_F("SoftAP client active, suspending STA reconnect"));
+	    WiFi.disconnect(true);
+	    WiFi.mode(WIFI_AP);
+    }
+	  return; //always return if hotspot is used
+  }
+
+  // Periodic retry gate
+  if ((unsigned long)(millis() - lastWifiRetryTimer) < WIFIRETRYTIMER) {
+    return;
+  }
+  lastWifiRetryTimer = millis();
+
+  // Ensure AP is running if allowed
+  if (heishamonSettings.hotspot && !(WiFi.getMode() & WIFI_MODE_AP)) {
+    log_message(_F("Starting setup hotspot"));
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+    WiFi.softAP(_F("HeishaMon-Setup"));
+  }
+
+  // Disable STA so next retry is clean and we wait WIFIRETRYTIMER so hotspot can do its thing
+  if (WiFi.getMode() != WIFI_AP) {
+    log_message(_F("Disabling WiFi STA for a while..."));	
+	  WiFi.disconnect(true);
+    WiFi.mode(WIFI_AP); 
+    return;
+  }
+
+  // Retry STA connection
+  if (heishamonSettings.wifi_ssid[0] != '\0') {
+    // Repair STA if it is stopped
+    if (!(WiFi.getMode() & WIFI_MODE_STA)) {
+      log_message(_F("STA stopped, re-enabling STA"));
+      WiFi.mode(WIFI_AP_STA);
+      delay(50);
+    }    
+    log_message(_F("Retrying configured WiFi"));
+    WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+    if (heishamonSettings.wifi_password[0] == '\0') {
+      WiFi.begin(heishamonSettings.wifi_ssid);
+    } else {
+      WiFi.begin(heishamonSettings.wifi_ssid, heishamonSettings.wifi_password);
+    }
+  }
+}
+#endif
 
 #ifdef TLS_SUPPORT
 bool loadTlsCaFromFS(WiFiClientSecure &client) {
@@ -590,7 +666,7 @@ void readProxy()
         } else if (proxydata[3] == 0x21 ) {
           log_message(_F("PROXY requests extra data"));
           if ((actDataExtra[0] == 0x71) && (actDataExtra[1] == 0xc8) && (actDataExtra[2] == 0x01)) { //don't answer if we don't have data
-            proxySerial.write(actDataExtra,DATASIZE); //should containt valid checksum also
+            proxySerial.write(actDataExtra,DATASIZE); //should contain valid checksum also
           }
         } else {
           log_message(_F("PROXY has sent unknown query! Forwarding to heatpump!"));
@@ -620,19 +696,22 @@ bool readSerial()
   while ((heatpumpSerial.available()) && ((data_length + len) < MAXDATASIZE)) {
     data[data_length + len] = heatpumpSerial.read(); //read available data and place it after the last received data
     len++;
-    if ((data[0] != 0x71) && (data[0] != 0x31)) { //wrong header received!
-      log_message(_F("Received bad header. Ignoring this data!"));
-      if (heishamonSettings.logHexdump) logHex(data, len);
-      badheaderread++;
-      data_length = 0;
-      return false; //return so this while loop does not loop forever if there happens to be a continous invalid data stream
-    }
   }
 
   if ((len > 0) && (data_length == 0 )) totalreads++; //this is the start of a new read
   data_length += len;
 
-  if (data_length > 1) { //should have received length part of header now
+  if (data_length > 3) { //should have received length part of header now
+
+    if (((data[0] != 0x71) && (data[0] != 0x31)) || (data[2] != 0x01))  { //wrong header received!
+      if (heishamonSettings.logHexdump) {
+        log_message(_F("Received bad header. Ignoring this data!"));
+        logHex(data, len);
+      }
+      badheaderread++;
+      data_length = 0;
+      return false;
+    }
 
     if ((data_length > (data[1] + 3)) || (data_length >= MAXDATASIZE) ) {
       log_message(_F("Received more data than header suggests! Ignoring this as this is bad data."));
@@ -658,6 +737,10 @@ bool readSerial()
       if (data_length == DATASIZE)  {  //receive a full data block
         if  (data[3] == 0x10) { //decode the normal data block
           decode_heatpump_data(data, actData, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
+          if ( (!extraDataBlockAvailable) && ((actData[0] == 0x71) && (actData[0xc7] >= 3)) ) { //do we have valid header and byte 0xc7 is more or equal 3 then assume K&L and more series
+            log_message(_F("Extra data available on this heatpump"));
+            extraDataBlockAvailable = true; //request for extra data next run
+          }
           {
             char mqtt_topic[256];
             sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
@@ -727,6 +810,96 @@ void pushCommandBuffer(byte* command, int length) {
   cmdnrel++;
 }
 
+#ifdef ESP32
+void serialTXTask(void *pvParameters) {
+  unsigned long lastPCBSendTime = 0;
+  unsigned long lastHPSendTime = 0;
+  unsigned long lastPCBSaveTime = 0;
+  char local_log_msg[LOG_MSG_SIZE];
+
+  byte localPCBQuery[OPTIONALPCBQUERYSIZE] = {0xF1, 0x11, 0x01, 0x50, 0x00, 0x00, 0x40, 0xFF, 0xFF, 0xE5, 0xFF, 0xFF, 0x00, 0xFF, 0xEB, 0xFF, 0xFF, 0x00, 0x00};
+  
+  for (;;) {
+    unsigned long now = millis();
+
+    if (sending && ((unsigned long)(millis() - sendCommandReadTime) > (SERIALTIMEOUT + OPTIONALPCBQUERYTIME) )) {
+      //clear sending flag if taking too long so the optional pcb can still send regulary
+      //normally the flag would already be cleared by the readserial timeout but if that process hangs (wifi, mqtt issue) this check will free it anyways
+      sending = false;
+    }
+
+    // highest priority: optional PCB query every second
+    if ((!sending) && ((unsigned long)(now - lastPCBSendTime) >= OPTIONALPCBQUERYTIME)) {
+      lastPCBSendTime = now;
+      if (heishamonSettings.optionalPCB && !heishamonSettings.listenonly) {
+        sending = true;
+        sendCommandReadTime = now;
+        xQueuePeek(pcbQueue, localPCBQuery, 0);
+        byte chk = calcChecksum(localPCBQuery, OPTIONALPCBQUERYSIZE);
+        heatpumpSerial.write(localPCBQuery, OPTIONALPCBQUERYSIZE);
+        heatpumpSerial.write(chk);
+        sprintf_P(local_log_msg, PSTR("optional PCB datagram sent bytes: %d"), OPTIONALPCBQUERYSIZE + 1);
+        xQueueSend(logQueue,local_log_msg,0);
+      }
+      // save to flash periodically
+      if ((unsigned long)(now - lastPCBSaveTime) >= (1000 * OPTIONALPCBSAVETIME)) {
+        lastPCBSaveTime = now;
+        saveOptionalPCB(localPCBQuery, OPTIONALPCBQUERYSIZE);
+      }
+    }
+
+    // second priority: static heatpump query every waitTime seconds
+    if ((!sending) && (!heishamonSettings.listenonly)) {
+      if ((unsigned long)(now - lastHPSendTime) >= (1000 * heishamonSettings.waitTime)) {
+        sending = true;
+        sendCommandReadTime = now;
+        lastHPSendTime = now;
+        byte chk = calcChecksum(panasonicQuery, PANASONICQUERYSIZE);
+        heatpumpSerial.write(panasonicQuery, PANASONICQUERYSIZE);
+        heatpumpSerial.write(chk);
+        if (extraDataBlockAvailable) {
+          panasonicQuery[3] = 0x21;
+          chk = calcChecksum(panasonicQuery, PANASONICQUERYSIZE);
+          heatpumpSerial.write(panasonicQuery, PANASONICQUERYSIZE);
+          heatpumpSerial.write(chk);
+          panasonicQuery[3] = 0x10;
+        }
+        sprintf_P(local_log_msg, PSTR("heatpump request datagram sent bytes: %d"), PANASONICQUERYSIZE + 1);
+        xQueueSend(logQueue,local_log_msg,0);    
+      }
+    }
+
+    // lowest priority: user commands from queue
+    if ((!sending) && (!heishamonSettings.listenonly)) {
+      struct cmdbuffer_t cmd;
+      if (xQueueReceive(cmdQueue, &cmd, 0) == pdTRUE) {
+        sending = true;
+        sendCommandReadTime = now;
+        byte chk = calcChecksum(cmd.data, cmd.length);
+        heatpumpSerial.write(cmd.data, cmd.length);
+        heatpumpSerial.write(chk);
+        sprintf_P(local_log_msg, PSTR("Command datagram sent bytes: %d"), cmd.length + 1);
+        xQueueSend(logQueue,local_log_msg,0);      
+      }
+    }
+
+    vTaskDelay(1 / portTICK_PERIOD_MS);
+  }
+}
+bool send_command(byte* command, int length) {
+  if ( heishamonSettings.listenonly ) {
+    log_message(_F("Not sending this command. Heishamon in listen only mode!"));
+    return false;
+  }
+  struct cmdbuffer_t cmd;
+  cmd.length = length;
+  memcpy(&cmd.data, command, length);
+  xQueueSend(cmdQueue, &cmd, 0);
+  return true;
+}
+
+#else
+
 bool send_command(byte* command, int length) {
   if ( heishamonSettings.listenonly ) {
     log_message(_F("Not sending this command. Heishamon in listen only mode!"));
@@ -749,6 +922,7 @@ bool send_command(byte* command, int length) {
   sendCommandReadTime = millis(); //set sendCommandReadTime when to timeout the answer of this command
   return true;
 }
+#endif
 
 // Callback function that is called when a message has been pushed to one of your topics.
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
@@ -1414,6 +1588,23 @@ void setupMqtt() {
 }
 
 void setupConditionals() {
+
+#ifdef ESP32
+  pcbQueue = xQueueCreate(1, OPTIONALPCBQUERYSIZE);
+  cmdQueue = xQueueCreate(MAXCOMMANDSINBUFFER, sizeof(cmdbuffer_t));
+  logQueue = xQueueCreate(4, LOG_MSG_SIZE);
+  
+  xTaskCreatePinnedToCore(
+    serialTXTask,
+    "serialTXTask",
+    8192,
+    NULL,
+    1,
+    NULL,
+    1
+  );
+#endif
+
   //send_initial_query(); //maybe necessary but for now disable. CZ-TAW1 sends this query on boot
 
   //load optional PCB data from flash
@@ -1424,9 +1615,14 @@ void setupConditionals() {
     else {
       log_message(_F("Failed to load optional PCB data from flash!"));
     }
+#ifdef ESP32
+    //insert on task queue
+    xQueueOverwrite(pcbQueue, optionalPCBQuery);
+#else
     delay(1500); //need 1.5 sec delay before sending first datagram
     send_optionalpcb_query(); //send one datagram already at start
     lastOptionalPCBRunTime = millis();
+#endif
   }
 
   //these two after optional pcb because it needs to send a datagram fast after boot
@@ -1583,10 +1779,6 @@ void setup() {
   setupETH();
 #endif
 
-//  loggingSerial.println(F("Setup MQTT..."));
-//  setupMqtt();
-//shifted - TLS requires correct time
-
   loggingSerial.println(F("Setup HTTP..."));
   setupHttp();
 
@@ -1675,20 +1867,15 @@ void send_panasonic_query() {
     panasonicQuery[3] = 0x21; //setting 4th byte to 0x21 is a request for extra block
     send_command(panasonicQuery, PANASONICQUERYSIZE);
     panasonicQuery[3] = 0x10; //setting 4th back to 0x10 for normal data request next time
-  } else  {
-    //if ((actData[0] == 0x71) && (actData[1] == 0xc8) && (actData[2] == 0x01) && (actData[193] == 0)  && (actData[195] == 0)  && (actData[197] == 0) ) { //do we have valid data but 0 value in heat consumptiom power, then assume K or L series
-    if ((actData[0] == 0x71) && (actData[0xc7] >= 3) ) { //do we have valid header and byte 0xc7 is more or equal 3 then assume K&L and more series
-      log_message(_F("Assuming K or L heatpump type due to missing heat/cool/dhw power data"));
-      extraDataBlockAvailable = true; //request for extra data next run
-    }
   }
 }
 
+#ifdef ESP8266
 void send_optionalpcb_query() {
   log_message(_F("Sending optional PCB data"));
   send_command(optionalPCBQuery, OPTIONALPCBQUERYSIZE);
 }
-
+#endif
 
 void readHeatpump() {
   if (sending && ((unsigned long)(millis() - sendCommandReadTime) > SERIALTIMEOUT)) {
@@ -1738,19 +1925,30 @@ void loop() {
   }
 
   readHeatpump();
-  #ifdef ESP32
-  if (heishamonSettings.proxy) readProxy();
-  #endif
 
+#ifdef ESP32
+  if (heishamonSettings.proxy) readProxy();
+
+  if (logQueue != NULL) {
+    if (xQueueReceive(logQueue, log_msg, 0) == pdTRUE) {
+      log_message(log_msg);
+    }
+  }
+#endif
+
+#ifdef ESP8266
   if ((!sending) && (cmdnrel > 0)) { //check if there is a send command in the buffer
     log_message(_F("Sending command from buffer"));
     popCommandBuffer();
   }
+#endif
 
   if (heishamonSettings.use_1wire) dallasLoop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base);
 
   if (heishamonSettings.use_s0) s0Loop(mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.s0Settings);
 
+#ifdef ESP8266
+//this only runs on ESP8266, the ESP32 does this in vTask
   if ((!sending) && (!heishamonSettings.listenonly) && (heishamonSettings.optionalPCB) && ((unsigned long)(millis() - lastOptionalPCBRunTime) > OPTIONALPCBQUERYTIME) ) {
     lastOptionalPCBRunTime = millis();
     send_optionalpcb_query();
@@ -1763,6 +1961,7 @@ void loop() {
       }
     }
   }
+#endif
 
   // run the data query only each WAITTIME
   if ((unsigned long)(millis() - lastRunTime) > (1000 * heishamonSettings.waitTime)) {
@@ -1775,7 +1974,7 @@ void loop() {
   #endif
     {
       if (mqttReconnects > 0 ) log_message(_F("Lost MQTT connection!"));
-      mqtt_reconnect();
+      if (strlen(heishamonSettings.mqtt_server) > 0) mqtt_reconnect();
     }
 
 
@@ -1892,7 +2091,6 @@ void loop() {
         if (ETH.hasIP()) {
           ethernetStat = F("connected - IP: ");
           ethernetStat += ETH.localIP().toString();
-          ethernetStat += F(")");
         } else {
           ethernetStat = F("connected - no IP");
         }
@@ -1904,18 +2102,20 @@ void loop() {
       ethernetStat = F("not installed");
     }
     char *getuptime = getUptime();
-    sprintf_P(log_msg, PSTR("{\"data\": {\"stats\": {\"wifi\": %d, \"ethernet\": \"%s\", \"memory\": %d, \"correct\": %.0f,\"mqtt\": %d,\"uptime\": \"%s\"}}}"), getWifiQuality(), ethernetStat.c_str(), getFreeMemory(), readpercentage, mqttReconnects, getuptime);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"stats\": {\"wifi\": %d, \"ethernet\": \"%s\", \"memory\": %d, \"correct\": %.0f,\"mqtt\": %d,\"rules\": %d,\"uptime\": \"%s\"}}}"), getWifiQuality(), ethernetStat.c_str(), getFreeMemory(), readpercentage, mqttReconnects, nrrules, getuptime);
     free(getuptime);    
 #else
     char *getuptime = getUptime();
-    sprintf_P(log_msg, PSTR("{\"data\": {\"stats\": {\"wifi\": %d, \"memory\": %d, \"correct\": %.0f,\"mqtt\": %d,\"uptime\": \"%s\"}}}"), getWifiQuality(), getFreeMemory(), readpercentage, mqttReconnects, getuptime);    
+    sprintf_P(log_msg, PSTR("{\"data\": {\"stats\": {\"wifi\": %d, \"memory\": %d, \"correct\": %.0f,\"mqtt\": %d,\"rules\": %d,\"uptime\": \"%s\"}}}"), getWifiQuality(), getFreeMemory(), readpercentage, mqttReconnects, nrrules, getuptime);    
     free(getuptime);    
 #endif
     
     websocket_write_all(log_msg, strlen(log_msg));        
 
+#ifdef ESP8266
     //get new data
     if (!heishamonSettings.listenonly) send_panasonic_query();
+#endif
 
     //Make sure the LWT is set to Online, even if the broker have marked it dead.
     sprintf_P(mqtt_topic, PSTR("%s/%s"), heishamonSettings.mqtt_topic_base, mqtt_willtopic);

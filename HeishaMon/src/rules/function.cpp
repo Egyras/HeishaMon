@@ -29,10 +29,11 @@
 #include "functions/round.h"
 #include "functions/ceil.h"
 #include "functions/floor.h"
-#include "functions/settimer.h"
-#include "functions/isset.h"
 #include "functions/concat.h"
 #include "functions/print.h"
+//below are special for heishamon
+#include "functions/settimer.h"
+#include "functions/isset.h"
 #include "functions/gpio.h"
 
 struct rule_function_t rule_functions[] = {
@@ -40,12 +41,12 @@ struct rule_function_t rule_functions[] = {
   { "min", rule_function_min_callback },
   { "coalesce", rule_function_coalesce_callback },
   { "round", rule_function_round_callback },
-  { "floor", rule_function_floor_callback },
   { "ceil", rule_function_ceil_callback },
+  { "floor", rule_function_floor_callback },
+  { "concat", rule_function_concat_callback },
+  { "print", rule_function_print_callback },
   { "setTimer", rule_function_set_timer_callback },
   { "isset", rule_function_isset_callback },
-  { "print", rule_function_print_callback },
-  { "concat", rule_function_concat_callback },
   { "gpio", rule_function_gpio_callback }
 };
 

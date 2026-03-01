@@ -15,15 +15,15 @@
 #include "../function.h"
 #include "../rules.h"
 
-int8_t rule_function_isset_callback(struct rules_t *obj) {
-  uint8_t x = rules_gettop(obj);
+int8_t rule_function_isset_callback(void) {
+  uint8_t x = rules_gettop();
   uint8_t ret = 0;
 
   if(x < 1 || x > 1) {
     return -1;
   }
 
-  switch(rules_type(obj, -1)) {
+  switch(rules_type(-1)) {
     case VNULL: {
       ret = 0;
 #ifdef DEBUG
@@ -38,7 +38,7 @@ int8_t rule_function_isset_callback(struct rules_t *obj) {
 #endif
     } break;
   }
-  rules_remove(obj, -1);
-  rules_pushinteger(obj, ret);
+  rules_remove(-1);
+  rules_pushinteger(ret);
   return 0;
 }

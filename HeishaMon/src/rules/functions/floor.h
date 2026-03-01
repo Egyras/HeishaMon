@@ -12,6 +12,6 @@
 #include <stdint.h>
 #include "../rules.h"
 
-int8_t rule_function_floor_callback(struct rules_t *obj);
+int8_t rule_function_floor_callback(void);
 
 #endif

@@ -13,9 +13,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set version env var
+        run: echo "GIT_SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        shell: bash
+        
       - name: Update version.h
         if: github.ref != 'refs/heads/main' #do not change version in main branch run
-        run: cd HeishaMon && echo "static const char *heishamon_version = \"Alpha-$(git rev-parse --short HEAD)\";" > version.h && cat version.h
+        run: cd HeishaMon && echo "static const char *heishamon_version = \"Alpha-${{ env.GIT_SHORT_SHA }}\";" > version.h && cat version.h
         shell: bash
 
       - name: Setup Arduino CLI
@@ -53,5 +57,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: HeishaMon.ino.bin
+          name: Heishamon-firmware-Alpha-${{ env.GIT_SHORT_SHA }}
           path: HeishaMon/HeishaMon_*.bin

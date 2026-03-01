@@ -15,18 +15,18 @@
 #include "../function.h"
 #include "../rules.h"
 
-int8_t rule_function_gpio_callback(struct rules_t *obj) {
+int8_t rule_function_gpio_callback(void) {
   int8_t gpio = 0, state = 0;
-  uint8_t nr = rules_gettop(obj), x = 1;
+  uint8_t nr = rules_gettop(), x = 1;
 
   if(nr == 1 || nr == 2) {
-    if(rules_type(obj, x) == VINTEGER) {
-      gpio = rules_tointeger(obj, x);
-      rules_remove(obj, x);
+    if(rules_type(x) == VINTEGER) {
+      gpio = rules_tointeger(x);
+      rules_remove(x);
 #ifdef DEBUG
       printf("\tgpio = %d\n", gpio);
 #endif
-      rules_pushinteger(obj, digitalRead(gpio));
+      rules_pushinteger(digitalRead(gpio));
       if(nr == 1) {
         return 0;
       }
@@ -35,15 +35,15 @@ int8_t rule_function_gpio_callback(struct rules_t *obj) {
     }
   }
   if(nr == 2) {
-    if(rules_type(obj, x) == VINTEGER) {
-      state = rules_tointeger(obj, x);
+    if(rules_type(x) == VINTEGER) {
+      state = rules_tointeger(x);
       if(state < 0 || state > 1) {
         return -1;
       }
 #ifdef DEBUG
       printf("\tstate = %d\n", state);
 #endif
-      rules_remove(obj, x++);
+      rules_remove(x++);
     } else {
       return -1;
     }

@@ -68,6 +68,10 @@ These variables reflect parameters read from the connected thermostat when using
 - `ds18b20#2800000000000000`: Dallas 1-wire temperature values
 Use these variables to read the temperature of the connected sensors. These values are of course readonly. The id of the sensor should be placed after the hashtag.
 
+- `s0#watt[hour[total]]_?`: The S0 values for port 1 and 2. Replace the question mark with the port number.
+For example s0#watt_1 to get watt from port 1 and s0#watthourtotal_2 to get total watthours from port 2
+
+
 When a variable is called but not yet set to a value, the value will be `NULL`.
 
 Variables can be of boolean (`1` or `0`), float (`3.14`), integer (`10`), and string type. Defining strings is done with single or double quotes.

@@ -63,6 +63,9 @@ struct heishaOTDataStruct_t *getOTStructMember(const char *name) {
 void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
  if (status != OpenThermResponseStatus::SUCCESS) {
     log_message(_F("OpenTherm: Request invalid!"));
+    char log_msg[512];
+    sprintf_P(log_msg, PSTR("OpenTherm: Unknown data ID: %u (%#010lx)"), (unsigned int)ot.getDataID(request), request);
+    log_message(log_msg);    
  } else {
   char log_msg[512];
   {
@@ -288,7 +291,7 @@ void processOTRequest(unsigned long request, OpenThermResponseStatus status) {
           log_message(log_msg);
           otResponse = ot.buildResponse(OpenThermMessageType::READ_ACK, OpenThermMessageID::TdhwSet, ot.temperatureToData(getOTStructMember(_F("dhwSetpoint"))->value.f));
           rules_event_cb(_F("?"), _F("dhwsetpoint"));
-        }
+        } 
       } break;
     case OpenThermMessageID::MaxTSet: {
         if (ot.getMessageType(request) == OpenThermMessageType::WRITE_DATA) {
@@ -431,35 +434,42 @@ void HeishaOTLoop(char * actData, PubSubClient &mqtt_client, char* mqtt_topic_ba
 }
 
 void mqttOTCallback(char* topic, char* value) {
+  char log_msg[512];
   if (strcmp_P(topic,PSTR("chPressure")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'chPressure'"));
     getOTStructMember(_F("chPressure"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %.2f}}}"), _F("chPressure"), getOTStructMember(_F("chPressure"))->value.f); websocket_write_all(log_msg, strlen(log_msg));    
   }
   else if (strcmp_P(topic,PSTR("outsideTemp")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'outsideTemp'"));
     getOTStructMember(_F("outsideTemp"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %.2f}}}"), _F("outsideTemp"), getOTStructMember(_F("outsideTemp"))->value.f); websocket_write_all(log_msg, strlen(log_msg));
   }
-  else if (strcmp_P(topic, PSTR("inletTemp")) == 0) {
+  else if (strcmp_P(topic,PSTR("inletTemp")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'inletTemp'"));
     getOTStructMember(_F("inletTemp"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %.2f}}}"), _F("inletTemp"), getOTStructMember(_F("inletTemp"))->value.f); websocket_write_all(log_msg, strlen(log_msg));
   }
   else if (strcmp_P(topic, PSTR("outletTemp")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'outletTemp'"));
     getOTStructMember(_F("outletTemp"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %.2f}}}"), _F("outletTemp"), getOTStructMember(_F("outletTemp"))->value.f); websocket_write_all(log_msg, strlen(log_msg));
   }
   else if (strcmp_P(topic, PSTR("dhwTemp")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'dhwTemp'"));
     getOTStructMember(_F("dhwTemp"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %.2f}}}"), _F("dhwTemp"), getOTStructMember(_F("dhwTemp"))->value.f); websocket_write_all(log_msg, strlen(log_msg));
   }
   else if (strcmp_P(topic, PSTR("dhwSetpoint")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'dhwSetpoint'"));
     getOTStructMember(_F("dhwSetpoint"))->value.f = String(value).toFloat();
     rules_event_cb(_F("?"), topic);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %.2f}}}"), _F("dhwSetpoint"), getOTStructMember(_F("dhwSetpoint"))->value.f); websocket_write_all(log_msg, strlen(log_msg));
   }
   else if (strcmp_P(topic, PSTR("relativeModulation")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'relativeModulation'"));
@@ -467,70 +477,82 @@ void mqttOTCallback(char* topic, char* value) {
     if ((getOTStructMember(_F("relativeModulation"))->value.f > getOTStructMember(_F("maxRelativeModulation"))->value.f) && ( getOTStructMember(_F("maxRelativeModulation"))->value.f > -99)) { //need to change the relative modulation on the fly to comply with max requested
         getOTStructMember(_F("relativeModulation"))->value.f = getOTStructMember(_F("maxRelativeModulation"))->value.f;
     }
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %.2f}}}"), _F("relativeModulation"), getOTStructMember(_F("relativeModulation"))->value.f); websocket_write_all(log_msg, strlen(log_msg));
     rules_event_cb(_F("?"), topic);
   }  
   else if (strcmp_P(topic, PSTR("maxTSet")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'maxTSet'"));
     getOTStructMember(_F("maxTSet"))->value.f = String(value).toFloat();
-    if ((getOTStructMember(_F("maxTSet"))->value.f > getOTStructMember(_F("chSetUppBound"))->value.f)) { 
-        getOTStructMember(_F("maxTSet"))->value.f = getOTStructMember(_F("chSetUppBound"))->value.f;
-    } else if ((getOTStructMember(_F("maxTSet"))->value.f < getOTStructMember(_F("chSetLowBound"))->value.f)) { 
-        getOTStructMember(_F("maxTSet"))->value.f = getOTStructMember(_F("chSetLowBound"))->value.f;
+    if ((getOTStructMember(_F("maxTSet"))->value.f > getOTStructMember(_F("chSetUppBound"))->value.s8)) { 
+        getOTStructMember(_F("maxTSet"))->value.f = getOTStructMember(_F("chSetUppBound"))->value.s8;
+    } else if ((getOTStructMember(_F("maxTSet"))->value.f < getOTStructMember(_F("chSetLowBound"))->value.s8)) { 
+        getOTStructMember(_F("maxTSet"))->value.f = getOTStructMember(_F("chSetLowBound"))->value.s8;
     }           
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %.2f}}}"), _F("maxTSet"), getOTStructMember(_F("maxTSet"))->value.f); websocket_write_all(log_msg, strlen(log_msg));
     rules_event_cb(_F("?"), topic);
   }
   else if (strcmp_P(topic, PSTR("flameState")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'flameState'"));
     getOTStructMember(_F("flameState"))->value.b = ((stricmp((char*)"true", value) == 0) || (stricmp((char*)"on", value) == 0) || (String(value).toInt() == 1 ));
     rules_event_cb(_F("?"), topic);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %s}}}"), _F("flameState"), getOTStructMember(_F("flameState"))->value.b ? _F("true") : _F("false")); websocket_write_all(log_msg, strlen(log_msg));
   }
   else if (strcmp_P(topic, PSTR("chState")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'chState'"));
     getOTStructMember(_F("chState"))->value.b = ((stricmp((char*)"true", value) == 0) || (stricmp((char*)"on", value) == 0) || (String(value).toInt() == 1 ));
     rules_event_cb(_F("?"), topic);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %s}}}"), _F("chState"), getOTStructMember(_F("chState"))->value.b ? _F("true") : _F("false")); websocket_write_all(log_msg, strlen(log_msg));
   }
   else if (strcmp_P(topic, PSTR("dhwState")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'dhwState'"));
     getOTStructMember(_F("dhwState"))->value.b = ((stricmp((char*)"true", value) == 0) || (stricmp((char*)"on", value) == 0) || (String(value).toInt() == 1 ));
     rules_event_cb(_F("?"), topic);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %s}}}"), _F("dhwState"), getOTStructMember(_F("dhwState"))->value.b ? _F("true") : _F("false")); websocket_write_all(log_msg, strlen(log_msg));
   }
   else if (strcmp_P(topic, PSTR("coolingState")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'coolingState'"));
     getOTStructMember(_F("coolingState"))->value.b = ((stricmp((char*)"true", value) == 0) || (stricmp((char*)"on", value) == 0) || (String(value).toInt() == 1 ));
     rules_event_cb(_F("?"), topic);
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %s}}}"), _F("coolingState"), getOTStructMember(_F("coolingState"))->value.b ? _F("true") : _F("false")); websocket_write_all(log_msg, strlen(log_msg));
   }  
+  
   else if (strcmp_P(topic, PSTR("dhwSetUppBound")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'dhwSetUppBound'"));
     getOTStructMember(_F("dhwSetUppBound"))->value.s8 = String(value).toInt();
-    if ((getOTStructMember(_F("dhwSetUppBound"))->value.f < getOTStructMember(_F("dhwSetLowBound"))->value.f)) { 
-        getOTStructMember(_F("dhwSetUppBound"))->value.f = getOTStructMember(_F("dhwSetLowBound"))->value.f;
-    }        
+    if ((getOTStructMember(_F("dhwSetUppBound"))->value.s8 < getOTStructMember(_F("dhwSetLowBound"))->value.s8)) { 
+        getOTStructMember(_F("dhwSetUppBound"))->value.s8 = getOTStructMember(_F("dhwSetLowBound"))->value.s8;
+    }
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %d}}}"), _F("dhwSetUppBound"), getOTStructMember(_F("dhwSetUppBound"))->value.s8); websocket_write_all(log_msg, strlen(log_msg));        
     rules_event_cb(_F("?"), topic);
   }
   else if (strcmp_P(topic, PSTR("dhwSetLowBound")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'dhwSetLowBound'"));
     getOTStructMember(_F("dhwSetLowBound"))->value.s8 = String(value).toInt();
-    if ((getOTStructMember(_F("dhwSetLowBound"))->value.f > getOTStructMember(_F("dhwSetUppBound"))->value.f)) { 
-        getOTStructMember(_F("dhwSetLowBound"))->value.f = getOTStructMember(_F("dhwSetUppBound"))->value.f;
-    }       
+    if ((getOTStructMember(_F("dhwSetLowBound"))->value.s8 > getOTStructMember(_F("dhwSetUppBound"))->value.s8)) { 
+        getOTStructMember(_F("dhwSetLowBound"))->value.s8 = getOTStructMember(_F("dhwSetUppBound"))->value.s8;
+    }
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %d}}}"), _F("dhwSetLowBound"), getOTStructMember(_F("dhwSetLowBound"))->value.s8); websocket_write_all(log_msg, strlen(log_msg));      
     rules_event_cb(_F("?"), topic);
-  }    
+  }   
+ 
   else if (strcmp_P(topic, PSTR("chSetUppBound")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'chSetUppBound'"));
     getOTStructMember(_F("chSetUppBound"))->value.s8 = String(value).toInt();
-    if ((getOTStructMember(_F("chSetUppBound"))->value.f < getOTStructMember(_F("chSetLowBound"))->value.f)) { 
-        getOTStructMember(_F("chSetUppBound"))->value.f = getOTStructMember(_F("chSetLowBound"))->value.f;
+    if ((getOTStructMember(_F("chSetUppBound"))->value.s8 < getOTStructMember(_F("chSetLowBound"))->value.s8)) { 
+        getOTStructMember(_F("chSetUppBound"))->value.s8 = getOTStructMember(_F("chSetLowBound"))->value.s8;
     }    
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %d}}}"), _F("chSetUppBound"), getOTStructMember(_F("chSetUppBound"))->value.s8); websocket_write_all(log_msg, strlen(log_msg));
     rules_event_cb(_F("?"), topic);
   }
   else if (strcmp_P(topic, PSTR("chSetLowBound")) == 0) {
     log_message(_F("OpenTherm: MQTT message received 'chSetLowBound'"));
     getOTStructMember(_F("chSetLowBound"))->value.s8 = String(value).toInt();
-    if ((getOTStructMember(_F("chSetLowBound"))->value.f > getOTStructMember(_F("chSetUppBound"))->value.f)) { 
-        getOTStructMember(_F("chSetLowBound"))->value.f = getOTStructMember(_F("chSetUppBound"))->value.f;
-    }        
+    if ((getOTStructMember(_F("chSetLowBound"))->value.s8 > getOTStructMember(_F("chSetUppBound"))->value.s8)) { 
+        getOTStructMember(_F("chSetLowBound"))->value.s8 = getOTStructMember(_F("chSetUppBound"))->value.s8;
+    }
+    sprintf_P(log_msg, PSTR("{\"data\": {\"opentherm\": {\"name\": \"%s\", \"value\": %d}}}"), _F("chSetLowBound"), getOTStructMember(_F("chSetLowBound"))->value.s8); websocket_write_all(log_msg, strlen(log_msg));        
     rules_event_cb(_F("?"), topic);
-  }      
+  }
 }
 
 void openthermJsonOutput(struct webserver_t *client) {
@@ -633,22 +655,23 @@ void openthermJsonOutput(struct webserver_t *client) {
   webserver_send_content_P(client, PSTR("},"), 2);  
   //dhwSetUppBound
   webserver_send_content_P(client, PSTR("\"dhwSetUppBound\":{\"type\": \"R\",\"value\":"), 38);
-  itoa( getOTStructMember(_F("dhwSetUppBound"))->value.f, str, 10);
+  itoa( getOTStructMember(_F("dhwSetUppBound"))->value.s8, str, 10);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("},"), 2);
   //dhwSetLowBound
   webserver_send_content_P(client, PSTR("\"dhwSetLowBound\":{\"type\": \"R\",\"value\":"), 38);
-  itoa( getOTStructMember(_F("dhwSetLowBound"))->value.f, str, 10);
+  itoa( getOTStructMember(_F("dhwSetLowBound"))->value.s8, str, 10);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("},"), 2);
   //chSetUppBound
   webserver_send_content_P(client, PSTR("\"chSetUppBound\":{\"type\": \"R\",\"value\":"), 37);
-  itoa( getOTStructMember(_F("chSetUppBound"))->value.f, str, 10);
+  itoa( getOTStructMember(_F("chSetUppBound"))->value.s8, str, 10);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("},"), 2);
   //chSetLowBound
   webserver_send_content_P(client, PSTR("\"chSetLowBound\":{\"type\": \"R\",\"value\":"), 37);
-  itoa( getOTStructMember(_F("chSetLowBound"))->value.f, str, 10);
+  itoa( getOTStructMember(_F("chSetLowBound"))->value.s8, str, 10);
   webserver_send_content(client, str, strlen(str));
   webserver_send_content_P(client, PSTR("}}"), 2);       //this is the last line in JSON, keep this at the end 
 }
+
