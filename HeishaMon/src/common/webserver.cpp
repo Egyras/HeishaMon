@@ -933,17 +933,31 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
           unsigned char *ptr = strncasestr(client->buffer, "\";", client->ptr);
           if(ptr != NULL) {
             uint16_t pos = (ptr-client->buffer);
-            unsigned char *ptr1 = strncasestr(&client->buffer[pos], "\r\n", client->ptr-pos);
+            // First try to find \r\n\r\n (end of all headers)
+            unsigned char *ptr1 = strnstr(&client->buffer[pos], "\r\n\r\n", client->ptr-pos);
             if(ptr1 != NULL) {
-              client->buffer[pos++] = '=';
-              uint16_t pos1 = (ptr1-client->buffer);
-              uint16_t newlen = client->ptr-((pos1+2)-pos);
-              memmove(&client->buffer[pos], &client->buffer[pos1+2], newlen);
-              client->ptr = newlen;
-              client->readlen += (pos1+2);
-              client->substep = 5;
+                // Double CRLF found - skip directly to data
+                client->buffer[pos++] = '=';
+                uint16_t pos1 = (ptr1-client->buffer);
+                uint16_t newlen = client->ptr-((pos1+4)-pos);
+                memmove(&client->buffer[pos], &client->buffer[pos1+4], newlen);
+                client->ptr = newlen;
+                client->readlen += (pos1+4);
+                client->substep = 7;  // skip case 5 entirely, go straight to data
             } else {
-              client->substep = 6;
+                // Single \r\n - more headers follow, go to case 5
+                ptr1 = strncasestr(&client->buffer[pos], "\r\n", client->ptr-pos);
+                if(ptr1 != NULL) {
+                    client->buffer[pos++] = '=';
+                    uint16_t pos1 = (ptr1-client->buffer);
+                    uint16_t newlen = client->ptr-((pos1+2)-pos);
+                    memmove(&client->buffer[pos], &client->buffer[pos1+2], newlen);
+                    client->ptr = newlen;
+                    client->readlen += (pos1+2);
+                    client->substep = 5;
+                } else {
+                    client->substep = 6;
+                }
             }
           } else {
             loop = 0;
