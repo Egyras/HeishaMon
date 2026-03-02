@@ -945,18 +945,23 @@ int http_parse_multipart_body(struct webserver_t *client, unsigned char *buf, ui
                 client->readlen += (pos1+4);
                 client->substep = 7;  // skip case 5 entirely, go straight to data
             } else {
-                // Single \r\n - more headers follow, go to case 5
+                // Single \r\n - if more headers follow, go to case 5
                 ptr1 = strncasestr(&client->buffer[pos], "\r\n", client->ptr-pos);
                 if(ptr1 != NULL) {
-                    client->buffer[pos++] = '=';
-                    uint16_t pos1 = (ptr1-client->buffer);
-                    uint16_t newlen = client->ptr-((pos1+2)-pos);
-                    memmove(&client->buffer[pos], &client->buffer[pos1+2], newlen);
-                    client->ptr = newlen;
-                    client->readlen += (pos1+2);
-                    client->substep = 5;
-                } else {
-                    client->substep = 6;
+                    if (((ptr1-client->buffer) + 4) >= client->ptr) {
+                        //CRLF on end of buffer, wait for two more to make sure we are not at end of header
+					    loop = 0;
+                    } else {
+                        client->buffer[pos++] = '=';
+                        uint16_t pos1 = (ptr1-client->buffer);
+                        uint16_t newlen = client->ptr-((pos1+2)-pos);
+                        memmove(&client->buffer[pos], &client->buffer[pos1+2], newlen);
+                        client->ptr = newlen;
+                       client->readlen += (pos1+2);
+                        client->substep = 5;
+                    }
+                  } else {
+                      client->substep = 6;
                 }
             }
           } else {

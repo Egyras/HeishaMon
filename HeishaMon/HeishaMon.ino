@@ -741,21 +741,25 @@ bool readSerial()
             log_message(_F("Extra data available on this heatpump"));
             extraDataBlockAvailable = true; //request for extra data next run
           }
+          #ifdef RAWDEBUG
           {
             char mqtt_topic[256];
             sprintf(mqtt_topic, "%s/raw/data", heishamonSettings.mqtt_topic_base);
             mqtt_client.publish(mqtt_topic, (const uint8_t *)actData, DATASIZE, false); //do not retain this raw data
           }
+          #endif
           data_length = 0;
           return true;
         } else if (data[3] == 0x21) { //decode the new model extra data block
           extraDataBlockAvailable = true; //set the flag to true so we know we can request this data always
           decode_heatpump_data_extra(data, actDataExtra, mqtt_client, log_message, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
+          #ifdef RAWDEBUG
           {
             char mqtt_topic[256];
             sprintf(mqtt_topic, "%s/raw/dataextra", heishamonSettings.mqtt_topic_base);
             mqtt_client.publish(mqtt_topic, (const uint8_t *)actDataExtra, DATASIZE, false); //do not retain this raw data
           }
+          #endif
           data_length = 0;
           return true;
         } else {
@@ -814,6 +818,7 @@ void pushCommandBuffer(byte* command, int length) {
 void serialTXTask(void *pvParameters) {
   unsigned long lastPCBSendTime = 0;
   unsigned long lastHPSendTime = 0;
+  unsigned long lastHPExtraSendTime = 0;
   unsigned long lastPCBSaveTime = 0;
   char local_log_msg[LOG_MSG_SIZE];
 
@@ -857,17 +862,25 @@ void serialTXTask(void *pvParameters) {
         byte chk = calcChecksum(panasonicQuery, PANASONICQUERYSIZE);
         heatpumpSerial.write(panasonicQuery, PANASONICQUERYSIZE);
         heatpumpSerial.write(chk);
-        if (extraDataBlockAvailable) {
-          panasonicQuery[3] = 0x21;
-          chk = calcChecksum(panasonicQuery, PANASONICQUERYSIZE);
-          heatpumpSerial.write(panasonicQuery, PANASONICQUERYSIZE);
-          heatpumpSerial.write(chk);
-          panasonicQuery[3] = 0x10;
-        }
-        sprintf_P(local_log_msg, PSTR("heatpump request datagram sent bytes: %d"), PANASONICQUERYSIZE + 1);
+        sprintf_P(local_log_msg, PSTR("heatpump request query sent bytes: %d"), PANASONICQUERYSIZE + 1);
         xQueueSend(logQueue,local_log_msg,0);    
       }
     }
+
+    // third priority: extra data block query every waitTime seconds (offset from basic query)
+    if ((!sending) && (!heishamonSettings.listenonly) && extraDataBlockAvailable) {
+      if ((unsigned long)(now - lastHPExtraSendTime) >= (1000 * heishamonSettings.waitTime)) {
+        lastHPExtraSendTime = now;
+        sending = true;
+        sendCommandReadTime = now;
+        panasonicQuery[3] = 0x21;
+        byte chk = calcChecksum(panasonicQuery, PANASONICQUERYSIZE);
+        heatpumpSerial.write(panasonicQuery, PANASONICQUERYSIZE);
+        heatpumpSerial.write(chk);
+        panasonicQuery[3] = 0x10;
+        xQueueSend(logQueue, (void*)"heatpump extra query sent", 0);
+      }
+    }    
 
     // lowest priority: user commands from queue
     if ((!sending) && (!heishamonSettings.listenonly)) {
