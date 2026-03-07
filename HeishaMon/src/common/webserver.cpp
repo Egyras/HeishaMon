@@ -1810,11 +1810,14 @@ static void webserver_client_close(struct webserver_t *client) {
   }
 #if defined(ESP8266) || defined(ESP32)
   loggingSerial.print(F("Closing webserver client: "));
-  loggingSerial.print(client->client->remoteIP().toString().c_str());
-  loggingSerial.print(F(":"));
-  loggingSerial.println(client->pcb->remote_port);
-  if(client->callback != NULL) {
-    client->callback(client, NULL);
+  if(client->async == 1) {
+    loggingSerial.print(ipaddr_ntoa(&client->pcb->remote_ip));
+    loggingSerial.print(F(":"));
+    loggingSerial.println(client->pcb->remote_port);
+  } else {
+    loggingSerial.print(client->client->remoteIP().toString().c_str());
+    loggingSerial.print(F(":"));
+    loggingSerial.println(client->client->remotePort());
   }
 
   client->step = 0;
@@ -2156,7 +2159,7 @@ err_t webserver_poll(void *arg, struct tcp_pcb *pcb) {
       }
       if((unsigned long)(millis() - clients[i].data.lastseen) > WEBSERVER_CLIENT_TIMEOUT) {
   #if defined(ESP8266) || defined(ESP32)
-        loggingSerial.printf("Timeout webserver client: %s:%d", clients[i].data.client->remoteIP().toString().c_str(), clients[i].data.client->remotePort());
+		loggingSerial.printf("Timeout webserver client: %s:%d", ipaddr_ntoa(&clients[i].data.pcb->remote_ip), clients[i].data.pcb->remote_port);
   #endif
         clients[i].data.step = WEBSERVER_CLIENT_CLOSE;
         webserver_client_close(&clients[i].data);
@@ -2247,9 +2250,9 @@ err_t webserver_client(void *arg, tcp_pcb *pcb, err_t err) {
       clients[i].data.step = WEBSERVER_CLIENT_READ_HEADER;
 
       loggingSerial.print(F("New webserver client: "));
-      loggingSerial.print(clients[i].data.client->remoteIP().toString().c_str());
-      loggingSerial.print(F(":"));
-      loggingSerial.println(clients[i].data.pcb->remote_port);
+	  loggingSerial.print(ipaddr_ntoa(&clients[i].data.pcb->remote_ip));
+	  loggingSerial.print(F(":"));
+	  loggingSerial.println(clients[i].data.pcb->remote_port);
 
       //tcp_nagle_disable(pcb);
       tcp_recv(pcb, &webserver_async_receive);
@@ -2280,7 +2283,7 @@ void webserver_loop(void) {
     if((unsigned long)(millis() - clients[i].data.lastseen) > WEBSERVER_CLIENT_TIMEOUT) {
 #if defined(ESP8266) || defined(ESP32)
         loggingSerial.print("Timeout webserver client: ");
-        loggingSerial.print(clients[i].data.client->remoteIP());
+        loggingSerial.print(clients[i].data.client->remoteIP()); //ok to use, no async call
         loggingSerial.print(":");
         loggingSerial.println(clients[i].data.client->remotePort());
 #endif
@@ -2347,7 +2350,7 @@ void webserver_loop(void) {
       case WEBSERVER_CLIENT_CLOSE: {
 #if defined(ESP8266) || defined(ESP32)
         loggingSerial.print("Closing webserver client: ");
-        loggingSerial.print(clients[i].data.client->remoteIP());
+        loggingSerial.print(clients[i].data.client->remoteIP()); //ok to use, no async call
         loggingSerial.print(":");
         loggingSerial.println(clients[i].data.client->remotePort());
 #endif
