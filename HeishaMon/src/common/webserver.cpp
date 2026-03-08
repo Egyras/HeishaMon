@@ -1293,7 +1293,7 @@ static uint16_t webserver_create_header(struct webserver_t *client, uint16_t cod
 
 
   if(client->async == 1) {
-    tcp_write(client->pcb, &buffer, i, 0);
+    tcp_write(client->pcb, &buffer, i, TCP_WRITE_FLAG_COPY);
     tcp_output(client->pcb);
   } else {
     if(safe_write(client,buffer, i) > 0) {
@@ -1372,7 +1372,7 @@ static int webserver_process_send(struct webserver_t *client) {
     size_t n = snprintf_P((char *)chunk_size, sizeof(chunk_size), PSTR("%X\r\n"), client->totallen - cpylen);
 
     if(client->async == 1) {
-      tcp_write(client->pcb, chunk_size, n, 0);
+      tcp_write(client->pcb, chunk_size, n, TCP_WRITE_FLAG_COPY);
     } else {
       if(safe_write(client,chunk_size, n) > 0) {
         if(client->is_websocket == 0) {
@@ -1408,7 +1408,7 @@ static int webserver_process_send(struct webserver_t *client) {
              memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], tmp->size);
 #endif
             if(client->async == 1) {
-              tcp_write(client->pcb, cpy, tmp->size, TCP_WRITE_FLAG_MORE);
+              tcp_write(client->pcb, cpy, tmp->size, TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
             } else {
               if(safe_write(client,cpy, tmp->size) > 0) {
                 if(client->is_websocket == 0) {
@@ -1418,7 +1418,7 @@ static int webserver_process_send(struct webserver_t *client) {
             }
           } else {
             if(client->async == 1) {
-              tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], tmp->size, TCP_WRITE_FLAG_MORE);
+              tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], tmp->size, TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
             } else {
               if(safe_write(client,&((unsigned char *)tmp->data.ptr)[client->ptr], tmp->size) > 0) {
                 if(client->is_websocket == 0) {
@@ -1462,7 +1462,7 @@ static int webserver_process_send(struct webserver_t *client) {
              memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], client->totallen);
 #endif
             if(client->async == 1) {
-              tcp_write(client->pcb, cpy, client->totallen, TCP_WRITE_FLAG_MORE);
+              tcp_write(client->pcb, cpy, client->totallen, TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
             } else {
               if(safe_write(client,cpy, client->totallen) > 0) {
                 if(client->is_websocket == 0) {
@@ -1472,7 +1472,7 @@ static int webserver_process_send(struct webserver_t *client) {
             }
           } else {
             if(client->async == 1) {
-              tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], client->totallen, TCP_WRITE_FLAG_MORE);
+              tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], client->totallen, TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
             } else {
               if(safe_write(client,&((unsigned char *)tmp->data.ptr)[client->ptr], client->totallen) > 0) {
                 if(client->is_websocket == 0) {
@@ -1496,7 +1496,7 @@ static int webserver_process_send(struct webserver_t *client) {
            memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], (tmp->size-client->ptr));
 #endif
           if(client->async == 1) {
-            tcp_write(client->pcb, cpy, (tmp->size-client->ptr), TCP_WRITE_FLAG_MORE);
+            tcp_write(client->pcb, cpy, (tmp->size-client->ptr), TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
           } else {
             if(safe_write(client,cpy, (tmp->size-client->ptr)) > 0) {
               if(client->is_websocket == 0) {
@@ -1506,7 +1506,7 @@ static int webserver_process_send(struct webserver_t *client) {
           }
         } else {
           if(client->async == 1) {
-            tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], (tmp->size-client->ptr), TCP_WRITE_FLAG_MORE);
+            tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], (tmp->size-client->ptr), TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
           } else {
             if(safe_write(client,&((unsigned char *)tmp->data.ptr)[client->ptr], (tmp->size-client->ptr)) > 0) {
               if(client->is_websocket == 0) {
@@ -1549,7 +1549,7 @@ static int webserver_process_send(struct webserver_t *client) {
            memcpy_P(cpy, &((PGM_P)tmp->data.ptr)[client->ptr], client->totallen);
 #endif
           if(client->async == 1) {
-            tcp_write(client->pcb, cpy, client->totallen, TCP_WRITE_FLAG_MORE);
+            tcp_write(client->pcb, cpy, client->totallen, TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
           } else {
             if(safe_write(client,cpy, client->totallen) > 0) {
               if(client->is_websocket == 0) {
@@ -1559,7 +1559,7 @@ static int webserver_process_send(struct webserver_t *client) {
           }
         } else {
           if(client->async == 1) {
-            tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], client->totallen, TCP_WRITE_FLAG_MORE);
+            tcp_write(client->pcb, &((unsigned char *)tmp->data.ptr)[client->ptr], client->totallen, TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
           } else {
             if(safe_write(client,&((unsigned char *)tmp->data.ptr)[client->ptr], client->totallen) > 0) {
               if(client->is_websocket == 0) {
@@ -1574,7 +1574,7 @@ static int webserver_process_send(struct webserver_t *client) {
     }
     if(client->chunked == 1) {
       if(client->async == 1) {
-        tcp_write_P(client->pcb, PSTR("\r\n"), 2, TCP_WRITE_FLAG_MORE);
+        tcp_write_P(client->pcb, PSTR("\r\n"), 2, TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
       } else {
         if(safe_write_P(client,(char *)PSTR("\r\n"), 2) > 0) {
           if(client->is_websocket == 0) {
@@ -1620,7 +1620,7 @@ static int webserver_process_send(struct webserver_t *client) {
       if(tmp == NULL) {
         if(client->chunked == 1) {
           if(client->async == 1) {
-            tcp_write_P(client->pcb, PSTR("0\r\n\r\n"), 5, 0);
+            tcp_write_P(client->pcb, PSTR("0\r\n\r\n"), 5, TCP_WRITE_FLAG_COPY);
           } else {
             if(safe_write_P(client,(char *)PSTR("0\r\n\r\n"), 5) > 0) {
               if(client->is_websocket == 0) {
@@ -1631,7 +1631,7 @@ static int webserver_process_send(struct webserver_t *client) {
           i += 5;
         } else {
           if(client->async == 1) {
-            tcp_write_P(client->pcb, PSTR("\r\n\r\n"), 4, 0);
+            tcp_write_P(client->pcb, PSTR("\r\n\r\n"), 4, TCP_WRITE_FLAG_COPY);
           } else {
             if(safe_write_P(client,(char *)PSTR("\r\n\r\n"), 4) > 0) {
               if(client->is_websocket == 0) {
@@ -1796,7 +1796,7 @@ int8_t webserver_send(struct webserver_t *client, uint16_t code, char *mimetype,
 
 done:
     if(client->async == 1) {
-      tcp_write(client->pcb, &buffer, i, 0);
+      tcp_write(client->pcb, &buffer, i, TCP_WRITE_FLAG_COPY);
       tcp_output(client->pcb);
     } else{
       if(safe_write(client,(unsigned char *)&buffer, i) > 0) {
@@ -1910,7 +1910,7 @@ static void send_websocket_handshake(struct webserver_t *client, const char *key
   }
 
   if(client->async == 1) {
-    tcp_write(client->pcb, buf, len, 0);
+    tcp_write(client->pcb, buf, len, TCP_WRITE_FLAG_COPY);
     tcp_output(client->pcb);
   } else {
     if(safe_write(client,buf, len) > 0 && client->is_websocket == 0) {
