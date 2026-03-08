@@ -717,7 +717,7 @@ static const char webBodyStart[] FLASHPROG = R"====(
   
   <nav class='sidemenu-nav' id='sideNav'></nav>
   <div class='sidemenu-footer'>
-    <a href='https://github.com/Egyras/HeishaMon' target='_blank'>GitHub</a>
+    <a href='https://github.com/heishamon/HeishaMon' target='_blank'>GitHub</a>
   </div>
 </aside>
 <header class='topbar'>
