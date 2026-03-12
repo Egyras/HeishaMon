@@ -4,8 +4,8 @@ on:
   push:
   pull_request:
   workflow_dispatch:
-  #schedule:
-  #  - cron: '0 2 * * *'  # nightly at 2am UTC
+  schedule:
+    - cron: '0 2 * * *'  # nightly at 2am UTC
 
 permissions:
   contents: write
