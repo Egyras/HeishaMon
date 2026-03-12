@@ -604,6 +604,10 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 #ifdef ESP32  
   jsonDoc[F("proxy")] = String("disabled");
 #endif  
+#ifdef TLS_SUPPORT
+  jsonDoc[F("mqtt_tls_enabled")] = String("disabled");
+#endif
+
   jsonDoc[F("use_1wire")] = String("disabled");
   jsonDoc[F("use_s0")] = String("disabled");
 
