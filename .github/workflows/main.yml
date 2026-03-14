@@ -2,6 +2,10 @@ name: Build binary
 
 on:
   push:
+    branches-ignore:
+      - main        # never run on plain main pushes
+    tags:
+      - '**'        # but DO run on any tag (including tags on main)
   pull_request:
   workflow_dispatch:
   schedule:
@@ -24,15 +28,24 @@ jobs:
         run: echo "GIT_SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
         shell: bash
 
-      - name: Update version.h
-        if: github.ref != 'refs/heads/main' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+      - name: Set build type env var
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="Nightly-${{ env.GIT_SHORT_SHA }}"
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "BUILD_TYPE=Release" >> $GITHUB_ENV
+            echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "BUILD_TYPE=Nightly" >> $GITHUB_ENV
+            echo "VERSION=Nightly-${{ env.GIT_SHORT_SHA }}" >> $GITHUB_ENV
           else
-            VERSION="Alpha-${{ env.GIT_SHORT_SHA }}"
+            echo "BUILD_TYPE=Alpha" >> $GITHUB_ENV
+            echo "VERSION=Alpha-${{ env.GIT_SHORT_SHA }}" >> $GITHUB_ENV
           fi
-          cd HeishaMon && echo "static const char *heishamon_version = \"${VERSION}\";" > version.h && cat version.h
+        shell: bash
+
+      - name: Update version.h
+        if: github.ref != 'refs/heads/main' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+        run: |
+          cd HeishaMon && echo "static const char *heishamon_version = \"${{ env.VERSION }}\";" > version.h && cat version.h
         shell: bash
 
       - name: Setup Arduino CLI
@@ -56,21 +69,36 @@ jobs:
         run: cd HeishaMon && arduino-cli compile --output-dir . --fqbn=esp8266:esp8266:d1_mini:xtal=160,vt=flash,ssl=basic,mmu=3216,non32xfer=fast,eesz=4M2M,ip=lm2f,dbg=Disabled,lvl=None____,wipe=none,baud=921600 --warnings=none --verbose HeishaMon.ino
 
       - name: Add MD5 checksum to ESP8266 binary
-        run: cd HeishaMon && MD5=`md5sum HeishaMon.ino.bin | cut -d\  -f1` && mv HeishaMon.ino.bin HeishaMon_ESP8266-alpha-$MD5.bin
+        run: |
+          cd HeishaMon
+          MD5=`md5sum HeishaMon.ino.bin | cut -d\  -f1`
+          mv HeishaMon.ino.bin HeishaMon_ESP8266-${{ env.BUILD_TYPE }}-$MD5.bin
         shell: bash
 
       - name: Compile Sketch for ESP32
         run: cd HeishaMon && arduino-cli compile --output-dir . --fqbn=esp32:esp32:esp32s3:CDCOnBoot=cdc,PSRAM=enabled,PartitionScheme=min_spiffs --warnings=none --verbose HeishaMon.ino
 
       - name: Add MD5 checksum to ESP32 binary
-        run: cd HeishaMon && MD5=`md5sum HeishaMon.ino.bin | cut -d\  -f1` && mv HeishaMon.ino.bin HeishaMon_ESP32-alpha-$MD5.bin
+        run: |
+          cd HeishaMon
+          MD5=`md5sum HeishaMon.ino.bin | cut -d\  -f1`
+          mv HeishaMon.ino.bin HeishaMon_ESP32-${{ env.BUILD_TYPE }}-$MD5.bin
         shell: bash
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Heishamon-firmware-Alpha-${{ env.GIT_SHORT_SHA }}
+          name: Heishamon-firmware-${{ env.BUILD_TYPE }}-${{ env.GIT_SHORT_SHA }}
           path: HeishaMon/HeishaMon_*.bin
+
+      - name: Delete old nightly assets
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+        run: |
+          gh release view nightly --json assets --jq '.assets[].name' | \
+          xargs -I{} gh release delete-asset nightly {} --yes || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
 
       - name: Publish nightly release
         if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
@@ -83,4 +111,15 @@ jobs:
             Commit: ${{ github.sha }}
             Built: ${{ github.run_id }}
           prerelease: true
+          files: HeishaMon/HeishaMon_*.bin
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Release ${{ github.ref_name }}"
+          body: |
+            Release ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+          prerelease: false
           files: HeishaMon/HeishaMon_*.bin
