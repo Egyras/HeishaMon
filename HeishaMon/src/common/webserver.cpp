@@ -76,17 +76,25 @@ static WiFiServer sync_server(0);
 #endif
 static uint8_t *rbuffer = NULL;
 
+/*
+  safe write is necessary for esp8266 so it doesn't block
+  on esp32 wifi is multithreaded, not necessary but also not implemented on availableforWrite so skip it there
+*/
 static int16_t safe_write(struct webserver_t *client, const uint8_t *buf, uint16_t len) {
+#if defined(ESP8266)
   if(client->client->availableForWrite() == 0) {
     return 0;
   }
+#endif  
   return client->client->write(buf, len);
 }
 
 static int16_t safe_write_P(struct webserver_t *client, PGM_P buf, uint16_t len) {
+#if defined(ESP8266)
   if(client->client->availableForWrite() == 0) {
     return 0;
   }
+#endif  
   return client->client->write_P((char *)buf, len);
 }
 
