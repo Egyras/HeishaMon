@@ -2323,18 +2323,18 @@ function uploadFile(){
 </script>
 <div class='firmware-container'>
   <div class='firmware-info'>
-)====" \
-#ifdef ESP32 \
-R"====(    <strong>Board:</strong> ESP32-S3<br>
+)===="
+#ifdef ESP32
+R"====(    <strong>Board:</strong> HeishaMon Large (ESP32)<br>
     Download the <strong>HeishaMon_ESP32</strong> binary from the
-    <a href='https://github.com/heishamon/HeishaMon/releases' target='_blank'>releases page</a>.
-)====" \
-#else \
-R"====(    <strong>Board:</strong> ESP8266 (D1 Mini)<br>
+    <a href='https://github.com/heishamon/HeishaMon/tree/main/binaries' target='_blank'>releases page</a>.
+)===="
+#else
+R"====(    <strong>Board:</strong> HeishaMon Small (ESP8266)<br>
     Download the <strong>HeishaMon_ESP8266</strong> binary from the
-    <a href='https://github.com/heishamon/HeishaMon/releases' target='_blank'>releases page</a>.
-)====" \
-#endif \
+    <a href='https://github.com/heishamon/HeishaMon/tree/main/binaries' target='_blank'>releases page</a>.
+)===="
+#endif
 R"====(  </div>
   <div class='panel'>
     <div class='panel-header'><h3>Firmware Update</h3></div>
