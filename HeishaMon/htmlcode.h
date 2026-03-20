@@ -71,7 +71,6 @@ body{
   color:var(--text-primary);
   min-height:100vh;
   line-height:1.5;
-  overflow-x:hidden;
   transition:background 0.3s, color 0.3s;
 }
 
@@ -350,6 +349,10 @@ input:disabled + .theme-slider-compact {
   border-bottom:1px solid rgba(42,48,64,.4);
   gap:16px;
 }
+@media(max-width:480px){
+  .setting-row{grid-template-columns:1fr}
+  .setting-label{text-align:left}
+}
 .setting-row:last-child{border-bottom:none}
 .setting-row:hover{background:rgba(30,34,48,.4)}
 .setting-label{
@@ -436,6 +439,17 @@ select.setting-input{appearance:auto}
   margin-top:20px;line-height:1.6;
 }
 .firmware-warning strong{color:var(--text-primary)}
+.firmware-info{
+  background:rgba(58,123,213,.08);
+  border:1px solid rgba(58,123,213,.25);
+  border-radius:var(--radius);
+  padding:16px 20px;
+  font-size:12.5px;
+  color:var(--text-secondary);
+  margin-bottom:20px;line-height:1.8;
+}
+.firmware-info strong{color:var(--text-primary)}
+.firmware-info a{color:var(--accent)}
 progress{
   width:100%;height:6px;
   appearance:none;
@@ -2308,6 +2322,20 @@ function uploadFile(){
 }
 </script>
 <div class='firmware-container'>
+  <div class='firmware-info'>
+)====" \
+#ifdef ESP32 \
+R"====(    <strong>Board:</strong> ESP32-S3<br>
+    Download the <strong>HeishaMon_ESP32</strong> binary from the
+    <a href='https://github.com/heishamon/HeishaMon/releases' target='_blank'>releases page</a>.
+)====" \
+#else \
+R"====(    <strong>Board:</strong> ESP8266 (D1 Mini)<br>
+    Download the <strong>HeishaMon_ESP8266</strong> binary from the
+    <a href='https://github.com/heishamon/HeishaMon/releases' target='_blank'>releases page</a>.
+)====" \
+#endif \
+R"====(  </div>
   <div class='panel'>
     <div class='panel-header'><h3>Firmware Update</h3></div>
     <div style='padding:24px'>
