@@ -700,7 +700,7 @@ static const char webBodyStart[] FLASHPROG = R"====(
 <aside class='sidemenu' id='sideMenu'>
   <div class='sidemenu-header'>
     <h2>HeishaMon</h2>
-    <p id='sideVersion'></p>
+    <p id='sideVersion'>v)====" HEISHAMON_VERSION R"====(</p>
   </div>
   
   <!-- DARK MODE TOGGLE -->
@@ -1190,7 +1190,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Side nav links for root page (injected via JS on load below)
 // We build the nav + status bar in one block, then the tab panes.
 
-// Part 1: inject side-nav items & version via inline script, then status bar
+// Side nav links and status bar for root page
 static const char webBodyRoot1[] FLASHPROG = R"====(
 <script>
 document.addEventListener('DOMContentLoaded',function(){
@@ -1200,12 +1200,6 @@ document.addEventListener('DOMContentLoaded',function(){
 <a href="/reboot"><span class="nav-icon">&#8635;</span> Reboot</a>
 <a href="/rules"><span class="nav-icon">&#8881;</span> Rules</a>
 <a href="/settings"><span class="nav-icon">&#9881;</span> Settings</a>
-`;
-  document.getElementById('sideVersion').textContent=`v
-)====";
-
-// server inserts version string here, then webBodyRoot2 follows
-static const char webBodyRoot2[] FLASHPROG = R"====(
 `;
 });
 </script>

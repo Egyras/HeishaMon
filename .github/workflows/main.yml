@@ -45,7 +45,7 @@ jobs:
       - name: Update version.h
         if: github.ref != 'refs/heads/main' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
         run: |
-          cd HeishaMon && echo "static const char *heishamon_version = \"${{ env.VERSION }}\";" > version.h && cat version.h
+          cd HeishaMon && sed -i 's/#define HEISHAMON_VERSION .*/#define HEISHAMON_VERSION "${{ env.VERSION }}"/' version.h && cat version.h
         shell: bash
 
       - name: Setup Arduino CLI
