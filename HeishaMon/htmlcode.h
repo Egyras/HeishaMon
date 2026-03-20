@@ -2326,12 +2326,12 @@ function uploadFile(){
 )===="
 #ifdef ESP32
 R"====(    <strong>Board:</strong> HeishaMon Large (ESP32)<br>
-    Download the <strong>HeishaMon_ESP32</strong> binary from the
+    Download the <strong>HeishaMon large</strong> binary from the
     <a href='https://github.com/heishamon/HeishaMon/tree/main/binaries' target='_blank'>releases page</a>.
 )===="
 #else
 R"====(    <strong>Board:</strong> HeishaMon Small (ESP8266)<br>
-    Download the <strong>HeishaMon_ESP8266</strong> binary from the
+    Download the <strong>HeishaMon small</strong> binary from the
     <a href='https://github.com/heishamon/HeishaMon/tree/main/binaries' target='_blank'>releases page</a>.
 )===="
 #endif
