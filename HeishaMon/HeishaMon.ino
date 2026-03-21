@@ -142,9 +142,9 @@ static uint8_t cmdnrel = 0;
 // mqtt
 #ifdef TLS_SUPPORT
 #include <WiFiClientSecure.h>
-WiFiClientSecure mqtt_tls_client;
+WiFiClientSecure *mqtt_tls_client = nullptr;
 WiFiClient mqtt_wifi_client;
-bool loadTlsCaFromFS(WiFiClientSecure &client);
+bool loadTlsCaFromFS(WiFiClientSecure *client);
 static bool last_tls_enabled = false;
 static bool new_ca_stored = false;
 static std::unique_ptr<char[]> persistent_ca_pem;
@@ -394,7 +394,7 @@ void check_wifi() {
 #endif
 
 #ifdef TLS_SUPPORT
-bool loadTlsCaFromFS(WiFiClientSecure &client) {
+bool loadTlsCaFromFS(WiFiClientSecure *client) {
   if (!LittleFS.exists("/ca.pem")) {
     log_message(_F("[TLS] /ca.pem not found"));
     return false;
@@ -414,7 +414,7 @@ bool loadTlsCaFromFS(WiFiClientSecure &client) {
   size_t n = certFile.readBytes(persistent_ca_pem.get(), certSize);
   persistent_ca_pem[n] = '\0';
   certFile.close();
-  client.setCACert(persistent_ca_pem.get());
+  client->setCACert(persistent_ca_pem.get());
   log_message(_F("[TLS] CA loaded into client"));
   return true;
 }
@@ -437,7 +437,7 @@ void mqtt_reconnect()
     if (heishamonSettings.mqtt_tls_enabled != last_tls_enabled) {
       mqtt_client.disconnect();
       if (last_tls_enabled) {
-        mqtt_tls_client.stop();
+        mqtt_tls_client->stop();
       } else {
         mqtt_wifi_client.stop();
         if (!loadTlsCaFromFS(mqtt_tls_client)) {
@@ -455,7 +455,7 @@ void mqtt_reconnect()
       new_ca_stored = false;
     }
     if (heishamonSettings.mqtt_tls_enabled) {
-      mqtt_client.setClient(mqtt_tls_client);
+      mqtt_client.setClient(*mqtt_tls_client);
     } else {
       mqtt_client.setClient(mqtt_wifi_client);
     }
@@ -1585,10 +1585,13 @@ void setupMqtt() {
 #ifdef TLS_SUPPORT
   mqtt_client.setSocketTimeout(8); mqtt_client.setKeepAlive(30); //fast timeout, any slower than 10s will block the main loop too long (8s might be even safer to avoid reboots on bad wifi); short keepalive may lead to problems with TLS
   if (heishamonSettings.mqtt_tls_enabled) {
+    if (mqtt_tls_client == nullptr) {
+        mqtt_tls_client = new WiFiClientSecure();
+    }
     if (!loadTlsCaFromFS(mqtt_tls_client)) {
       log_message(_F("[TLS] Proceeding without valid CA (expect failure)"));
     }
-    mqtt_client.setClient(mqtt_tls_client);
+    mqtt_client.setClient(*mqtt_tls_client );
   } else {
     mqtt_client.setClient(mqtt_wifi_client);
   }
