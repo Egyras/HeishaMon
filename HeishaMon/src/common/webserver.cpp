@@ -84,7 +84,7 @@ static int16_t safe_write(struct webserver_t *client, const uint8_t *buf, uint16
 #if defined(ESP8266)
   uint32_t start = millis();
   while(client->client->availableForWrite() == 0) {
-    if((unsigned long)(millis() - start) > 1000) {
+    if((unsigned long)(millis() - start) > 5000) {
       // client is too slow, give up
       client->step = WEBSERVER_CLIENT_CLOSE;
       return -1;
