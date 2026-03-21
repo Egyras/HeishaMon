@@ -89,7 +89,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Heishamon-firmware-${{ env.BUILD_TYPE }}-${{ env.GIT_SHORT_SHA }}
-          path: HeishaMon/HeishaMon_*.bin
+          path: |
+            HeishaMon/HeishaMon_*.bin
+            HeishaMon/HeishaMon.ino.map
 
       - name: Delete old nightly assets
         if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
