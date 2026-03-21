@@ -714,7 +714,7 @@ static const char webBodyStart[] FLASHPROG = R"====(
 <aside class='sidemenu' id='sideMenu'>
   <div class='sidemenu-header'>
     <h2>HeishaMon</h2>
-    <p id='sideVersion'>v)====" HEISHAMON_VERSION R"====(</p>
+    <p id='sideVersion'>)====" HEISHAMON_VERSION R"====(</p>
   </div>
   
   <!-- DARK MODE TOGGLE -->
