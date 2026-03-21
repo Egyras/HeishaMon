@@ -71,7 +71,6 @@ body{
   color:var(--text-primary);
   min-height:100vh;
   line-height:1.5;
-  overflow-x:hidden;
   transition:background 0.3s, color 0.3s;
 }
 
@@ -350,6 +349,10 @@ input:disabled + .theme-slider-compact {
   border-bottom:1px solid rgba(42,48,64,.4);
   gap:16px;
 }
+@media(max-width:480px){
+  .setting-row{grid-template-columns:1fr}
+  .setting-label{text-align:left}
+}
 .setting-row:last-child{border-bottom:none}
 .setting-row:hover{background:rgba(30,34,48,.4)}
 .setting-label{
@@ -436,6 +439,17 @@ select.setting-input{appearance:auto}
   margin-top:20px;line-height:1.6;
 }
 .firmware-warning strong{color:var(--text-primary)}
+.firmware-info{
+  background:rgba(58,123,213,.08);
+  border:1px solid rgba(58,123,213,.25);
+  border-radius:var(--radius);
+  padding:16px 20px;
+  font-size:12.5px;
+  color:var(--text-secondary);
+  margin-bottom:20px;line-height:1.8;
+}
+.firmware-info strong{color:var(--text-primary)}
+.firmware-info a{color:var(--accent)}
 progress{
   width:100%;height:6px;
   appearance:none;
@@ -700,7 +714,7 @@ static const char webBodyStart[] FLASHPROG = R"====(
 <aside class='sidemenu' id='sideMenu'>
   <div class='sidemenu-header'>
     <h2>HeishaMon</h2>
-    <p id='sideVersion'></p>
+    <p id='sideVersion'>v)====" HEISHAMON_VERSION R"====(</p>
   </div>
   
   <!-- DARK MODE TOGGLE -->
@@ -1190,22 +1204,16 @@ document.addEventListener('DOMContentLoaded', function() {
 // Side nav links for root page (injected via JS on load below)
 // We build the nav + status bar in one block, then the tab panes.
 
-// Part 1: inject side-nav items & version via inline script, then status bar
+// Side nav links and status bar for root page
 static const char webBodyRoot1[] FLASHPROG = R"====(
 <script>
 document.addEventListener('DOMContentLoaded',function(){
   var nav=document.getElementById('sideNav');
   nav.innerHTML=`
 <a href="/firmware"><span class="nav-icon">&#8679;</span> Firmware</a>
-<a href="/reboot"><span class="nav-icon">&#8635;</span> Reboot</a>
+<a href="/reboot" onclick="return confirm('Reboot the device?')"><span class="nav-icon">&#8635;</span> Reboot</a>
 <a href="/rules"><span class="nav-icon">&#8881;</span> Rules</a>
 <a href="/settings"><span class="nav-icon">&#9881;</span> Settings</a>
-`;
-  document.getElementById('sideVersion').textContent=`v
-)====";
-
-// server inserts version string here, then webBodyRoot2 follows
-static const char webBodyRoot2[] FLASHPROG = R"====(
 `;
 });
 </script>
@@ -1402,7 +1410,7 @@ document.addEventListener('DOMContentLoaded',function(){
   nav.innerHTML=`
 <a href="/"><span class="nav-icon">&#8634;</span> Home</a>
 <a href="/firmware"><span class="nav-icon">&#8679;</span> Firmware</a>
-<a href="/reboot"><span class="nav-icon">&#8635;</span> Reboot</a>
+<a href="/reboot" onclick="return confirm('Reboot the device?')"><span class="nav-icon">&#8635;</span> Reboot</a>
 <a href="/rules"><span class="nav-icon">&#8881;</span> Rules</a>
 `;
 });
@@ -1822,7 +1830,7 @@ document.addEventListener('DOMContentLoaded',function(){
   nav.innerHTML=`
 <a href="/"><span class="nav-icon">&#8634;</span> Home</a>
 <a href="/firmware"><span class="nav-icon">&#8679;</span> Firmware</a>
-<a href="/reboot"><span class="nav-icon">&#8635;</span> Reboot</a>
+<a href="/reboot" onclick="return confirm('Reboot the device?')"><span class="nav-icon">&#8635;</span> Reboot</a>
 <a href="/settings"><span class="nav-icon">&#9881;</span> Settings</a>
 `;
 });
@@ -2280,7 +2288,7 @@ document.addEventListener('DOMContentLoaded',function(){
   var nav=document.getElementById('sideNav');
   nav.innerHTML=`
 <a href="/"><span class="nav-icon">&#8634;</span> Home</a>
-<a href="/reboot"><span class="nav-icon">&#8635;</span> Reboot</a>
+<a href="/reboot" onclick="return confirm('Reboot the device?')"><span class="nav-icon">&#8635;</span> Reboot</a>
 <a href="/rules"><span class="nav-icon">&#8881;</span> Rules</a>
 <a href="/settings"><span class="nav-icon">&#9881;</span> Settings</a>
 `;
@@ -2314,6 +2322,20 @@ function uploadFile(){
 }
 </script>
 <div class='firmware-container'>
+  <div class='firmware-info'>
+)===="
+#ifdef ESP32
+R"====(    <strong>Board:</strong> HeishaMon Large (ESP32)<br>
+    Download the <strong>HeishaMon large</strong> binary from the
+    <a href='https://github.com/heishamon/HeishaMon/tree/main/binaries' target='_blank'>releases page</a>.
+)===="
+#else
+R"====(    <strong>Board:</strong> HeishaMon Small (ESP8266)<br>
+    Download the <strong>HeishaMon small</strong> binary from the
+    <a href='https://github.com/heishamon/HeishaMon/tree/main/binaries' target='_blank'>releases page</a>.
+)===="
+#endif
+R"====(  </div>
   <div class='panel'>
     <div class='panel-header'><h3>Firmware Update</h3></div>
     <div style='padding:24px'>
