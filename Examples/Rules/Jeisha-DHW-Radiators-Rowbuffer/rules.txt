@@ -14,6 +14,9 @@ on System#Boot then
    #quietMinimumValue = 0;
    #dhwStartHour = 13;
    #dhwStarted = 0;
+   #smartPauseLock = 0;
+   #smartPauseLockSeconds = 300;
+   #bootCheck = 1;
    setTimer(10, 40);
 end
 
@@ -25,6 +28,22 @@ on timer=10 then
       #maxPumpDutyBeforeDHW = @Max_Pump_Duty;
       if @DHW_Temp < 20 then
          dhw_start();
+      end
+   end
+   if #bootCheck == 1 then
+      if isset(@Heatpump_State) && isset(@Operating_Mode_State) && isset(@Outside_Temp) && isset(@Heating_Off_Outdoor_Temp) then
+         #bootCheck = 0;
+         if @Operating_Mode_State >= 3 then
+            #smartPauseLock = 1;
+         end
+         if @Outside_Temp < @Heating_Off_Outdoor_Temp then
+            if @Heatpump_State == 0 && @Operating_Mode_State == 0 then
+               #offAtNight = 2;
+            end
+            if @Heatpump_State == 1 && @Operating_Mode_State == 4 then
+               #stateBeforeDHW = 1;
+            end
+         end
       end
    end
    if %minute == 0 then
@@ -67,6 +86,8 @@ on timer=10 then
 end
 on dhw_start then
    #dhwStarted = 1;
+   #smartPauseLock = 1;
+   setTimer(25, 0);
    @SetHeatpump = 1;
    if @Outside_Temp < 5 then
       @SetForceDefrost = 1;
@@ -78,6 +99,8 @@ end
 
 on @DHW_Power_Consumption then
    if @Heatpump_State == 1 && @Operating_Mode_State >= 3 && @DHW_Power_Consumption == 0 && ( @DHW_Temp >= @DHW_Target_Temp || @Main_Outlet_Temp >= @Main_Target_Temp ) then
+      #smartPauseLock = 1;
+      setTimer(25, 0);
       setTimer(24, 1);
    end
 end
@@ -86,6 +109,8 @@ on @Defrosting_State then
       if @Defrosting_State == 1 && @ThreeWay_Valve_State == 1 then
          #defrostWhileDHW = 2;
          #dhwStarted = 1;
+         #smartPauseLock = 1;
+         setTimer(25, 0);
          @SetOperationMode = 0;
          setTimer(22, 30);
          setTimer(23, 60);
@@ -99,6 +124,8 @@ on @ThreeWay_Valve_State then
    if @Heatpump_State == 1 then
       if @ThreeWay_Valve_State == 1 then
          #dhwStarted = 1;
+         #smartPauseLock = 1;
+         setTimer(25, 0);
          $minDHWTarget = 43;
          $minOutside = -5;
          $maxDHWTarget = 50;
@@ -114,10 +141,14 @@ on @ThreeWay_Valve_State then
          setCurves(@DHW_Target_Temp + 6, @DHW_Target_Temp + 6);
          setTimer(20, 30);
          setTimer(21, 60);
-      elseif #defrostWhileDHW < 2 then
-         setTimer(22, 240);
-         setTimer(23, 270);
-         setTimer(24, 300);
+      else
+         #smartPauseLock = 1;
+         setTimer(25, 0);
+         if #defrostWhileDHW < 2 then
+            setTimer(22, 240);
+            setTimer(23, 270);
+            setTimer(24, 300);
+         end
       end
    end
 end
@@ -138,8 +169,14 @@ on timer=23 then
    @SetPump = 0;
 end
 on timer=24 then
+   #smartPauseLock = 1;
+   setTimer(25, #smartPauseLockSeconds);
    @SetOperationMode = #opModeBeforeDHW;
    @SetHeatpump = #stateBeforeDHW;
+end
+on timer=25 then
+   #smartPauseLock = 0;
+   smart_pause();
 end
 on setCurves($high, $low) then
    @SetCurves = concat('{zone1:{heat:{target:{high:', $high, ',low:', $low, '}}}}');
@@ -199,7 +236,10 @@ on throttle then
 end
 
 on @Heat_Power_Consumption then
-   if @Heatpump_State == 1 && @Operating_Mode_State == 0 && #offAtNight == 1 && @Z1_Heat_Request_Temp > 2 && @Heat_Power_Consumption == 0 && @Outside_Temp > 10 then
+   smart_pause();
+end
+on smart_pause then
+   if @Heatpump_State == 1 && @Operating_Mode_State == 0 && #offAtNight == 1 && #smartPauseLock == 0 && @Z1_Heat_Request_Temp > 2 && @Heat_Power_Consumption == 0 && @Outside_Temp > 10 then
       #offAtNight = 2;
       @SetHeatpump = 0;
    end
