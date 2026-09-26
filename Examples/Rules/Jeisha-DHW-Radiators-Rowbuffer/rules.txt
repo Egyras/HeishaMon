@@ -36,6 +36,11 @@ on timer=10 then
          if @Operating_Mode_State >= 3 then
             #smartPauseLock = 1;
          end
+         if isset(@Z1_Heat_Curve_Target_High_Temp) && isset(@Z1_Heat_Curve_Target_Low_Temp) && isset(@ThreeWay_Valve_State) && @ThreeWay_Valve_State == 0 then
+            if @Z1_Heat_Curve_Target_High_Temp == @Z1_Heat_Curve_Target_Low_Temp && @Z1_Heat_Curve_Target_Low_Temp > #targetHighBeforeDHW then
+               setTimer(26, 30);
+            end
+         end
          if @Outside_Temp < @Heating_Off_Outdoor_Temp then
             if @Heatpump_State == 0 && @Operating_Mode_State == 0 then
                #offAtNight = 2;
@@ -121,8 +126,8 @@ on @Defrosting_State then
    end
 end
 on @ThreeWay_Valve_State then
-   if @Heatpump_State == 1 then
-      if @ThreeWay_Valve_State == 1 then
+   if @ThreeWay_Valve_State == 1 then
+      if @Heatpump_State == 1 then
          #dhwStarted = 1;
          #smartPauseLock = 1;
          setTimer(25, 0);
@@ -141,14 +146,14 @@ on @ThreeWay_Valve_State then
          setCurves(@DHW_Target_Temp + 6, @DHW_Target_Temp + 6);
          setTimer(20, 30);
          setTimer(21, 60);
-      else
-         #smartPauseLock = 1;
-         setTimer(25, 0);
-         if #defrostWhileDHW < 2 then
-            setTimer(22, 240);
-            setTimer(23, 270);
-            setTimer(24, 300);
-         end
+      end
+   else
+      #smartPauseLock = 1;
+      setTimer(25, 0);
+      if #defrostWhileDHW < 2 then
+         setTimer(22, 240);
+         setTimer(23, 270);
+         setTimer(24, 300);
       end
    end
 end
@@ -177,6 +182,9 @@ end
 on timer=25 then
    #smartPauseLock = 0;
    smart_pause();
+end
+on timer=26 then
+   setCurves(#targetHighBeforeDHW, #targetLowBeforeDHW);
 end
 on setCurves($high, $low) then
    @SetCurves = concat('{zone1:{heat:{target:{high:', $high, ',low:', $low, '}}}}');
