@@ -1,6 +1,6 @@
 # Reboot after DHW left the narrow holding curves behind (high == low,
 # above the normal curve) and the recovery chain timers were lost: the
-# boot check restores the curve seeds via timer=26.
+# boot check re-runs timer=22, which restores the curve seeds.
 time 3 0
 silent Heatpump_State 0
 silent Operating_Mode_State 0
@@ -23,6 +23,7 @@ expectcmd SetPump 0
 adv 69
 expectnone
 adv 1
+expectcmd SetZ1HeatRequestTemperature 5
 expectcmd SetCurves {zone1:{heat:{target:{high:40,low:31}}}}
 expectnone
 note normal curves after a reboot are left alone

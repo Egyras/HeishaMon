@@ -38,7 +38,7 @@ on timer=10 then
          end
          if isset(@Z1_Heat_Curve_Target_High_Temp) && isset(@Z1_Heat_Curve_Target_Low_Temp) && isset(@ThreeWay_Valve_State) && @ThreeWay_Valve_State == 0 then
             if @Z1_Heat_Curve_Target_High_Temp == @Z1_Heat_Curve_Target_Low_Temp && @Z1_Heat_Curve_Target_Low_Temp > #targetHighBeforeDHW then
-               setTimer(26, 30);
+               setTimer(22, 30);
             end
          end
          if @Outside_Temp < @Heating_Off_Outdoor_Temp then
@@ -182,9 +182,6 @@ end
 on timer=25 then
    #smartPauseLock = 0;
    smart_pause();
-end
-on timer=26 then
-   setCurves(#targetHighBeforeDHW, #targetLowBeforeDHW);
 end
 on setCurves($high, $low) then
    @SetCurves = concat('{zone1:{heat:{target:{high:', $high, ',low:', $low, '}}}}');
