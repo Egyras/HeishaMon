@@ -23,8 +23,8 @@ expectcmd SetPump 0
 adv 69
 expectnone
 adv 1
-expectcmd SetCurves {zone1:{heat:{target:{high:40,low:31}}}}
 expectcmd SetZ1HeatRequestTemperature 5
+expectcmd SetCurves {zone1:{heat:{target:{high:40,low:31}}}}
 expectnone
 note normal curves after a reboot are left alone
 silent Z1_Heat_Curve_Target_Low_Temp 31

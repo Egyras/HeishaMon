@@ -17,6 +17,7 @@ on System#Boot then
    #smartPauseLock = 0;
    #smartPauseLockSeconds = 300;
    #bootCheck = 1;
+   #throttleHold = 0;
    setTimer(10, 40);
 end
 
@@ -161,8 +162,13 @@ on timer=21 then
    @SetPump = 1;
 end
 on timer=22 then
-   setCurves(#targetHighBeforeDHW, #targetLowBeforeDHW);
+   #throttleHold = 1;
+   setTimer(26, 30);
    @SetZ1HeatRequestTemperature = 5;
+   setCurves(#targetHighBeforeDHW, #targetLowBeforeDHW);
+end
+on timer=26 then
+   #throttleHold = 0;
 end
 on timer=23 then
    @SetMaxPumpDuty = #maxPumpDutyBeforeDHW;
@@ -211,7 +217,7 @@ on throttle then
          if $newHeatRequest <= 0 && ( @Main_Outlet_Temp - @Main_Target_Temp ) < 2 then
             $newHeatRequest = $roomDelta;
          end
-         if @Z1_Heat_Request_Temp != $newHeatRequest then
+         if @Z1_Heat_Request_Temp != $newHeatRequest && #throttleHold == 0 then
             @SetZ1HeatRequestTemperature = $newHeatRequest;
          end
       else

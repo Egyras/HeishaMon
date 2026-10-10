@@ -15,8 +15,8 @@ expectcmd SetPump 0
 set Defrosting_State 1
 expectcmd SetOperationMode 0
 adv 30
-expectcmd SetCurves {zone1:{heat:{target:{high:40,low:31}}}}
 expectcmd SetZ1HeatRequestTemperature 5
+expectcmd SetCurves {zone1:{heat:{target:{high:40,low:31}}}}
 set Defrosting_State 0
 adv 5
 expectcmd SetOperationMode 4

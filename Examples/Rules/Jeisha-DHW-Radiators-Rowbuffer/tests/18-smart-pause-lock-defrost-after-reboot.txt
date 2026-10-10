@@ -31,8 +31,8 @@ set Heat_Power_Consumption 100
 set Heat_Power_Consumption 0
 expectnone
 adv 30
-expectcmd SetCurves {zone1:{heat:{target:{high:40,low:31}}}}
 expectcmd SetZ1HeatRequestTemperature 5
+expectcmd SetCurves {zone1:{heat:{target:{high:40,low:31}}}}
 adv 30
 expectcmd SetMaxPumpDuty 112
 expectcmd SetPump 0
