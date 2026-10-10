@@ -1,0 +1,53 @@
+# DHW end in mild weather: timer=22 must restore the curves *before* it
+# raises the heat request. With the old order the pump first reported
+# 52 + 5 = 57 as target, throttle() reset the request to 0, then the
+# restored curve dropped the target below the outlet -> thermo-off.
+time 13 44
+silent Heatpump_State 1
+silent ThreeWay_Valve_State 1
+silent Operating_Mode_State 0
+silent Max_Pump_Duty 112
+silent DHW_Temp 47
+silent DHW_Target_Temp 46
+silent DHW_Heat_Delta -8
+silent Room_Thermostat_Temp 23
+silent Outside_Temp 13
+silent Heating_Off_Outdoor_Temp 16
+silent Z1_Heat_Curve_Target_Low_Temp 52
+silent Z1_Heat_Curve_Target_High_Temp 52
+silent Main_Target_Temp 52
+silent Main_Outlet_Temp 50
+silent Z1_Heat_Request_Temp 0
+silent Quiet_Mode_Level 0
+boot
+expectcmd SetMaxPumpDuty 112
+expectcmd SetPump 0
+adv 45
+expectnone
+note valve back to room, holding curves 52/52 still active
+set ThreeWay_Valve_State 0
+set Main_Outlet_Temp 36
+expectnone
+adv 240
+expectcmd SetCurves {zone1:{heat:{target:{high:40,low:31}}}}
+expectcmd SetZ1HeatRequestTemperature 5
+expectnone
+note pump applies the curves first (shift still 0): request must not drop to 0
+silent Z1_Heat_Curve_Target_Low_Temp 31
+silent Z1_Heat_Curve_Target_High_Temp 40
+set Main_Target_Temp 32
+expectcmd SetZ1HeatRequestTemperature 3
+expectcmd SetQuietMode 3
+silent Quiet_Mode_Level 3
+note then the +5 shift arrives: target 37, request stays positive
+silent Z1_Heat_Request_Temp 5
+set Main_Target_Temp 37
+expectcmd SetZ1HeatRequestTemperature 3
+silent Z1_Heat_Request_Temp 3
+adv 30
+expectcmd SetMaxPumpDuty 112
+expectcmd SetPump 0
+adv 30
+expectcmd SetOperationMode 0
+expectcmd SetHeatpump 1
+expectnone

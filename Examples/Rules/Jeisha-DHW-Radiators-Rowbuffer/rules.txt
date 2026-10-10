@@ -22,33 +22,28 @@ end
 
 on timer=10 then
    setTimer(10, 30);
+   if #bootCheck == 1 && isset(@Heatpump_State) && isset(@Operating_Mode_State) && isset(@Outside_Temp) && isset(@Heating_Off_Outdoor_Temp) && isset(@ThreeWay_Valve_State) && isset(@Z1_Heat_Curve_Target_High_Temp) && isset(@Z1_Heat_Curve_Target_Low_Temp) then
+      #bootCheck = 0;
+      if @Operating_Mode_State >= 3 then
+         #smartPauseLock = 1;
+      end
+      if @ThreeWay_Valve_State == 0 && @Z1_Heat_Curve_Target_High_Temp == @Z1_Heat_Curve_Target_Low_Temp && @Z1_Heat_Curve_Target_Low_Temp > #targetHighBeforeDHW then
+         setTimer(22, 30);
+      end
+      if @Outside_Temp < @Heating_Off_Outdoor_Temp then
+         if @Heatpump_State == 0 && @Operating_Mode_State == 0 then
+            #offAtNight = 2;
+         elseif @Heatpump_State == 1 && @Operating_Mode_State == 4 then
+            #stateBeforeDHW = 1;
+         end
+      end
+   end
    if @Operating_Mode_State < 3 && #dhwStarted == 0 then
       #stateBeforeDHW = @Heatpump_State;
       #opModeBeforeDHW = @Operating_Mode_State;
       #maxPumpDutyBeforeDHW = @Max_Pump_Duty;
       if @DHW_Temp < 20 then
          dhw_start();
-      end
-   end
-   if #bootCheck == 1 then
-      if isset(@Heatpump_State) && isset(@Operating_Mode_State) && isset(@Outside_Temp) && isset(@Heating_Off_Outdoor_Temp) then
-         #bootCheck = 0;
-         if @Operating_Mode_State >= 3 then
-            #smartPauseLock = 1;
-         end
-         if isset(@Z1_Heat_Curve_Target_High_Temp) && isset(@Z1_Heat_Curve_Target_Low_Temp) && isset(@ThreeWay_Valve_State) && @ThreeWay_Valve_State == 0 then
-            if @Z1_Heat_Curve_Target_High_Temp == @Z1_Heat_Curve_Target_Low_Temp && @Z1_Heat_Curve_Target_Low_Temp > #targetHighBeforeDHW then
-               setTimer(22, 30);
-            end
-         end
-         if @Outside_Temp < @Heating_Off_Outdoor_Temp then
-            if @Heatpump_State == 0 && @Operating_Mode_State == 0 then
-               #offAtNight = 2;
-            end
-            if @Heatpump_State == 1 && @Operating_Mode_State == 4 then
-               #stateBeforeDHW = 1;
-            end
-         end
       end
    end
    if %minute == 0 then
@@ -166,8 +161,8 @@ on timer=21 then
    @SetPump = 1;
 end
 on timer=22 then
-   @SetZ1HeatRequestTemperature = 5;
    setCurves(#targetHighBeforeDHW, #targetLowBeforeDHW);
+   @SetZ1HeatRequestTemperature = 5;
 end
 on timer=23 then
    @SetMaxPumpDuty = #maxPumpDutyBeforeDHW;

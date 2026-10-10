@@ -1,4 +1,4 @@
-# Valve back to heating: staged restore of heat request/curves (240s),
+# Valve back to heating: staged restore of curves + heat request (240s),
 # pump duty (270s), and operation mode/heatpump state (300s).
 time 13 5
 silent Heatpump_State 1
@@ -18,8 +18,8 @@ expectcmd SetMaxPumpDuty 112
 expectcmd SetPump 0
 set ThreeWay_Valve_State 0
 adv 240
-expectcmd SetZ1HeatRequestTemperature 5
 expectcmd SetCurves {zone1:{heat:{target:{high:40,low:31}}}}
+expectcmd SetZ1HeatRequestTemperature 5
 adv 30
 expectcmd SetMaxPumpDuty 112
 expectcmd SetPump 0
