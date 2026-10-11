@@ -60,7 +60,7 @@ Deze variabelen leven binnen een regelblok. Als een regelblok eindigt, worden de
 Deze zijn dezelfde als vermeld op de documentatiepagina Manage Topics en op de HeishaMon-startpagina. De regelset volgt ook de R/W-logica zoals gebruikt via de MQTT en REST API. Dit betekent dat de leestopics verschillen van de schrijftopics. Het lezen van de warmtepompstatus gaat via `@Heatpump_State`, het wijzigen van de status via `@SetHeatpump`.
 
 - `%`: Datum- en tijdvariabelen
-Deze kunnen worden gebruikt voor datum- en tijdgebaseerde regels. Momenteel worden `%hour` (0-23), `%minute` (0-59), `%month` (1-12) en `day` (1-7) ondersteund. Alle zijn gewone integers. Een correcte NTP-configuratie is nodig om de juiste systeemdatum en -tijd in te stellen op de HeishaMon.
+Deze kunnen worden gebruikt voor datum- en tijdgebaseerde regels. Momenteel worden `%hour` (0-23), `%minute` (0-59), `%month` (1-12) en `%day` (1-7) ondersteund. Alle zijn gewone integers. Een correcte NTP-configuratie is nodig om de juiste systeemdatum en -tijd in te stellen op de HeishaMon.
 
 - `?`: Thermostaatparameters
 Deze variabelen weerspiegelen parameters die worden gelezen van de aangesloten thermostaat bij gebruik van de OpenTherm-functionaliteit. De namen zijn hetzelfde voor lezen en schrijven, maar niet alle waarden ondersteunen lezen en/of schrijven.
