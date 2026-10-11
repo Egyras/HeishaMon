@@ -143,6 +143,7 @@ Regular operators are supported with their standard associativity and precedence
 - `&&`: And
 - `||`: Or
 - `==`: Equals`
+- `!=`: Not Equals`
 - `>=`: Greater or equal then
 - `>`: Greater then
 - `<`: Lesser then

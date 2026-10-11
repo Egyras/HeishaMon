@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write   # release builds open a PR adding the binaries to binaries/
 
 env:
   ARDUINO_BOARD_MANAGER_ADDITIONAL_URLS: "http://arduino.esp8266.com/stable/package_esp8266com_index.json https://espressif.github.io/arduino-esp32/package_esp32_dev_index.json"
@@ -22,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set version env var
         run: echo "GIT_SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
@@ -68,6 +69,7 @@ jobs:
           cd HeishaMon
           MD5=`md5sum HeishaMon.ino.bin | cut -d\  -f1`
           mv HeishaMon.ino.bin HeishaMon_ESP8266-${{ env.BUILD_TYPE }}-$MD5.bin
+          echo "MD5_ESP8266=$MD5" >> $GITHUB_ENV
         shell: bash
 
       - name: Compile Sketch for ESP32
@@ -78,10 +80,11 @@ jobs:
           cd HeishaMon
           MD5=`md5sum HeishaMon.ino.bin | cut -d\  -f1`
           mv HeishaMon.ino.bin HeishaMon_ESP32-${{ env.BUILD_TYPE }}-$MD5.bin
+          echo "MD5_ESP32=$MD5" >> $GITHUB_ENV
         shell: bash
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Heishamon-firmware-${{ env.BUILD_TYPE }}-${{ env.GIT_SHORT_SHA }}
           path: |
@@ -99,7 +102,7 @@ jobs:
 
       - name: Publish nightly release
         if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: nightly
           name: "Nightly build (${{ env.GIT_SHORT_SHA }})"
@@ -112,7 +115,7 @@ jobs:
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: "Release ${{ github.ref_name }}"
           body: |
@@ -120,3 +123,29 @@ jobs:
             Commit: ${{ github.sha }}
           prerelease: true
           files: HeishaMon/HeishaMon_*.bin
+
+      - name: Open PR adding release binaries to binaries/
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          BRANCH="release-binaries-$TAG"
+          # Work on a clean checkout of main, the tag checkout has a modified version.h
+          git fetch --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+          git worktree add -b "$BRANCH" ../release-binaries origin/main
+          cp "HeishaMon/HeishaMon_ESP32-Release-$MD5_ESP32.bin" "../release-binaries/binaries/model-type-large/HeishaMon.ino.esp32-$TAG.bin"
+          echo -n "$MD5_ESP32" > "../release-binaries/binaries/model-type-large/HeishaMon.ino.esp32-$TAG.md5"
+          cp "HeishaMon/HeishaMon_ESP8266-Release-$MD5_ESP8266.bin" "../release-binaries/binaries/model-type-small/HeishaMon.ino.d1-$TAG.bin"
+          echo -n "$MD5_ESP8266" > "../release-binaries/binaries/model-type-small/HeishaMon.ino.d1-$TAG.md5"
+          cd ../release-binaries
+          sed -i "s/^The latest production release is .*\./The latest production release is $TAG./" binaries/README.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add binaries/
+          git commit -m "release $TAG binaries"
+          git push origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "Release $TAG binaries" \
+            --body "Adds the $TAG firmware built by release run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} to binaries/ and updates binaries/README.md."
+        shell: bash
