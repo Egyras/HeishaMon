@@ -68,6 +68,7 @@ struct settingsStruct {
   bool hotspot = true; //enable wifi hotspot when wifi is not connected
 #ifdef ESP32
   bool proxy = true; //cztaw proxy port enable flag
+  bool ethernet = true; //probe for W5500 ethernet module at boot (disable on boards without it)
 #endif
   s0SettingsStruct s0Settings[NUM_S0_COUNTERS];
   gpioSettingsStruct gpioSettings;

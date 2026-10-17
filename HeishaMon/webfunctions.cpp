@@ -258,6 +258,7 @@ void loadSettings(settingsStruct *heishamonSettings) {
           heishamonSettings->opentherm = ( jsonDoc[F("opentherm")] == "enabled" ) ? true : false;
 #ifdef ESP32          
           heishamonSettings->proxy = ( jsonDoc[F("proxy")] == "enabled" ) ? true : false;
+          heishamonSettings->ethernet = ( jsonDoc[F("ethernet")] == "disabled" ) ? false : true; //default to true if not found in settings
 #endif          
           if ( jsonDoc[F("waitTime")]) heishamonSettings->waitTime = jsonDoc[F("waitTime")];
           if (heishamonSettings->waitTime < 5) heishamonSettings->waitTime = 5;
@@ -489,6 +490,11 @@ void settingsToJson(JsonDocument &jsonDoc, settingsStruct *heishamonSettings) {
   } else {
     jsonDoc[F("proxy")] = "disabled";
   }
+  if (heishamonSettings->ethernet) {
+    jsonDoc[F("ethernet")] = "enabled";
+  } else {
+    jsonDoc[F("ethernet")] = "disabled";
+  }
 #endif 
   jsonDoc[F("waitTime")] = heishamonSettings->waitTime;
   jsonDoc[F("waitDallasTime")] = heishamonSettings->waitDallasTime;
@@ -630,6 +636,7 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 
 #ifdef ESP32  
   jsonDoc[F("proxy")] = String("disabled");
+  jsonDoc[F("ethernet")] = String("disabled");
 #endif  
 #ifdef TLS_SUPPORT
   jsonDoc[F("mqtt_tls_enabled")] = String("disabled");
@@ -679,6 +686,8 @@ int saveSettings(struct webserver_t *client, settingsStruct *heishamonSettings) 
 #ifdef ESP32      
     } else if (strcmp(tmp->name.c_str(), "proxy") == 0) {
       jsonDoc[F("proxy")] = tmp->value;
+    } else if (strcmp(tmp->name.c_str(), "ethernet") == 0) {
+      jsonDoc[F("ethernet")] = tmp->value;
 #endif      
     } else if (strcmp(tmp->name.c_str(), "ntp_servers") == 0) {
       jsonDoc[F("ntp_servers")] = tmp->value;
