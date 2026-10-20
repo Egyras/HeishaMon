@@ -186,6 +186,10 @@ TOP166 | main/Z1_Active | Actual zone 1 activity (0=inactive, 1=active)
 TOP167 | main/Backup_Heater_Enable | Backup heater custom-menu setting (0=inactive, 1=active)
 TOP168 | main/Cooling_Enable | Cooling custom-menu setting (0=inactive, 1=active)
 TOP169 | main/Heat_Request_Temp_With_Buffer | Heating water shift/direct target including buffer delta (°C)
+TOP170 | gpio/relay/one/state | Onboard relay 1 GPIO output state (ESP32 only, 0=off, 1=on, retained)
+TOP171 | gpio/relay/two/state | Onboard relay 2 GPIO output state (ESP32 only, 0=off, 1=on, retained)
+
+TOP170 and TOP171 are displayed on the main web page as Relay 1 and Relay 2 with On/Off and their full configured MQTT topics. They are read directly from GPIO21 and GPIO47, independent of MQTT connectivity, and exposed in the `/json` response's `relays` array. The page refreshes these states every five seconds. These values report GPIO output levels, not mechanical contact feedback.
 
 The topics above are relative to the configured MQTT base topic. New topics TOP144–TOP169 use the documented normal data block (0x10); availability depends on the heat pump model and configuration. Two-bit status fields use -1 for an unset encoding (00). Z1_Active and Z2_Active are individual activity bits, distinct from Zones_State. Quiet/Powerful actual states are distinct from the configured level/time topics.
 
