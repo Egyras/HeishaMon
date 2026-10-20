@@ -368,6 +368,9 @@ As until today we don't know how the commands sent to the heatpump are processed
 The software also supports ds18b20 1-wire temperature sensors reading. A proper 1-wire configuration (with 4.7kohm pull-up resistor) connected to GPIO4 will be read each configured secs (minimal 5) and send at the panasonic_heat_pump/1wire/"sensor-hex-address" topic. On the pre-made boards this 4.7kohm resistor is already installed.
 
 ## Large board relay control
+
+Relay output states are published as `0` (off) or `1` (on), with MQTT retain, to `<base>/gpio/relay/one/state` and `<base>/gpio/relay/two/state`. The default base is `panasonic_heat_pump`. Both states are published after an MQTT relay command, on MQTT connection, and at the configured full-data resend interval (`updateAllTime`). Changes made by rules are detected and published at the end of the main loop. Failed publications are retried. These values report the GPIO output levels, not mechanical contact feedback.
+
 The newer, large, heishamon contains two onboard relays which can be switched on and off using MQTT commands. The relays can be used for any contact switching, even 230V mains (max 5A). For example to switch the 230V contacts in the heatpump for controlling the 'external thermostat', switching a pump on or off or other lower power devices. I do not recommend to use the relay as a switch for a electric heater as they use too much power. To control the relay just send a value of 1 or 0 to the MQTT topic "panasonic_heat_pump/gpio/relay/one" for relay one or "panasonic_heat_pump/gpio/relay/two" for relay two.
 
 ## Opentherm support

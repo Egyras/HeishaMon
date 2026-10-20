@@ -364,6 +364,16 @@ Bis heute wissen wir nicht, wie die an die Wärmepumpe gesendeten Befehle in der
 Die Software unterstützt auch das Auslesen von DS18B20 1-Wire-Temperatursensoren. Eine korrekte 1-Wire-Konfiguration (mit 4,7kOhm Pull-up-Widerstand) an GPIO4 wird alle konfigurierten Sekunden (mindestens 5) gelesen und an das Topic panasonic_heat_pump/1wire/"sensor-hex-adresse" gesendet. Auf den vorgefertigten Boards ist dieser 4,7kOhm-Widerstand bereits installiert.
 
 ## Relaissteuerung auf der großen Platine
+
+Die Firmware veröffentlicht die ausgelesenen Relais-Ausgangszustände als `0` (aus) oder `1` (ein) mit MQTT-Retain:
+
+| Relais | Status-Topic (bei Standard-Basistopic) |
+| --- | --- |
+| 1 | `panasonic_heat_pump/gpio/relay/one/state` |
+| 2 | `panasonic_heat_pump/gpio/relay/two/state` |
+
+Die Meldung erfolgt direkt nach einem MQTT-Schaltbefehl, bei jeder MQTT-Verbindung und regelmäßig im konfigurierten Intervall für die vollständige Datenversendung (`updateAllTime`). Änderungen durch die Rules Engine werden am Ende des Hauptschleifendurchlaufs erkannt und veröffentlicht. Bei einem anderen MQTT-Basistopic wird dieses auch für die Status-Topics verwendet. Der Status bestätigt den GPIO-Ausgangszustand; eine mechanische Rückmeldung des Relaiskontakts gibt es nicht.
+
 Der neuere, große, Heishamon enthält zwei eingebaute Relais, die über MQTT-Befehle ein- und ausgeschaltet werden können. Die Relais können für jede Kontaktschaltung verwendet werden, auch 230V Netzspannung (max. 5A). Um das Relais zu steuern, sende einfach einen Wert von 1 oder 0 an das MQTT-Topic "panasonic_heat_pump/gpio/relay/one" für Relais eins oder "panasonic_heat_pump/gpio/relay/two" für Relais zwei.
 
 ## Benutzerkonfigurierbare Extra-GPIOs

@@ -484,6 +484,7 @@ void mqtt_reconnect()
     if (mqtt_client.connect(heishamonSettings.wifi_hostname, heishamonSettings.mqtt_username, heishamonSettings.mqtt_password, topic, 1, true, "Offline"))
     {
       mqttReconnects++;
+      publishRelayStates(mqtt_client, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime, true);
       if (heishamonSettings.opentherm) {
         sprintf(topic, "%s/%s/#", heishamonSettings.mqtt_topic_base, mqtt_topic_opentherm_read);
         mqtt_client.subscribe(topic);
@@ -1023,7 +1024,7 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
       mqttOTCallback(topic_otcommand, msg);
     } else if (strncmp(topic_command, mqtt_topic_gpio, strlen(mqtt_topic_gpio)) == 0)  {
       char* topic_gpiocommand = topic_command + strlen(mqtt_topic_gpio) + 1; //strip the gpio subtopic from the topic
-      mqttGPIOCallback(topic_gpiocommand, msg);
+      mqttGPIOCallback(topic_gpiocommand, msg, mqtt_client, heishamonSettings.mqtt_topic_base);
     } else if (strncmp(topic_command, mqtt_topic_1wire, strlen(mqtt_topic_1wire)) == 0) { //this is a 1wire address topic, restore its retained value at boot
       char* topic_1wire_address = topic_command + strlen(mqtt_topic_1wire) + 1; //strip the "1wire/" from the topic to get the sensor address
       if ((strchr(topic_1wire_address, '/') == NULL) && (length > 0)) { //only handle the address topic itself (not .../alias) and skip empty (cleared) retained messages
@@ -2236,6 +2237,7 @@ void loop() {
   }
 
   timerqueue_update();
+  publishRelayStates(mqtt_client, heishamonSettings.mqtt_topic_base, heishamonSettings.updateAllTime);
   #ifdef ESP32
   delay(1); // to keep watchdog happy
   #endif
