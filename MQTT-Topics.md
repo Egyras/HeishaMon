@@ -1,10 +1,39 @@
 # MQTT Topics for HeishaMon
 
+`TOP...` IDs identify the normal decoded heat pump values; `XTOP...` and `OPT...` identify values from the extra data block and optional PCB. Not every MQTT topic needs such an ID: device status and event topics such as `LWT`, `log`, `stats`, `rules/state`, and `rules/executed` are documented separately without a TOP number. The ESP32 relay states are a separate extension with `TOP170` and `TOP171` IDs for the web/JSON display.
+
 ## Availability Topic:
 
 ID | Topic | Response
 --- | --- | ---
 || LWT | Online/Offline (automatically returns to Offline if connection with the HeishaMon lost)
+
+## Rules Engine Status:
+
+Topic | Response/Description
+--- | ---
+rules/state | Read-only, retained: `1` if at least one rule block is loaded, `0` if no rule blocks are loaded (both ESP8266 and ESP32).
+
+The full topic is `<base>/rules/state`, for example `panasonic_heat_pump/rules/state`. It is published on MQTT connection/reconnection, when the state changes, and at the configured full-data resend interval (`updateAllTime`). Failed publications are retried. There is no command to set this topic; publishing to it does not enable or disable rules.
+
+This reports loaded rules, not whether a rule is executing at that instant. `0` can mean that no ruleset exists, parsing failed, rules were deinitialized, or loading was skipped after a crash reboot. It does not distinguish these causes. The existing `<base>/stats` JSON field `"rules active"` provides the number of loaded rule blocks. Check `<base>/LWT` for device availability; a retained rules state can outlive a disconnected device.
+
+## Rule Execution Events:
+
+`<base>/rules/executed` (for example `panasonic_heat_pump/rules/executed`) publishes a read-only JSON event after a rule execution returns. It is **not retained**.
+
+```json
+{"rule":"timer=1","rule_id":2,"result":0,"uptime_ms":123456,"nested":false,"duration_us":245}
+```
+
+- `rule`: block name, such as `System#Boot`, `timer=1`, `@Outside_Temp`, or a custom helper name.
+- `rule_id`: the engine's numeric block ID; it may change when the ruleset is edited.
+- `result`: interpreter return code (`0` = successful return, nonzero = error). Success does not imply that a command was emitted or acknowledged by the heat pump.
+- `uptime_ms`: device uptime at publication, in milliseconds (wraps after approximately 49.7 days).
+- `nested`: `true` for a successfully completed helper block invoked by another rule. Each completed helper produces its own event before the outer block's event.
+- `duration_us`: elapsed microseconds for an outer Boot, timer, or topic/event invocation, including its helper calls. Omitted for nested helper events. Nested event publication time is included in the outer duration.
+
+Ruleset validation does not publish execution events. A returned error is reported for the outer invocation; a helper that fails before returning successfully has no separate completion event. A crash cannot produce a completion event. Events use MQTT QoS 0, are sent only while connected, and are neither queued nor replayed after reconnecting. Boot events may therefore be absent if MQTT is not connected yet. Every execution can produce traffic, including frequent timer/topic handlers and their helper calls.
 
 ## Log Topic:
 
