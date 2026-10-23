@@ -60,7 +60,7 @@ Nämä muuttujat elävät sääntöblokin sisällä. Kun sääntöblokki päätt
 Nämä ovat samat kuin Manage Topics -dokumentaatiosivulla ja HeishaMonin etusivulla listatut. Sääntöjoukko noudattaa myös MQTT:n ja REST API:n kautta käytettävää R/W-logiikkaa. Tämä tarkoittaa, että lukuaihiot eroavat kirjoitusaihioista. Lämpöpumpun tilan lukeminen tapahtuu `@Heatpump_State`:lla, tilan muuttaminen `@SetHeatpump`:lla.
 
 - `%`: Päivämäärä- ja aikamuuttujat
-Näitä voidaan käyttää päivämäärä- ja aikapohjaisiin sääntöihin. Tällä hetkellä tuetaan `%hour` (0-23), `%minute` (0-59), `%month` (1-12) ja `day` (1-7). Kaikki ovat tavallisia kokonaislukuja. Oikea NTP-konfiguraatio tarvitaan oikean järjestelmäpäivämäärän ja -ajan asettamiseen HeishaMoniin.
+Näitä voidaan käyttää päivämäärä- ja aikapohjaisiin sääntöihin. Tällä hetkellä tuetaan `%hour` (0-23), `%minute` (0-59), `%month` (1-12) ja `%day` (1-7). Kaikki ovat tavallisia kokonaislukuja. Oikea NTP-konfiguraatio tarvitaan oikean järjestelmäpäivämäärän ja -ajan asettamiseen HeishaMoniin.
 
 - `?`: Termostaattiparametrit
 Nämä muuttujat heijastavat parametreja, jotka luetaan yhdistetyltä termostaatilta OpenTherm-toiminnallisuutta käytettäessä. Nimet ovat samat lukemiseen ja kirjoittamiseen, mutta kaikki arvot eivät tue lukemista ja/tai kirjoittamista.
@@ -166,7 +166,7 @@ Palauttaa syöteparametrien maksimiarvo.
 Palauttaa syöteparametrien minimiarvo.
 
 - `isset`
-Palauttaa boolean true, kun syötemuuttuja on vielä `NULL`, muissa tapauksissa false.
+Palauttaa `1`, kun syötemuuttujalla on numeroarvo, ja `0`, kun se on vielä `NULL` (myös merkkijonoarvo palauttaa `0`). Käytä tätä `NULL`-arvon testaamiseen: vertailu `NULL`-arvoon (esim. `#g == NULL`) antaa aina `NULL`, joka on false, joten kirjoita sen sijaan `if isset(#g) == 0 then`.
 
 - `round`
 Pyöristää syöte-floatin lähimpään kokonaislukuun.

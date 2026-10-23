@@ -64,7 +64,7 @@ Diese Variablen leben innerhalb eines Regelblocks. Wenn ein Regelblock endet, we
 Diese sind dieselben wie in der Dokumentationsseite "Manage Topics" und auf der HeishaMon-Startseite aufgeführt. Das Regelwerk folgt auch der R/W-Logik, die über MQTT und REST API verwendet wird. Das bedeutet, dass sich die Lese-Topics von den Schreib-Topics unterscheiden. So erfolgt das Lesen des Wärmepumpenstatus über `@Heatpump_State`, das Ändern des Status über `@SetHeatpump`.
 
 - `%`: Datums- und Zeit-Variablen
-Diese können für datum- und zeitbasierte Regeln verwendet werden. Derzeit werden `%hour` (0-23), `%minute` (0-59), `%month` (1-12) und `day` (1-7) unterstützt. Alle sind einfache Integer. Eine ordnungsgemäße NTP-Konfiguration ist erforderlich, um das korrekte Systemdatum und die Systemzeit auf dem HeishaMon zu setzen.
+Diese können für datum- und zeitbasierte Regeln verwendet werden. Derzeit werden `%hour` (0-23), `%minute` (0-59), `%month` (1-12) und `%day` (1-7) unterstützt. Alle sind einfache Integer. Eine ordnungsgemäße NTP-Konfiguration ist erforderlich, um das korrekte Systemdatum und die Systemzeit auf dem HeishaMon zu setzen.
 
 - `?`: Thermostat-Parameter
 Diese Variablen spiegeln Parameter wider, die vom angeschlossenen Thermostat gelesen werden, wenn die OpenTherm-Funktionalität verwendet wird. Die Namen sind für Lesen und Schreiben identisch, aber nicht alle Werte unterstützen Lesen und/oder Schreiben. Der OpenTherm-Tab listet dies auch auf.
@@ -170,7 +170,7 @@ Gibt den maximalen Wert der Eingabeparameter zurück.
 Gibt den minimalen Wert der Eingabeparameter zurück.
 
 - `isset`
-Gibt den booleschen Wert true zurück, wenn die Eingabevariable noch `NULL` ist. In allen anderen Fällen gibt sie false zurück.
+Gibt `1` zurück, wenn die Eingabevariable einen Zahlenwert hat, und `0`, wenn sie noch `NULL` ist (ein Textwert gibt ebenfalls `0` zurück). Damit wird auf `NULL` geprüft: Ein Vergleich mit `NULL` (z. B. `#g == NULL`) ergibt immer `NULL` und damit false, daher stattdessen `if isset(#g) == 0 then` schreiben.
 
 - `round`
 Rundet den Eingabe-Float auf die nächste ganze Zahl.
